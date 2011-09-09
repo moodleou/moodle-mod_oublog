@@ -1,0 +1,68 @@
+OU blog
+=======
+
+Copyright 2011 The Open University
+
+
+This is an alternative blog that you can install into standard Moodle.
+
+It does not replace the standard blog, and operates alongside it. There
+are two modes of use:
+
+1) As a course activity. In this case you can use it the same way as any
+   other module. You can have course-wide blogs (everyone in the course posts
+   to the same blog), group blogs, or individual blogs; the latter are
+   useful for assessed activities (where the student is supposed to keep
+   a journal which only they and their tutor can read).
+   
+2) As a replacement for standard Moodle personal blogs. In this case it would
+   be a good idea to turn off the standard Moodle blog system, or it'll be
+   very confusing. You then need to MANUALLY provide students with a link
+   to mod/oublog/view.php which will automatically take them to their
+   personal blog.
+
+When using for personal blogs, one feature of interest may be moderated public
+comments; when you allow comments from people who are not logged in, all such
+comments are moderated. 
+    
+
+Support:
+
+We cannot offer direct support. Please do not contact me directly. If you
+need assistance, try the blog forum on moodle.org. (Remember to make clear
+that you are using OU blog and not the standard blog.)
+
+Bug reports:
+
+Please report bugs to the Moodle tracker using the 'contributed code' project
+and 'Module: OU blog' component. Under Version, please select your Moodle
+version e.g. 2.1, 2.2.
+
+Status:
+
+Beta quality code. We intend to switch this project to include live quality
+code at some point after our mid-October update.
+
+Please note that this code is tested on OU systems but we rely on the
+community for testing on other systems.
+
+Requires:
+
+Moodle 2.1+
+Postgres / MySQL
+
+Install:
+
+Place the contents of this source tree into your Moodle installation so that
+within your Moodle root, this file is mod/oublog/README. Then visit the
+Moodle notifications page to install.
+
+If you want the blogs to be searchable, you also need to install the
+local_ousearch plugin. (It is best to do this before using OU blog much,
+otherwise it takes ages to install as it builds indexes for everything.)
+When you install the ousearch plugin, a search box will automatically appear.
+
+Documentation:
+
+None. Please feel free to contribute documentation in the relevant area of
+the MoodleDocs wiki.
