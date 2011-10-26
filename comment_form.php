@@ -40,10 +40,6 @@ class mod_oublog_comment_form extends moodleform {
             $message_type = 'textarea';
         }
         $message_rows = 30;
-        if (class_exists('ouflags') && ou_get_is_mobile()){
-            $message_type = 'textarea';
-            $message_rows = 20;
-        }
 
         $mform->addElement($message_type, 'message', get_string('message', 'oublog'), array('cols'=>50, 'rows'=>$message_rows));
 

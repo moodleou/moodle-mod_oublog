@@ -6,24 +6,9 @@
  * @author Sam Marshall <s.marshall@open.ac.uk>
  * @package oublog
  */
-// This code tells OU authentication system to let the public access this page
-// (subject to Moodle restrictions below and with the accompanying .sams file).
-global $DISABLESAMS;
-$DISABLESAMS = 'opt';
 
 require_once("../../config.php");
 require_once("locallib.php");
-
-if(class_exists('ouflags')) {
-    $DASHBOARD_COUNTER=DASHBOARD_BLOG_VIEW;
-    require_once('../../local/mobile/ou_lib.php');
-
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-
-    $blogdets = optional_param('blogdets', null, PARAM_TEXT);
-}
 
 $postid = required_param('post', PARAM_INT);       // Post id
 
@@ -88,10 +73,7 @@ if($groupmode==VISIBLEGROUPS && !groups_is_member($post->groupid) &&
     $canaudit=false;
 }
 
-/// Print the header
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_mobile_configure_theme();
-}
+// Print the header
 
 if ($oublog->global) {
     $blogtype = 'personal';
@@ -123,14 +105,8 @@ echo $OUTPUT->header();
 /// Print the main part of the page
 echo '<div class="oublog-topofpage"></div>';
 
-if (class_exists('ouflags') && ou_get_is_mobile() && $blogdets == 'show'){
-    print '<div id="middle-column">';
-
-    ou_print_mobile_navigation(null,$blogdets,$postid);
-} else {
-    // The right column, BEFORE the middle-column.
-    print '<div id="right-column">';
-}
+// The right column, BEFORE the middle-column.
+print '<div id="right-column">';
 
 // Title & Print summary
 // Name, summary, related links
@@ -153,24 +129,10 @@ if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false
     print_side_block($strfeeds . $feedicon, $feeds, NULL, NULL, NULL, array('id' => 'oublog-feeds'), $strfeeds);
 }
 
-if (class_exists('ouflags') && ou_get_is_mobile() && $blogdets == 'show'){
-    ou_print_mobile_navigation(null,$blogdets,$postid);
-}
-
 print '</div>';
 
-if (class_exists('ouflags') && ou_get_is_mobile() && $blogdets == 'show'){
-    echo $OUTPUT->footer();
-    exit;
-}
-
 // Print blog posts
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    echo '<div id="middle-column">';
-    ou_print_mobile_navigation(null,$blogdets,$postid);
-} else {
-    echo '<div id="middle-column" class="has-right-column">';
-}
+echo '<div id="middle-column" class="has-right-column">';
 
 echo $oublogoutput->oublog_print_post($cm, $oublog, $post, $returnurl, $blogtype, $canmanageposts, $canaudit, false);
 
@@ -333,10 +295,6 @@ if ($post->userid == $USER->id &&
 
 echo '</div>';
 
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_print_mobile_navigation(null,$blogdets,$postid);
-}
-
-/// Finish the page
+// Finish the page
 echo '<div class="clearfix"></div>';
 echo $OUTPUT->footer();

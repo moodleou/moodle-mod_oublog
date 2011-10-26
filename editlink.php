@@ -14,14 +14,6 @@ $blog = required_param('blog', PARAM_INT);                          // Blog ID
 $bloginstancesid = optional_param('bloginstance', 0, PARAM_INT);     // Blog instances ID
 $linkid = optional_param('link', 0, PARAM_INT);                     // Comment ID for editing
 
-if(class_exists('ouflags')) {
-    require_once('../../local/mobile/ou_lib.php');
-
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-}
-
 if ($blog) {
     if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
         print_error('invalidblog','oublog');
@@ -54,24 +46,10 @@ $oubloginstance = $bloginstancesid ? $DB->get_record('oublog_instances', array('
 if ($oublog->global) {
     $blogtype = 'personal';
     $oubloguser = $USER;
-
-    if (class_exists('ouflags') && ou_get_is_mobile()){
-        $viewurl = 'view.php?blogdets=show&user='.$oubloginstance->userid;
-    } else {
-        if (class_exists('ouflags') && ou_get_is_mobile()){
-            $viewurl = 'view.php?blogdets=show&user='.$oubloginstance->userid;
-        } else {
-            $viewurl = 'view.php?user='.$oubloginstance->userid;
-        }
-    }
+    $viewurl = 'view.php?user='.$oubloginstance->userid;
 } else {
     $blogtype = 'course';
-
-    if (class_exists('ouflags') && ou_get_is_mobile()){
-        $viewurl = 'view.php?blogdets=show&id='.$cm->id;
-    } else {
-        $viewurl = 'view.php?id='.$cm->id;
-    }
+    $viewurl = 'view.php?id='.$cm->id;
 }
 
 /// Get strings
@@ -102,10 +80,7 @@ if (!$frmlink = $mform->get_data()) {
     $mform->set_data($link);
 
 
-/// Print the header
-    if (class_exists('ouflags') && ou_get_is_mobile()){
-        ou_mobile_configure_theme();
-    }
+    // Print the header
 
     if ($blogtype == 'personal') {
         $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id'=>$oubloguser->id)));

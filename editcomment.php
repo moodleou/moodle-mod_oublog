@@ -6,11 +6,6 @@
  * @author Sam Marshall <s.marshall@open.ac.uk>
  * @package oublog
  */
-// This code tells OU authentication system to let the public access this page
-// (subject to Moodle restrictions below and with the accompanying .sams file).
-global $DISABLESAMS;
-$DISABLESAMS = 'opt';
-
 require_once("../../config.php");
 require_once("locallib.php");
 require_once('comment_form.php');
@@ -20,16 +15,6 @@ define('OUBLOG_CONFIRMED_COOKIE', 'OUBLOG_REALPERSON');
 $blog = required_param('blog', PARAM_INT);              // Blog ID
 $postid = required_param('post', PARAM_INT);            // Post ID for editing
 $commentid = optional_param('comment', 0, PARAM_INT);   // Comment ID for editing
-
-if(class_exists('ouflags')) {
-    require_once('../../local/mobile/ou_lib.php');
-
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-
-    $blogdets = optional_param('blogdets', null, PARAM_TEXT);
-}
 
 if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
     print_error('invalidblog','oublog');
@@ -109,10 +94,7 @@ if (!$comment = $mform->get_data()) {
     $comment->post = $postid;
     $mform->set_data($comment);
 
-/// Print the header
-    if (class_exists('ouflags') && ou_get_is_mobile()){
-        ou_mobile_configure_theme();
-    }
+    // Print the header
 
     if ($blogtype == 'personal') {
         oublog_build_navigation($oublog, $oubloginstance, $oubloguser);
@@ -133,10 +115,6 @@ if (!$comment = $mform->get_data()) {
     echo $OUTPUT->footer();
 
 } else {
-    if(class_exists('ouflags')) {
-        $DASHBOARD_COUNTER=DASHBOARD_BLOG_COMMENT;
-    }
-
     // Prepare comment for database
     unset($comment->id);
     $comment->userid = $USER->id;

@@ -6,17 +6,8 @@
  * @package oublog
  */
 
-// This code tells OU authentication system to let the public access this page
-// (subject to Moodle restrictions below and with the accompanying .sams file).
-global $DISABLESAMS, $USER;
-$DISABLESAMS=true;
-
 require_once('../../config.php');
 require_once('locallib.php');
-
-if(class_exists('ouflags')) {
-    $DASHBOARD_COUNTER=DASHBOARD_BLOG_VIEW;
-}
 
 $offset = optional_param('offset', 0, PARAM_INT);   // Offset for paging
 $tag    = optional_param('tag', null, PARAM_TAG);   // Tag to display

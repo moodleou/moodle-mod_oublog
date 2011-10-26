@@ -11,14 +11,6 @@ require_once("locallib.php");
 $commentid  = required_param('comment', PARAM_INT);    // Comment ID to delete
 $confirm = optional_param('confirm', 0, PARAM_INT);    // Confirm that it is ok to delete comment
 
-if(class_exists('ouflags')) {
-    require_once('../../local/mobile/ou_lib.php');
-
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-}
-
 if (!$comment = $DB->get_record('oublog_comments', array('id'=>$commentid))) {
     print_error('invalidcomment','oublog');
 }
@@ -69,11 +61,11 @@ if (!empty($commentid) && !empty($confirm)) {
         'deletedby' => $USER->id,
         'timedeleted' => time());
     $DB->update_record('oublog_comments', $updatecomment);
+
     // Inform completion system, if available
-    if(class_exists('ouflags')) {
-        if(completion_is_enabled($course,$cm) && ($oublog->completioncomments)) {
-            completion_update_state($course,$cm,COMPLETION_INCOMPLETE,$comment->userid);
-        }
+    $completion = new completion_info($course);
+    if ($completion->is_enabled($cm) && ($oublog->completioncomments)) {
+        $completion->update_state($cm, COMPLETION_INCOMPLETE, $comment->userid);
     }
 
     redirect($viewurl);
@@ -85,10 +77,6 @@ $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
 
 /// Print the header
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_mobile_configure_theme();
-}
-
 $PAGE->set_title(format_string($oublog->name));
 if ($blogtype == 'personal') {
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id'=>$oubloguser->id)));

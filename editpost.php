@@ -11,14 +11,6 @@ require_once("../../config.php");
 require_once("locallib.php");
 require_once('post_form.php');
 
-if(class_exists('ouflags')) {
-    require_once('../../local/mobile/ou_lib.php');
-
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-}
-
 $blog = required_param('blog', PARAM_INT);        // Blog ID
 $postid = optional_param('post', 0, PARAM_INT);   // Post ID for editing
 
@@ -139,10 +131,7 @@ if (!$frmpost = $mform->get_data()) {
     $mform->set_data($post);
 
 
-    /// Print the header
-    if (class_exists('ouflags') && ou_get_is_mobile()){
-       ou_mobile_configure_theme();
-    }
+    // Print the header
 
     if ($blogtype == 'personal') {
         $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id'=>$oubloguser->id)));
@@ -171,10 +160,6 @@ if (!$frmpost = $mform->get_data()) {
         redirect($viewurl);
 
     } else {
-        if(class_exists('ouflags')) {
-            $DASHBOARD_COUNTER=DASHBOARD_BLOG_POST;
-        }
-
         // insert the post
         unset($post->id);
         $post->oublogid = $oublog->id;

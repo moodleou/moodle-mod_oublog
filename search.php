@@ -7,10 +7,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package oublog
  *//** */
-// This code tells OU authentication system to let the public access this page
-// (subject to Moodle restrictions below and with the accompanying .sams file).
-global $DISABLESAMS;
-$DISABLESAMS = 'opt';
 require_once('../../config.php');
 require_once('locallib.php');
 require_once($CFG->dirroot.'/local/ousearch/searchlib.php');

@@ -386,10 +386,9 @@ function oublog_add_post($post,$cm,$oublog,$course) {
     }
 
     // Inform completion system, if available
-    if(class_exists('ouflags')) {
-        if(completion_is_enabled($course,$cm) && ($oublog->completionposts)) {
-            completion_update_state($course,$cm,COMPLETION_COMPLETE);
-        }
+    $completion = new completion_info($course);
+    if ($completion->is_enabled($cm) && ($oublog->completionposts)) {
+        $completion->update_state($cm, COMPLETION_COMPLETE);
     }
 
     $tw->commit();
@@ -789,15 +788,6 @@ function oublog_update_item_tags($oubloginstancesid, $postid, $tags, $postvisibi
 
     $tags=oublog_clarify_tags($tags);
 
-    if (class_exists('ouflags')) {
-        require_once($CFG->dirroot.'/tag/lib.php');
-        // now copy to core tags table
-        if ($postvisibility==OUBLOG_VISIBILITY_COURSEUSER) {
-               tag_set('oublog',$postid,array());
-        } else {
-            tag_set('oublog',$postid,$tags);
-        }
-    }
     if (empty($tags)) {
         return(true);
     }
@@ -999,10 +989,9 @@ function oublog_add_comment($course,$cm,$oublog,$comment) {
     $id=$DB->insert_record('oublog_comments', $comment);
     if($id) {
         // Inform completion system, if available
-        if(class_exists('ouflags')) {
-            if(completion_is_enabled($course,$cm) && ($oublog->completioncomments)) {
-                completion_update_state($course,$cm,COMPLETION_COMPLETE);
-            }
+        $completion = new completion_info($course);
+        if ($completion->is_enabled($cm) && ($oublog->completioncomments)) {
+            $completion->update_state($cm, COMPLETION_COMPLETE);
         }
     }
     return $id;

@@ -11,14 +11,6 @@ require_once("locallib.php");
 $linkid  = required_param('link', PARAM_INT);          // Link ID to delete
 $confirm = optional_param('confirm', 0, PARAM_INT);    // Confirm that it is ok to delete link
 
-if(class_exists('ouflags')) {
-    require_once('../../local/mobile/ou_lib.php');
-
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-}
-
 if (!$link = $DB->get_record('oublog_links', array('id'=> $linkid))) {
     print_error('invalidlink','oublog');
 }
@@ -52,11 +44,7 @@ if ($oublog->global) {
     $blogtype = 'course';
 }
 
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    $viewurl = new moodle_url('/mod/oublog/view.php', array('blogdets'=>'show', 'user', $oubloginstance->userid));
-} else {
-    $viewurl = new moodle_url('/mod/oublog/view.php', array('id'=>$cm->id));
-}
+$viewurl = new moodle_url('/mod/oublog/view.php', array('id'=>$cm->id));
 
 if (!empty($linkid) && !empty($confirm)) {
     oublog_delete_link($oublog, $link);
@@ -69,10 +57,6 @@ $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
 
 /// Print the header
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_mobile_configure_theme();
-}
-
 if ($blogtype == 'personal') {
         $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id'=>$oubloguser->id)));
         $PAGE->navbar->add(format_string($oublog->name));

@@ -7,25 +7,8 @@
  * @package oublog
  */
 
-// This code tells OU authentication system to let the public access this page
-// (subject to Moodle restrictions below and with the accompanying .sams file).
-global $DISABLESAMS;
-$DISABLESAMS = 'opt';
-
 require_once('../../config.php');
 require_once('locallib.php');
-
-if(class_exists('ouflags')) {
-    require_once('../../local/mobile/ou_lib.php');
-
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-
-    $blogdets = optional_param('blogdets', null, PARAM_TEXT);
-
-    $DASHBOARD_COUNTER=DASHBOARD_BLOG_VIEW;
-}
 
 $id     = optional_param('id', 0, PARAM_INT);       // Course Module ID
 $user   = optional_param('user', 0, PARAM_INT);     // User ID
@@ -36,12 +19,14 @@ $url = new moodle_url('/mod/oublog/view.php', array('id'=>$id, 'user'=>$user, 'o
 $PAGE->set_url($url);
 
 if ($id) {
-    if (!$cm = get_coursemodule_from_id('oublog', $id)) {
+    // Load efficiently (and with full $cm data) using get_fast_modinfo
+    $course = $DB->get_record_select('course',
+            'id = (SELECT course FROM {course_modules} WHERE id = ?)', array($id),
+            '*', MUST_EXIST);
+    $modinfo = get_fast_modinfo($course);
+    $cm = $modinfo->get_cm($id);
+    if ($cm->modname !== 'oublog') {
         print_error('invalidcoursemodule');
-    }
-
-    if (!$course = $DB->get_record("course", array("id"=>$cm->course))) {
-        print_error('coursemisconf');
     }
 
     if (!$oublog = $DB->get_record("oublog", array("id"=>$cm->instance))) {
@@ -121,13 +106,14 @@ if (!oublog_is_writable_group($cm)) {
     $canaudit=false;
 }
 
+if (isset($cm)) {
+    $completion = new completion_info($course);
+    $completion->set_module_viewed($cm);
+}
+
 /// Print the header
 $PAGEWILLCALLSKIPMAINDESTINATION = true;
 $hideunusedblog=false;
-
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_mobile_configure_theme();
-}
 
 if ($oublog->global) {
     $blogtype = 'personal';
@@ -214,22 +200,15 @@ print '<div class="oublog-topofpage"></div>';
 // Initialize $PAGE, compute blocks
 $editing = $PAGE->user_is_editing();
 
-if (class_exists('ouflags') && ou_get_is_mobile() && $blogdets == 'show'){
-    print '<div id="middle-column">';
-
-    ou_print_mobile_navigation($id,$blogdets,null,$user);
+// The left column ...
+if($hasleft=!empty($CFG->showblocksonmodpages) && (blocks_have_content($pageblocks, BLOCK_POS_LEFT) || $editing)) {
+    print '<div id="left-column">';
+    blocks_print_group($PAGE, $pageblocks, BLOCK_POS_LEFT);
+    print '</div>';
 }
-else {
-    // The left column ...
-    if($hasleft=!empty($CFG->showblocksonmodpages) && (blocks_have_content($pageblocks, BLOCK_POS_LEFT) || $editing)) {
-        print '<div id="left-column">';
-        blocks_print_group($PAGE, $pageblocks, BLOCK_POS_LEFT);
-        print '</div>';
-    }
 
-    // The right column, BEFORE the middle-column.
-    print '<div id="right-column">';
-}
+// The right column, BEFORE the middle-column.
+print '<div id="right-column">';
 
 if(!$hideunusedblog) {
     // Name, summary, related links
@@ -253,34 +232,19 @@ if(!$hideunusedblog) {
     }
 }
 
-if (class_exists('ouflags') && ou_get_is_mobile() && $blogdets == 'show'){
-    ou_print_mobile_navigation($id,$blogdets,null,$user);
-}
-
 print '</div>';
-
-if (class_exists('ouflags') && ou_get_is_mobile() && $blogdets == 'show'){
-    echo $OUTPUT->footer();
-    exit;
-}
 
 // Start main column
 $classes='';
 
-if (!class_exists('ouflags') || !ou_get_is_mobile()){
-    $classes.=$hasleft ? 'has-left-column ' : '';
-    $classes.='has-right-column ';
-}
+$classes.=$hasleft ? 'has-left-column ' : '';
+$classes.='has-right-column ';
 
 $classes=trim($classes);
 if($classes) {
     print '<div id="middle-column" class="'.$classes.'">';
 } else {
     print '<div id="middle-column">';
-}
-
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_print_mobile_navigation($id,$blogdets,null,$user);
 }
 
 echo $OUTPUT->skip_link_target();
@@ -354,21 +318,7 @@ if (isguestuser() && $USER->id==$user) {
 add_to_log($course->id, "oublog", "view", $returnurl, $oublog->id, $cm->id);
 $views = oublog_update_views($oublog, $oubloginstance);
 
-// Show dashboard feature if enabled, if course blog
-if (class_exists('ouflags') && !$oublog->global) {
-    require_once($CFG->dirroot . '/local/externaldashboard/external_dashboard.php');
-    external_dashboard::print_favourites_button($cm);
-}
-
-/// Finish the page
+// Finish the page
 echo "<div class=\"clearer\"></div><div class=\"oublog-views\">$strviews $views</div></div>";
-
-if(class_exists('ouflags')) {
-    completion_set_module_viewed($course,$cm);
-}
-
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_print_mobile_navigation($id,$blogdets,null,$user);
-}
 
 echo $OUTPUT->footer();
