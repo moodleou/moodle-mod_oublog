@@ -120,43 +120,22 @@ $string['newcomment'] = 'New blog comment';
 
 $string['searchthisblog'] = 'Search this blog';
 $string['searchblogs'] = 'Search blogs';
-$string['searchthisblog_help'] = 'This search option allows you to search within the blog you are currently viewing.
+$string['searchthisblog_help'] = 'Type your search term and press Enter or click the button.
 
-To begin searching please enter a keyword within the search text box and press the arrow button.
+To search for exact phrases use quote marks.
 
-You will be taken to a results page where your keyword will be displayed within the search text box.
- You will be presented with a page of search results where your keyword is featured.
+To exclude a word insert a hyphen immediately before the word.
 
-From this results page you will also have the option to ‘Search the rest of this website’. Click on
- the link and you will be taken to a ‘Your search options’. Your keyword will be carried through but
- you will have the ability to change your keyword and search again. You will also be able to choose
- to search all of your forums or the OU Library.';
+Example: the search term <tt>picasso -sculpture &quot;early works&quot;</tt> will return results for &lsquo;picasso&rsquo; or the phrase &lsquo;early works&rsquo; but will exclude items containing &lsquo;sculpture&rsquo;.';
 
 $string['url']='Full Web address';
 
 $string['bloginfo']='blog information';
 
-$string['feedhelp']='feeds';
-$string['feedhelp_help']='<p>
-If you use a news reader program or
-website, you can add the Internet address of the Atom or RSS links in order
-to be updated when new posts are made to this blog.
-</p>
-<p>
-If the blog allows comments to be made against individual posts,
-additional &lsquo;Comments only&rsquo; Atom and RSS links will be available.
-You can use these to update you when a new comment has been added to any of the
-posts contained on this blog.
-</p>
-<p>
-Your course doesn\'t require you to use this feature.
-</p>
-<h3>Atom and RSS</h3>
-<p>
-Atom and RSS are two formats for the same thing. The former is a
-technologically neater format; the latter is better known. Most news readers
-support both formats. Try the Atom link; if that doesn\'t work, try the RSS.
-</p>';
+$string['feedhelp']='Feeds';
+$string['feedhelp_help']='If you use feeds you can add Atom or RSS links in order to keep up to date with this blog. Most feed readers support Atom and RSS.
+
+If the blog allows comments there are feeds for &lsquo;Comments only&rsquo;.';
 $string['unsupportedbrowser']='<p>Your browser cannot display Atom or RSS feeds directly.</p>
 <p>Feeds are most useful in separate computer programs or websites. If you want
 to use this feed in such a program, copy and paste the address from your browser\'s
@@ -333,21 +312,11 @@ $string['displayversion'] = 'OU blog version: <strong>{$a}</strong>';
 $string['pluginadministration'] = 'OU Blog administration';
 $string['pluginname'] = 'OU Blog';
 //help strings
-$string['allowcomments_help'] = '
-<p>If you set the option to No, then nobody will be able to comment. You might
-want to do this in certain special cases, such as if a controversial post might
-cause trouble to erupt in any comments section.</p>
+$string['allowcomments_help'] = '&lsquo;Yes, from signed-on users&rsquo; allows comments from users who have access to the blog.
 
-<p>When you set the option \'Yes, from signed-on users\' this means people can comment
-if they have access to view the blog, and can log in to the system.</p>
+&lsquo;Yes, from everybody&rsquo; allows comments from users and from the general public. You will receive emails to approve or reject comments from users who are not signed in.
 
-<p>In cases where the post is set to be visible worldwide, you can also
-choose \'Yes, from everybody\'. This option allows comments from signed-on users
-and from the general public. When users add a comment without being signed on,
-the comment doesn\'t appear immediately; an email is sent to the person who
-wrote the post, who can approve or reject it. Don\'t choose this option for
-your post unless you are willing to handle these emails.</p>
-';
+&lsquo;No&rsquo; prevents anyone from making a comment on this post.';
 $string['individualblogs_help'] = '
 <p><strong>No (blog together or in group)</strong>: <em>Individual blogs are not used</em> &ndash;
 There are no individual blogs set, everyone is part of a bigger community
@@ -373,9 +342,7 @@ if you give them the blog\'s address.</p>
 option is set on the whole blog, that becomes a maximum. For example, if
 the whole blog is set to the first level, you cannot change the
 level of an individual post at all.</p>';
-$string['tags_help'] = '<p>Tags are short pieces of text that can be used to categorise your blog posts.
-They are generally displayed in lower-case. Most tags are a single word, but you
-can also use multiple words if you like.</p>';
+$string['tags_help'] = 'Tags are labels that help you find and categorise blog posts.';
 // Used at OU only
 $string['externaldashboardadd'] = 'Add blog to dashboard';
 $string['externaldashboardremove'] = 'Remove blog from dashboard';
