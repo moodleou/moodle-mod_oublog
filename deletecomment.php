@@ -7,6 +7,7 @@
  */
 require_once("../../config.php");
 require_once("locallib.php");
+require_once($CFG->libdir . '/completionlib.php');
 
 $commentid  = required_param('comment', PARAM_INT);    // Comment ID to delete
 $confirm = optional_param('confirm', 0, PARAM_INT);    // Confirm that it is ok to delete comment

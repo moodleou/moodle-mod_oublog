@@ -345,7 +345,8 @@ function oublog_can_view_post($post, $user, $context, $personalblog) {
  * @return mixed PostID on success or false
  */
 function oublog_add_post($post,$cm,$oublog,$course) {
-    global $DB;
+    global $DB, $CFG;
+    require_once($CFG->libdir . '/completionlib.php');
     $post->itemid = $post->message['itemid'];
     $post->message = $post->message['text'];
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -981,7 +982,8 @@ function oublog_get_visibility_string($vislevel,$personal) {
  * @return mixed commentid on success or false
  */
 function oublog_add_comment($course,$cm,$oublog,$comment) {
-    global $DB;
+    global $DB, $CFG;
+    require_once($CFG->libdir . '/completionlib.php');
     if (!isset($comment->timeposted)) {
         $comment->timeposted = time();
     }

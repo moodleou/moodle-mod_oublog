@@ -7,6 +7,7 @@
  */
 require_once("../../config.php");
 require_once("locallib.php");
+require_once($CFG->libdir . '/completionlib.php');
 
 $blog    = required_param('blog', PARAM_INT);    // Blog ID
 $postid  = required_param('post', PARAM_INT);    // Post ID for editing
