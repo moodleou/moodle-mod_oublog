@@ -98,7 +98,7 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
             $post->set_source_table('oublog_posts', array('oubloginstancesid'=> backup::VAR_PARENTID));
             $comment->set_source_table('oublog_comments', array('postid'=> backup::VAR_PARENTID));
             $edit->set_source_table('oublog_edits', array('postid'=> backup::VAR_PARENTID));
-            $taginstance->set_source_sql("SELECT t.tag
+            $taginstance->set_source_sql("SELECT t.id, t.tag
                                           FROM {oublog_tags} t
                                           JOIN {oublog_taginstances} ti
                                            ON t.id=ti.tagid
