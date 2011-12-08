@@ -85,6 +85,7 @@ if ($mform->is_cancelled()) {
     exit;
 }
 $PAGE->set_title(format_string($oublog->name));
+$PAGE->set_heading(format_string($course->fullname));
 
 if (!$comment = $mform->get_data()) {
 

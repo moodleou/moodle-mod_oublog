@@ -89,6 +89,7 @@ if (!$frmlink = $mform->get_data()) {
         $PAGE->navbar->add(($linkid ? $streditlink : $straddlink));
     }
     $PAGE->set_title(format_string($oublog->name));
+    $PAGE->set_heading(format_string($course->fullname));
     echo $OUTPUT->header();
 
     echo '<br />';

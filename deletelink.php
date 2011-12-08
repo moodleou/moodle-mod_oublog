@@ -62,6 +62,7 @@ if ($blogtype == 'personal') {
         $PAGE->navbar->add(format_string($oublog->name));
 }
 $PAGE->set_title(format_string($oublog->name));
+$PAGE->set_heading(format_string($course->fullname));
 echo $OUTPUT->header();
 echo $OUTPUT->confirm(get_string('confirmdeletelink', 'oublog'),
                  new moodle_url('/mod/oublog/deletelink.php',array('link'=>$linkid, 'confirm'=>'1')),

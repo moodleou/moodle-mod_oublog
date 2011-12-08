@@ -100,6 +100,7 @@ if ($oublog->global) {
 $PAGE->set_button($buttontext);
 $CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm);
 $PAGE->set_title(format_string($oublog->name));
+$PAGE->set_heading(format_string($course->fullname));
 oublog_get_post_extranav($post, false);
 echo $OUTPUT->header();
 /// Print the main part of the page

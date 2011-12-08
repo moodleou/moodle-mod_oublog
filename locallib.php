@@ -124,6 +124,8 @@ function oublog_check_view_permissions($oublog, $context, $cm=null) {
                 $oublogcourse = $DB->get_record('course', (array('id'=>$oublog->course)));
             }
             $PAGE->set_course($oublogcourse);
+            $PAGE->set_cm($cm, $oublogcourse);
+            $PAGE->set_pagelayout('incourse');
             return;
 
         case OUBLOG_VISIBILITY_LOGGEDINUSER:
@@ -134,6 +136,8 @@ function oublog_check_view_permissions($oublog, $context, $cm=null) {
                 $oublogcourse = $DB->get_record('course', (array('id'=>$oublog->course)));
             }
             $PAGE->set_course($oublogcourse);
+            $PAGE->set_cm($cm, $oublogcourse);
+            $PAGE->set_pagelayout('incourse');
             // Check oublog:view cap
             if (!has_capability($capability, $context)) {
                 print_error('accessdenied', 'oublog');
