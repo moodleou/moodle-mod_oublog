@@ -79,6 +79,7 @@ $stroublog   = get_string('modulename', 'oublog');
 
 /// Print the header
 $PAGE->set_title(format_string($oublog->name));
+$PAGE->set_heading(format_string($course->fullname));
 if ($blogtype == 'personal') {
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id'=>$oubloguser->id)));
     $PAGE->navbar->add(format_string($oublog->name));

@@ -215,7 +215,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                             $a->fullname = s($last->authorname);
                         }
                         $a->timeposted = oublog_date($last->timeposted, true);
-                        $output .= get_string('lastcomment', 'oublog', $a);
+                        $output .= ' ' . get_string('lastcomment', 'oublog', $a);
                     }
                 } elseif (oublog_can_comment($cm, $oublog, $post)) {
                     $output .= html_writer::tag('a', $strcomment, array('href'=>$CFG->wwwroot.'/mod/oublog/editcomment.php?blog='.$post->oublogid.'&post='.$post->id));

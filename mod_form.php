@@ -144,7 +144,8 @@ class mod_oublog_mod_form extends moodleform_mod {
     }
 
     function validation($data, $files) {
-        $errors = array();
+        // $errors = array();
+        $errors = parent::validation($data, $files);
         if (!empty($data['groupmode']) && isset($data['allowcomments']) &&
                 $data['allowcomments'] == OUBLOG_COMMENTS_ALLOWPUBLIC) {
             $errors['allowcomments'] = get_string('error_grouppubliccomments', 'oublog');

@@ -76,6 +76,7 @@ if (!empty($post->title)) {
 
 $PAGE->navbar->add($strviewedit);
 $PAGE->set_title(format_string($oublog->name));
+$PAGE->set_heading(format_string($course->fullname));
 echo $OUTPUT->header();
 
 /// Print the main part of the page

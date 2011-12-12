@@ -59,6 +59,7 @@ $strblogsearch  = get_string('searchblogs', 'oublog');
 list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, null, -1, null, $tag, $canaudit);
 
 $PAGE->set_title(format_string($oublog->name));
+$PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(format_string($oublog->name), new moodle_url('/mod/oublog/allposts.php'));
 $CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, 'all', '', $cm);
 

@@ -34,6 +34,7 @@ $strdataplural  = get_string('modulenameplural','oublog');
 
 $PAGE->navbar->add($strdata, new moodle_url('/mod/oublog/index.php', array('id'=>$course->id)));
 $PAGE->set_title($strdata);
+$PAGE->set_heading(format_string($course->fullname));
 echo $OUTPUT->header();
 
 /// Print the list of blogs
