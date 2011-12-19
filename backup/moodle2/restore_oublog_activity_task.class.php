@@ -71,9 +71,9 @@ class restore_oublog_activity_task extends restore_activity_task {
         $rules = array();
 
         $rules[] = new restore_decode_rule('OUBLOGINDEX', '/mod/oublog/index.php?id=$1', 'course');
-        $rules[] = new restore_decode_rule('OUBLOGVIEW', '/mod/oublog/view.php?id=$1', 'course');
-        $rules[] = new restore_decode_rule('OUBLOGVIEWUSER', '/mod/oublog/view.php?user=$1', 'course');
-        $rules[] = new restore_decode_rule('OUBLOGVIEWPOST', '/mod/oublog/viewpost.php?post=$1', 'course');
+        $rules[] = new restore_decode_rule('OUBLOGVIEW', '/mod/oublog/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('OUBLOGVIEWUSER', '/mod/oublog/view.php?user=$1', 'user');
+        $rules[] = new restore_decode_rule('OUBLOGVIEWPOST', '/mod/oublog/viewpost.php?post=$1', 'oublog_post');
 
         return $rules;
 
