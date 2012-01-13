@@ -827,3 +827,15 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     // finally send the file
     send_stored_file($file, 0, 0, true); // download MUST be forced - security!
 }
+
+/**
+ * Sets the module uservisible to false if the user has not got the view capability
+ * @param cm_info $cm
+ */
+function oublog_cm_info_dynamic(cm_info $cm) {
+    if (!has_capability('mod/oublog:view',
+            get_context_instance(CONTEXT_MODULE,$cm->id))) {
+        $cm->uservisible = false;
+        $cm->set_available(false);
+    }
+}
