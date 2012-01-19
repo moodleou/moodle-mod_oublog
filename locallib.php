@@ -2119,7 +2119,6 @@ function oublog_get_last_modified($cm, $course, $userid=0) {
 
     // Default applies no restriction
     $restrictjoin = '';
-    $rjparam = array();
     $restrictwhere = '';
     $rwparam = array();
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -2136,26 +2135,24 @@ INNER JOIN {groups} g ON g.id = gm.groupid";
             $groupfield = "g.id";
             $restrictwhere .= "
 AND g.course = ?";
-            $rwparam[] =$course->id;
+            $rwparam[] = $course->id;
         } else {
             // Outside individual mode, group restriction works based on groupid
             // in post.
             $groupfield = "p.groupid";
         }
         $restrictjoin .= "
-INNER JOIN {groups_members} gm ON gm.groupid = ?";
-        $rjparam[] = $groupfield;
+INNER JOIN {groups_members} gm ON gm.groupid = $groupfield";
         $restrictwhere .= "
 AND gm.userid = ?";
         $rwparam[] = $userid;
 
         if ($cm->groupingid) {
-                $restrictjoin .= "
-INNER JOIN {groupings_groups} gg ON gg.groupid = ?";
-                $rjparam[] = $groupfield;
-                $restrictwhere .= "
+            $restrictjoin .= "
+INNER JOIN {groupings_groups} gg ON gg.groupid = $groupfield";
+            $restrictwhere .= "
 AND gg.groupingid = ?";
-                $rwparam[] = $cm->groupingid;
+            $rwparam[] = $cm->groupingid;
         }
     }
 
@@ -2179,7 +2176,7 @@ FROM
 WHERE
     bi.oublogid = ?
     AND p.timedeleted IS NULL
-    $restrictwhere", array_merge($rjparam, array($oublog->id), $rwparam));
+    $restrictwhere", array_merge(array($oublog->id), $rwparam));
     return $result;
 }
 
