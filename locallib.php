@@ -2130,11 +2130,11 @@ function oublog_get_last_modified($cm, $course, $userid=0) {
         if ($oublog->individual) {
             // In individual mode, group restriction works by shared grouping
             $restrictjoin .= "
-INNER JOIN {groups_members} gm2 ON gm.userid = bi.userid
-INNER JOIN {groups} g ON g.id = gm.groupid";
+INNER JOIN {groups_members} gm2 ON gm2.userid = bi.userid
+INNER JOIN {groups} g ON g.id = gm2.groupid";
             $groupfield = "g.id";
             $restrictwhere .= "
-AND g.course = ?";
+AND g.courseid = ?";
             $rwparam[] = $course->id;
         } else {
             // Outside individual mode, group restriction works based on groupid
