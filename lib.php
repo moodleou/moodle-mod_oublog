@@ -829,6 +829,68 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
 }
 
 /**
+ * File browsing support for oublog module.
+ * @param object $browser
+ * @param object $areas
+ * @param object $course
+ * @param object $cm
+ * @param object $context
+ * @param string $filearea
+ * @param int $itemid
+ * @param string $filepath
+ * @param string $filename
+ * @return file_info instance Representing an actual file or folder (null if not found
+ * or cannot access)
+ */
+function oublog_get_file_info($browser, $areas, $course, $cm, $context, $filearea,
+        $itemid, $filepath, $filename) {
+    global $CFG, $USER;
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return null;
+    }
+    $fileareas = array('attachment', 'message', 'edit');
+    if (!in_array($filearea, $fileareas)) {
+        return null;
+    }
+
+    if (!($oublog = oublog_get_blog_from_postid($itemid))) {
+        return null;
+    }
+    // Check if the user is allowed to view the blog
+    try {
+        oublog_check_view_permissions($oublog, $context, $cm);
+    } catch (mod_forumng_exception $e) {
+        return null;
+    }
+
+    if (!$post = oublog_get_post($itemid)) {
+        return null;
+    }
+    // Check if the user is allowed to view the post
+    try {
+        if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+            return null;
+        }
+    } catch (mod_forumng_exception $e) {
+        return null;
+    }
+
+    $fs = get_file_storage();
+    $filepath = is_null($filepath) ? '/' : $filepath;
+    $filename = is_null($filename) ? '.' : $filename;
+    if (!($storedfile = $fs->get_file($context->id, 'mod_oublog', $filearea, $itemid,
+            $filepath, $filename))) {
+        return null;
+    }
+
+    $urlbase = $CFG->wwwroot . '/pluginfile.php';
+    return new file_info_stored($browser, $context, $storedfile, $urlbase, $filearea,
+            $itemid, true, true, false);
+}
+
+/**
  * Sets the module uservisible to false if the user has not got the view capability
  * @param cm_info $cm
  */

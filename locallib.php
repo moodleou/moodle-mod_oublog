@@ -101,15 +101,13 @@ WHERE
     p.id= ? ", array($postid));
 }
 
-
 /**
  * Checks if a user is allowed to view a blog. If not, will not return (calls
  * an error function and exits).
- *
  * @param object $oublog
  * @param object $context
  * @param object $cm
- * @return bool
+ * @return void
  */
 function oublog_check_view_permissions($oublog, $context, $cm=null) {
     global $COURSE, $PAGE, $DB;
@@ -121,7 +119,8 @@ function oublog_check_view_permissions($oublog, $context, $cm=null) {
             if ($oublog->course == $COURSE->id or empty($oublog->course)) {
                 $oublogcourse = $COURSE;
             } else {
-                $oublogcourse = $DB->get_record('course', (array('id'=>$oublog->course)));
+                $oublogcourse = $DB->get_record('course', array('id'=>$oublog->course),
+                        '*', MUST_EXIST);
             }
             $PAGE->set_course($oublogcourse);
             $PAGE->set_cm($cm, $oublogcourse);
@@ -133,7 +132,8 @@ function oublog_check_view_permissions($oublog, $context, $cm=null) {
             if ($oublog->course == $COURSE->id or empty($oublog->course)) {
                 $oublogcourse = $COURSE;
             } else {
-                $oublogcourse = $DB->get_record('course', (array('id'=>$oublog->course)));
+                $oublogcourse = $DB->get_record('course', array('id'=>$oublog->course),
+                        '*', MUST_EXIST);
             }
             $PAGE->set_course($oublogcourse);
             $PAGE->set_cm($cm, $oublogcourse);
