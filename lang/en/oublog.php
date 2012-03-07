@@ -5,6 +5,7 @@ $string['modulename'] = 'OU blog';
 $string['modulenameplural'] = 'OU blogs';
 
 $string['oublog:view'] = 'View posts';
+$string['oublog:addinstance'] = 'Add a new OU blog';
 $string['oublog:viewpersonal'] = 'View posts in personal blogs';
 $string['oublog:contributepersonal'] = 'Post and comment in personal blogs';
 $string['oublog:post'] = 'Create a new post';

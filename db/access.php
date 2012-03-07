@@ -17,6 +17,19 @@ $capabilities = array(
         )
     ),
 
+    // Ability to add new OU blog instances to a course
+    'mod/oublog:addinstance' => array(
+        'riskbitmask' => RISK_XSS,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+        'clonepermissionsfrom' => 'moodle/course:manageactivities'
+    ),
+
     'mod/oublog:viewpersonal' => array(
 
         'captype' => 'read',

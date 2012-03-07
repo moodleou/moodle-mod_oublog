@@ -27,4 +27,5 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2011032200, 'oublog');
     }
 
+    return true;
 }
