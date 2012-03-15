@@ -26,6 +26,7 @@ $string['tagsfield'] = 'Tags (separated by commas)';
 $string['allowcomments'] = 'Allow comments';
 $string['allowcommentsmax'] = 'Allow comments (if chosen for post)';
 $string['logincomments'] = 'Yes, from logged-in users';
+$string['permalink'] = 'Permalink';
 $string['publiccomments'] = 'Yes, from everybody (even if not logged in)';
 $string['publiccomments_info'] = 'If somebody adds a comment when they are not
 logged in, you will receive email notification and can approve the comment for
@@ -349,3 +350,29 @@ $string['externaldashboardadd'] = 'Add blog to dashboard';
 $string['externaldashboardremove'] = 'Remove blog from dashboard';
 $string['viewblogdetails'] = 'View blog details';
 $string['viewblogposts'] = 'Return to blog';
+
+// User participation
+$string['oublog:grade'] = 'Grade OU Blog user participation';
+$string['oublog:viewparticipation'] = 'View OU Blog user participation';
+$string['userparticipation'] = 'User participation';
+$string['myparticipation'] = 'My participation';
+$string['savegrades'] = 'Save grades';
+$string['participation'] = 'Participation';
+$string['participationbyuser'] = 'Participation by user';
+$string['details'] = 'Details';
+$string['foruser'] = ' for {$a}';
+$string['postsby'] = 'Posts by {$a}';
+$string['commentsby'] = 'Comments by {$a}';
+$string['commentonby'] = 'Comment on <u>{$a->title}</u> by <u>{$a->author}</u>';
+$string['nouserposts'] = 'This user made no posts in this blog.';
+$string['nousercomments'] = 'This user added no comments in this blog.';
+$string['savegrades'] = 'Save grades';
+$string['gradesupdated'] = 'Grades updated';
+$string['usergrade'] = 'User grade';
+
+// Participation download strings
+$string['downloadas'] = 'Download data as';
+$string['postauthor'] = 'Post author';
+$string['postdate'] = 'Post date';
+$string['posttime'] = 'Post time';
+$string['posttitle'] = 'Post title';

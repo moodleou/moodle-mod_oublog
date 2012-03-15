@@ -8,8 +8,8 @@
  * @package oublog
  **/
 
-$module->version  = 2012030700;
+$module->version  = 2012031500;
 $module->requires = 2010121400;
 $module->cron     = 60*60*4; // 4 hours
 
-$module->displayversion = 'Stable R2.2';
+$module->displayversion = 'Unused';

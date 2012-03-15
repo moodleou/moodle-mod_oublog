@@ -19,6 +19,7 @@ if (!class_exists('transaction_wrapper')) {
     require_once(dirname(__FILE__).'/null_transaction_wrapper.php');
 }
 require_once($CFG->libdir . '/portfolio/caller.php');
+require_once($CFG->libdir . '/gradelib.php');
 
 /**#@+
  * Constants defining the visibility levels of blog posts
@@ -54,6 +55,15 @@ define('OUBLOG_POSTS_PER_PAGE', 20);
  * Constant defining the max number of items in an RSS or Atom feed
  */
 define('OUBLOG_MAX_FEED_ITEMS', 20);
+/**#@-*/
+
+/**#@+
+ * Constants defining the visibility for participation pages
+ */
+define('OUBLOG_USER_PARTICIPATION', 2);
+define('OUBLOG_MY_PARTICIPATION', 1);
+define('OUBLOG_NO_PARTICIPATION', 0);
+define('OUBLOG_PARTICIPATION_PERPAGE', 100);
 /**#@-*/
 
 
@@ -2819,4 +2829,229 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
     $out .= html_writer::end_tag('div');
     $out .= html_writer::end_tag('form');
     return $out;
+}
+
+/**
+ * Checks what level of participation the currently
+ * logged in user can view
+ *
+ * @param object $course current course object
+ * @param object $oublog current oublog object
+ * @param object $cm current course module object
+ * @param int $groupid optional group id term
+ */
+function oublog_can_view_participation($course, $oublog, $cm, $groupid=0) {
+    global $USER;
+
+    // no participation at all on global blogs
+    if ($oublog->global == 1) {
+        return OUBLOG_NO_PARTICIPATION;
+    }
+
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+
+    $groupmode = groups_get_activity_groupmode($cm, $course);
+    $allowgroup =
+            ($groupmode == NOGROUPS || $groupmode == VISIBLEGROUPS)
+            || (has_capability('moodle/site:accessallgroups', $context))
+            || (groups_is_member($groupid, $USER->id));
+
+    if (has_capability('mod/oublog:viewparticipation', $context)
+        && $allowgroup
+        && (($oublog->individual == OUBLOG_VISIBLE_INDIVIDUAL_BLOGS
+        || $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS)
+        || has_capability('mod/oublog:viewindividual', $context))) {
+        return OUBLOG_USER_PARTICIPATION;
+    } else if ((has_capability('mod/oublog:post', $context)
+        || has_capability('mod/oublog:comment', $context))
+        && $allowgroup) {
+        return OUBLOG_MY_PARTICIPATION;
+    }
+
+    return OUBLOG_NO_PARTICIPATION;
+}
+
+/**
+ * Returns multiople users participation to view in participation.php
+ *
+ * @param object $oublog current oublog object
+ * @param object $context current context
+ * @param int $groupid optional group id term
+ * @param object $course current course object
+ * @param string $sort optional string to sort users by fields
+ * @return array user participation
+ */
+function oublog_get_participation($oublog, $context, $groupid=0,
+    $course, $sort='u.firstname,u.lastname') {
+    global $DB;
+
+    // get user objects
+    list($esql, $params) = get_enrolled_sql($context, 'mod/oublog:post', $groupid);
+    $fields = user_picture::fields('u');
+    $fields .= ',u.username,u.idnumber';
+    $sql = "SELECT $fields
+                FROM {user} u
+                JOIN ($esql) eu ON eu.id = u.id
+                ORDER BY $sort ASC";
+    $users = $DB->get_records_sql($sql, $params);
+    if (empty($users)) {
+        return array();
+    }
+
+    $postswhere = ' WHERE bi.userid IN (' . implode(',', array_keys($users)) .')';
+    $commentswhere = ' WHERE c.userid IN (' . implode(',', array_keys($users)) .')';
+
+    $postssql = 'SELECT bi.userid, p.posts
+        FROM {oublog_instances} bi
+        LEFT OUTER JOIN (
+            SELECT oubloginstancesid, COUNT(id) as posts
+            FROM {oublog_posts}
+            WHERE timedeleted IS NULL AND groupid = :groupid
+            GROUP BY oubloginstancesid
+        ) p ON p.oubloginstancesid = bi.id' .
+        $postswhere .
+        ' AND bi.oublogid = :oublogid';
+
+    $commentssql = 'SELECT c.userid, COUNT(c.id) AS comments
+        FROM {oublog_comments} c, {oublog_instances} bi ' .
+        $commentswhere .
+        ' AND c.postid IN (
+            SELECT id
+            FROM {oublog_posts}
+            WHERE oubloginstancesid = bi.id AND groupid = :groupid
+            AND timedeleted IS NULL
+        )
+        AND c.timedeleted IS NULL
+        AND bi.oublogid = :oublogid GROUP BY c.userid';
+    $params['oublogid'] = $oublog->id;
+    $params['groupid'] = $groupid;
+
+    // get all user post information
+    $posts = $DB->get_records_sql($postssql, $params);
+
+    // get all user comment information
+    $comments = $DB->get_records_sql($commentssql, $params);
+
+    if (!empty($users)) {
+        // is grading enabled and available for the current user
+        $gradinginfo = null;
+        if ($oublog->grade != 0 && has_capability('mod/oublog:grade', $context)) {
+            $gradinginfo = grade_get_grades($course->id, 'mod',
+                'oublog', $oublog->id, array_keys($users));
+        }
+
+        foreach ($users as $user) {
+            if (!empty($posts) && isset($posts[$user->id])) {
+                $user->posts = $posts[$user->id]->posts;
+            }
+            if (!empty($comments) && isset($comments[$user->id])) {
+                $user->comments = $comments[$user->id]->comments;
+            }
+            if ($gradinginfo && !empty($gradinginfo->items[0]->grades)) {
+                if (isset($gradinginfo->items[0]->grades[$user->id])) {
+                    $user->gradeobj = $gradinginfo->items[0]->grades[$user->id];
+                }
+            }
+        }
+    }
+
+    return $users;
+}
+
+/**
+ * Returns user participation to view in userparticipation.php
+ *
+ * @param object $oublog current oublog object
+ * @param object $context current context
+ * @param int $userid required userid term for participation being viewed
+ * @param int $groupid optional group id term
+ * @param object $course current course object
+ * @return array user participation
+ */
+function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $course) {
+    global $DB;
+
+    $postssql = 'SELECT id, title, message, timeposted
+        FROM {oublog_posts}
+        WHERE oubloginstancesid = (
+            SELECT id
+            FROM {oublog_instances}
+            WHERE oublogid = :oublogid AND userid = :userid
+        )
+        AND timedeleted IS NULL
+        AND groupid = :groupid ORDER BY timeposted ASC';
+
+    $commentssql = 'SELECT c.id, c.postid, c.title, c.message, c.timeposted,
+        a.id AS authorid, a.firstname, a.lastname,
+        p.title AS posttitle, p.timeposted AS postdate
+        FROM {user} a, {oublog_comments} c
+            INNER JOIN {oublog_posts} p ON (c.postid = p.id)
+            INNER JOIN {oublog_instances} bi ON (bi.id = p.oubloginstancesid)
+        WHERE bi.oublogid = :oublogid AND a.id = bi.userid
+        AND p.timedeleted IS NULL AND p.groupid = :groupid
+        AND c.userid = :userid AND c.timedeleted IS NULL
+            ORDER BY c.timeposted ASC';
+
+    $params = array(
+        'oublogid' => $oublog->id,
+        'userid' => $userid,
+        'groupid' => $groupid
+    );
+
+    $fields = user_picture::fields();
+    $fields .= ',username,idnumber';
+    $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
+
+    $participation = new StdClass;
+    $participation->user = $user;
+    $participation->posts = $DB->get_records_sql($postssql, $params);
+    $participation->comments = $DB->get_records_sql($commentssql, $params);
+    if ($oublog->grade != 0 && has_capability('mod/oublog:grade', $context)) {
+        $gradinginfo = grade_get_grades($course->id, 'mod',
+            'oublog', $oublog->id, array($userid));
+        $participation->gradeobj = $gradinginfo->items[0]->grades[$userid];
+    }
+    return $participation;
+}
+
+/**
+ * Grades users from the participation.php page
+ *
+ * @param array $newgrades array of grade records to update
+ * @param array $oldgrades array of old grade records to check
+ * @param object $cm current course module object
+ * @param object $oublog current oublog object
+ * @param object $course current course object
+ */
+function oublog_update_grades($newgrades, $oldgrades, $cm, $oublog, $course) {
+    global $CFG, $SESSION;
+
+    require_once($CFG->libdir.'/gradelib.php');
+
+    $grades = array();
+    foreach ($oldgrades as $key => $user) {
+        if (array_key_exists($key, $newgrades)) {
+            if (empty($user->gradeobj->grade)
+                || ($newgrades[$key] != $user->gradeobj->grade)) {
+                $grade = new StdClass;
+                $grade->userid = $key;
+                $grade->dategraded = time();
+                if ($newgrades[$key] == -1) {
+                    // no grade
+                    $grade->rawgrade = null;
+                } else {
+                    $grade->rawgrade = $newgrades[$key];
+                }
+                $oublog->cmidnumber = $cm->id;
+
+                $grades[$key] = $grade;
+            }
+        }
+    }
+    oublog_grade_item_update($oublog, $grades);
+
+    // add a message to display to the page
+    if (!isset($SESSION->oubloggradesupdated)) {
+        $SESSION->oubloggradesupdated = get_string('gradesupdated', 'oublog');
+    }
 }

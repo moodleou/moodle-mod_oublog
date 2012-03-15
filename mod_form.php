@@ -66,6 +66,7 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->setType('maxvisibility', PARAM_INT);
             $mform->addHelpButton('maxvisibility', 'maxvisibility', 'oublog');
 
+        $this->standard_grading_coursemodule_elements();
 
     //-------------------------------------------------------------------------------
             // add standard elements, common to all modules

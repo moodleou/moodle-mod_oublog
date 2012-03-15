@@ -20,7 +20,8 @@
         <FIELD NAME="views" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="global" NEXT="completionposts"/>
         <FIELD NAME="completionposts" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="If set, specifies a number of blog posts that a student must make for this activity to be marked completed." PREVIOUS="views" NEXT="completioncomments"/>
         <FIELD NAME="completioncomments" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="If set, specifies a number of blog comments that a student must make for this activity to be marked completed." PREVIOUS="completionposts" NEXT="individual"/>
-        <FIELD NAME="individual" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Is this the individual blog?" PREVIOUS="completioncomments"/>
+        <FIELD NAME="individual" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Is this the individual blog?" PREVIOUS="completioncomments" NEXT="grade"/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="individual"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

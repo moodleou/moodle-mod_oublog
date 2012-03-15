@@ -32,6 +32,8 @@ function oublog_add_instance($oublog) {
         return(false);
     }
 
+    oublog_grade_item_update($oublog);
+
     return($oublog->id);
 }
 
@@ -56,6 +58,8 @@ function oublog_update_instance($oublog) {
     if (!$DB->update_record('oublog', $oublog)) {
         return(false);
     }
+
+    oublog_grade_item_update($oublog);
 
     return(true);
 }
@@ -118,6 +122,8 @@ function oublog_delete_instance($oublogid) {
         }
         local_ousearch_document::delete_module_instance_data($cm);
     }
+
+    oublog_grade_item_delete($oublog);
 
     // oublog
     return($DB->delete_records('oublog', array('id'=>$oublog->id)));
@@ -620,6 +626,7 @@ function oublog_supports($feature) {
         case FEATURE_GROUPINGS: return true;
         case FEATURE_GROUPS: return true;
         case FEATURE_GROUPMEMBERSONLY: return true;
+        case FEATURE_GRADE_HAS_GRADE: return true;
         default: return null;
     }
 }
@@ -900,4 +907,53 @@ function oublog_cm_info_dynamic(cm_info $cm) {
         $cm->uservisible = false;
         $cm->set_available(false);
     }
+}
+
+/**
+* Create grade item for given oublog
+ *
+ * @param object $oublog
+ * @param mixed $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
+ * @return int 0 if ok, error code otherwise
+ */
+function oublog_grade_item_update($oublog, $grades = null) {
+    global $CFG;
+    require_once($CFG->libdir.'/gradelib.php');
+
+    $params = array('itemname' => $oublog->name);
+
+    if ($oublog->grade > 0) {
+        $params['gradetype'] = GRADE_TYPE_VALUE;
+        $params['grademax']  = $oublog->grade;
+        $params['grademin']  = 0;
+
+    } else if ($oublog->grade < 0) {
+        $params['gradetype'] = GRADE_TYPE_SCALE;
+        $params['scaleid']   = -$oublog->grade;
+
+    } else {
+        $params['gradetype'] = GRADE_TYPE_NONE;
+    }
+
+    if ($grades  === 'reset') {
+        $params['reset'] = true;
+        $grades = null;
+    }
+
+    return grade_update('mod/oublog', $oublog->course, 'mod',
+        'oublog', $oublog->id, 0, $grades, $params);
+}
+
+/**
+ * Delete grade item for given oublog
+ *
+ * @param object $oublog object
+ * @return object oublog
+ */
+function oublog_grade_item_delete($oublog) {
+    global $CFG;
+    require_once($CFG->libdir.'/gradelib.php');
+
+    return grade_update('mod/oublog', $oublog->course, 'mod',
+        'oublog', $oublog->id, 0, null, array('deleted' => 1));
 }

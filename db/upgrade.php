@@ -22,9 +22,17 @@ function xmldb_oublog_upgrade($oldversion=0) {
     global $CFG, $THEME, $DB;
 
     $dbman = $DB->get_manager(); /// loads ddl manager and xmldb classes
- 
-    if ($oldversion < 2011032200) {
-        upgrade_mod_savepoint(true, 2011032200, 'oublog');
+
+    if ($oldversion < 2012031500) {
+
+        // Define field grade to be added to oublog
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10',
+            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'individual');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_mod_savepoint(true, 2012031500, 'oublog');
     }
 
     return true;
