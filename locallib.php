@@ -807,14 +807,10 @@ function oublog_update_item_tags($oubloginstancesid, $postid, $tags, $postvisibi
         return(true);
     }
 
-    foreach($tags as $tag) {
-        $tagssql[] = "'".$tag."'";
-    }
-
     // get the id's of the know tags
-    //TODO: check this converted SQL
-    $sql = "SELECT tag, id FROM {oublog_tags} WHERE tag IN (".implode(',', $tagssql).")";
-    $tagids = $DB->get_records_sql($sql);
+    list($tagsql, $tagparams) = $DB->get_in_or_equal($tags);
+    $sql = "SELECT tag, id FROM {oublog_tags} WHERE tag $tagsql";
+    $tagids = $DB->get_records_sql($sql, $tagparams);
 
     // insert the remainder
     foreach ($tags as $tag) {
