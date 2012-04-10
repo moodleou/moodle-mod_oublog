@@ -957,3 +957,10 @@ function oublog_grade_item_delete($oublog) {
     return grade_update('mod/oublog', $oublog->course, 'mod',
         'oublog', $oublog->id, 0, null, array('deleted' => 1));
 }
+
+/**
+ * Returns all other caps used in oublog at module level.
+ */
+function oublog_get_extra_capabilities() {
+    return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames');
+}
