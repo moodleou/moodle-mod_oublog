@@ -278,7 +278,7 @@ if ($oublog->individual && $individualdetails) {
 }
 if ($showpostbutton) {
     echo '<div id="addpostbutton">';
-    echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' => $cm->instance)), $straddpost);
+    echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' => $cm->instance)), $straddpost, 'get');
     echo '</div>';
 }
 
@@ -296,7 +296,7 @@ if ($canview) {
     }
     if (isset($participationurl)) {
         echo '<div class="participationbutton">';
-        echo $OUTPUT->single_button($participationurl, $strparticipation);
+        echo $OUTPUT->single_button($participationurl, $strparticipation, 'get');
         echo '</div>';
     }
 }

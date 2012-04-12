@@ -256,3 +256,11 @@ div.oublog-individualselector {
 .oublog-olderposts {
     margin: 0 0 2em;
 }
+
+#oublogbuttons form,
+#oublogbuttons div {
+    display: inline;
+}
+#oublogbuttons .participationbutton {
+    margin-left: 0.5em;
+}
