@@ -88,13 +88,13 @@ if (empty($download)) {
 }
 
 $oublogoutput->render_user_participation_list($cm, $course, $oublog, $participation,
-    $groupid, $download, $page, null, $coursecontext, $viewfullnames, $groupname);
+        $groupid, $download, $page, $coursecontext, $viewfullnames, $groupname);
 
 if (empty($download)) {
     echo $OUTPUT->footer();
 }
 
 /// Log visit
-$logurl = 'userparticipation.php?id=' . $id . '&user=' . $user
+$logurl = 'userparticipation.php?id=' . $id . '&user=' . $userid
     . '&group=' . $groupid . '&download=' . $download . '&page=' . $page;
 add_to_log($course->id, 'userparticipation', 'view', $logurl, $oublog->id, $cm->id);

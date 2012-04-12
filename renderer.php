@@ -421,7 +421,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         // setup the table
         require_once($CFG->dirroot.'/mod/oublog/participation_table.php');
         $filename = "$course->shortname-".format_string($oublog->name, true);
-        if (!empty($groupname)) {
+        if ($groupname !== '') {
             $filename .= '-'.format_string($groupname, true);
         }
         $filename .= '-'.format_string($fullname, true);

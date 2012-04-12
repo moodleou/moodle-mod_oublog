@@ -2897,12 +2897,14 @@ function oublog_get_participation($oublog, $context, $groupid=0,
     $postswhere = ' WHERE bi.userid IN (' . implode(',', array_keys($users)) .')';
     $commentswhere = ' WHERE c.userid IN (' . implode(',', array_keys($users)) .')';
 
+    $groupcheck = $groupid ? 'AND groupid = :groupid' : '';
+
     $postssql = 'SELECT bi.userid, p.posts
         FROM {oublog_instances} bi
         LEFT OUTER JOIN (
             SELECT oubloginstancesid, COUNT(id) as posts
             FROM {oublog_posts}
-            WHERE timedeleted IS NULL AND groupid = :groupid
+            WHERE timedeleted IS NULL ' . $groupcheck . '
             GROUP BY oubloginstancesid
         ) p ON p.oubloginstancesid = bi.id' .
         $postswhere .
@@ -2914,7 +2916,7 @@ function oublog_get_participation($oublog, $context, $groupid=0,
         ' AND c.postid IN (
             SELECT id
             FROM {oublog_posts}
-            WHERE oubloginstancesid = bi.id AND groupid = :groupid
+            WHERE oubloginstancesid = bi.id ' . $groupcheck . '
             AND timedeleted IS NULL
         )
         AND c.timedeleted IS NULL
@@ -2967,6 +2969,8 @@ function oublog_get_participation($oublog, $context, $groupid=0,
 function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $course) {
     global $DB;
 
+    $groupcheck = $groupid ? 'AND groupid = :groupid' : '';
+
     $postssql = 'SELECT id, title, message, timeposted
         FROM {oublog_posts}
         WHERE oubloginstancesid = (
@@ -2974,8 +2978,8 @@ function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $
             FROM {oublog_instances}
             WHERE oublogid = :oublogid AND userid = :userid
         )
-        AND timedeleted IS NULL
-        AND groupid = :groupid ORDER BY timeposted ASC';
+        AND timedeleted IS NULL ' . $groupcheck . '
+        ORDER BY timeposted ASC';
 
     $commentssql = 'SELECT c.id, c.postid, c.title, c.message, c.timeposted,
         a.id AS authorid, a.firstname, a.lastname,
@@ -2984,7 +2988,7 @@ function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $
             INNER JOIN {oublog_posts} p ON (c.postid = p.id)
             INNER JOIN {oublog_instances} bi ON (bi.id = p.oubloginstancesid)
         WHERE bi.oublogid = :oublogid AND a.id = bi.userid
-        AND p.timedeleted IS NULL AND p.groupid = :groupid
+        AND p.timedeleted IS NULL ' . $groupcheck . '
         AND c.userid = :userid AND c.timedeleted IS NULL
             ORDER BY c.timeposted ASC';
 
