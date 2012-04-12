@@ -104,6 +104,9 @@ class mod_oublog_mod_form extends moodleform_mod {
         $mform->addHelpButton('completioncommentsgroup', 'completioncommentsgroup', 'oublog');
         $mform->disabledIf('completioncomments','completioncommentsenabled','notchecked');
 
+        // Restriction for grade completion
+        $mform->disabledIf('completionusegrade', 'grade', 'eq', 0);
+
         return array('completionpostsgroup','completioncommentsgroup');
     }
 
