@@ -27,17 +27,13 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot.'/mod/oublog/locallib.php');
 
-$id         = required_param('id', 0, PARAM_INT); // Course Module ID
+$id         = required_param('id', PARAM_INT); // Course Module ID
 $groupid    = optional_param('group', 0, PARAM_INT);
 $userid     = optional_param('user', 0, PARAM_INT);
-$sesskey    = optional_param('sesskey', null, PARAM_RAW);
 
 $params = array();
 $params['id'] = $id;
 $params['group'] = $groupid;
-if (!is_null($sesskey)) {
-    $params['sesskey'] = $sesskey;
-}
 $url = new moodle_url('/mod/oublog/savegrades.php');
 if ($id) {
     $cm = get_coursemodule_from_id('oublog', $id, 0, false, MUST_EXIST);

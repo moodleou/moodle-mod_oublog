@@ -261,6 +261,9 @@ div.oublog-individualselector {
 #oublogbuttons div {
     display: inline;
 }
+#oublogbuttons {
+    margin-bottom: 1em;
+}
 #oublogbuttons .participationbutton {
     margin-left: 0.5em;
 }
