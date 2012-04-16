@@ -507,7 +507,7 @@ function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individu
     //individual blog
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere(&$sqlwhere, &$params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
     }
     //no individual blog
     else {
@@ -867,7 +867,7 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
     //if individual blog
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere(&$sqlwhere, &$params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
     }
     //no individual blog
     else {
@@ -1386,7 +1386,7 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
     //if individual blog
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere(&$sqlwhere, &$params, 'i.userid', $oublog->id, $groupid, $individualid, $capable);
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'i.userid', $oublog->id, $groupid, $individualid, $capable);
     }
     //no individual blog
     else {
