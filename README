@@ -36,8 +36,8 @@ anyone can fork the reposistory and make a fixed version).
 Support:
 
 We cannot offer direct support. Please do not contact me directly. If you
-need assistance, try the wiki forum on moodle.org. (Remember to make clear
-that you are using OU wiki and not the standard forum.)
+need assistance, try the blog forum on moodle.org. (Remember to make clear
+that you are using OU blog and not the standard blog.)
 
 Documentation:
 
@@ -61,7 +61,7 @@ community for testing on other systems.
 
 Requires:
 
-Moodle 2.2+
+Moodle 2.1+
 Postgres / MySQL
 
 Install:
