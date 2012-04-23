@@ -39,15 +39,17 @@ class oublog_participation_table extends flexible_table {
     public $groupid;
     public $groupname;
     public $extraheaders;
+    private $hasgrades;
 
     public function __construct($cm, $course, $oublog, $groupid = 0,
-        $groupname) {
+        $groupname, $hasgrades) {
 
         $this->cm = $cm;
         $this->course = $course;
         $this->oublog = $oublog;
         $this->groupid = $groupid;
         $this->groupname = $groupname;
+        $this->hasgrades = $hasgrades;
         parent::__construct('mod-oublog-participation');
     }
 
@@ -89,7 +91,7 @@ class oublog_participation_table extends flexible_table {
             unset($headers[0]);
         }
 
-        if ($this->oublog->grade != 0) {
+        if ($this->hasgrades) {
             $columns[] = 'grade';
             $headers[] = get_string('grades');
         }
@@ -105,7 +107,7 @@ class oublog_participation_table extends flexible_table {
 
         $this->set_attribute('cellspacing', '0');
         $this->set_attribute('id', 'participation');
-        $this->set_attribute('class', 'participation');
+        $this->set_attribute('class', 'generaltable');
         $this->set_attribute('width', '100%');
         $this->set_attribute('align', 'center');
         $this->sortable(false);

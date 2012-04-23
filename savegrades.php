@@ -53,17 +53,17 @@ if ($canview != OUBLOG_USER_PARTICIPATION) {
 }
 
 // grading capability check
-if ($oublog->grade == 0 || !has_capability('mod/oublog:grade', $context)) {
+if (!oublog_can_grade($course, $oublog, $cm, $groupid)) {
     print_error('nopermissiontoshow');
 }
 
 $mode = '';
 if (!empty($_POST['menu'])) {
     $gradeinfo = $_POST['menu'];
-    $oldgrades = oublog_get_participation($oublog, $context, $groupid, $course);
+    $oldgrades = oublog_get_participation($oublog, $context, $groupid, $cm, $course);
 } else if ($userid && !empty($_POST['grade'])) {
     $gradeinfo[$userid] = $_POST['grade'];
-    $user = oublog_get_user_participation($oublog, $context, $userid, $groupid, $course);
+    $user = oublog_get_user_participation($oublog, $context, $userid, $groupid, $cm, $course);
     $oldgrades = array($userid => $user);
 }
 

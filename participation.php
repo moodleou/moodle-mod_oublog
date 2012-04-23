@@ -75,7 +75,7 @@ if ($oublog->individual) {
 
 // all enrolled users for table pagination
 $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
-$participation = oublog_get_participation($oublog, $context, $groupid, $course);
+$participation = oublog_get_participation($oublog, $context, $groupid, $cm, $course);
 
 $PAGE->navbar->add(get_string('userparticipation', 'oublog'));
 $PAGE->set_title(format_string($oublog->name));

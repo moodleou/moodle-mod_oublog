@@ -140,7 +140,7 @@ class oublog_participation_test extends UnitTestCaseUsingDatabase {
         );
 
         // check initial oublog_get_participation call
-        $participation = oublog_get_participation($oublog, $context, 0, $course);
+        $participation = oublog_get_participation($oublog, $context, 0, $cm, $course);
         $this->assertEqual(count($participation), 2);
         foreach ($participation as $participant) {
             // so far no posts or comments
@@ -182,7 +182,7 @@ class oublog_participation_test extends UnitTestCaseUsingDatabase {
         $this->assertIsA($commentidc2, 'integer');
 
         // Test again with posts and comments
-        $participation = oublog_get_participation($oublog, $context, 0, $course);
+        $participation = oublog_get_participation($oublog, $context, 0, $cm, $course);
         $this->assertEqual(count($participation), 2);
         foreach ($participation as $participant) {
             if ($participant->id == $users['userb']->id) {
@@ -202,7 +202,7 @@ class oublog_participation_test extends UnitTestCaseUsingDatabase {
         $comment->timedeleted = time();
         $this->testdb->update_record('oublog_comments', $comment);
         $userparticipation = oublog_get_user_participation($oublog, $context,
-            $users['userc']->id, 0, $course);
+            $users['userc']->id, 0, $cm, $course);
         $this->assertEqual(count($userparticipation->comments), 1);
 
         // setup some groups
@@ -229,7 +229,7 @@ class oublog_participation_test extends UnitTestCaseUsingDatabase {
 
         // test single group participation
         $groupparticipation = oublog_get_participation($oublog, $context,
-            $group1->id, $course);
+            $group1->id, $cm, $course);
         $this->assertEqual(count($groupparticipation), 1);
         $member = array_shift($groupparticipation);
         $this->assertEqual($member->id, $users['userb']->id);
@@ -239,7 +239,7 @@ class oublog_participation_test extends UnitTestCaseUsingDatabase {
         $postb1->groupid = $group1->id;
         $this->testdb->update_record('oublog_posts', $postb1);
         $groupparticipation = oublog_get_participation($oublog, $context,
-            $group1->id, $course);
+            $group1->id, $cm, $course);
         $userbparticipation = array_shift($groupparticipation);
         $this->assertEqual($userbparticipation->id, $users['userb']->id);
         $this->assertEqual(count($userbparticipation), 1);
@@ -249,7 +249,7 @@ class oublog_participation_test extends UnitTestCaseUsingDatabase {
         // since one User B blog post was changed to a group post there should only be one post
         // and one comment for B remaining as standalone participation
         $userparticipation = oublog_get_user_participation($oublog, $context,
-            $users['userb']->id, 0, $course);
+            $users['userb']->id, 0, $cm, $course);
         $this->assertEqual($userparticipation->user->id, $users['userb']->id);
         $this->assertEqual(count($userparticipation->posts), 1);
         $this->assertEqual(count($userparticipation->comments), 1);
@@ -271,16 +271,16 @@ class oublog_participation_test extends UnitTestCaseUsingDatabase {
         $oublog->instance = $oublog->id;
         oublog_update_instance($oublog);
         $groupparticipation = oublog_get_participation($oublog, $context,
-            $group1->id, $course);
+            $group1->id, $cm, $course);
         $userbgradeobj = $groupparticipation[$users['userb']->id]->gradeobj;
         $this->assertEqual(count($groupparticipation), 1);
         $this->assertNotNull($userbgradeobj);
 
         // update grades and check results
         $newgrades = array($users['userb']->id => 5, $users['userc']->id => 10);
-        $oldgrades = oublog_get_participation($oublog, $context, $group1->id, $course);
+        $oldgrades = oublog_get_participation($oublog, $context, $group1->id, $cm, $course);
         oublog_update_grades($newgrades, $oldgrades, $cm, $oublog, $course);
-        $allgrades = oublog_get_participation($oublog, $context, 0, $course);
+        $allgrades = oublog_get_participation($oublog, $context, 0, $cm, $course);
         $this->assertEqual($allgrades[$users['userb']->id]->gradeobj->grade, 5);
 
         // userc should NOT have been updated as not in the group

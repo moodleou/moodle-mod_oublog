@@ -63,7 +63,7 @@ $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
 
 // all enrolled users for table pagination
 $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
-$participation = oublog_get_user_participation($oublog, $context, $userid, $groupid, $course);
+$participation = oublog_get_user_participation($oublog, $context, $userid, $groupid, $cm, $course);
 
 // add extra navigation link for users who can see all participation
 $canviewall = oublog_can_view_participation($course, $oublog, $cm, $groupid);

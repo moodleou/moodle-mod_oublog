@@ -2868,16 +2868,48 @@ function oublog_can_view_participation($course, $oublog, $cm, $groupid=0) {
 }
 
 /**
- * Returns multiople users participation to view in participation.php
+ * Checks if current user is allowed to grade the given blog.
+ * @param object $course Moodle course object
+ * @param object $oublog Row from oublog table
+ * @param object $cm Course-module object
+ * @param int $groupid Optional group id
+ * @return bool True if you can grade the blog
+ */
+function oublog_can_grade($course, $oublog, $cm, $groupid=0) {
+    global $USER;
+
+    // Cannot grade if blog has grading turned off
+    if (!$oublog->grade) {
+        return false;
+    }
+
+    // Cannot grade if you do not have the capability
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    if (!has_capability('mod/oublog:grade', $context)) {
+        return false;
+    }
+
+    // Grading is a 'write' activity so you can only do it for your own
+    // group unless you have accessallgroups
+    $groupmode = groups_get_activity_groupmode($cm, $course);
+    $ok = $groupmode == NOGROUPS ||
+            has_capability('moodle/site:accessallgroups', $context) ||
+            ($groupid && groups_is_member($groupid, $USER->id));
+    return $ok;
+}
+
+/**
+ * Returns information about the participation of users in this blog.
  *
  * @param object $oublog current oublog object
  * @param object $context current context
  * @param int $groupid optional group id term
+ * @param object $cm course-module object
  * @param object $course current course object
  * @param string $sort optional string to sort users by fields
  * @return array user participation
  */
-function oublog_get_participation($oublog, $context, $groupid=0,
+function oublog_get_participation($oublog, $context, $groupid=0, $cm,
     $course, $sort='u.firstname,u.lastname') {
     global $DB;
 
@@ -2933,7 +2965,7 @@ function oublog_get_participation($oublog, $context, $groupid=0,
     if (!empty($users)) {
         // is grading enabled and available for the current user
         $gradinginfo = null;
-        if ($oublog->grade != 0 && has_capability('mod/oublog:grade', $context)) {
+        if (oublog_can_grade($course, $oublog, $cm, $groupid)) {
             $gradinginfo = grade_get_grades($course->id, 'mod',
                 'oublog', $oublog->id, array_keys($users));
         }
@@ -2963,10 +2995,11 @@ function oublog_get_participation($oublog, $context, $groupid=0,
  * @param object $context current context
  * @param int $userid required userid term for participation being viewed
  * @param int $groupid optional group id term
+ * @param object $cm course-module object
  * @param object $course current course object
  * @return array user participation
  */
-function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $course) {
+function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $cm, $course) {
     global $DB;
 
     $groupcheck = $groupid ? 'AND groupid = :groupid' : '';
@@ -3006,7 +3039,7 @@ function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $
     $participation->user = $user;
     $participation->posts = $DB->get_records_sql($postssql, $params);
     $participation->comments = $DB->get_records_sql($commentssql, $params);
-    if ($oublog->grade != 0 && has_capability('mod/oublog:grade', $context)) {
+    if (oublog_can_grade($course, $oublog, $cm, $groupid)) {
         $gradinginfo = grade_get_grades($course->id, 'mod',
             'oublog', $oublog->id, array($userid));
         $participation->gradeobj = $gradinginfo->items[0]->grades[$userid];

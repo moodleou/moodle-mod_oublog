@@ -290,8 +290,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $filename .= '-'.format_string($groupname, true);
         }
 
+        $hasgrades = !empty($participation) && isset(reset($participation)->gradeobj);
         $table = new oublog_participation_table($cm, $course, $oublog,
-            $groupid, $groupname);
+            $groupid, $groupname, $hasgrades);
         $table->setup($download);
         $table->is_downloading($download, $filename, get_string('participation', 'oublog'));
 
@@ -350,7 +351,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     }
 
                     // grades
-                    if ($oublog->grade != 0) {
+                    if (isset($user->gradeobj)) {
                         if (!$table->is_downloading()) {
                             $attributes = array('userid' => $user->id);
                             if (empty($user->gradeobj->grade)) {
@@ -556,7 +557,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             echo $output;
 
             // Grade
-            if ($oublog->grade != 0) {
+            if (isset($participation->gradeobj)) {
                 $this->render_user_grade($course, $cm, $oublog, $participation, $groupid);
             }
         } else {
@@ -615,27 +616,28 @@ class mod_oublog_renderer extends plugin_renderer_base {
     public function render_user_grade($course, $cm, $oublog, $user, $groupid) {
         global $CFG, $USER;
 
-        if (isset($user->gradeobj->grade)) {
-            if ($user->gradeobj->grade != -1) {
-                $user->grade = abs($user->gradeobj->grade);
-            }
-            $grademenu = make_grades_menu($oublog->grade);
-            $grademenu[-1] = get_string('nograde');
-
-            $formparams = array();
-            $formparams['id'] = $cm->id;
-            $formparams['user'] = $user->user->id;
-            $formparams['group'] = $groupid;
-            $formparams['sesskey'] = $USER->sesskey;
-            $formaction = new moodle_url('/mod/oublog/savegrades.php', $formparams);
-            $mform = new MoodleQuickForm('savegrade', 'post', $formaction,
-                '', array('class' => 'savegrade'));
-            $mform->addElement('header', 'usergrade', get_string('usergrade', 'oublog'));
-            $mform->addElement('select', 'grade', get_string('grade'), $grademenu);
-            $mform->setDefault('grade', $user->gradeobj->grade);
-            $mform->addElement('submit', 'savechanges', get_string('savechanges'));
-
-            $mform->display();
+        if (is_null($user->gradeobj->grade)) {
+            $user->gradeobj->grade = -1;
         }
+        if ($user->gradeobj->grade != -1) {
+            $user->grade = abs($user->gradeobj->grade);
+        }
+        $grademenu = make_grades_menu($oublog->grade);
+        $grademenu[-1] = get_string('nograde');
+
+        $formparams = array();
+        $formparams['id'] = $cm->id;
+        $formparams['user'] = $user->user->id;
+        $formparams['group'] = $groupid;
+        $formparams['sesskey'] = $USER->sesskey;
+        $formaction = new moodle_url('/mod/oublog/savegrades.php', $formparams);
+        $mform = new MoodleQuickForm('savegrade', 'post', $formaction,
+            '', array('class' => 'savegrade'));
+        $mform->addElement('header', 'usergrade', get_string('usergrade', 'oublog'));
+        $mform->addElement('select', 'grade', get_string('grade'), $grademenu);
+        $mform->setDefault('grade', $user->gradeobj->grade);
+        $mform->addElement('submit', 'savechanges', get_string('savechanges'));
+
+        $mform->display();
     }
 }

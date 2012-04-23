@@ -257,6 +257,10 @@ div.oublog-individualselector {
     margin: 0 0 2em;
 }
 
+#page-mod-oublog-participation table#participation {
+    margin-top: 1em;
+}
+
 #oublogbuttons form,
 #oublogbuttons div {
     display: inline;
