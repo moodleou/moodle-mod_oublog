@@ -199,8 +199,8 @@ $string['no_blogtogetheroringroups'] = 'No (blog together or in groups)';
 $string['separateindividualblogs'] = 'Separate individual blogs';
 $string['visibleindividualblogs'] = 'Visible individual blogs';
 
-$string['separateindividual'] = 'Separate&nbsp;individual';
-$string['visibleindividual'] = 'Visible&nbsp;individual';
+$string['separateindividual'] = 'Separate&nbsp;individuals';
+$string['visibleindividual'] = 'Visible&nbsp;individuals';
 $string['viewallusers'] = 'View all users';
 $string['viewallusersingroup'] = 'View all users in group';
 
