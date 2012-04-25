@@ -1110,8 +1110,8 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
 
             if ($canmanagelinks) {
                 if ($i > 1) {
-                    $html .= '<form action="movelink.php" method="post" style="display:inline">';
-                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/up').'" />';
+                    $html .= '<form action="movelink.php" method="post" style="display:inline" title="'.$strmoveup.'">';
+                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/up').'" alt="'.$strmoveup.'" />';
                     $html .= '<input type="hidden" name="down" value="0" />';
                     $html .= '<input type="hidden" name="link" value="'.$link->id.'" />';
                     $html .= '<input type="hidden" name="returnurl" value="'.$_SERVER['REQUEST_URI'].'" />';
@@ -1119,16 +1119,16 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
                     $html .= '</form>';
                 }
                 if ($i < $numlinks) {
-                    $html .= '<form action="movelink.php" method="post" style="display:inline">';
-                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/down').'" />';
+                    $html .= '<form action="movelink.php" method="post" style="display:inline" title="'.$strmovedown.'">';
+                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/down').'" alt="'.$strmovedown.'" />';
                     $html .= '<input type="hidden" name="down" value="1" />';
                     $html .= '<input type="hidden" name="link" value="'.$link->id.'" />';
                     $html .= '<input type="hidden" name="returnurl" value="'.$_SERVER['REQUEST_URI'].'" />';
                     $html .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
                     $html .= '</form>';
                 }
-                $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;link='.$link->id.'"><img src="'.$OUTPUT->pix_url('t/edit').'" alt="'.$stredit.'" class="iconsmall" /></a>';
-                $html .= '<a href="deletelink.php?blog='.$oublog->id.'&amp;link='.$link->id.'"><img src="'.$OUTPUT->pix_url('t/delete').'" alt="'.$strdelete.'" class="iconsmall" /></a>';
+                $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.$stredit.'"><img src="'.$OUTPUT->pix_url('t/edit').'" alt="'.$stredit.'" class="iconsmall" /></a>';
+                $html .= '<a href="deletelink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.$strdelete.'"><img src="'.$OUTPUT->pix_url('t/delete').'" alt="'.$strdelete.'" class="iconsmall" /></a>';
             }
             $html .= '</li>';
         }
