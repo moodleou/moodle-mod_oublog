@@ -391,7 +391,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $table->print_html();  /// Print the whole table
 
             // print the grade form footer if necessary
-            if ($oublog->grade != 0 && !empty($participation)) {
+            if ($hasgrades && !empty($participation)) {
                 echo $table->grade_form_footer();
             }
         }

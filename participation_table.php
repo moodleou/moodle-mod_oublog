@@ -166,7 +166,7 @@ class oublog_participation_table extends flexible_table {
             echo $this->download_buttons();
         }
 
-        if ($this->oublog->grade != 0 && !$this->is_downloading()) {
+        if ($this->hasgrades) {
             echo $this->grade_form_header();
         }
 
