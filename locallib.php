@@ -2726,38 +2726,26 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         $formattedtext = format_text($post->message, FORMAT_HTML, $options);
         $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id, 'mod_oublog', 'message', $post->id, $format);
 
-
-        $output = '<table border="0" cellpadding="3" cellspacing="0" class="oublogpost">';
-
-        $output .= '<tr class="header"><td>';// can't print picture.
-        $output .= '</td>';
-
-        $output .= '<td class="topic">';
-
-        $output .= '<div class="subject">'.format_string($post->title).'</div>';
-        $output .= '<div class="date">'.oublog_date($post->timeposted).'</div>';
+        $output = '';
+        $output .= html_writer::start_tag('div', array('id'=>'page'));
+        $output .= html_writer::tag('div', format_string($post->title), array('class' => 'subject'));
+        $output .= html_writer::tag('div', oublog_date($post->timeposted), array('class' => 'date'));
         $fullname = fullname($users[$this->oubloginstance->userid], $viewfullnames);
-        $output .= '<div class="author">'.get_string('postedby', 'oublog', $fullname).'</div>';
+        $output .= html_writer::tag('div', get_string('postedby', 'oublog', $fullname), array('class' => 'author'));
 
-        $output .= '</td></tr>';
-
-        $output .= '<tr><td class="left side" valign="top">';
-
-        $output .= '</td><td class="content">';
-
+        $output .= html_writer::start_tag('div', array('class' => 'content'));
         $output .= $formattedtext;
         $fs = get_file_storage();
         if ($files = $fs->get_area_files($this->modcontext->id, 'mod_oublog', 'attachment', $post->id, "timemodified", false)) {
-            $output .= '<div class="attachments">';
+            $output .= html_writer::start_tag('div', array('class' => 'attachments'));
             $output .= '<br /><b>' .  get_string('attachments', 'oublog') . '</b>:<br /><br />';
             foreach ($files as $file) {
-                $output .= $format->file_output($file)  . '<br/ >';
+                $output .= $format->file_output($file) . '<br />';
             }
-            $output .= "</div>";
+            $output .= html_writer::end_tag('div');
         }
-
-        $output .= '</td></tr></table>'."\n\n";
-
+        $output .= html_writer::end_tag('div');
+        $output .= html_writer::end_tag('div');
         return $output;
     }
     /**

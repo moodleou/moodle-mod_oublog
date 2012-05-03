@@ -132,9 +132,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $output .= format_text($post->message, FORMAT_HTML);
         $output .= html_writer::end_tag('div');;
 
-        $output .= html_writer::start_tag('div', array('class'=>'oublog-post-attachments'));
         $fs = get_file_storage();
         if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment', $post->id, "timemodified", false)) {
+            $output .= html_writer::start_tag('div', array('class'=>'oublog-post-attachments'));
             foreach ($files as $file) {
                 $filename = $file->get_filename();
                 $mimetype = $file->get_mimetype();
@@ -143,8 +143,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $output .= html_writer::tag('a', $iconimage, array('href'=>$path));
                 $output .= html_writer::tag('a', s($filename), array('href'=>$path));
             }
+            $output .= html_writer::end_tag('div');
         }
-        $output .= html_writer::end_tag('div');;
+
 
         if (isset($post->tags)) {
             $output .= html_writer::start_tag('div', array('class'=>'oublog-post-tags')) . $strtags . ': ';
