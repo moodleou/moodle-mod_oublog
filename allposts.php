@@ -85,37 +85,34 @@ EOF;
     $buttontext='';
 }
 $url = new moodle_url("$CFG->wwwroot/course/mod.php", array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
-$buttontext .= $OUTPUT->single_button($url, $stroublog);
 $PAGE->set_button($buttontext);
 
 $PAGEWILLCALLSKIPMAINDESTINATION = true; // OU accessibility feature
 
-echo $OUTPUT->header();
-
-
-print '<div class="oublog-topofpage"></div>';
-
 // The left column ...
-if($hasleft=!empty($CFG->showblocksonmodpages) && blocks_have_content($pageblocks, BLOCK_POS_LEFT) ) {
-    print '<div id="left-column">';
-    blocks_print_group($PAGE, $pageblocks, BLOCK_POS_LEFT);
-    print '</div>';
-}
-
+$hasleft = !empty($CFG->showblocksonmodpages);
 // The right column, BEFORE the middle-column.
-print '<div id="right-column">';
 if (isloggedin() and !isguestuser()) {
     list($oublog, $oubloginstance) = oublog_get_personal_blog($USER->id);
     $blogeditlink = "<br /><a href=\"view.php\" class=\"oublog-links\">$oubloginstance->name</a>";
-    print_side_block(format_string($oublog->name), $blogeditlink, NULL, NULL, NULL, array('id' => 'oublog-summary'),get_string('bloginfo','oublog'));
+    $bc = new block_contents();
+    $bc->attributes['id'] = 'oublog-links';
+    $bc->attributes['class'] = 'oublog-sideblock block';
+    $bc->title = format_string($oublog->name);
+    $bc->content = $blogeditlink;
+    $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 }
 
 if ($feeds = oublog_get_feedblock($oublog, 'all', '', false, $cm)) {
-    print_side_block($strfeeds, $feeds, NULL, NULL, NULL, array('id' => 'oublog-feeds'),$strfeeds);
+    $bc = new block_contents();
+    $bc->attributes['id'] = 'oublog-feeds';
+    $bc->attributes['class'] = 'oublog-sideblock block';
+    $bc->title = $strfeeds;
+    $bc->content = $feeds;
+    $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 }
-
-print '</div>';
-
+// Must be called after add_fake_blocks
+echo $OUTPUT->header();
 // Start main column
 $classes='';
 $classes.=$hasleft ? 'has-left-column ' : '';
@@ -159,6 +156,6 @@ if(!isloggedin() || isguestuser()) {
     print '<p class="oublog_noposts">'.
         get_string('noposts','oublog').'</p>';
 }
-
+print '</div>';
 /// Finish the page
 echo $OUTPUT->footer();

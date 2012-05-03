@@ -69,7 +69,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
         $formattedtitle = format_string($post->title);
         if (trim($formattedtitle) !== '') {
-            $output .= html_writer::tag('h2', format_string($post->title), array('class'=>'oublog-title'));
+            $output .= html_writer::tag('h3', format_string($post->title), array('class'=>'oublog-title'));
         }
 
         if ($post->deletedby) {
@@ -532,7 +532,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
                     // Comment title
                     if (isset($comment->title) && !empty($comment->title)) {
-                        $output .= html_writer::tag('h4', s($comment->title),
+                        $output .= html_writer::tag('h3', s($comment->title),
                             array('class' => 'oublog-comment-title'));
                     }
 

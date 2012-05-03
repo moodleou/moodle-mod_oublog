@@ -88,16 +88,14 @@ if ($oublog->global) {
     $PAGE->navbar->add($blogname, new moodle_url("/mod/oublog/view.php", array('user' => $oubloginstance->userid)));
 
     $url = new moodle_url("$CFG->wwwroot/course/mod.php", array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
-    $buttontext = $OUTPUT->single_button($url, $stroublog);
 
 } else {
     $blogtype = 'course';
     $returnurl = 'view.php?id='.$cm->id;
     $blogname = $oublog->name;
     $url = new moodle_url("$CFG->wwwroot/course/mod.php", array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
-    $buttontext = $OUTPUT->single_button($url, $blogname);
 }
-$PAGE->set_button($buttontext);
+
 $CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm);
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($course->fullname));
@@ -106,34 +104,8 @@ echo $OUTPUT->header();
 /// Print the main part of the page
 echo '<div class="oublog-topofpage"></div>';
 
-// The right column, BEFORE the middle-column.
-print '<div id="right-column">';
-
-// Title & Print summary
-// Name, summary, related links
-echo $oublogoutput->oublog_print_summary_block($oublog, $oubloginstance, $canmanageposts);
-
-// Tag Cloud
-if ($tags = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm, $oubloginstance->id)) {
-    print_side_block($strtags, $tags, NULL, NULL, NULL, array('id' => 'oublog-tags'));
-}
-
-
-/// Links
-if ($links = oublog_get_links($oublog, $oubloginstance, $context)) {
-    print_side_block($strlinks, $links, NULL, NULL, NULL, array('id' => 'oublog-links'));
-}
-
-$individual = optional_param('individual', false, PARAM_INT);
-if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false, $cm, $individual)) {
-    $feedicon = ' <img src="'.$OUTPUT->pix_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
-    print_side_block($strfeeds . $feedicon, $feeds, NULL, NULL, NULL, array('id' => 'oublog-feeds'), $strfeeds);
-}
-
-print '</div>';
-
 // Print blog posts
-echo '<div id="middle-column" class="has-right-column">';
+echo '<div id="middle-column" >';
 
 echo $oublogoutput->oublog_print_post($cm, $oublog, $post, $returnurl, $blogtype, $canmanageposts, $canaudit, false);
 
@@ -169,11 +141,10 @@ if (!empty($post->comments)) {
             print '</div>';
         }
         ?>
-            <?php if(trim(format_string($comment->title))!=='') { ?><h2 class="oublog-comment-title"><?php print format_string($comment->title); ?></h2><?php } ?>
+            <?php if(trim(format_string($comment->title))!=='') { ?><h3 class="oublog-comment-title"><?php print format_string($comment->title); ?></h3><?php } ?>
             <div class="oublog-comment-date">
                 <?php print oublog_date($comment->timeposted); ?>
-            </div>
-            <div class="oublog-posted-by"><?php
+            <div class="oublog-postedby"><?php
         if ($comment->userid) {
             print get_string('postedby', 'oublog',
                     '<a href="../../user/view.php?id=' . $comment->userid .
@@ -190,7 +161,7 @@ if (!empty($post->comments)) {
                     'approvedate' => oublog_date($comment->timeapproved),
                     'ip' => s($comment->authorip)));
         }
-            ?></div>
+            ?></div> </div>
             <div class="oublog-comment-content"><?php print format_text($comment->message, FORMAT_MOODLE); ?></div>
             <div class="oublog-post-links">
         <?php
@@ -250,14 +221,14 @@ if ($post->userid == $USER->id &&
 
             // Title
             if(trim(format_string($comment->title))!=='') {
-                print '<h2 class="oublog-comment-title">' .
+                print '<h3 class="oublog-comment-title">' .
                         format_string($comment->title) . '</h2>';
             }
 
             // Date and author
             print '<div class="oublog-comment-date">' .
                     oublog_date($comment->timeposted) . ' </div>';
-            print '<div class="oublog-posted-by">' .
+            print '<div class="oublog-postedby">' .
                     get_string('moderated_postername', 'oublog',
                         s($comment->authorname)) .
                     ($canaudit ? ' (' . s($comment->authorip) . ')' : '') . '</div>';

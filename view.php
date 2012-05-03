@@ -193,46 +193,54 @@ if (!$hideunusedblog) {
 }
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($oublog->name));
-echo $OUTPUT->header();
-print '<div class="oublog-topofpage"></div>';
 
 
 // Initialize $PAGE, compute blocks
 $editing = $PAGE->user_is_editing();
 
-// The left column ...
-if($hasleft=!empty($CFG->showblocksonmodpages) && (blocks_have_content($pageblocks, BLOCK_POS_LEFT) || $editing)) {
-    print '<div id="left-column">';
-    blocks_print_group($PAGE, $pageblocks, BLOCK_POS_LEFT);
-    print '</div>';
-}
-
+$hasleft = !empty($CFG->showblocksonmodpages) || $editing;
 // The right column, BEFORE the middle-column.
-print '<div id="right-column">';
-
 if(!$hideunusedblog) {
     // Name, summary, related links
-    echo $oublogoutput->oublog_print_summary_block($oublog, $oubloginstance, $canmanageposts);
+    $bc = new block_contents();
+    $bc->attributes['class'] = 'oublog-sideblock block';
+    $bc->title = format_string($oublog->name);
+    $bc->content = format_text($oublog->summary);
+    $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 
     /// Tag Cloud
     if ($tags = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm, $oubloginstanceid, $currentindividual)) {
-        print_side_block($strtags, $tags, NULL, NULL, NULL, array('id' => 'oublog-tags'),$strtags);
+        $bc = new block_contents();
+        $bc->attributes['id'] = 'oublog-tags';
+        $bc->attributes['class'] = 'oublog-sideblock block';
+        $bc->title = $strtags;
+        $bc->content = $tags;
+        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 
-/// Links
+    // Links
     $links = oublog_get_links($oublog, $oubloginstance, $context);
     if ($links) {
-        print_side_block($strlinks, $links, NULL, NULL, NULL, array('id' => 'oublog-links'),$strlinks);
+        $bc = new block_contents();
+        $bc->attributes['id'] = 'oublog-links';
+        $bc->attributes['class'] = 'oublog-sideblock block';
+        $bc->title = $strlinks;
+        $bc->content = $links;
+        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 
     // Feeds
     if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false, $cm, $currentindividual)) {
         $feedicon = ' <img src="'.$OUTPUT->pix_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
-        print_side_block($strfeeds . $feedicon, $feeds, NULL, NULL, NULL, array('id' => 'oublog-feeds'), $strfeeds);
+        $bc = new block_contents();
+        $bc->attributes['class'] = 'oublog-sideblock block';
+        $bc->title = $strfeeds . $feedicon;
+        $bc->content = $feeds;
+        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 }
-
-print '</div>';
+// Must be called after add_fake_blocks
+echo $OUTPUT->header();
 
 // Start main column
 $classes='';
