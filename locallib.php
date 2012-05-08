@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Library of functions used by the oublog module.
  *
@@ -2708,43 +2723,50 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
      * @return string
      */
     private function prepare_post($post, $fileoutputextras=null) {
-        global $DB;
+        global $DB, $PAGE;
         static $users;
         if (empty($users)) {
             $users = array($this->user->id => $this->user);
         }
         if (!array_key_exists($this->oubloginstance->userid, $users)) {
-            $users[$this->oubloginstance->userid] = $DB->get_record('user', array('id' => $this->oubloginstance->userid));
+            $users[$this->oubloginstance->userid] = $DB->get_record('user',
+                    array('id' => $this->oubloginstance->userid));
         }
-        // add the user object on to the post
+        // Add the user object on to the post.
         $post->author = $users[$this->oubloginstance->userid];
         $viewfullnames = true;
-        // format the post body
+        // Format the post body.
         $options = portfolio_format_text_options();
         $options->context = get_context_instance(CONTEXT_COURSE, $this->get('course')->id);
         $format = $this->get('exporter')->get('format');
         $formattedtext = format_text($post->message, FORMAT_HTML, $options);
-        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id, 'mod_oublog', 'message', $post->id, $format);
+        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id,
+                'mod_oublog', 'message', $post->id, $format);
 
         $output = '';
-        $output .= html_writer::start_tag('div', array('id'=>'page'));
-        $output .= html_writer::tag('div', format_string($post->title), array('class' => 'subject'));
-        $output .= html_writer::tag('div', oublog_date($post->timeposted), array('class' => 'date'));
-        $fullname = fullname($users[$this->oubloginstance->userid], $viewfullnames);
-        $output .= html_writer::tag('div', get_string('postedby', 'oublog', $fullname), array('class' => 'author'));
-
-        $output .= html_writer::start_tag('div', array('class' => 'content'));
-        $output .= $formattedtext;
-        $fs = get_file_storage();
-        if ($files = $fs->get_area_files($this->modcontext->id, 'mod_oublog', 'attachment', $post->id, "timemodified", false)) {
-            $output .= html_writer::start_tag('div', array('class' => 'attachments'));
-            $output .= '<br /><b>' .  get_string('attachments', 'oublog') . '</b>:<br /><br />';
-            foreach ($files as $file) {
-                $output .= $format->file_output($file) . '<br />';
-            }
-            $output .= html_writer::end_tag('div');
+        if (!$oublog = oublog_get_blog_from_postid($post->id)) {
+            print_error('invalidpost', 'oublog');
         }
-        $output .= html_writer::end_tag('div');
+        if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
+            print_error('invalidcoursemodule');
+        }
+        $oublogoutput = $PAGE->get_renderer('mod_oublog');
+        $context = context_module::instance($cm->id);
+        $canmanageposts = has_capability('mod/oublog:manageposts', $context);
+
+        if ($oublog->global) {
+            $blogtype = 'personal';
+        } else {
+            $blogtype = 'course';
+        }
+        // Recover complete post object for rendering.
+        $post = oublog_get_post($post->id);
+        $post->allowcomments = false;
+        $output .= $oublogoutput->render_post($cm, $oublog, $post, false, $blogtype,
+                $canmanageposts, false, false, true);
+        if (!empty($post->comments)) {
+            $output .= $oublogoutput->render_comments($post, $oublog, false, false, true, $cm);
+        }
         $output .= html_writer::end_tag('div');
         return $output;
     }
