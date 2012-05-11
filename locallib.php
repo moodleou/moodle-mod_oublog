@@ -879,19 +879,19 @@ function oublog_get_tags_csv($postid) {
  * @return array Tag data
  */
 function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1) {
-    global $CFG, $DB;
+    global $CFG, $DB, $USER;
     $tags = array();
     $params = array();
     $sqlwhere = "bi.oublogid = ? ";
     $params[] = $oublog->id;
 
-    //if individual blog
+    // If individual blog.
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
-    }
-    //no individual blog
-    else {
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $oublog->id, $groupid,
+                $individualid, $capable);
+    } else {
+        // No individual blog.
         if (isset($oubloginstanceid)) {
             $sqlwhere .= "AND ti.oubloginstancesid = ? ";
             $params[] = $oubloginstanceid;
@@ -901,23 +901,39 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
             $params[] = $groupid;
         }
         if (!empty($CFG->enablegroupings) && !empty($cm->groupingid)) {
-            if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
-                $sqlwhere .= "AND p.groupid IN (".implode(',', array_keys($groups)).") ";
+            if ($groups = $DB->get_records('groupings_groups',
+                    array('groupingid' => $cm->groupingid), null, 'groupid')) {
+                $sqlwhere .= " AND p.groupid IN (" . implode(',', array_keys($groups)) . ") ";
             }
         }
     }
+    // Visibility check.
+    if (!isloggedin() || isguestuser()) {
+        $sqlwhere .= " AND p.visibility = " . OUBLOG_VISIBILITY_PUBLIC;
+    } else {
+        if ($oublog->global) {
+            $sqlwhere .= " AND (p.visibility > " . OUBLOG_VISIBILITY_COURSEUSER .
+                    " OR (p.visibility = " . OUBLOG_VISIBILITY_COURSEUSER . " AND u.id = ?))";
+            $params[] = $USER->id;
+        } else {
+            $context = context_module::instance($cm->id);
+            if (!has_capability('mod/oublog:view', $context, $USER->id)) {
+                $sqlwhere .= " AND (p.visibility > " . OUBLOG_VISIBILITY_COURSEUSER . ")";
+            }
+        }
+     }
 
     $sql = "SELECT t.id, t.tag, COUNT(ti.id) AS count
             FROM {oublog_instances} bi
                 INNER JOIN {oublog_taginstances} ti ON ti.oubloginstancesid = bi.id
                 INNER JOIN {oublog_tags} t ON ti.tagid = t.id
                 INNER JOIN {oublog_posts} p ON ti.postid = p.id
+                INNER JOIN {user} u ON u.id = bi.userid
             WHERE $sqlwhere
             GROUP BY t.id, t.tag
             ORDER BY count DESC";
 
     if ($tags = $DB->get_records_sql($sql, $params)) {
-
         $first = array_shift($tags);
         $max = $first->count;
         array_unshift($tags, $first);
@@ -928,7 +944,7 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
 
         $delta = $max-$min+0.00000001;
 
-        foreach($tags as $idx => $tag) {
+        foreach ($tags as $idx => $tag) {
             $tags[$idx]->weight = round(($tag->count-$min)/$delta*4);
         }
         sort($tags);
