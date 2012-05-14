@@ -376,3 +376,6 @@ $string['postauthor'] = 'Post author';
 $string['postdate'] = 'Post date';
 $string['posttime'] = 'Post time';
 $string['posttitle'] = 'Post title';
+
+// Export
+$string['exportedpost'] = 'Exported blog post';

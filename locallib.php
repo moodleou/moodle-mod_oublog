@@ -2759,7 +2759,14 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id,
                 'mod_oublog', 'message', $post->id, $format);
 
-        $output = '';
+        $output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" ' .
+                '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' .
+                html_writer::start_tag('html', array('xmlns' => 'http://www.w3.org/1999/xhtml'));
+        $output .= html_writer::tag('head',
+                html_writer::empty_tag('meta',
+                    array('http-equiv' => 'Content-Type', 'content' => 'text/html; charset=utf-8')) .
+                html_writer::tag('title', get_string('exportedpost', 'oublog')));
+        $output .= html_writer::start_tag('body') . "\n";
         if (!$oublog = oublog_get_blog_from_postid($post->id)) {
             print_error('invalidpost', 'oublog');
         }
@@ -2783,7 +2790,7 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         if (!empty($post->comments)) {
             $output .= $oublogoutput->render_comments($post, $oublog, false, false, true, $cm);
         }
-        $output .= html_writer::end_tag('div');
+        $output .= html_writer::end_tag('body') . html_writer::end_tag('html');
         return $output;
     }
     /**
