@@ -97,4 +97,4 @@ if (empty($download)) {
 /// Log visit
 $logurl = 'userparticipation.php?id=' . $id . '&user=' . $userid
     . '&group=' . $groupid . '&download=' . $download . '&page=' . $page;
-add_to_log($course->id, 'userparticipation', 'view', $logurl, $oublog->id, $cm->id);
+add_to_log($course->id, 'oublog', 'view', $logurl, $oublog->id, $cm->id);
