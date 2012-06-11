@@ -714,7 +714,6 @@ class mod_oublog_renderer extends plugin_renderer_base {
     public function render_comments($post, $oublog, $canaudit, $canmanagecomments, $forexport, $cm) {
         global $DB, $CFG, $USER, $OUTPUT;
         $viewfullnames = true;
-        $options = portfolio_format_text_options();
         $strdelete      = get_string('delete', 'oublog');
         $strcomments    = get_string('comments', 'oublog');
         $output = '';
