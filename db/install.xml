@@ -73,7 +73,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_posts_oublog_instances_fk"/>
         <KEY NAME="oublog_posts_oublog_instances_fk" TYPE="foreign" FIELDS="oubloginstancesid" REFTABLE="oublog_instances" REFFIELDS="id" PREVIOUS="primary" NEXT="oublog_posts_deletedby_users_fk"/>
 
-        <KEY NAME="oublog_posts_deletedby_users_fk" TYPE="foreign" FIELDS="deletedby" REFTABLE="users" REFFIELDS="id" PREVIOUS="oublog_posts_oublog_instances_fk"/>
+        <KEY NAME="oublog_posts_deletedby_users_fk" TYPE="foreign" FIELDS="deletedby" REFTABLE="user" REFFIELDS="id" PREVIOUS="oublog_posts_oublog_instances_fk"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="timeposted" UNIQUE="false" FIELDS="timeposted" NEXT="timeupdated"/>
@@ -98,8 +98,8 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_comments_oublog_post_fk"/>
         <KEY NAME="oublog_comments_oublog_post_fk" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_posts" REFFIELDS="id" PREVIOUS="primary" NEXT="oublog_comments_userid_users_fk"/>
-        <KEY NAME="oublog_comments_userid_users_fk" TYPE="foreign" FIELDS="userid" REFTABLE="users" REFFIELDS="id" PREVIOUS="oublog_comments_oublog_post_fk" NEXT="oublog_comments_deletedby_users_fk"/>
-        <KEY NAME="oublog_comments_deletedby_users_fk" TYPE="foreign" FIELDS="deletedby" REFTABLE="users" REFFIELDS="id" PREVIOUS="oublog_comments_userid_users_fk"/>
+        <KEY NAME="oublog_comments_userid_users_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="oublog_comments_oublog_post_fk" NEXT="oublog_comments_deletedby_users_fk"/>
+        <KEY NAME="oublog_comments_deletedby_users_fk" TYPE="foreign" FIELDS="deletedby" REFTABLE="user" REFFIELDS="id" PREVIOUS="oublog_comments_userid_users_fk"/>
 
       </KEYS>
     </TABLE>
@@ -116,7 +116,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_edits_oublog_posts_fk"/>
         <KEY NAME="oublog_edits_oublog_posts_fk" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_instances" REFFIELDS="id" PREVIOUS="primary" NEXT="oublog_edits_users_fk"/>
-        <KEY NAME="oublog_edits_users_fk" TYPE="foreign" FIELDS="userid" REFTABLE="users" REFFIELDS="id" PREVIOUS="oublog_edits_oublog_posts_fk"/>
+        <KEY NAME="oublog_edits_users_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="oublog_edits_oublog_posts_fk"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="oublog_tags" COMMENT="Blog tags" PREVIOUS="oublog_edits" NEXT="oublog_taginstances">
