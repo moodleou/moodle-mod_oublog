@@ -66,14 +66,14 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->setType('maxvisibility', PARAM_INT);
             $mform->addHelpButton('maxvisibility', 'maxvisibility', 'oublog');
 
+            $this->standard_grading_coursemodule_elements();
+            $mform->setDefault('grade', 0);
 
-    //-------------------------------------------------------------------------------
             // add standard elements, common to all modules
             $features = new stdClass;
             $features->groupings = true;
             $features->groupmembersonly = true;
             $this->standard_coursemodule_elements($features);
-    //-------------------------------------------------------------------------------
         } else {
             $mform->addElement('hidden', 'instance');
             $mform->setType('instance', PARAM_INT);
@@ -102,6 +102,9 @@ class mod_oublog_mod_form extends moodleform_mod {
         $mform->addGroup($group, 'completioncommentsgroup', get_string('completioncommentsgroup','oublog'), array(' '), false);
         $mform->addHelpButton('completioncommentsgroup', 'completioncommentsgroup', 'oublog');
         $mform->disabledIf('completioncomments','completioncommentsenabled','notchecked');
+
+        // Restriction for grade completion
+        $mform->disabledIf('completionusegrade', 'grade', 'eq', 0);
 
         return array('completionpostsgroup','completioncommentsgroup');
     }

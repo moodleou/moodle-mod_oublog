@@ -26,7 +26,8 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
                                       'user',
                                       'capabilities',
                                       'role_assignments',
-                                      'role_capabilities'
+                                      'role_capabilities',
+                                      'grade_items',
                                       ),
                                   'mod/oublog' => array(
                                       'oublog',
@@ -139,6 +140,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $oublog->summary = '';
         $oublog->global = 0;
         $oublog->views = 0;
+        $oublog->grade = 0;
         $oublog->id = oublog_add_instance($oublog);
         $this->assertIsA($oublog->id, 'integer');
 
@@ -378,6 +380,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $oublog->views = 0;
         $oublog->allowcomments = 0;
         $oublog->maxvisibility = 100;
+        $oublog->grade = 0;
         $oublog->id = $this->testdb->insert_record('oublog', $oublog);
         return $oublog;
     }

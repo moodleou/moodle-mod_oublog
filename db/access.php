@@ -149,4 +149,28 @@ $capabilities = array(
             'student' => CAP_ALLOW,
         )
     ),
+    'mod/oublog:viewparticipation' => array(
+
+        'riskbitmask' => 0,
+
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        )
+    ),
+    'mod/oublog:grade' => array(
+
+        'riskbitmask' => 0,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        )
+    ),
 );

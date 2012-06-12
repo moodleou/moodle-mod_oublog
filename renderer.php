@@ -49,6 +49,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $strtags = get_string('tags', 'oublog');
         $stredit = get_string('edit', 'oublog');
         $strdelete = get_string('delete', 'oublog');
+        $strpermalink = get_string('permalink', 'oublog');
 
         $extraclasses = $post->deletedby ? ' oublog-deleted' : '';
         $extraclasses .= ' oublog-hasuserpic';
@@ -154,6 +155,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         }
 
         $output .= html_writer::start_tag('div', array('class'=>'oublog-post-links'));
+        $output .= html_writer::tag('a', $strpermalink, array('href' => $CFG->wwwroot . '/mod/oublog/viewpost.php?post=' . $post->id)).' ';
         if (!$post->deletedby) {
             if (($post->userid == $USER->id || $canmanageposts)) {
                 $output .= html_writer::tag('a', $stredit, array('href'=>$CFG->wwwroot . '/mod/oublog/editpost.php?blog=' . $post->oublogid . '&post=' . $post->id)).' ';
@@ -259,5 +261,383 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $bc->footer = '';
         $bc->title = format_string($title);
         return $this->output->block($bc, BLOCK_POS_LEFT);
+    }
+
+    /**
+     * Print all user participation records for display
+     *
+     * @param object $cm current course module object
+     * @param object $course current course object
+     * @param object $oublog current oublog object
+     * @param int $groupid optional group id, no group = 0
+     * @param string $download download type (csv only, default '')
+     * @param int $page flexible_table pagination page
+     * @param array $participation mixed array of user participation values
+     * @param object $context current context
+     * @param bool $viewfullnames flag for global users fullnames capability
+     * @param string groupname group name for display, default ''
+     */
+    public function render_participation_list($cm, $course, $oublog, $groupid,
+        $download, $page, $participation, $context, $viewfullnames, $groupname) {
+        global $DB, $CFG, $OUTPUT;
+
+        require_once($CFG->dirroot.'/mod/oublog/participation_table.php');
+        $perpage = OUBLOG_PARTICIPATION_PERPAGE;
+
+        // filename for downloading setup
+        $filename = "$course->shortname-".format_string($oublog->name, true);
+        if (!empty($groupname)) {
+            $filename .= '-'.format_string($groupname, true);
+        }
+
+        $hasgrades = !empty($participation) && isset(reset($participation)->gradeobj);
+        $table = new oublog_participation_table($cm, $course, $oublog,
+            $groupid, $groupname, $hasgrades);
+        $table->setup($download);
+        $table->is_downloading($download, $filename, get_string('participation', 'oublog'));
+
+        if (!empty($participation)) {
+            if (!$table->is_downloading()) {
+                $table->pagesize($perpage, count($participation));
+                $offset = $page * $perpage;
+                $endposition = $offset + $perpage;
+            } else {
+                // always export all users
+                $endposition = count($participation);
+                $offset = 0;
+            }
+            $currentposition = 0;
+            foreach ($participation as $user) {
+                if ($currentposition == $offset && $offset < $endposition) {
+                    $fullname = fullname($user, $viewfullnames);
+
+                    // control details link
+                    $details = false;
+
+                    // counts
+                    $posts = 0;
+                    if (isset($user->posts)) {
+                        $posts = $user->posts;
+                        $details = true;
+                    }
+                    $comments = 0;
+                    if (isset($user->comments)) {
+                        $comments = $user->comments;
+                        $details = true;
+                    }
+
+                    // user details
+                    if (!$table->is_downloading()) {
+                        $picture = $OUTPUT->user_picture($user);
+                        $userurl = new moodle_url('/user/view.php?',
+                            array('id' => $user->id, 'course' => $course->id));
+                        $userdetails = html_writer::link($userurl, $fullname);
+                        if ($details) {
+                            $detailparams = array('id' => $cm->id,
+                                'user' => $user->id, 'group' => $groupid);
+                            $detailurl = new moodle_url('/mod/oublog/userparticipation.php',
+                                $detailparams);
+                            $accesshidetext = get_string('foruser', 'oublog', $fullname);
+                            $accesshide = html_writer::tag('span', $accesshidetext,
+                                array('class' => 'accesshide'));
+                            $detaillink = html_writer::start_tag('small');
+                            $detaillink .= ' (';
+                            $detaillink .= html_writer::link($detailurl,
+                                get_string('details', 'oublog') . $accesshide);
+                            $detaillink .= ')';
+                            $detaillink .= html_writer::end_tag('small');
+                            $userdetails .= $detaillink;
+                        }
+                    }
+
+                    // grades
+                    if (isset($user->gradeobj)) {
+                        if (!$table->is_downloading()) {
+                            $attributes = array('userid' => $user->id);
+                            if (empty($user->gradeobj->grade)) {
+                                $user->grade = -1;
+                            } else {
+                                $user->grade = abs($user->gradeobj->grade);
+                            }
+                            $menu = html_writer::select(make_grades_menu($oublog->grade),
+                                'menu['.$user->id.']', $user->grade,
+                                array(-1 => get_string('nograde')), $attributes);
+                            $gradeitem = '<div id="gradeuser'.$user->id.'">'. $menu .'</div>';
+                        } else {
+                            if (!isset($user->grade)) {
+                                $gradeitem = get_string('nograde');
+                            } else {
+                                $gradeitem = $user->grade;
+                            }
+                        }
+                    }
+
+                    // add row
+                    if (!$table->is_downloading()) {
+                        $row = array($picture, $userdetails, $posts, $comments);
+                    } else {
+                        $row = array($fullname, $posts, $comments);
+                    }
+                    if (isset($gradeitem)) {
+                        $row[] = $gradeitem;
+                    }
+                    $table->add_data($row);
+                    $offset++;
+                }
+                $currentposition++;
+            }
+        }
+        if (!$table->is_downloading()) {
+            $table->print_html();  /// Print the whole table
+
+            // print the grade form footer if necessary
+            if ($hasgrades && !empty($participation)) {
+                echo $table->grade_form_footer();
+            }
+        }
+    }
+
+    /**
+     * Print single user participation for display
+     *
+     * @param object $cm current course module object
+     * @param object $course current course object
+     * @param object $oublog current oublog object
+     * @param int $userid user id of user to view participation for
+     * @param int $groupid optional group id, no group = 0
+     * @param string $download download type (csv only, default '')
+     * @param int $page flexible_table pagination page
+     * @param array $participation mixed array of user participation values
+     * @param object $context current context
+     * @param bool $viewfullnames flag for global users fullnames capability
+     * @param string groupname group name for display, default ''
+     */
+    public function render_user_participation_list($cm, $course, $oublog, $participation, $groupid,
+        $download, $page, $context, $viewfullnames, $groupname) {
+        global $DB, $CFG;
+
+        $user = $participation->user;
+        $fullname = fullname($user, $viewfullnames);
+
+        // setup the table
+        require_once($CFG->dirroot.'/mod/oublog/participation_table.php');
+        $filename = "$course->shortname-".format_string($oublog->name, true);
+        if ($groupname !== '') {
+            $filename .= '-'.format_string($groupname, true);
+        }
+        $filename .= '-'.format_string($fullname, true);
+        $table = new oublog_user_participation_table($cm->id, $course, $oublog,
+            $user->id, $fullname, $groupname, $groupid);
+        $table->setup($download);
+        $table->is_downloading($download, $filename, get_string('participation', 'oublog'));
+
+        // Print standard output
+        $output = '';
+        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        if (!$table->is_downloading()) {
+            $output .= html_writer::tag('h2', get_string('postsby', 'oublog', $fullname));
+            if (!$participation->posts) {
+                $output .= html_writer::tag('p', get_string('nouserposts', 'oublog'));
+            } else {
+                foreach ($participation->posts as $post) {
+                    $output .= html_writer::start_tag('div',
+                        array('class' => 'oublog-post'));
+
+                    // Post title and date
+                    if (isset($post->title) && !empty($post->title)) {
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
+                            array('post' => $post->id));
+                        $viewpost = html_writer::link($viewposturl, s($post->title));
+                        $output .= html_writer::tag('h3', $viewpost,
+                            array('class' => 'oublog-post-title'));
+                        $output .= html_writer::start_tag('div',
+                            array('class' => 'oublog-post-date'));
+                        $output .= oublog_date($post->timeposted);
+                        $output .= html_writer::end_tag('div');
+                    } else {
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
+                            array('post' => $post->id));
+                        $viewpost = html_writer::link($viewposturl,
+                            oublog_date($post->timeposted));
+                        $output .= html_writer::tag('h3', $viewpost,
+                            array('class' => 'oublog-post-title'));
+                    }
+
+                    // Post content
+                    $output .= html_writer::start_tag('div',
+                        array('class' => 'oublog-post-content'));
+                    $post->message = file_rewrite_pluginfile_urls($post->message,
+                        'pluginfile.php', $modcontext->id, 'mod_oublog',
+                        'message', $post->id);
+                    $output .= format_text($post->message, FORMAT_HTML);
+                    $output .= html_writer::end_tag('div');
+
+                    // Post attachments
+                    $output .= html_writer::start_tag('div',
+                        array('class'=>'oublog-post-attachments'));
+                    $fs = get_file_storage();
+                    if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment',
+                        $post->id, 'timemodified', false)) {
+                        foreach ($files as $file) {
+                            $filename = $file->get_filename();
+                            $mimetype = $file->get_mimetype();
+                            $iconimage = html_writer::empty_tag('img', array(
+                                'src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
+                                'alt' => $mimetype, 'class' => 'icon'
+                            ));
+                            $fileurlbase = $CFG->wwwroot . '/pluginfile.php';
+                            $filepath = '/' . $modcontext->id . '/mod_oublog/attachment/'
+                                . $post->id . '/' . $filename;
+                            $path = moodle_url::make_file_url($fileurlbase, $filepath);
+                            $output .= html_writer::tag('a', $iconimage, array('href' => $path));
+                            $output .= html_writer::tag('a', s($filename), array('href' => $path));
+                        }
+                    }
+                    $output .= html_writer::end_tag('div');;
+
+                    // end display box
+                    $output .= html_writer::end_tag('div');
+                }
+            }
+
+            $output .= html_writer::tag('h2', get_string('commentsby', 'oublog', $fullname));
+            if (!$participation->comments) {
+                $output .= html_writer::tag('p', get_string('nousercomments', 'oublog'));
+            } else {
+                foreach ($participation->comments as $comment) {
+                    $output .= html_writer::start_tag('div', array('class'=>'oublog-comment'));
+
+                    $author = new StdClass;
+                    $author->id = $comment->authorid;
+                    $author->firstname = $comment->firstname;
+                    $author->lastname = $comment->lastname;
+                    $authorurl = new moodle_url('/user/view.php', array('id' => $author->id));
+                    $authorlink = html_writer::link($authorurl, fullname($author, $viewfullnames));
+                    if (isset($comment->posttitle) && !empty($comment->posttitle)) {
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
+                            array('post' => $comment->postid));
+                        $viewpostlink = html_writer::link($viewposturl, s($comment->posttitle));
+                        $strparams = array('title' => $viewpostlink, 'author' => $authorlink);
+                        $output .= html_writer::tag('h3', get_string('commentonby', 'oublog',
+                            $strparams));
+                    } else {
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
+                            array('post' => $comment->postid));
+                        $viewpostlink = html_writer::link($viewposturl,
+                            oublog_date($comment->postdate));
+                        $strparams = array('title' => $viewpostlink, 'author' => $authorlink);
+                        $output .= html_writer::tag('h3', get_string('commentonby', 'oublog',
+                            $strparams));
+                    }
+
+                    // Comment title
+                    if (isset($comment->title) && !empty($comment->title)) {
+                        $output .= html_writer::tag('h4', s($comment->title),
+                            array('class' => 'oublog-comment-title'));
+                    }
+
+                    // Comment content and date
+                    $output .= html_writer::start_tag('div',
+                        array('class' => 'oublog-comment-date'));
+                    $output .= oublog_date($comment->timeposted);
+                    $output .= html_writer::end_tag('div');
+                    $output .= html_writer::start_tag('div',
+                        array('class' => 'oublog-comment-content'));
+                    $output .= format_text($comment->message, FORMAT_HTML);
+                    $output .= html_writer::end_tag('div');
+
+                    // end display box
+                    $output .= html_writer::end_tag('div');
+                }
+            }
+            // only printing the download buttons
+            echo $table->download_buttons();
+
+            // print the actual output
+            echo $output;
+
+            // Grade
+            if (isset($participation->gradeobj)) {
+                $this->render_user_grade($course, $cm, $oublog, $participation, $groupid);
+            }
+        } else {
+            // Posts
+            if ($participation->posts) {
+                $table->add_data($table->posts);
+                $table->add_data($table->postsheader);
+                foreach ($participation->posts as $post) {
+                    $row = array();
+                    $row[] = userdate($post->timeposted, get_string('strftimedate'));
+                    $row[] = userdate($post->timeposted, get_string('strftimetime'));
+                    $row[] = (isset($post->title) && !empty($post->title)) ? $post->title : '';
+                    $post->message = file_rewrite_pluginfile_urls($post->message,
+                        'pluginfile.php', $modcontext->id, 'mod_oublog',
+                        'message', $post->id);
+                    $row[] = format_text($post->message, FORMAT_HTML);
+                    $table->add_data($row);
+                }
+            }
+
+            // Comments
+            if ($participation->comments) {
+                $table->add_data($table->comments);
+                $table->add_data($table->commentsheader);
+                foreach ($participation->comments as $comment) {
+                    $author = new StdClass;
+                    $author->id = $comment->authorid;
+                    $author->firstname = $comment->firstname;
+                    $author->lastname = $comment->lastname;
+                    $authorfullname = fullname($author, $viewfullnames);
+
+                    $row = array();
+                    $row[] = userdate($comment->timeposted, get_string('strftimedate'));
+                    $row[] = userdate($comment->timeposted, get_string('strftimetime'));
+                    $row[] = (isset($comment->title)) ? $comment->title : '';
+                    $row[] = format_text($comment->message, FORMAT_HTML);
+                    $row[] = $authorfullname;
+                    $row[] = userdate($comment->postdate, get_string('strftimedate'));
+                    $row[] = userdate($comment->postdate, get_string('strftimetime'));
+                    $row[] = (isset($comment->posttitle)) ? $comment->posttitle : '';
+                    $table->add_data($row);
+                }
+            }
+        }
+    }
+
+    /**
+     * Render single users grading form
+     *
+     * @param object $course current course object
+     * @param object $cm current course module object
+     * @param object $oublog current oublog object
+     * @param object $user current user participation object
+     * @param id $groupid optional group id, no group = 0
+     */
+    public function render_user_grade($course, $cm, $oublog, $user, $groupid) {
+        global $CFG, $USER;
+
+        if (is_null($user->gradeobj->grade)) {
+            $user->gradeobj->grade = -1;
+        }
+        if ($user->gradeobj->grade != -1) {
+            $user->grade = abs($user->gradeobj->grade);
+        }
+        $grademenu = make_grades_menu($oublog->grade);
+        $grademenu[-1] = get_string('nograde');
+
+        $formparams = array();
+        $formparams['id'] = $cm->id;
+        $formparams['user'] = $user->user->id;
+        $formparams['group'] = $groupid;
+        $formparams['sesskey'] = $USER->sesskey;
+        $formaction = new moodle_url('/mod/oublog/savegrades.php', $formparams);
+        $mform = new MoodleQuickForm('savegrade', 'post', $formaction,
+            '', array('class' => 'savegrade'));
+        $mform->addElement('header', 'usergrade', get_string('usergrade', 'oublog'));
+        $mform->addElement('select', 'grade', get_string('grade'), $grademenu);
+        $mform->setDefault('grade', $user->gradeobj->grade);
+        $mform->addElement('submit', 'savechanges', get_string('savechanges'));
+
+        $mform->display();
     }
 }

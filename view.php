@@ -268,6 +268,8 @@ echo '</div>';
 
 /// Print the main part of the page
 
+echo '<div id="oublogbuttons">';
+
 // New post button - in group blog, you can only post if a group is selected
 if ($oublog->individual && $individualdetails) {
     $showpostbutton = $canpost;
@@ -275,8 +277,31 @@ if ($oublog->individual && $individualdetails) {
     $showpostbutton = $canpost && ($currentgroup || !$groupmode );
 }
 if ($showpostbutton) {
-    echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' => $cm->instance)), $straddpost);
+    echo '<div id="addpostbutton">';
+    echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' => $cm->instance)), $straddpost, 'get');
+    echo '</div>';
 }
+
+// View participation button
+$canview = oublog_can_view_participation($course, $oublog, $cm, $currentgroup);
+if ($canview) {
+    if ($canview == OUBLOG_MY_PARTICIPATION) {
+        if (groups_is_member($currentgroup, $USER->id) || !$currentgroup) {
+            $strparticipation = get_string('myparticipation', 'oublog');
+            $participationurl = new moodle_url('userparticipation.php', array('id' => $cm->id, 'group' => $currentgroup, 'user' => $USER->id));
+        }
+    } else {
+        $strparticipation = get_string('participationbyuser', 'oublog');
+        $participationurl = new moodle_url('participation.php', array('id' => $cm->id, 'group' => $currentgroup));
+    }
+    if (isset($participationurl)) {
+        echo '<div class="participationbutton">';
+        echo $OUTPUT->single_button($participationurl, $strparticipation, 'get');
+        echo '</div>';
+    }
+}
+
+echo '</div>';
 
 // Print blog posts
 if ($posts) {
