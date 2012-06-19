@@ -37,10 +37,10 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated
-        $oublog = new backup_nested_element('oublog', array('id'), array('name', 'course', 'accesstoken', 'summary',
-                                                                         'allowcomments', 'individual', 'maxvisibility',
-                                                                         'global', 'views','completionposts',
-                                                                         'completioncomments'));
+        $oublog = new backup_nested_element('oublog', array('id'), array('name', 'course',
+                'accesstoken', 'summary', 'allowcomments', 'individual',
+                'maxbytes', 'maxattachments', 'maxvisibility', 'global', 'views',
+                'completionposts', 'completioncomments'));
 
         $instances = new backup_nested_element('instances');
 
