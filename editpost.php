@@ -36,11 +36,12 @@ if ($postid) {
 
 $url = new moodle_url('/mod/oublog/editpost.php', array('blog'=>$blog, 'post'=>$postid));
 $PAGE->set_url($url);
-$PAGE->requires->js('/mod/oublog/oublog.js');
 
 /// Check security
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
+
+$PAGE->requires->js('/mod/oublog/oublog.js');
 
 if ($oublog->global) {
     $blogtype = 'personal';
