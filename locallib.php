@@ -553,12 +553,19 @@ function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individu
 
     // visibility check
     if (!isloggedin() || isguestuser()){
-        $sqlwhere .= " AND p.visibility=" . OUBLOG_VISIBILITY_PUBLIC;
+        $sqlwhere .= " AND p.visibility =" . OUBLOG_VISIBILITY_PUBLIC;
     } else {
         if ($oublog->global) {
             $sqlwhere .= " AND (p.visibility >" . OUBLOG_VISIBILITY_COURSEUSER .
-                " OR (p.visibility=".OUBLOG_VISIBILITY_COURSEUSER." AND u.id=?))";
+                " OR (p.visibility = " . OUBLOG_VISIBILITY_COURSEUSER . " AND u.id = ?))";
             $params[] = $USER->id;
+        } else {
+            $context = context_module::instance($cm->id);
+            if (has_capability('mod/oublog:view', $context)) {
+                $sqlwhere .= " AND (p.visibility >= " . OUBLOG_VISIBILITY_COURSEUSER . " )";
+            } else {
+                $sqlwhere .= " AND p.visibility > " . OUBLOG_VISIBILITY_COURSEUSER;
+            }
         }
     }
 
@@ -572,14 +579,14 @@ function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individu
                 LEFT JOIN {user} ud ON p.deletedby = ud.id
                 LEFT JOIN {user} ue ON p.lasteditedby = ue.id
                 $sqljoin";
-                $sql = "SELECT $fieldlist
-                $from
+    $sql = "SELECT $fieldlist
+            $from
             WHERE  $sqlwhere
             ORDER BY p.timeposted DESC
             ";
     $countsql = "SELECT count(p.id) $from WHERE $sqlwhere";
 
-    $rs = $DB->get_recordset_sql($sql, $params, $offset,OUBLOG_POSTS_PER_PAGE);
+    $rs = $DB->get_recordset_sql($sql, $params, $offset, OUBLOG_POSTS_PER_PAGE);
     if (!$rs->valid()) {
         return(false);
     }
