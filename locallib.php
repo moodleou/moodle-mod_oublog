@@ -219,20 +219,27 @@ function oublog_can_post($oublog, $bloguserid=0, $cm=null) {
 function oublog_can_comment($cm, $oublog, $post) {
     global $USER;
     if($oublog->global) {
-        // Just need the 'contributepersonal' permission at system level
-        $blogok = $oublog->allowcomments == OUBLOG_COMMENTS_ALLOWPUBLIC ||
-            has_capability('mod/oublog:contributepersonal',
-                get_context_instance(CONTEXT_SYSTEM));
+        // Just need the 'contributepersonal' permission at system level, OR
+        // if you are not logged in but the blog allows public comments.
+        // Note that if you ARE logged in you must have the capability. This is
+        // because logged-in comments do not go through moderation, so we want
+        // to be able to prevent them by removing the capability. They will
+        // still be able to make comments by logging out, but these will then
+        // go through moderation.
+        $blogok =
+                (!isloggedin() && $oublog->allowcomments == OUBLOG_COMMENTS_ALLOWPUBLIC) ||
+                has_capability('mod/oublog:contributepersonal',
+                    get_context_instance(CONTEXT_SYSTEM));
     } else {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
         // Three ways you can comment to a course blog:
         $blogok =
-                // 1. Blog allows public comments
-                $oublog->allowcomments == OUBLOG_COMMENTS_ALLOWPUBLIC ||
+                // 1. Blog allows public comments and you're not logged in.
+                $oublog->allowcomments == (OUBLOG_COMMENTS_ALLOWPUBLIC && !isloggedin()) ||
 
-                // 2. Post is visible to all logged-in users, and you have the
-                // contributepersonal capabilty normally used for personal blogs
+                // 2. Post is visible to all logged-in users+, and you have the
+                // contributepersonal capabilty normally used for personal blogs.
                 ($post->visibility >= OUBLOG_VISIBILITY_LOGGEDINUSER
                     && $oublog->maxvisibility >= OUBLOG_VISIBILITY_LOGGEDINUSER
                     && has_capability('mod/oublog:contributepersonal',
@@ -240,7 +247,7 @@ function oublog_can_comment($cm, $oublog, $post) {
 
                 // 3. You have comment permission in the specific context
                 // (= course member) and you are allowed to write to the blog
-                // group i.e. it's your group
+                // group i.e. it's your group.
                 (has_capability('mod/oublog:comment', $modcontext) &&
                     oublog_is_writable_group($cm));
 
