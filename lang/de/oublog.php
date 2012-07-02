@@ -38,22 +38,22 @@ $string['visiblepublic'] = 'Sichtbar für jedermann weltweit';
 
 $string['addpost'] = 'Blogbeitrag hinzufügen';
 $string['editpost'] = 'Blogbeitrag aktualisieren';
-$string['editsummary'] = 'Bearbeitet von $a->editby, $a->editdate';
-$string['editonsummary'] = 'Bearbeitet $a->editdate';
+$string['editsummary'] = 'Bearbeitet von {$a->editby}, {$a->editdate}';
+$string['editonsummary'] = 'Bearbeitet {$a->editdate}';
 
 $string['edit'] = 'Bearbeiten';
 $string['delete'] = 'Löschen';
 
 $string['olderposts'] = '&lt; Ältere Beiträge';
 $string['newerposts'] = 'Neuere Beiträge &gt;';
-$string['extranavolderposts'] = 'Ältere Beiträge: $a->von-$a->an';
-$string['extranavtag'] = 'Tag: $a';
+$string['extranavolderposts'] = 'Ältere Beiträge: {$a->von}-{$a->an}';
+$string['extranavtag'] = 'Tag: {$a}';
 
 $string['comments'] = 'Kommentare';
-$string['ncomments'] = '$a Kommentare';
+$string['ncomments'] = '{$a} Kommentare';
 $string['1comment'] = '1 Kommentar';
 $string['comment'] = 'Fügen Sie Ihren Kommentar hinzu';
-$string['lastcomment'] = '(Letzter von $a->fullname, $a->timeposted)';
+$string['lastcomment'] = '(Letzter von {$a->fullname}, {$a->timeposted})';
 $string['addcomment'] = 'Kommentar hinzufügen';
 
 $string['confirmdeletepost'] = 'Sind Sie sicher diesen Blogbeitrag löschen zu wollen?';
@@ -80,17 +80,17 @@ $string['newblogposts'] = 'Neue Blogbeiträge';
 $string['blogsummary'] = 'Blogzusammenfassung';
 $string['posts'] = 'Beiträge';
 
-$string['defaultpersonalblogname'] = '$a\'s Blog';
+$string['defaultpersonalblogname'] = '{$a}\'s Blog';
 
-$string['numposts'] = '$a Beiträge';
+$string['numposts'] = '{$a} Beiträge';
 
 $string['noblogposts'] = 'Keine Blogbeiträge';
 
 $string['blogoptions'] = 'Blog Optionen';
 
-$string['postedby'] = 'von $a';
+$string['postedby'] = 'von {$a}';
 
-$string['deletedby'] = 'Gelöscht von $a->fullname, $a->timedeleted';
+$string['deletedby'] = 'Gelöscht von {$a->fullname}, {$a->timedeleted}';
 
 $string['newcomment'] = 'Neuer Blogkommentar';
 
@@ -113,9 +113,9 @@ $string['completioncommentsgroup']='Kommentare erforderlich';
 $string['completioncomments']='Sie müssen Blogbeiträge kommentieren:';
 $string['completioncommentshelp']='Zur Vervollständigung werden Kommentare benötigt';
 
-$string['maybehiddenposts']='Dieses Blog beinhaltet möglicherweise Einträge, die nur für eingeloggte Teilnehmer sichtbar sind. Wenn Sie einen Account für das System haben, bitte <a href=\'$a\'>loggen Sie sich für vollen Blogzugang ein</a>.';
+$string['maybehiddenposts']='Dieses Blog beinhaltet möglicherweise Einträge, die nur für eingeloggte Teilnehmer sichtbar sind. Wenn Sie einen Account für das System haben, bitte <a href=\'{$a}\'>loggen Sie sich für vollen Blogzugang ein</a>.';
 $string['guestblog']='Wenn Sie einen Account auf dem System haben, bitte
-<a href=\'$a\'>für vollen Blogzugang einloggen </a>.';
+<a href=\'{$a}\'>für vollen Blogzugang einloggen </a>.';
 $string['noposts']='Es gibt keine sichtbaren Beiträge in diesem Blog.';
 
 $string['accessdenied']='Entschuldigung: Sie haben keinen Zugriff auf diese Seite.';
