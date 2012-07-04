@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Library of functions used by the oublog module.
  *
@@ -517,7 +532,7 @@ function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individu
     //individual blog
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere(&$sqlwhere, &$params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
     }
     //no individual blog
     else {
@@ -864,19 +879,19 @@ function oublog_get_tags_csv($postid) {
  * @return array Tag data
  */
 function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1) {
-    global $CFG, $DB;
+    global $CFG, $DB, $USER;
     $tags = array();
     $params = array();
     $sqlwhere = "bi.oublogid = ? ";
     $params[] = $oublog->id;
 
-    //if individual blog
+    // If individual blog.
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere(&$sqlwhere, &$params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
-    }
-    //no individual blog
-    else {
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $oublog->id, $groupid,
+                $individualid, $capable);
+    } else {
+        // No individual blog.
         if (isset($oubloginstanceid)) {
             $sqlwhere .= "AND ti.oubloginstancesid = ? ";
             $params[] = $oubloginstanceid;
@@ -886,23 +901,39 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
             $params[] = $groupid;
         }
         if (!empty($CFG->enablegroupings) && !empty($cm->groupingid)) {
-            if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
-                $sqlwhere .= "AND p.groupid IN (".implode(',', array_keys($groups)).") ";
+            if ($groups = $DB->get_records('groupings_groups',
+                    array('groupingid' => $cm->groupingid), null, 'groupid')) {
+                $sqlwhere .= " AND p.groupid IN (" . implode(',', array_keys($groups)) . ") ";
             }
         }
     }
+    // Visibility check.
+    if (!isloggedin() || isguestuser()) {
+        $sqlwhere .= " AND p.visibility = " . OUBLOG_VISIBILITY_PUBLIC;
+    } else {
+        if ($oublog->global) {
+            $sqlwhere .= " AND (p.visibility > " . OUBLOG_VISIBILITY_COURSEUSER .
+                    " OR (p.visibility = " . OUBLOG_VISIBILITY_COURSEUSER . " AND u.id = ?))";
+            $params[] = $USER->id;
+        } else {
+            $context = context_module::instance($cm->id);
+            if (!has_capability('mod/oublog:view', $context, $USER->id)) {
+                $sqlwhere .= " AND (p.visibility > " . OUBLOG_VISIBILITY_COURSEUSER . ")";
+            }
+        }
+     }
 
     $sql = "SELECT t.id, t.tag, COUNT(ti.id) AS count
             FROM {oublog_instances} bi
                 INNER JOIN {oublog_taginstances} ti ON ti.oubloginstancesid = bi.id
                 INNER JOIN {oublog_tags} t ON ti.tagid = t.id
                 INNER JOIN {oublog_posts} p ON ti.postid = p.id
+                INNER JOIN {user} u ON u.id = bi.userid
             WHERE $sqlwhere
             GROUP BY t.id, t.tag
             ORDER BY count DESC";
 
     if ($tags = $DB->get_records_sql($sql, $params)) {
-
         $first = array_shift($tags);
         $max = $first->count;
         array_unshift($tags, $first);
@@ -913,7 +944,7 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
 
         $delta = $max-$min+0.00000001;
 
-        foreach($tags as $idx => $tag) {
+        foreach ($tags as $idx => $tag) {
             $tags[$idx]->weight = round(($tag->count-$min)/$delta*4);
         }
         sort($tags);
@@ -1110,8 +1141,8 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
 
             if ($canmanagelinks) {
                 if ($i > 1) {
-                    $html .= '<form action="movelink.php" method="post" style="display:inline">';
-                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/up').'" />';
+                    $html .= '<form action="movelink.php" method="post" style="display:inline" title="'.$strmoveup.'">';
+                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/up').'" alt="'.$strmoveup.'" />';
                     $html .= '<input type="hidden" name="down" value="0" />';
                     $html .= '<input type="hidden" name="link" value="'.$link->id.'" />';
                     $html .= '<input type="hidden" name="returnurl" value="'.$_SERVER['REQUEST_URI'].'" />';
@@ -1119,16 +1150,16 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
                     $html .= '</form>';
                 }
                 if ($i < $numlinks) {
-                    $html .= '<form action="movelink.php" method="post" style="display:inline">';
-                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/down').'" />';
+                    $html .= '<form action="movelink.php" method="post" style="display:inline" title="'.$strmovedown.'">';
+                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/down').'" alt="'.$strmovedown.'" />';
                     $html .= '<input type="hidden" name="down" value="1" />';
                     $html .= '<input type="hidden" name="link" value="'.$link->id.'" />';
                     $html .= '<input type="hidden" name="returnurl" value="'.$_SERVER['REQUEST_URI'].'" />';
                     $html .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
                     $html .= '</form>';
                 }
-                $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;link='.$link->id.'"><img src="'.$OUTPUT->pix_url('t/edit').'" alt="'.$stredit.'" class="iconsmall" /></a>';
-                $html .= '<a href="deletelink.php?blog='.$oublog->id.'&amp;link='.$link->id.'"><img src="'.$OUTPUT->pix_url('t/delete').'" alt="'.$strdelete.'" class="iconsmall" /></a>';
+                $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.$stredit.'"><img src="'.$OUTPUT->pix_url('t/edit').'" alt="'.$stredit.'" class="iconsmall" /></a>';
+                $html .= '<a href="deletelink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.$strdelete.'"><img src="'.$OUTPUT->pix_url('t/delete').'" alt="'.$strdelete.'" class="iconsmall" /></a>';
             }
             $html .= '</li>';
         }
@@ -1392,7 +1423,7 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
     //if individual blog
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere(&$sqlwhere, &$params, 'i.userid', $oublog->id, $groupid, $individualid, $capable);
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'i.userid', $oublog->id, $groupid, $individualid, $capable);
     }
     //no individual blog
     else {
@@ -1837,9 +1868,9 @@ function oublog_individual_get_activity_details($cm, $urlroot, $oublog, $current
     }
 
     if ($individualmode == OUBLOG_VISIBLE_INDIVIDUAL_BLOGS) {
-        $label = get_string('visibleindividual', 'oublog');
+        $label = get_string('visibleindividual', 'oublog') . '&nbsp;';
     } else {
-        $label = get_string('separateindividual', 'oublog');
+        $label = get_string('separateindividual', 'oublog') . '&nbsp;';
     }
 
     $output = "";
@@ -2708,56 +2739,58 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
      * @return string
      */
     private function prepare_post($post, $fileoutputextras=null) {
-        global $DB;
+        global $DB, $PAGE;
         static $users;
         if (empty($users)) {
             $users = array($this->user->id => $this->user);
         }
         if (!array_key_exists($this->oubloginstance->userid, $users)) {
-            $users[$this->oubloginstance->userid] = $DB->get_record('user', array('id' => $this->oubloginstance->userid));
+            $users[$this->oubloginstance->userid] = $DB->get_record('user',
+                    array('id' => $this->oubloginstance->userid));
         }
-        // add the user object on to the post
+        // Add the user object on to the post.
         $post->author = $users[$this->oubloginstance->userid];
         $viewfullnames = true;
-        // format the post body
+        // Format the post body.
         $options = portfolio_format_text_options();
         $options->context = get_context_instance(CONTEXT_COURSE, $this->get('course')->id);
         $format = $this->get('exporter')->get('format');
         $formattedtext = format_text($post->message, FORMAT_HTML, $options);
-        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id, 'mod_oublog', 'message', $post->id, $format);
+        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id,
+                'mod_oublog', 'message', $post->id, $format);
 
-
-        $output = '<table border="0" cellpadding="3" cellspacing="0" class="oublogpost">';
-
-        $output .= '<tr class="header"><td>';// can't print picture.
-        $output .= '</td>';
-
-        $output .= '<td class="topic">';
-
-        $output .= '<div class="subject">'.format_string($post->title).'</div>';
-        $output .= '<div class="date">'.oublog_date($post->timeposted).'</div>';
-        $fullname = fullname($users[$this->oubloginstance->userid], $viewfullnames);
-        $output .= '<div class="author">'.get_string('postedby', 'oublog', $fullname).'</div>';
-
-        $output .= '</td></tr>';
-
-        $output .= '<tr><td class="left side" valign="top">';
-
-        $output .= '</td><td class="content">';
-
-        $output .= $formattedtext;
-        $fs = get_file_storage();
-        if ($files = $fs->get_area_files($this->modcontext->id, 'mod_oublog', 'attachment', $post->id, "timemodified", false)) {
-            $output .= '<div class="attachments">';
-            $output .= '<br /><b>' .  get_string('attachments', 'oublog') . '</b>:<br /><br />';
-            foreach ($files as $file) {
-                $output .= $format->file_output($file)  . '<br/ >';
-            }
-            $output .= "</div>";
+        $output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" ' .
+                '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' .
+                html_writer::start_tag('html', array('xmlns' => 'http://www.w3.org/1999/xhtml'));
+        $output .= html_writer::tag('head',
+                html_writer::empty_tag('meta',
+                    array('http-equiv' => 'Content-Type', 'content' => 'text/html; charset=utf-8')) .
+                html_writer::tag('title', get_string('exportedpost', 'oublog')));
+        $output .= html_writer::start_tag('body') . "\n";
+        if (!$oublog = oublog_get_blog_from_postid($post->id)) {
+            print_error('invalidpost', 'oublog');
         }
+        if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
+            print_error('invalidcoursemodule');
+        }
+        $oublogoutput = $PAGE->get_renderer('mod_oublog');
+        $context = context_module::instance($cm->id);
+        $canmanageposts = has_capability('mod/oublog:manageposts', $context);
 
-        $output .= '</td></tr></table>'."\n\n";
-
+        if ($oublog->global) {
+            $blogtype = 'personal';
+        } else {
+            $blogtype = 'course';
+        }
+        // Recover complete post object for rendering.
+        $post = oublog_get_post($post->id);
+        $post->allowcomments = false;
+        $output .= $oublogoutput->render_post($cm, $oublog, $post, false, $blogtype,
+                $canmanageposts, false, false, true);
+        if (!empty($post->comments)) {
+            $output .= $oublogoutput->render_comments($post, $oublog, false, false, true, $cm);
+        }
+        $output .= html_writer::end_tag('body') . html_writer::end_tag('html');
         return $output;
     }
     /**

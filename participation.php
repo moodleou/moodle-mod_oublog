@@ -112,4 +112,4 @@ if (empty($download)) {
 
 /// Log visit
 $logurl = "participation.php?id={$id}&group={$groupid}&download={$download}&page={$page}";
-add_to_log($course->id, 'participation', 'view', $logurl, $oublog->id, $cm->id);
+add_to_log($course->id, 'oublog', 'view', $logurl, $oublog->id, $cm->id);

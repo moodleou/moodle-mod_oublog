@@ -102,7 +102,6 @@ if (!$comment = $mform->get_data()) {
     } else {
         oublog_build_navigation($oublog, $oubloginstance, null);
         $url = new moodle_url("$CFG->wwwroot/course/mod.php", array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
-        $PAGE->set_button($OUTPUT->single_button($url, $stroublog));
     }
 
     oublog_get_post_extranav($post);

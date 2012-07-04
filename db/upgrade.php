@@ -35,5 +35,19 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2012031500, 'oublog');
     }
 
+    if ($oldversion < 2012052100) {
+        //correct log table entries for oublog
+        $rs = $DB->get_recordset_select('log',
+                "module='participation' OR module='userparticipation'
+                AND action='view' AND url LIKE '%participation.php%'");
+        if ($rs->valid()) {
+            foreach ($rs as $entry) {
+                $entry->module = 'oublog';
+                $DB->update_record('log', $entry);
+            }
+        }
+        upgrade_mod_savepoint(true, 2012052100, 'oublog');
+    }
+
     return true;
 }

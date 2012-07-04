@@ -190,7 +190,7 @@ function oublog_user_complete($course, $user, $mod, $oublog) {
     if ($posts = $DB->get_records_sql($sql, array($user->id, $mod->instance))) {
         foreach($posts as $post) {
             $postdata = oublog_get_post($post->id);
-            echo $oublogoutput->oublog_print_post($mod, $oublog, $postdata, $baseurl, 'course');
+            echo $oublogoutput->render_post($mod, $oublog, $postdata, $baseurl, 'course');
         }
     } else {
         echo get_string('noblogposts', 'oublog');
