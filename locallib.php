@@ -558,14 +558,18 @@ function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individu
                        INNER JOIN {oublog_tags} t ON ti.tagid = t.id ";
     }
 
-    // visibility check
+    // Visibility checks.
     if (!isloggedin() || isguestuser()){
         $sqlwhere .= " AND p.visibility =" . OUBLOG_VISIBILITY_PUBLIC;
     } else {
         if ($oublog->global) {
-            $sqlwhere .= " AND (p.visibility >" . OUBLOG_VISIBILITY_COURSEUSER .
-                " OR (p.visibility = " . OUBLOG_VISIBILITY_COURSEUSER . " AND u.id = ?))";
-            $params[] = $USER->id;
+            // Unless the current user has manageposts capability,
+            // they cannot view 'private' posts except their own.
+            if (!has_capability('mod/oublog:manageposts', context_system::instance())) {
+                $sqlwhere .= " AND (p.visibility >" . OUBLOG_VISIBILITY_COURSEUSER .
+                        " OR (p.visibility = " . OUBLOG_VISIBILITY_COURSEUSER . " AND u.id = ?))";
+                $params[] = $USER->id;
+            }
         } else {
             $context = context_module::instance($cm->id);
             if (has_capability('mod/oublog:view', $context)) {
