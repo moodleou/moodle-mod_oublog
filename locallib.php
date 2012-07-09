@@ -918,7 +918,7 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
             $sqlwhere .= " AND p.groupid = ? ";
             $params[] = $groupid;
         }
-        if (!empty($CFG->enablegroupings) && !empty($cm->groupingid)) {
+        if (!empty($cm->groupingid)) {
             if ($groups = $DB->get_records('groupings_groups',
                     array('groupingid' => $cm->groupingid), null, 'groupid')) {
                 $sqlwhere .= " AND p.groupid IN (" . implode(',', array_keys($groups)) . ") ";
@@ -1359,7 +1359,7 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
         $sqlwhere .= " AND p.groupid = ? ";
         $params[] = $groupid;
     }
-    if (!empty($CFG->enablegroupings) && !empty($cm->groupingid)) {
+    if (!empty($cm->groupingid)) {
         if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
             $sqlwhere .= "AND p.groupid IN (0,?) ";
             $params[] = implode(',', array_keys($groups));
@@ -1449,7 +1449,7 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
             $sqlwhere .= " AND p.groupid = ? ";
             $params[] = $groupid;
         }
-        if (!empty($CFG->enablegroupings) && !empty($cm->groupingid)) {
+        if (!empty($cm->groupingid)) {
             if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
                 $sqlwhere .= "AND p.groupid IN (".implode(',', array_keys($groups)).") ";
             }
