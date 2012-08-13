@@ -2861,7 +2861,6 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
         return '';
     }
     global $OUTPUT;
-    $queryhtml = htmlspecialchars($querytext);
     $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
     $out .= html_writer::start_tag('div');
     $out .= html_writer::tag('label', $strblogsearch . ' ', array('for' => 'oublog_searchquery'));
@@ -2869,7 +2868,7 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
     $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => $name,
             'value' => $value));
     $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
-            'id' => 'oublog_searchquery', 'value' => $queryhtml));
+            'id' => 'oublog_searchquery', 'value' => $querytext));
     $out .= html_writer::empty_tag('input', array('type' => 'submit',
             'id' => 'ousearch_searchbutton', 'value' => '', 'alt' => get_string('search'),
             'title' => get_string('search')));
