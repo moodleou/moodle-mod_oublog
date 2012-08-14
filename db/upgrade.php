@@ -49,5 +49,30 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2012052100, 'oublog');
     }
 
+    if ($oldversion < 2012061800) {
+        // Define field maxbytes to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('maxbytes', XMLDB_TYPE_INTEGER, '10',
+                XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '512000', 'maxvisibility');
+
+        // Conditionally launch add field maxbytes.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field maxattachments to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('maxattachments', XMLDB_TYPE_INTEGER, '10',
+                XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '9', 'maxbytes');
+
+        // Conditionally launch add field maxattachments.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // OUblog savepoint reached.
+        upgrade_mod_savepoint(true, 2012061800, 'oublog');
+    }
+
     return true;
 }

@@ -725,8 +725,8 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-comments'));
         $output .= html_writer::tag('h2', format_string($strcomments));
         foreach ($post->comments as $comment) {
-            $extraclasses = $comment->deletedby ? 'oublog-deleted':'';
-            $extraclasses.=' oublog-hasuserpic';
+            $extraclasses = $comment->deletedby ? ' oublog-deleted' : '';
+            $extraclasses .= ' oublog-hasuserpic';
 
             $output .= html_writer::start_tag('div', array('class' =>
                     'oublog-comment' . $extraclasses));

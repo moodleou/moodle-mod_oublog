@@ -158,7 +158,7 @@ if ($posts) {
 
     foreach ($posts as $post) {
         echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype,
-                $canmanageposts, $canaudit);
+                $canmanageposts, $canaudit, false, true);
     }
 
     if ($recordcount - $offset > OUBLOG_POSTS_PER_PAGE) {

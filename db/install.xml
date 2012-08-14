@@ -13,9 +13,10 @@
         <FIELD NAME="summary" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="name" NEXT="allowcomments"/>
         <FIELD NAME="allowcomments" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="0 = do not allow comments
 1 = allow comments from signed-in users
-2 = allow comments from signed-in users, and moderated comments from external users" PREVIOUS="summary" NEXT="maxvisibility"/>
-        <FIELD NAME="maxvisibility" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="100" SEQUENCE="false" ENUM="false" PREVIOUS="allowcomments" NEXT="global"/>
-
+2 = allow comments from signed-in users, and moderated comments from external users" PREVIOUS="summary" NEXT="maxbytes"/>
+        <FIELD NAME="maxbytes" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="512000" SEQUENCE="false" PREVIOUS="allowcomments" NEXT="maxattachments"/>
+        <FIELD NAME="maxattachments" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="9" SEQUENCE="false" COMMENT="Number of attachments allowed per post" PREVIOUS="maxbytes" NEXT="maxvisibility"/>
+        <FIELD NAME="maxvisibility" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="100" SEQUENCE="false" ENUM="false" PREVIOUS="maxattachments" NEXT="global"/>
         <FIELD NAME="global" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Is this the global blog?" PREVIOUS="maxvisibility" NEXT="views"/>
         <FIELD NAME="views" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="global" NEXT="completionposts"/>
         <FIELD NAME="completionposts" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="If set, specifies a number of blog posts that a student must make for this activity to be marked completed." PREVIOUS="views" NEXT="completioncomments"/>

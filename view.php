@@ -221,11 +221,33 @@ $editing = $PAGE->user_is_editing();
 $hasleft = !empty($CFG->showblocksonmodpages) || $editing;
 // The right column, BEFORE the middle-column.
 if (!$hideunusedblog) {
+    global $USER, $CFG;
+    $links = '';
+    if ($oublog->global) {
+        $title = $oubloginstance->name;
+        $summary = $oubloginstance->summary;
+        if (($oubloginstance->userid == $USER->id) || $canmanageposts ) {
+            $params = array('instance' => $oubloginstance->id);
+            $editinstanceurl = new moodle_url('/mod/oublog/editinstance.php', $params);
+            $streditinstance = get_string('blogoptions', 'oublog');
+            $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
+            $links .= html_writer::link($editinstanceurl, $streditinstance);
+            $links .= html_writer::end_tag('div');
+        }
+        $allpostsurl = new moodle_url('/mod/oublog/allposts.php');
+        $strallposts = get_string('siteentries', 'oublog');
+        $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
+        $links .= html_writer::link($allpostsurl, $strallposts);
+        $links .= html_writer::end_tag('div');
+    } else {
+        $summary = $oublog->summary;
+        $title = $oublog->name;
+    }
     // Name, summary, related links.
     $bc = new block_contents();
     $bc->attributes['class'] = 'oublog-sideblock block';
-    $bc->title = format_string($oublog->name);
-    $bc->content = format_text($oublog->summary);
+    $bc->title = format_string($title);
+    $bc->content = format_text($summary . $links);
     $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 
     // Tag Cloud.

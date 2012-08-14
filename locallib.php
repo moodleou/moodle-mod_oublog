@@ -219,20 +219,27 @@ function oublog_can_post($oublog, $bloguserid=0, $cm=null) {
 function oublog_can_comment($cm, $oublog, $post) {
     global $USER;
     if($oublog->global) {
-        // Just need the 'contributepersonal' permission at system level
-        $blogok = $oublog->allowcomments == OUBLOG_COMMENTS_ALLOWPUBLIC ||
-            has_capability('mod/oublog:contributepersonal',
-                get_context_instance(CONTEXT_SYSTEM));
+        // Just need the 'contributepersonal' permission at system level, OR
+        // if you are not logged in but the blog allows public comments.
+        // Note that if you ARE logged in you must have the capability. This is
+        // because logged-in comments do not go through moderation, so we want
+        // to be able to prevent them by removing the capability. They will
+        // still be able to make comments by logging out, but these will then
+        // go through moderation.
+        $blogok =
+                (!isloggedin() && $oublog->allowcomments == OUBLOG_COMMENTS_ALLOWPUBLIC) ||
+                has_capability('mod/oublog:contributepersonal',
+                    get_context_instance(CONTEXT_SYSTEM));
     } else {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
         // Three ways you can comment to a course blog:
         $blogok =
-                // 1. Blog allows public comments
-                $oublog->allowcomments == OUBLOG_COMMENTS_ALLOWPUBLIC ||
+                // 1. Blog allows public comments and you're not logged in.
+                $oublog->allowcomments == (OUBLOG_COMMENTS_ALLOWPUBLIC && !isloggedin()) ||
 
-                // 2. Post is visible to all logged-in users, and you have the
-                // contributepersonal capabilty normally used for personal blogs
+                // 2. Post is visible to all logged-in users+, and you have the
+                // contributepersonal capabilty normally used for personal blogs.
                 ($post->visibility >= OUBLOG_VISIBILITY_LOGGEDINUSER
                     && $oublog->maxvisibility >= OUBLOG_VISIBILITY_LOGGEDINUSER
                     && has_capability('mod/oublog:contributepersonal',
@@ -240,7 +247,7 @@ function oublog_can_comment($cm, $oublog, $post) {
 
                 // 3. You have comment permission in the specific context
                 // (= course member) and you are allowed to write to the blog
-                // group i.e. it's your group
+                // group i.e. it's your group.
                 (has_capability('mod/oublog:comment', $modcontext) &&
                     oublog_is_writable_group($cm));
 
@@ -551,14 +558,25 @@ function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individu
                        INNER JOIN {oublog_tags} t ON ti.tagid = t.id ";
     }
 
-    // visibility check
+    // Visibility checks.
     if (!isloggedin() || isguestuser()){
-        $sqlwhere .= " AND p.visibility=" . OUBLOG_VISIBILITY_PUBLIC;
+        $sqlwhere .= " AND p.visibility =" . OUBLOG_VISIBILITY_PUBLIC;
     } else {
         if ($oublog->global) {
-            $sqlwhere .= " AND (p.visibility >" . OUBLOG_VISIBILITY_COURSEUSER .
-                " OR (p.visibility=".OUBLOG_VISIBILITY_COURSEUSER." AND u.id=?))";
-            $params[] = $USER->id;
+            // Unless the current user has manageposts capability,
+            // they cannot view 'private' posts except their own.
+            if (!has_capability('mod/oublog:manageposts', context_system::instance())) {
+                $sqlwhere .= " AND (p.visibility >" . OUBLOG_VISIBILITY_COURSEUSER .
+                        " OR (p.visibility = " . OUBLOG_VISIBILITY_COURSEUSER . " AND u.id = ?))";
+                $params[] = $USER->id;
+            }
+        } else {
+            $context = context_module::instance($cm->id);
+            if (has_capability('mod/oublog:view', $context)) {
+                $sqlwhere .= " AND (p.visibility >= " . OUBLOG_VISIBILITY_COURSEUSER . " )";
+            } else {
+                $sqlwhere .= " AND p.visibility > " . OUBLOG_VISIBILITY_COURSEUSER;
+            }
         }
     }
 
@@ -572,14 +590,14 @@ function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individu
                 LEFT JOIN {user} ud ON p.deletedby = ud.id
                 LEFT JOIN {user} ue ON p.lasteditedby = ue.id
                 $sqljoin";
-                $sql = "SELECT $fieldlist
-                $from
+    $sql = "SELECT $fieldlist
+            $from
             WHERE  $sqlwhere
             ORDER BY p.timeposted DESC
             ";
     $countsql = "SELECT count(p.id) $from WHERE $sqlwhere";
 
-    $rs = $DB->get_recordset_sql($sql, $params, $offset,OUBLOG_POSTS_PER_PAGE);
+    $rs = $DB->get_recordset_sql($sql, $params, $offset, OUBLOG_POSTS_PER_PAGE);
     if (!$rs->valid()) {
         return(false);
     }
@@ -900,7 +918,7 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
             $sqlwhere .= " AND p.groupid = ? ";
             $params[] = $groupid;
         }
-        if (!empty($CFG->enablegroupings) && !empty($cm->groupingid)) {
+        if (!empty($cm->groupingid)) {
             if ($groups = $DB->get_records('groupings_groups',
                     array('groupingid' => $cm->groupingid), null, 'groupid')) {
                 $sqlwhere .= " AND p.groupid IN (" . implode(',', array_keys($groups)) . ") ";
@@ -1341,7 +1359,7 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
         $sqlwhere .= " AND p.groupid = ? ";
         $params[] = $groupid;
     }
-    if (!empty($CFG->enablegroupings) && !empty($cm->groupingid)) {
+    if (!empty($cm->groupingid)) {
         if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
             $sqlwhere .= "AND p.groupid IN (0,?) ";
             $params[] = implode(',', array_keys($groups));
@@ -1431,7 +1449,7 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
             $sqlwhere .= " AND p.groupid = ? ";
             $params[] = $groupid;
         }
-        if (!empty($CFG->enablegroupings) && !empty($cm->groupingid)) {
+        if (!empty($cm->groupingid)) {
             if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
                 $sqlwhere .= "AND p.groupid IN (".implode(',', array_keys($groups)).") ";
             }

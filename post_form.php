@@ -13,6 +13,7 @@ class mod_oublog_post_form extends moodleform {
         $allowcomments = $this->_customdata['allowcomments'];
         $edit          = $this->_customdata['edit'];
         $personal      = $this->_customdata['personal'];
+        $maxbytes      = $this->_customdata['maxbytes'];
 
         $mform    =& $this->_form;
 
@@ -74,7 +75,10 @@ class mod_oublog_post_form extends moodleform {
             $mform->setType('visibility', PARAM_INT);
         }
 
-        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'oublog'), null, array('subdirs' => 0));
+        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'oublog'), null,
+                array('subdirs' => 0, 'maxbytes' => $maxbytes));
+        $mform->addHelpButton('attachments', 'attachments', 'oublog');
+
         if ($edit) {
             $submitstring = get_string('savechanges');
         } else {
