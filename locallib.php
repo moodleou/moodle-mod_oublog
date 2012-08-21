@@ -1360,9 +1360,12 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
         $params[] = $groupid;
     }
     if (!empty($cm->groupingid)) {
-        if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
-            $sqlwhere .= "AND p.groupid IN (0,?) ";
-            $params[] = implode(',', array_keys($groups));
+        if ($groups = $DB->get_records('groupings_groups',
+                array('groupingid'=>$cm->groupingid), null, 'groupid')) {
+            $sqlwhere .= " AND p.groupid ";
+            list ($grpssql, $grpsparams) = $DB->get_in_or_equal(array_keys($groups));
+            $params = array_merge($params, $grpsparams);
+            $sqlwhere .= $grpssql;
         }
     }
 
