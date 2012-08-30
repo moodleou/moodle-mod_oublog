@@ -211,8 +211,7 @@ only appear after it has been approved. If you
 have an account on the system, please <a href=\'{$a}\'>log in for full blog access</a>.';
 $string['moderated_authorname'] = 'Your name';
 $string['moderated_confirmvalue'] = 'yes';
-$string['moderated_confirminfo'] = 'Please enter <strong>' .
-    $string['moderated_confirmvalue'] . '</strong> below to confirm that you are a person.';
+$string['moderated_confirminfo'] = 'Please enter <strong>yes</strong> below to confirm that you are a person.';
 $string['moderated_confirm'] = 'Confirmation';
 $string['moderated_addedcomment'] = 'Thank you for adding your comment, which has been successfully received. Your comment won\'t appear until it has been approved by the author of this post.';
 $string['moderated_submitted'] = 'Awaiting moderation';
