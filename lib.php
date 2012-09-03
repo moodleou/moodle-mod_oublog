@@ -175,8 +175,8 @@ function oublog_user_outline($course, $user, $mod, $oublog) {
  * @return object containing a time and info properties
  */
 function oublog_user_complete($course, $user, $mod, $oublog) {
-    global $CFG, $DB;
-    include_once('locallib.php');
+    global $CFG, $DB, $PAGE;
+    include_once($CFG->dirroot.'/mod/oublog/locallib.php');
 
     $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
