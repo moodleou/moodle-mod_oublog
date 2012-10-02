@@ -227,7 +227,7 @@ function oublog_print_recent_activity($course, $isteacher, $timestart) {
         return(true);
     }
 
-    $modinfo =& get_fast_modinfo($course);
+    $modinfo = get_fast_modinfo($course);
 
     $strftimerecent = get_string('strftimerecent');
     echo $OUTPUT->heading(get_string('newblogposts', 'oublog'), 3);
@@ -314,7 +314,7 @@ function oublog_get_recent_mod_activity(&$activities, &$index, $timestart, $cour
         return(true);
     }
 
-    $modinfo =& get_fast_modinfo($COURSE);
+    $modinfo = get_fast_modinfo($COURSE);
 
 
 
