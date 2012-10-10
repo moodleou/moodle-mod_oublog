@@ -1360,9 +1360,12 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
         $params[] = $groupid;
     }
     if (!empty($cm->groupingid)) {
-        if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
-            $sqlwhere .= "AND p.groupid IN (0,?) ";
-            $params[] = implode(',', array_keys($groups));
+        if ($groups = $DB->get_records('groupings_groups',
+                array('groupingid'=>$cm->groupingid), null, 'groupid')) {
+            $sqlwhere .= " AND p.groupid ";
+            list ($grpssql, $grpsparams) = $DB->get_in_or_equal(array_keys($groups));
+            $params = array_merge($params, $grpsparams);
+            $sqlwhere .= $grpssql;
         }
     }
 
@@ -2861,7 +2864,6 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
         return '';
     }
     global $OUTPUT;
-    $queryhtml = htmlspecialchars($querytext);
     $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
     $out .= html_writer::start_tag('div');
     $out .= html_writer::tag('label', $strblogsearch . ' ', array('for' => 'oublog_searchquery'));
@@ -2869,7 +2871,7 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
     $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => $name,
             'value' => $value));
     $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
-            'id' => 'oublog_searchquery', 'value' => $queryhtml));
+            'id' => 'oublog_searchquery', 'value' => $querytext));
     $out .= html_writer::empty_tag('input', array('type' => 'submit',
             'id' => 'ousearch_searchbutton', 'value' => '', 'alt' => get_string('search'),
             'title' => get_string('search')));
