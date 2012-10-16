@@ -801,9 +801,8 @@ function oublog_clarify_tags($tags) {
         return array();
     }
 
-    $tl=textlib_get_instance();
     foreach($tags as $idx => $tag) {
-        $tag = $tl->strtolower(trim($tag));
+        $tag = textlib::strtolower(trim($tag));
         if (empty($tag)) {
             unset($tags[$idx]);
             continue;
