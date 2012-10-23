@@ -847,8 +847,9 @@ function oublog_update_item_tags($oubloginstancesid, $postid, $tags, $postvisibi
     // insert the remainder
     foreach ($tags as $tag) {
         if (!isset($tagids[$tag])) {
-            $tagobj->tag = $tag;
-            $tagids[$tag]->id = $DB->insert_record('oublog_tags', $tagobj);
+            $tagobj = (object) array('tag' => $tag);
+            $tagobj->id = $DB->insert_record('oublog_tags', $tagobj);
+            $tagids[$tag] = $tagobj;
         }
         $taginstance = new stdClass();
         $taginstance->tagid = $tagids[$tag]->id;

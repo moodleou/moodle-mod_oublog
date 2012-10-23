@@ -28,7 +28,7 @@ if ($id) {
     if (!$oublog = $DB->get_record("oublog", array("id"=>$cm->instance))) {
         print_error('invalidcoursemodule');
     }
-    $oubloguser->id = null;
+    $oubloguser = (object) array('id' => null);
     $oubloginstance = null;
     $oubloginstanceid = null;
 
