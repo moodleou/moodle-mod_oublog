@@ -74,5 +74,15 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2012061800, 'oublog');
     }
 
+    if ($oldversion < 2012102301) {
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10', null,
+                XMLDB_NOTNULL, null, '0', 'individual');
+        // Redefining grade field (signed automatically in 2.3).
+        $dbman->change_field_unsigned($table, $field);
+        // OUblog savepoint reached.
+        upgrade_mod_savepoint(true, 2012102301, 'oublog');
+    }
+
     return true;
 }
