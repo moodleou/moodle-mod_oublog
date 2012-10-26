@@ -2978,7 +2978,9 @@ function oublog_get_participation($oublog, $context, $groupid=0, $cm,
     if (empty($users)) {
         return array();
     }
-
+    if ($oublog->individual > 0) {
+        $groupid = 0;
+    }
     $postswhere = ' WHERE bi.userid IN (' . implode(',', array_keys($users)) .')';
     $commentswhere = ' WHERE c.userid IN (' . implode(',', array_keys($users)) .')';
 
@@ -3054,8 +3056,11 @@ function oublog_get_participation($oublog, $context, $groupid=0, $cm,
  */
 function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $cm, $course) {
     global $DB;
-
-    $groupcheck = $groupid ? 'AND groupid = :groupid' : '';
+    $testgroupid = $groupid;
+    if ($oublog->individual > 0) {
+        $testgroupid = 0;
+    }
+    $groupcheck = $testgroupid ? 'AND groupid = :groupid' : '';
 
     $postssql = 'SELECT id, title, message, timeposted
         FROM {oublog_posts}
@@ -3081,7 +3086,7 @@ function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $
     $params = array(
         'oublogid' => $oublog->id,
         'userid' => $userid,
-        'groupid' => $groupid
+        'groupid' => $testgroupid
     );
 
     $fields = user_picture::fields();

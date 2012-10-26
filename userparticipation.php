@@ -69,7 +69,7 @@ $participation = oublog_get_user_participation($oublog, $context, $userid, $grou
 $canviewall = oublog_can_view_participation($course, $oublog, $cm, $groupid);
 if ($canviewall == OUBLOG_USER_PARTICIPATION) {
     $allusersurl = new moodle_url('/mod/oublog/participation.php',
-        array('id' => $cm->id, 'groupid' => $groupid));
+        array('id' => $cm->id, 'group' => $groupid));
     $PAGE->navbar->add(get_string('userparticipation', 'oublog'), $allusersurl);
 }
 $PAGE->navbar->add(fullname($participation->user, $viewfullnames));
