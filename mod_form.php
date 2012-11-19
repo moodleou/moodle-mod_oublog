@@ -147,8 +147,8 @@ class mod_oublog_mod_form extends moodleform_mod {
             $data->completioncomments=0;
         }
         // If maxvisibility is disabled by individual mode, ensure it's limited to course.
-        if ($data->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS
-                || $data->individual == OUBLOG_VISIBLE_INDIVIDUAL_BLOGS) {
+        if (isset($data->individual) && ($data->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS
+                || $data->individual == OUBLOG_VISIBLE_INDIVIDUAL_BLOGS)) {
             $data->maxvisibility = OUBLOG_VISIBILITY_COURSEUSER;
         }
         return $data;
