@@ -39,7 +39,8 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @return bool
      */
     public function render_post($cm, $oublog, $post, $baseurl, $blogtype,
-            $canmanageposts = false, $canaudit = false, $commentcount = true, $forexport) {
+            $canmanageposts = false, $canaudit = false, $commentcount = true,
+            $forexport = false, $format = false) {
         global $CFG, $USER;
         $output = '';
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -151,24 +152,35 @@ class mod_oublog_renderer extends plugin_renderer_base {
         }
 
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-content'));
-        $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
-                $modcontext->id, 'mod_oublog', 'message', $post->id);
+        if (!$forexport) {
+            $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
+                    $modcontext->id, 'mod_oublog', 'message', $post->id);
+        } else {
+            $post->message = portfolio_rewrite_pluginfile_urls($post->message, $modcontext->id,
+                    'mod_oublog', 'message', $post->id, $format);
+        }
         $output .= format_text($post->message, FORMAT_HTML);
-        $output .= html_writer::end_tag('div');;
+        $output .= html_writer::end_tag('div');
 
         $fs = get_file_storage();
-        if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment', $post->id, "timemodified", false)) {
+        if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment', $post->id,
+                "timemodified", false)) {
             $output .= html_writer::start_tag('div', array('class'=>'oublog-post-attachments'));
             foreach ($files as $file) {
-                $filename = $file->get_filename();
-                $mimetype = $file->get_mimetype();
-                $iconimage = html_writer::empty_tag('img',
-                        array('src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
-                        'alt' => $mimetype, 'class' => 'icon'));
-                $path = file_encode_url($CFG->wwwroot . '/pluginfile.php', '/' . $modcontext->id .
-                        '/mod_oublog/attachment/' . $post->id . '/' . $filename);
-                $output .= html_writer::tag('a', $iconimage, array('href' => $path));
-                $output .= html_writer::tag('a', s($filename), array('href' => $path));
+                if (!$forexport) {
+                    $filename = $file->get_filename();
+                    $mimetype = $file->get_mimetype();
+                    $iconimage = html_writer::empty_tag('img',
+                            array('src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
+                            'alt' => $mimetype, 'class' => 'icon'));
+                    $path = file_encode_url($CFG->wwwroot . '/pluginfile.php', '/' .
+                            $modcontext->id . '/mod_oublog/attachment/' . $post->id . '/' .
+                            $filename);
+                    $output .= html_writer::tag('a', $iconimage, array('href' => $path));
+                    $output .= html_writer::tag('a', s($filename), array('href' => $path));
+                } else {
+                    $output .= $format->file_output($file) . ' ';
+                }
             }
             $output .= html_writer::end_tag('div');
         }
