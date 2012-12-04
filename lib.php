@@ -865,8 +865,10 @@ function oublog_get_file_info($browser, $areas, $course, $cm, $context, $fileare
     if (!($oublog = oublog_get_blog_from_postid($itemid))) {
         return null;
     }
-    // Check if the user is allowed to view the blog.
-    if (!has_capability('mod/oublog:view', $context)) {
+    // Check if the user is allowed to view the blog
+    try {
+        oublog_check_view_permissions($oublog, $context, $cm);
+    } catch (mod_forumng_exception $e) {
         return null;
     }
 

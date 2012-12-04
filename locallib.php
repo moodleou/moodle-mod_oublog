@@ -2772,6 +2772,13 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         // Add the user object on to the post.
         $post->author = $users[$this->oubloginstance->userid];
         $viewfullnames = true;
+        // Format the post body.
+        $options = portfolio_format_text_options();
+        $options->context = get_context_instance(CONTEXT_COURSE, $this->get('course')->id);
+        $format = $this->get('exporter')->get('format');
+        $formattedtext = format_text($post->message, FORMAT_HTML, $options);
+        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id,
+                'mod_oublog', 'message', $post->id, $format);
 
         $output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" ' .
                 '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' .
@@ -2799,10 +2806,8 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         // Recover complete post object for rendering.
         $post = oublog_get_post($post->id);
         $post->allowcomments = false;
-        // Provide format from the exporter to renderers incase its required.
-        $format = $this->get('exporter')->get('format');
         $output .= $oublogoutput->render_post($cm, $oublog, $post, false, $blogtype,
-                $canmanageposts, false, false, true, $format);
+                $canmanageposts, false, false, true);
         if (!empty($post->comments)) {
             $output .= $oublogoutput->render_comments($post, $oublog, false, false, true, $cm);
         }
