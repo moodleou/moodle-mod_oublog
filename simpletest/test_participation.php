@@ -308,7 +308,8 @@ class oublog_participation_test extends UnitTestCaseUsingDatabase {
         $oublog = new StdClass();
         $oublog->course = $courseid;
         $oublog->name = 'Whole Course';
-        $oublog->summary = '';
+        $oublog->intro = '';
+        $oublog->introformat = FORMAT_HTML;
         $oublog->global = 0;
         $oublog->views = 0;
         $oublog->allowcomments = 0;

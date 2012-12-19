@@ -84,5 +84,46 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2012102301, 'oublog');
     }
 
+    if ($oldversion < 2012121900) {
+        // Rename field summary on table oublog to intro
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('summary', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'name');
+
+        // Launch rename field summary
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'intro');
+        }
+
+        // oublog savepoint reached
+        upgrade_mod_savepoint(true, 2012121900, 'oublog');
+    }
+
+    if ($oldversion < 2012121901) {
+        // Define field introformat to be added to oublog
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('introformat', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0', 'intro');
+
+        // Launch add field introformat
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // conditionally migrate to html format in intro
+        if ($CFG->texteditors !== 'textarea') {
+            $rs = $DB->get_recordset('oublog', array('introformat' => FORMAT_MOODLE), '', 'id, intro, introformat');
+            foreach ($rs as $b) {
+                $b->intro = text_to_html($b->intro, false, false, true);
+                $b->introformat = FORMAT_HTML;
+                $DB->update_record('oublog', $b);
+                upgrade_set_timeout();
+            }
+            unset($b);
+            $rs->close();
+        }
+
+        // oublog savepoint reached
+        upgrade_mod_savepoint(true, 2012121901, 'oublog');
+    }
+
     return true;
 }

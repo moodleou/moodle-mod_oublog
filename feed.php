@@ -171,7 +171,7 @@ if ($comments) {
         $allowedvisibility, $groupid, $cm, $blog, $individualid);
     $feedname=strip_tags($blog->name);
     if ($bloginstancesid=='all') {
-        $feedsummary=strip_tags($blog->summary);
+        $feedsummary=strip_tags($blog->intro);
     } else {
         $feedsummary=strip_tags($bloginstance->summary);
     }

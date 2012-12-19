@@ -54,7 +54,7 @@ class restore_oublog_activity_task extends restore_activity_task {
     static public function define_decode_contents() {
         $contents = array();
 
-        $contents[] = new restore_decode_content('oublog', array('summary'), 'oublog');
+        $contents[] = new restore_decode_content('oublog', array('intro'), 'oublog');
         $contents[] = new restore_decode_content('oublog_instances', array('summary'), 'oublog_instances');
         $contents[] = new restore_decode_content('oublog_posts', array('message'), 'oublog_posts');
         $contents[] = new restore_decode_content('oublog_comments', array('message'), 'oublog_comments');

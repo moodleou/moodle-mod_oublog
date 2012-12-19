@@ -4,6 +4,8 @@ $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
 $string['modulenameplural'] = 'OU blogs';
 
+$string['oublogintro'] = 'Intro';
+
 $string['oublog:view'] = 'View posts';
 $string['oublog:addinstance'] = 'Add a new OU blog';
 $string['oublog:viewpersonal'] = 'View posts in personal blogs';

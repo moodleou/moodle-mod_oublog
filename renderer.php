@@ -321,14 +321,20 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $links .= html_writer::tag('a', get_string('siteentries', 'oublog'),
                     array('href' => $CFG->wwwroot . '/mod/oublog/allposts.php',
                             'class' => 'oublog-links'));
+            $format = FORMAT_HTML;
         } else {
-            $summary = $oublog->summary;
+            $summary = $oublog->intro;
             $title = $oublog->name;
+            $format = $oublog->introformat;
         }
+
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id, $oublog->course, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
 
         $bc = new block_contents();
         $bc->id = 'oublog-summary';
-        $bc->content = format_text($summary, FORMAT_HTML) . $links;
+        $bc->content = format_text($summary, $format) . $links;
+        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php', $context->id, 'mod_oublog', 'intro', null);
         $bc->footer = '';
         $bc->title = format_string($title);
         return $this->output->block($bc, BLOCK_POS_LEFT);

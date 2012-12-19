@@ -98,10 +98,10 @@ foreach($blogs as $blog) {
             }
             $currentsection = $blog->section;
         }
-        $row = array ($printsection, $link, format_string($blog->summary, true), $numposts);
+        $row = array ($printsection, $link, format_string($blog->intro, true), $numposts);
 
     } else {
-        $row = array ($link, $blog->summary, $numposts);
+        $row = array ($link, format_string($blog->intro, true), $numposts);
     }
 
     $table->data[] = $row;
