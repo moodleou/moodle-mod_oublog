@@ -21,7 +21,7 @@ class mod_oublog_mod_form extends moodleform_mod {
     function definition() {
 
         global $COURSE, $CFG;
-        $mform    =& $this->_form;
+        $mform    = $this->_form;
 
 //-------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -31,9 +31,7 @@ class mod_oublog_mod_form extends moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
-    /// Adding the "summary" field
-        $mform->addElement('htmleditor', 'summary', get_string('summary', 'oublog'));
-        $mform->setType('summary', PARAM_RAW);
+        $this->add_intro_editor(true, get_string('oublogintro', 'oublog'));
 
         if (!defined('OUBLOG_EDIT_INSTANCE')) {
         /// Adding the "allowcomments" field

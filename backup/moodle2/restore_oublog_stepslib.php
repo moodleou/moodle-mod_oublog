@@ -58,6 +58,11 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
         $oldid = $data->id;
         $data->course = $this->get_courseid();
 
+        if (!isset($data->intro) && isset($data->summary)) {
+            $data->intro = $data->summary;
+            $data->introformat = FORMAT_HTML;
+        }
+
         // if it's the global blog and we already have one then assume we can't restore this module since it already exits
         if (!empty($data->global) && $DB->record_exists('oublog', array('global'=> 1))) {
             $this->set_mapping('oublog', $oldid, $oldid, true);
@@ -169,7 +174,7 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
     protected function after_execute() {
 
         // Add oublog related files, no need to match by itemname (just internally handled context)
-        $this->add_related_files('mod_oublog', 'summary', null);
+        $this->add_related_files('mod_oublog', 'intro', null);
 
         // Add post related files
         $this->add_related_files('mod_oublog', 'attachment', 'oublog_post');

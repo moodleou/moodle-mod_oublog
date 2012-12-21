@@ -450,7 +450,8 @@ function oublog_post_install() {
     $oublog = new stdClass;
     $oublog->course = SITEID;
     $oublog->name = 'Personal Blogs';
-    $oublog->summary = '';
+    $oublog->intro = '';
+    $oublog->introformat = FORMAT_HTML;
     $oublog->accesstoken = md5(uniqid(rand(), true));
     $oublog->maxvisibility = OUBLOG_VISIBILITY_PUBLIC;
     $oublog->global = 1;
@@ -622,7 +623,7 @@ function oublog_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
         case FEATURE_COMPLETION_HAS_RULES: return true;
         case FEATURE_BACKUP_MOODLE2: return true;
-        case FEATURE_MOD_INTRO: return false;
+        case FEATURE_MOD_INTRO: return true;
         case FEATURE_GROUPINGS: return true;
         case FEATURE_GROUPS: return true;
         case FEATURE_GROUPMEMBERSONLY: return true;
