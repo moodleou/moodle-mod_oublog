@@ -291,3 +291,6 @@ div.oublog-individualselector {
 #oublogbuttons .participationbutton {
     margin-left: 0.5em;
 }
+#page-mod-oublog-editpost .fp-pathbar {
+    display: none;
+}
