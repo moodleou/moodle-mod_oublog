@@ -3,6 +3,9 @@ $string['attachments'] = "Attachments";
 $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
 $string['modulenameplural'] = 'OU blogs';
+$string['modulename_help'] = 'The blog activity module allows for creation of blogs within a course
+ (these are separate to the core Moodle blog system). You can have course-wide blogs (everyone in
+ the course posts to the same blog), group blogs, or individual blogs.';
 
 $string['oublog:view'] = 'View posts';
 $string['oublog:addinstance'] = 'Add a new OU blog';
