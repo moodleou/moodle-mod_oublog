@@ -7,6 +7,8 @@ $string['modulename_help'] = 'The blog activity module allows for creation of bl
  (these are separate to the core Moodle blog system). You can have course-wide blogs (everyone in
  the course posts to the same blog), group blogs, or individual blogs.';
 
+$string['oublogintro'] = 'Intro';
+
 $string['oublog:view'] = 'View posts';
 $string['oublog:addinstance'] = 'Add a new OU blog';
 $string['oublog:viewpersonal'] = 'View posts in personal blogs';

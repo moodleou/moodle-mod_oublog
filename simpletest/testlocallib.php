@@ -137,7 +137,8 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $oublog = new stdClass();
         $oublog->course = $course->id;
         $oublog->name = 'Test';
-        $oublog->summary = '';
+        $oublog->intro = '';
+        $oublog->introformat = FORMAT_HTML;
         $oublog->global = 0;
         $oublog->views = 0;
         $oublog->grade = 0;
@@ -361,7 +362,8 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $oublog = new stdClass();
         $oublog->course = $courseid;
         $oublog->name = 'Personal Blog';
-        $oublog->summary = '';
+        $oublog->intro = '';
+        $oublog->introformat = FORMAT_HTML;
         $oublog->global = 1;
         $oublog->views = 0;
         $oublog->allowcomments = 0;
@@ -375,7 +377,8 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $oublog = new stdClass();
         $oublog->course = $courseid;
         $oublog->name = 'Whole Course';
-        $oublog->summary = '';
+        $oublog->intro = '';
+        $oublog->introformat = FORMAT_HTML;
         $oublog->global = 0;
         $oublog->views = 0;
         $oublog->allowcomments = 0;

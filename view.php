@@ -239,15 +239,19 @@ if (!$hideunusedblog) {
         $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
         $links .= html_writer::link($allpostsurl, $strallposts);
         $links .= html_writer::end_tag('div');
+        $format = FORMAT_HTML;
     } else {
-        $summary = $oublog->summary;
+        $summary = $oublog->intro;
         $title = $oublog->name;
+        $format = $oublog->introformat;
     }
+
     // Name, summary, related links.
     $bc = new block_contents();
     $bc->attributes['class'] = 'oublog-sideblock block';
     $bc->title = format_string($title);
-    $bc->content = format_text($summary . $links);
+    $bc->content = format_text($summary, $format) . $links;
+    $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php', $context->id, 'mod_oublog', 'intro', null);
     $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 
     // Tag Cloud.
