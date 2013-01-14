@@ -31,7 +31,7 @@ class mod_oublog_mod_form extends moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
-        $this->add_intro_editor(true, get_string('oublogintro', 'oublog'));
+        $this->add_intro_editor(false, get_string('oublogintro', 'oublog'));
 
         if (!defined('OUBLOG_EDIT_INSTANCE')) {
         /// Adding the "allowcomments" field
