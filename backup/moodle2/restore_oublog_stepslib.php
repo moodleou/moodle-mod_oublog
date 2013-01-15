@@ -85,7 +85,7 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('oublog_instances', $data);
-        $this->set_mapping('oublog_instance', $oldid, $newitemid);
+        $this->set_mapping('oublog_instance', $oldid, $newitemid, true);
     }
 
     protected function process_oublog_link($data) {
@@ -175,7 +175,7 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
 
         // Add oublog related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_oublog', 'intro', null);
-
+        $this->add_related_files('mod_oublog', 'summary', 'oublog_instance');
         // Add post related files
         $this->add_related_files('mod_oublog', 'attachment', 'oublog_post');
         $this->add_related_files('mod_oublog', 'message', 'oublog_post');

@@ -31,9 +31,8 @@ class mod_oublog_mod_form extends moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
-        $this->add_intro_editor(false, get_string('oublogintro', 'oublog'));
-
         if (!defined('OUBLOG_EDIT_INSTANCE')) {
+            $this->add_intro_editor(false, get_string('oublogintro', 'oublog'));
         /// Adding the "allowcomments" field
             $options = array(OUBLOG_COMMENTS_ALLOW   => get_string('logincomments', 'oublog'),
                  OUBLOG_COMMENTS_ALLOWPUBLIC => get_string('publiccomments', 'oublog'),
@@ -92,6 +91,10 @@ class mod_oublog_mod_form extends moodleform_mod {
             $features->groupmembersonly = true;
             $this->standard_coursemodule_elements($features);
         } else {
+            // Adding the "summary" field.
+            $mform->addElement('editor', 'summary_editor', get_string('summary', 'oublog'), null,
+                    array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes));
+            $mform->setType('summary', PARAM_RAW);
             $mform->addElement('hidden', 'instance');
             $mform->setType('instance', PARAM_INT);
         }

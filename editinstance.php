@@ -66,9 +66,18 @@ if ($mform->is_cancelled()) {
     exit;
 }
 
+$textfieldoptions = array(
+        'maxfiles' => EDITOR_UNLIMITED_FILES,
+        'maxbytes' => $CFG->maxbytes,
+        'context' => $context,
+        );
+
 if (!$frmoubloginstance = $mform->get_data()) {
 
     $oubloginstance->instance = $oubloginstance->id;
+    $oubloginstance->summaryformat = FORMAT_HTML;
+    $oubloginstance = file_prepare_standard_editor($oubloginstance, 'summary', $textfieldoptions, $context,
+            'mod_oublog', 'summary', $oubloginstance->id);
     $mform->set_data($oubloginstance);
 
 /// Print the header
@@ -85,7 +94,9 @@ if (!$frmoubloginstance = $mform->get_data()) {
 } else {
     /// Handle form submission
     $frmoubloginstance->id = $frmoubloginstance->instance;
-    $frmoubloginstance->message = $frmoubloginstance->summary;
+    $frmoubloginstance->summaryformat = FORMAT_HTML;
+    $frmoubloginstance = file_postupdate_standard_editor($frmoubloginstance, 'summary', $textfieldoptions, $context,
+            'mod_oublog', 'summary', $frmoubloginstance->id);
     $DB->update_record('oublog_instances', $frmoubloginstance);
 
     redirect($viewurl);

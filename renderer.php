@@ -298,49 +298,6 @@ class mod_oublog_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Prints the summary block. This includes the blog summary
-     * and possibly links to change it, depending on the type of blog and user
-     * permissions.
-     * @param object $oublog Blog object
-     * @param object $oubloginstance Blog instance object
-     * @param bool $canmanageposts True if they're allowed to edit the blog
-     */
-    public function oublog_print_summary_block($oublog, $oubloginstance, $canmanageposts) {
-        global $USER, $CFG;
-        $links = '';
-        if ($oublog->global) {
-            $title = $oubloginstance->name;
-            $summary = $oubloginstance->summary;
-            if (($oubloginstance->userid == $USER->id) || $canmanageposts ) {
-                $links .= html_writer::empty_tag('br', array());
-                $links .= html_writer::tag('a', get_string('blogoptions', 'oublog'),
-                        array('href' => $CFG->wwwroot . '/mod/oublog/editinstance.php?instance=' .
-                                $oubloginstance->id, 'class' => 'oublog-links'));
-            }
-            $links .= html_writer::empty_tag('br', array());
-            $links .= html_writer::tag('a', get_string('siteentries', 'oublog'),
-                    array('href' => $CFG->wwwroot . '/mod/oublog/allposts.php',
-                            'class' => 'oublog-links'));
-            $format = FORMAT_HTML;
-        } else {
-            $summary = $oublog->intro;
-            $title = $oublog->name;
-            $format = $oublog->introformat;
-        }
-
-        $cm = get_coursemodule_from_instance('oublog', $oublog->id, $oublog->course, false, MUST_EXIST);
-        $context = context_module::instance($cm->id);
-
-        $bc = new block_contents();
-        $bc->id = 'oublog-summary';
-        $bc->content = format_text($summary, $format) . $links;
-        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php', $context->id, 'mod_oublog', 'intro', null);
-        $bc->footer = '';
-        $bc->title = format_string($title);
-        return $this->output->block($bc, BLOCK_POS_LEFT);
-    }
-
-    /**
      * Print all user participation records for display
      *
      * @param object $cm current course module object

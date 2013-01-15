@@ -793,7 +793,7 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
         return false;
     }
 
-    $fileareas = array('attachment', 'message', 'edit');
+    $fileareas = array('attachment', 'message', 'edit', 'summary');
     if (!in_array($filearea, $fileareas)) {
         return false;
     }
@@ -811,11 +811,13 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
         $fileid = $postid;
     }
 
-    if (!$post = $DB->get_record('oublog_posts', array('id'=>$postid))) {
-        return false;
-    }
-    if (!($oublog = oublog_get_blog_from_postid($post->id))) {
-        return false;
+    if ($filearea != 'summary') {
+        if (!$post = $DB->get_record('oublog_posts', array('id'=>$postid))) {
+            return false;
+        }
+        if (!($oublog = oublog_get_blog_from_postid($post->id))) {
+            return false;
+        }
     }
 
     $fs = get_file_storage();
@@ -828,7 +830,7 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
 
     // Make sure we're allowed to see it...
 
-    if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+    if ($filearea != 'summary' && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
         return false;
     }
 
