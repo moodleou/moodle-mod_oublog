@@ -159,7 +159,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $post->message = portfolio_rewrite_pluginfile_urls($post->message, $modcontext->id,
                     'mod_oublog', 'message', $post->id, $format);
         }
-        $output .= format_text($post->message, FORMAT_HTML);
+        $posttextoptions = new stdClass();
+        if (trusttext_active() && has_capability('moodle/site:trustcontent', $modcontext,
+                $post->userid)) {
+            // Support trusted text when initial author is safe (post editors are not checked!).
+            $posttextoptions->trusted = true;
+            $posttextoptions->context = $modcontext;
+        }
+        $output .= format_text($post->message, FORMAT_HTML, $posttextoptions);
         $output .= html_writer::end_tag('div');
 
         $fs = get_file_storage();
