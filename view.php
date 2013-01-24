@@ -286,7 +286,7 @@ if (!$hideunusedblog) {
         $feedicon = ' <img src="'.$OUTPUT->pix_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
         $bc = new block_contents();
         $bc->attributes['class'] = 'oublog-sideblock block';
-        $bc->title = $strfeeds . $feedicon;
+        $bc->title = $strfeeds;
         $bc->content = $feeds;
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
@@ -369,6 +369,14 @@ echo '</div>';
 // Print blog posts.
 if ($posts) {
     echo '<div id="oublog-posts">';
+    $rowcounter = 1;
+    foreach ($posts as $post) {
+        $post->row = $rowcounter;
+        echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype,
+                $canmanageposts, $canaudit, true, false);
+        $rowcounter++;
+    }
+    echo "<div class='oublog-paging'>";
     if ($offset > 0) {
         if ($offset-OUBLOG_POSTS_PER_PAGE == 0) {
             print "<div class='oublog-newerposts'><a href=\"$returnurl\">$strnewposts</a></div>";
@@ -378,16 +386,11 @@ if ($posts) {
         }
     }
 
-    foreach ($posts as $post) {
-        echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype,
-                $canmanageposts, $canaudit, true, false);
-    }
-
     if ($recordcount - $offset > OUBLOG_POSTS_PER_PAGE) {
         print "<div class='oublog-olderposts'><a href=\"$returnurl&amp;offset=" .
                 ($offset+OUBLOG_POSTS_PER_PAGE) . "\">$strolderposts</a></div>";
     }
-    echo '</div>';
+    echo '</div></div>';
 }
 
 // Print information allowing the user to log in if necessary, or letting

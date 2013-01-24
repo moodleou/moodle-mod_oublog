@@ -1155,7 +1155,7 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
         foreach ($links as $link) {
             $i++;
             $html .= '<li>';
-            $html .= '<a href="'.htmlentities($link->url).'">'.format_string($link->title).'</a> ';
+            $html .= '<a href="'.htmlentities($link->url).'" class="oublog-elink">'.format_string($link->title).'</a> ';
 
             if ($canmanagelinks) {
                 if ($i > 1) {
@@ -1604,9 +1604,9 @@ function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $i
         $commentsurlrss = oublog_get_feedurl('rss',  $oublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
     }
 
-    $html  = get_string('subscribefeed', 'oublog');
+    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog') . '</div>';
     $html .= $OUTPUT->help_icon('feedhelp', 'oublog');
-    $html .= '<br />';//<br /><img src="'.$OUTPUT->pix_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
+    $html .= '<div class="oublog-feedlinks">';
     $html .= get_string('blogfeed', 'oublog').': ';
     $html .= '<a href="'.$blogurlatom.'">'.get_string('atom', 'oublog').'</a> ';
     $html .= '<a href="'.$blogurlrss.'">'.get_string('rss', 'oublog').'</a>';
@@ -1619,6 +1619,7 @@ function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $i
             $html .= '</div>';
         }
     }
+    $html .= '</div>';
     return ($html);
 }
 

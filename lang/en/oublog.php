@@ -68,8 +68,8 @@ $string['editonsummary'] = 'Edited {$a->editdate}';
 $string['edit'] = 'Edit';
 $string['delete'] = 'Delete';
 
-$string['olderposts'] = '&lt; Older posts';
-$string['newerposts'] = 'Newer posts &gt;';
+$string['olderposts'] = 'Previous posts';
+$string['newerposts'] = 'Newer posts';
 $string['extranavolderposts'] = 'Older posts: {$a->from}-{$a->to}';
 $string['extranavtag'] = 'Tag: {$a}';
 
