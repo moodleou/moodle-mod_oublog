@@ -833,9 +833,13 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     if ($filearea != 'summary' && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
         return false;
     }
-
-    // finally send the file
-    send_stored_file($file, 0, 0, true); // download MUST be forced - security!
+    if ($filearea == 'attachment') {
+        $forcedownload = true;
+    } else {
+        $forcedownload = false;
+    }
+    // Finally send the file.
+    send_stored_file($file, 0, 0, $forcedownload);
 }
 
 /**
