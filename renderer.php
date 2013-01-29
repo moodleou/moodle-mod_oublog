@@ -108,6 +108,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
         if (trim($formattedtitle) !== '') {
             $output .= html_writer::tag('h2',
                     format_string($post->title), array('class' => 'oublog-title'));
+        } else if (!$forexport) {
+            $posttitle = get_accesshide(get_string('newpost', 'mod_oublog'));
+            $output .= html_writer::tag('h2', $posttitle, array('class' => 'oublog-title'));
         }
 
         if ($post->deletedby) {
@@ -774,6 +777,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
             if (trim(format_string($comment->title))!=='') {
                 $output .= html_writer::tag('h2', format_string($comment->title),
                         array('class' => 'oublog-title'));
+            } else if (!$forexport) {
+                $commenttitle = get_accesshide(get_string('newcomment', 'mod_oublog'));
+                $output .= html_writer::tag('h2', $commenttitle, array('class' => 'oublog-title'));
             }
             $output .= html_writer::start_tag('div', array('class' => 'oublog-post-date'));
             $output .= oublog_date($comment->timeposted);
