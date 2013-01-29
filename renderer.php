@@ -427,10 +427,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
                                 array(-1 => get_string('nograde')), $attributes);
                             $gradeitem = '<div id="gradeuser'.$user->id.'">'. $menu .'</div>';
                         } else {
-                            if (!isset($user->grade)) {
+                            if (!isset($user->gradeobj->grade)) {
                                 $gradeitem = get_string('nograde');
                             } else {
-                                $gradeitem = $user->grade;
+                                $gradeitem = $user->gradeobj->grade;
                             }
                         }
                     }
