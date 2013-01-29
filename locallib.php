@@ -2698,10 +2698,15 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
      */
     function get_navigation() {
         global $CFG;
-
+        $title = '';
+        if (!empty($this->post->title)) {
+            $title = format_string($this->post->title);
+        } else {
+            $title = shorten_text(format_string($this->post->message, 30));
+        }
         $navlinks = array();
         $navlinks[] = array(
-            'name' => format_string($this->oublog->name),
+            'name' => $title,
             'link' => $CFG->wwwroot . '/mod/oublog/viewpost.php?post=' . $this->post->id,
             'type' => 'title'
         );
