@@ -23,7 +23,9 @@ class mod_oublog_post_form extends moodleform {
         $mform->addElement('text', 'title', get_string('title', 'oublog'), 'size="48"');
         $mform->setType('title', PARAM_TEXT);
 
-        $mform->addElement('editor', 'message', get_string('message', 'oublog'), array('cols'=>50, 'rows'=>30),array('maxfiles' => EDITOR_UNLIMITED_FILES));
+        $mform->addElement('editor', 'message', get_string('message', 'oublog'),
+                array('cols' => 50, 'rows' => 30),
+                array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $maxbytes));
         $mform->addRule('message', get_string('required'), 'required', null, 'client');
 
         $mform->addElement('textarea', 'tags', get_string('tagsfield', 'oublog'), array('cols'=>48, 'rows'=>2));

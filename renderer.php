@@ -724,12 +724,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param object $cm Current course module object
      * @return html
      */
-    public function render_comments($post, $oublog, $canaudit, $canmanagecomments, $forexport, $cm) {
+    public function render_comments($post, $oublog, $canaudit, $canmanagecomments, $forexport,
+            $cm, $format = false) {
         global $DB, $CFG, $USER, $OUTPUT;
         $viewfullnames = true;
         $strdelete      = get_string('delete', 'oublog');
         $strcomments    = get_string('comments', 'oublog');
         $output = '';
+        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
         if (!$canmanagecomments) {
             $context = context_module::instance($cm->id);
             $canmanagecomments = has_capability('mod/oublog:managecomments', $context);
@@ -808,7 +810,15 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $output .= html_writer::end_tag('div');
             $output .= html_writer::start_tag('div',
                     array('class' => 'oublog-comment-content'));
-            $output .= format_text($comment->message, FORMAT_MOODLE);
+            if (!$forexport) {
+                $comment->message = file_rewrite_pluginfile_urls($comment->message,
+                        'pluginfile.php', $modcontext->id, 'mod_oublog', 'messagecomment',
+                        $comment->id);
+            } else {
+                $comment->message = portfolio_rewrite_pluginfile_urls($comment->message,
+                        $modcontext->id, 'mod_oublog', 'messagecomment', $comment->id, $format);
+            }
+            $output .= format_text($comment->message, FORMAT_HTML);
             $output .= html_writer::end_tag('div');
             $output .= html_writer::start_tag('div',
                     array('class' => 'oublog-post-links'));

@@ -361,6 +361,16 @@ function oublog_can_view_post($post, $user, $context, $personalblog) {
 
     // Otherwise this is set to course visibility
     if($personalblog) {
+        if (empty($post->userid)) {
+            // Not sent userid from pluginfile etc so get it.
+            global $DB;
+            if ($instance = $DB->get_record('oublog_instances',
+                    array('id' => $post->oubloginstancesid), 'userid')) {
+                $post->userid = $instance->userid;
+            } else {
+                return false;
+            }
+        }
         return $post->userid==$user->id;
     } else {
         // Check oublog:view capability at module level
@@ -1046,15 +1056,28 @@ function oublog_add_comment($course,$cm,$oublog,$comment) {
     if (!isset($comment->timeposted)) {
         $comment->timeposted = time();
     }
-
-    $id=$DB->insert_record('oublog_comments', $comment);
-    if($id) {
-        // Inform completion system, if available
+    // Begin transaction.
+    $tw = new transaction_wrapper();
+    // Prepare comment id for draft area.
+    $comment->message = '';
+    $id = $DB->insert_record('oublog_comments', $comment);
+    // Save out any images from the comment message text.
+    $context = context_module::instance($cm->id);
+    $draftid = file_get_submitted_draft_itemid('messagecomment');
+    $comment->message = file_save_draft_area_files($draftid, $context->id, 'mod_oublog',
+            'messagecomment', $id, array('subdirs' => true), $comment->messagecomment['text']);
+    $comment->id = $id;
+    // Save the comment.
+    $DB->set_field('oublog_comments', 'message', $comment->message, array('id' => $id));
+    if ($id) {
+        // Inform completion system, if available.
         $completion = new completion_info($course);
         if ($completion->is_enabled($cm) && ($oublog->completioncomments)) {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
     }
+    // Commit transaction and return id.
+    $tw->commit();
     return $id;
 }
 
@@ -2639,7 +2662,7 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         global $DB;
 
         if ($this->postid) {
-            if (!$this->post = $DB->get_record('oublog_posts', array('id' => $this->postid))) {
+            if (!$this->post = oublog_get_post($this->postid, false)) {
                 throw new portfolio_caller_exception('invalidpostid', 'oublog');
             }
         }
@@ -2658,14 +2681,18 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
 
         $this->modcontext = get_context_instance(CONTEXT_MODULE, $this->cm->id);
         $fs = get_file_storage();
-        if ($this->attachment) {
-            $this->set_file_and_format_data($this->attachment);
-        } else {
-            $attach = $fs->get_area_files($this->modcontext->id, 'mod_oublog', 'attachment',$this->post->id);
-            $embed  = $fs->get_area_files($this->modcontext->id, 'mod_oublog', 'message',$this->post->id);
-            $files = array_merge($attach, $embed);
-            $this->set_file_and_format_data($files);
+        $files = array();
+        $attach = $fs->get_area_files($this->modcontext->id, 'mod_oublog', 'attachment', $this->post->id);
+        $embed = $fs->get_area_files($this->modcontext->id, 'mod_oublog', 'message', $this->post->id);
+        if (!empty($this->post->comments)) {
+            foreach ($this->post->comments as $comment) {
+                $comments = $fs->get_area_files($this->modcontext->id, 'mod_oublog',
+                        'messagecomment', $comment->id);
+                $files = array_merge($files, $comments);
+            }
         }
+        $files = array_merge($attach, $embed, $files);
+        $this->set_file_and_format_data($files);
         if (!empty($this->multifiles)) {
             $this->keyedfiles[$this->post->id] = $this->multifiles;
         } else if (!empty($this->singlefile)) {
@@ -2675,12 +2702,10 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
             $this->multifiles = array($this->singlefile); // copy_files workaround
         }
         // depending on whether there are files or not, we might have to change richhtml/plainhtml
-        if (empty($this->attachment)) {
-            if (!empty($this->multifiles)) {
-                $this->add_format(PORTFOLIO_FORMAT_RICHHTML);
-            } else {
-                $this->add_format(PORTFOLIO_FORMAT_PLAINHTML);
-            }
+        if (!empty($this->multifiles)) {
+            $this->add_format(PORTFOLIO_FORMAT_RICHHTML);
+        } else {
+            $this->add_format(PORTFOLIO_FORMAT_PLAINHTML);
         }
     }
 
@@ -2725,39 +2750,19 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
     function prepare_package() {
         global $CFG;
 
-        if ($this->attachment) { // simplest case first - single file attachment
-            $this->copy_files(array($this->singlefile), $this->attachment);
-        } else { // exporting a single post
-            $posthtml = $this->prepare_post($this->post);
+        $posthtml = $this->prepare_post($this->post);
 
-            $content = $posthtml;
-            $name = 'post.html';
-            $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
-
-            $this->copy_files($this->multifiles);
-            $this->get('exporter')->write_new_file($content, $name, $manifest);
-        }
-    }
-
-    /**
-     * @param array $files
-     * @param mixed $justone false of id of single file to copy
-     * @return bool|void
-     */
-    private function copy_files($files, $justone=false) {
-        if (empty($files)) {
-            return;
-        }
-        foreach ($files as $f) {
-            if ($justone && $f->get_id() != $justone) {
-                continue;
-            }
-            $this->get('exporter')->copy_existing_file($f);
-            if ($justone && $f->get_id() == $justone) {
-                return true; // all we need to do
+        $content = $posthtml;
+        $name = 'post.html';
+        $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
+        if (!empty($this->multifiles)) {
+            foreach ($this->multifiles as $f) {
+                $this->get('exporter')->copy_existing_file($f);
             }
         }
+        $this->get('exporter')->write_new_file($content, $name, $manifest);
     }
+
     /**
      * this is a very cut down version of what is in forum_make_mail_post
      *
@@ -2802,15 +2807,13 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         } else {
             $blogtype = 'course';
         }
-        // Recover complete post object for rendering.
-        $post = oublog_get_post($post->id);
         $post->allowcomments = false;
         // Provide format from the exporter to renderers incase its required.
         $format = $this->get('exporter')->get('format');
         $output .= $oublogoutput->render_post($cm, $oublog, $post, false, $blogtype,
                 $canmanageposts, false, false, true, $format);
         if (!empty($post->comments)) {
-            $output .= $oublogoutput->render_comments($post, $oublog, false, false, true, $cm);
+            $output .= $oublogoutput->render_comments($post, $oublog, false, false, true, $cm, $format);
         }
         $output .= html_writer::end_tag('body') . html_writer::end_tag('html');
         return $output;

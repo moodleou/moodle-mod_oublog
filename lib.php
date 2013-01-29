@@ -793,7 +793,7 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
         return false;
     }
 
-    $fileareas = array('attachment', 'message', 'edit', 'summary');
+    $fileareas = array('attachment', 'message', 'edit', 'messagecomment', 'summary');
     if (!in_array($filearea, $fileareas)) {
         return false;
     }
@@ -812,6 +812,12 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     }
 
     if ($filearea != 'summary') {
+        if ($filearea == 'messagecomment') {
+            if (!$comment = $DB->get_record('oublog_comments', array('id' => $postid), 'postid')) {
+                return false;
+            }
+            $postid = $comment->postid;
+        }
         if (!$post = $DB->get_record('oublog_posts', array('id'=>$postid))) {
             return false;
         }
@@ -858,18 +864,25 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
  */
 function oublog_get_file_info($browser, $areas, $course, $cm, $context, $filearea,
         $itemid, $filepath, $filename) {
-    global $CFG, $USER;
+    global $CFG, $USER, $DB;
     require_once($CFG->dirroot . '/mod/oublog/locallib.php');
 
     if ($context->contextlevel != CONTEXT_MODULE) {
         return null;
     }
-    $fileareas = array('attachment', 'message', 'edit');
+    $fileareas = array('attachment', 'message', 'edit', 'messagecomment');
     if (!in_array($filearea, $fileareas)) {
         return null;
     }
+    $postid = $itemid;
+    if ($filearea == 'messagecomment') {
+        if (!$comment = $DB->get_record('oublog_comments', array('id' => $postid), 'postid')) {
+            return null;
+        }
+        $postid = $comment->postid;
+    }
 
-    if (!($oublog = oublog_get_blog_from_postid($itemid))) {
+    if (!($oublog = oublog_get_blog_from_postid($postid))) {
         return null;
     }
     // Check if the user is allowed to view the blog.
@@ -877,7 +890,7 @@ function oublog_get_file_info($browser, $areas, $course, $cm, $context, $fileare
         return null;
     }
 
-    if (!$post = oublog_get_post($itemid)) {
+    if (!$post = oublog_get_post($postid)) {
         return null;
     }
     // Check if the user is allowed to view the post

@@ -14,6 +14,7 @@ class mod_oublog_comment_form extends moodleform {
         $confirmed = $this->_customdata['confirmed'];
         $blogid = $this->_customdata['blogid'];
         $postid = $this->_customdata['postid'];
+        $maxbytes = $this->_customdata['maxbytes'];
 
         $mform    =& $this->_form;
 
@@ -35,16 +36,16 @@ class mod_oublog_comment_form extends moodleform {
         $mform->addElement('text', 'title', get_string('title', 'oublog'), 'size="48"');
         $mform->setType('title', PARAM_TEXT);
 
-        $message_type = 'htmleditor';
+        $messagetype = 'editor';
         if ($moderated) {
-            $message_type = 'textarea';
+            $messagetype = 'textarea';
         }
-        $message_rows = 30;
 
-        $mform->addElement($message_type, 'message', get_string('message', 'oublog'), array('cols'=>50, 'rows'=>$message_rows));
-
-        $mform->setType('message', PARAM_CLEANHTML);
-        $mform->addRule('message', get_string('required'), 'required', null, 'server');
+        $mform->addElement($messagetype, 'messagecomment', get_string('comment', 'oublog'),
+                array('cols' => 50, 'rows' => 30),
+                array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $maxbytes));
+        $mform->setType('messagecomment', PARAM_CLEANHTML);
+        $mform->addRule('messagecomment', get_string('required'), 'required', null, 'server');
 
         // When using moderation, we include the world's dumbest capcha (the
         // user is told to type 'yes' into the box). Because there is moderation
