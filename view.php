@@ -100,6 +100,7 @@ $canaudit       = has_capability('mod/oublog:audit', $context);
 $stroublogs     = get_string('modulenameplural', 'oublog');
 $stroublog      = get_string('modulename', 'oublog');
 $straddpost     = get_string('newpost', 'oublog');
+$strexportposts = get_string('oublog:exportposts', 'oublog');
 $strtags        = get_string('tags', 'oublog');
 $stredit        = get_string('edit', 'oublog');
 $strdelete      = get_string('delete', 'oublog');
@@ -391,21 +392,50 @@ if ($posts) {
                 ($offset+OUBLOG_POSTS_PER_PAGE) . "\">$strolderposts</a></div>";
     }
     echo '</div></div>';
+    echo '<div id="addexportpostsbutton">';
+    // Show portfolio export link.
+    // Will need to be passed enough details on the blog so it can accurately work out what
+    // posts are displayed (as oublog_get_posts above).
+    if (!empty($CFG->enableportfolios) &&
+            (has_capability('mod/oublog:exportpost', $context))) {
+        require_once($CFG->libdir . '/portfoliolib.php');
+        if ($canaudit) {
+            $canaudit = 1;
+        } else {
+            $canaudit = 0;
+        }
+        if (empty($oubloguser->id)) {
+            $oubloguser->id = 0;
+        }
+        $button = new portfolio_add_button();
+        $button->set_callback_options('oublog_all_portfolio_caller',
+                array('postid' => $post->id,
+                        'oublogid' => $oublog->id,//$offset
+                        'offset' => $offset,//
+                        'currentgroup' => $currentgroup,
+                        'currentindividual' => $currentindividual,
+                        'oubloguserid' => $oubloguser->id,
+                        'canaudit' => $canaudit,
+                        'tag' => $tag,
+                        'cmid' => $cm->id,), '/mod/oublog/locallib.php');
+        echo $button->to_html(PORTFOLIO_ADD_TEXT_LINK) .
+        get_string('exportpostscomments', 'oublog');
+    }
+    echo '</div>';
 }
-
 // Print information allowing the user to log in if necessary, or letting
 // them know if there are no posts in the blog.
 if (isguestuser() && $USER->id==$user) {
     print '<p class="oublog_loginnote">'.
-        get_string('guestblog', 'oublog',
-            'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
+            get_string('guestblog', 'oublog',
+                    'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
 } else if (!isloggedin() || isguestuser()) {
     print '<p class="oublog_loginnote">'.
-        get_string('maybehiddenposts', 'oublog',
-            'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
+            get_string('maybehiddenposts', 'oublog',
+                    'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
 } else if (!$posts) {
     print '<p class="oublog_noposts">'.
-        get_string('noposts', 'oublog').'</p>';
+            get_string('noposts', 'oublog').'</p>';
 }
 
 // Log visit and bump view count.

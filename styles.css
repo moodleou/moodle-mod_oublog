@@ -369,3 +369,6 @@ div.oublog-individualselector {
 .oublog-feedlinks a {
     text-decoration: none;
 }
+#addexportpostsbutton {
+    clear:both;
+}

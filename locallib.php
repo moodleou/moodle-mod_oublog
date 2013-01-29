@@ -2770,20 +2770,8 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
      * @param int $post
      * @return string
      */
-    private function prepare_post($post, $fileoutputextras=null) {
-        global $DB, $PAGE;
-        static $users;
-        if (empty($users)) {
-            $users = array($this->user->id => $this->user);
-        }
-        if (!array_key_exists($this->oubloginstance->userid, $users)) {
-            $users[$this->oubloginstance->userid] = $DB->get_record('user',
-                    array('id' => $this->oubloginstance->userid));
-        }
-        // Add the user object on to the post.
-        $post->author = $users[$this->oubloginstance->userid];
-        $viewfullnames = true;
-
+    protected function prepare_post($post, $fileoutputextras=null) {
+        global $PAGE;
         $output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" ' .
                 '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' .
                 html_writer::start_tag('html', array('xmlns' => 'http://www.w3.org/1999/xhtml'));
@@ -3148,5 +3136,203 @@ function oublog_update_grades($newgrades, $oldgrades, $cm, $oublog, $course) {
     // add a message to display to the page
     if (!isset($SESSION->oubloggradesupdated)) {
         $SESSION->oubloggradesupdated = get_string('gradesupdated', 'oublog');
+    }
+}
+
+class oublog_all_portfolio_caller extends oublog_portfolio_caller {
+
+    protected $postid;
+    protected $attachment;
+    protected $currentgroup;
+    protected $offset;
+    protected $currentindividual;
+    protected $oubloguserid;
+    protected $canaudit;
+    protected $tag;
+    protected $oublogid;
+    protected $cmid;
+
+    private $post;
+    protected $files = array();
+    private $keyedfiles = array();// Keyed on entry.
+
+    /**
+     * @return array
+     */
+    public static function expected_callbackargs() {
+        return array(
+                'postid' => false,
+                'oublogid' => true,
+                'currentgroup' => true,
+                'offset' => true,
+                'currentindividual' => true,
+                'oubloguserid' => true,
+                'canaudit' => true,
+                'cmid' => true,
+                'tag' => true,
+        );
+    }
+
+    /**
+     * @param array $callbackargs
+     */
+    function __construct($callbackargs) {
+        parent::__construct($callbackargs);
+        if (!$this->oublogid) {
+            throw new portfolio_caller_exception('mustprovidepost', 'oublog');
+        }
+    }
+
+    /**
+     * @global object
+     */
+    public function load_data() {
+        global $DB, $COURSE;
+        if (!$this->oublog = $DB->get_record('oublog', array('id' => $this->oublogid))) {
+            throw new portfolio_caller_exception('invalidpostid', 'oublog');
+        }
+        if (!$this->cm = get_coursemodule_from_instance('oublog', $this->oublogid)) {
+            throw new portfolio_caller_exception('invalidcoursemodule');
+        }
+        // Call early to cache group mode - stops debugging warning from oublog_get_posts later.
+        $this->cm->activitygroupmode = oublog_get_activity_groupmode($this->cm, $COURSE);
+        $context = context_module::instance($this->cm->id);
+        $this->modcontext = $context;
+        if ($this->canaudit == 1) {
+            $this->canaudit = true;
+        } else {
+            $this->canaudit = false;
+        }
+        if (empty($this->oubloguserid)) {
+            $this->oubloguserid = null;
+        }
+        if (empty($this->currentindividual) || $this->currentindividual == 0){
+            $this->currentindividual = -1;
+        }
+        list($this->posts, $recordcount) = oublog_get_posts($this->oublog,
+                $context, $this->offset, $this->cm, $this->currentgroup, $this->currentindividual,
+                $this->oubloguserid, $this->tag, $this->canaudit);
+
+        $fs = get_file_storage();
+        $this->multifiles = array();
+        foreach ($this->posts as $post) {
+            $files = array();
+            $attach = $fs->get_area_files($this->modcontext->id,
+                    'mod_oublog', 'attachment', $post->id);
+            $embed  = $fs->get_area_files($this->modcontext->id,
+                    'mod_oublog', 'message', $post->id);
+            if (!empty($post->comments)) {
+                foreach ($post->comments as $commentpost) {
+                    $embedcomments  = $fs->get_area_files($this->modcontext->id,
+                            'mod_oublog', 'messagecomment', $commentpost->id);
+                    $files = array_merge($files, $embedcomments);
+                }
+            }
+            $files = array_merge($files, $attach, $embed);
+            if ($files) {
+                $this->keyedfiles[$post->id] = $files;
+            } else {
+                continue;
+            }
+            $this->multifiles = array_merge($this->multifiles, $files);
+        }
+        $this->set_file_and_format_data($this->multifiles);
+
+        if (empty($this->multifiles) && !empty($this->singlefile)) {
+            $this->multifiles = array($this->singlefile); // Copy_files workaround.
+        }
+        // Depending on whether there are files or not, we might have to change richhtml/plainhtml.
+        if (!empty($this->multifiles)) {
+            $this->add_format(PORTFOLIO_FORMAT_RICHHTML);
+        } else {
+            $this->add_format(PORTFOLIO_FORMAT_PLAINHTML);
+        }
+    }
+
+    /**
+     * @global object
+     * @return string
+     */
+    function get_return_url() {
+        global $CFG;
+        return $CFG->wwwroot . '/mod/oublog/view.php?id=' . $this->cmid;
+    }
+
+    /**
+     * @global object
+     * @return array
+     */
+    function get_navigation() {
+        global $CFG;
+        $navlinks = array();
+        return array($navlinks, $this->cm);
+    }
+
+    /**
+     * A whole blog from a single post, with or without attachments
+     *
+     * @global object
+     * @uses PORTFOLIO_FORMAT_RICH
+     * @return mixed
+     */
+    function prepare_package() {
+        global $CFG;
+        $posttitles = array();
+        // Exporting a set of posts from the view page.
+        foreach ($this->posts as $post) {
+            $post = oublog_get_post($post->id);
+            $posthtml = $this->prepare_post($post);
+            $content = $posthtml;
+            // If post is titled use that as the exported file name.
+            if ($post->title) {
+                $name = $post->title . '.html';
+            } else {
+                $name = get_string('exportuntitledpost', 'oublog') . $post->id . '.html';
+            }
+            // If post title already exists make it unique.
+            if (in_array($post->title, $posttitles) and $post->title != '' ) {
+                $name = $post->title . ' ' . $post->id . '.html';
+                $post->title = $post->title . ' id ' . $post->id;
+            }
+            // Ensure multiple files contained within this post and it's comments
+            // are included in the exported zip file.
+            $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
+            if (!empty($this->multifiles)) {
+                foreach ($this->multifiles as $file) {
+                    $this->get('exporter')->copy_existing_file($file);
+                }
+            }
+            $this->get('exporter')->write_new_file($content, $name, $manifest);
+            $posttitles[] = $post->title;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    function get_sha1() {
+        $filesha = '';
+        try {
+            $filesha = $this->get_sha1_file();
+        } catch (portfolio_caller_exception $e) {
+            // No files.
+        }
+        if ($this->oublog) {
+            return sha1($filesha . ',' . $this->oublog->name . ',' . $this->oublog->intro);
+        } else {
+            $sha1s = array($filesha);
+            foreach ($this->posts as $post) {
+                $sha1s[] = sha1($post->title . ',' . $post->message);
+            }
+            return sha1(implode(',', $sha1s));
+        }
+    }
+    /**
+     * @uses CONTEXT_MODULE
+     * @return bool
+     */
+    function check_permissions() {
+        $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
+        return (has_capability('mod/oublog:exportpost', $context));
     }
 }
