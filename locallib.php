@@ -3290,7 +3290,7 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
                 $name = get_string('exportuntitledpost', 'oublog') . $post->id . '.html';
             }
             // If post title already exists make it unique.
-            if (in_array($post->title, $posttitles) and $post->title != '' ) {
+            if (in_array(strtolower($post->title), $posttitles) and $post->title != '' ) {
                 $name = $post->title . ' ' . $post->id . '.html';
                 $post->title = $post->title . ' id ' . $post->id;
             }
@@ -3303,7 +3303,7 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
                 }
             }
             $this->get('exporter')->write_new_file($content, $name, $manifest);
-            $posttitles[] = $post->title;
+            $posttitles[] = strtolower($post->title);
         }
     }
 
