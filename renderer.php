@@ -614,6 +614,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $output .= html_writer::end_tag('div');
                     $output .= html_writer::start_tag('div',
                         array('class' => 'oublog-comment-content'));
+                    $comment->message = file_rewrite_pluginfile_urls($comment->message,
+                            'pluginfile.php', $modcontext->id, 'mod_oublog',
+                            'messagecomment', $comment->id);
                     $output .= format_text($comment->message, FORMAT_HTML);
                     $output .= html_writer::end_tag('div');
 
@@ -665,6 +668,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $row[] = userdate($comment->timeposted, get_string('strftimedate'));
                     $row[] = userdate($comment->timeposted, get_string('strftimetime'));
                     $row[] = (isset($comment->title)) ? $comment->title : '';
+                    $comment->message = file_rewrite_pluginfile_urls($comment->message,
+                            'pluginfile.php', $modcontext->id, 'mod_oublog',
+                            'messagecomment', $comment->id);
                     $row[] = format_text($comment->message, FORMAT_HTML);
                     $row[] = $authorfullname;
                     $row[] = userdate($comment->postdate, get_string('strftimedate'));
