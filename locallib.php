@@ -319,7 +319,7 @@ function oublog_is_writable_group($cm) {
         return true;
     }
     $groupid = oublog_get_activity_group($cm);
-    if (isset($cm->writablegroups)) {
+    if (!isset($cm->writablegroups)) {
         $cm->writablegroups = array();
     }
     if (isset($cm->writablegroups[$groupid])) {
