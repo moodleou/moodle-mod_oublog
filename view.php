@@ -417,7 +417,7 @@ if ($posts) {
                         'oubloguserid' => $oubloguser->id,
                         'canaudit' => $canaudit,
                         'tag' => $tag,
-                        'cmid' => $cm->id,), '/mod/oublog/locallib.php');
+                        'cmid' => $cm->id,), 'mod_oublog');
         echo $button->to_html(PORTFOLIO_ADD_TEXT_LINK) .
         get_string('exportpostscomments', 'oublog');
     }

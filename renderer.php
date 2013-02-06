@@ -259,7 +259,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     require_once($CFG->libdir . '/portfoliolib.php');
                     $button = new portfolio_add_button();
                     $button->set_callback_options('oublog_portfolio_caller',
-                            array('postid' => $post->id), '/mod/oublog/locallib.php');
+                            array('postid' => $post->id), 'mod_oublog');
                     if (empty($files)) {
                         $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
                     } else {
