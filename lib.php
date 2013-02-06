@@ -476,7 +476,7 @@ function oublog_post_install() {
     $mod->id = $cm;
     $mod->coursemodule = $cm;
 
-    $mod->section = add_mod_to_section($mod);
+    $mod->section = course_add_cm_to_section($mod->course, $mod->coursemodule, 1);
 
     $DB->update_record('course_modules', $mod);
 
