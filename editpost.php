@@ -36,8 +36,7 @@ if ($postid) {
 
 $url = new moodle_url('/mod/oublog/editpost.php', array('blog'=>$blog, 'post'=>$postid));
 $PAGE->set_url($url);
-$PAGE->requires->yui2_lib('event');
-$PAGE->requires->js('/mod/oublog/oublog.js');
+$PAGE->requires->js_init_call('M.mod_oublog.init', null, true);
 
 /// Check security
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);

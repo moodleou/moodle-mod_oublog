@@ -14,22 +14,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Javascript helper function for IMS Content Package module.
+ * Javascript helper function for OUBlog.
  *
  * @package    mod
  * @subpackage oublog
- * @copyright  2011 Dan Marsden  {@link http://danmarsden.com}
+ * @copyright  2013 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-var oublog = {};
-function oublog_init() {
-    oublogHideWarning(); //first check if need to hide onload
-    YAHOO.util.Event.addListener(document.getElementById('id_allowcomments'), 'change', oublogHideWarning);
-}
-function oublogHideWarning() {
-    var field = document.getElementById('publicwarningmarker').parentNode.parentNode;
-    var select = document.getElementById('id_allowcomments');
-    field.style.display = select.value == 2 ? 'block' : 'none';
-}
-YAHOO.util.Event.onDOMReady(oublog_init);
+M.mod_oublog = {};
+
+M.mod_oublog.init = function(Y) {
+    M.mod_oublog.hidewarning(Y);
+    Y.one('#id_allowcomments').on('change', function(e){M.mod_oublog.hidewarning(Y);});
+};
+
+M.mod_oublog.hidewarning = function(Y) {
+    var field = Y.one('#publicwarningmarker');
+    if (field) {
+        field = field.get('parentNode').get('parentNode');
+    }
+    var select = Y.one('#id_allowcomments');
+    field.setStyle('display', select.get('value') == 2 ? 'block' : 'none');
+};
