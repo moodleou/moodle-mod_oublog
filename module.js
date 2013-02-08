@@ -33,7 +33,7 @@ M.mod_oublog.hidewarning = function(Y) {
     var field = Y.one('#publicwarningmarker');
     if (field) {
         field = field.get('parentNode').get('parentNode');
+        var select = Y.one('#id_allowcomments');
+        field.setStyle('display', select.get('value') == 2 ? 'block' : 'none');
     }
-    var select = Y.one('#id_allowcomments');
-    field.setStyle('display', select.get('value') == 2 ? 'block' : 'none');
 };
