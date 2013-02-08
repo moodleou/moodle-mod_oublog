@@ -649,6 +649,19 @@ class mod_oublog_renderer extends plugin_renderer_base {
                         'pluginfile.php', $modcontext->id, 'mod_oublog',
                         'message', $post->id);
                     $row[] = format_text($post->message, FORMAT_HTML);
+                    $fs = get_file_storage();
+                    if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment',
+                            $post->id, 'timemodified', false)) {
+                        $attachmentstring = '';
+                        foreach ($files as $file) {
+                            $filename = $file->get_filename();
+                            $attachmentstring .= ' ' . $filename . ', ';
+                        }
+                        $attachmentstring = substr($attachmentstring, 0, -2);
+                        $row[] = $attachmentstring;
+                    } else {
+                        $row[] = '';
+                    }
                     $table->add_data($row);
                 }
             }

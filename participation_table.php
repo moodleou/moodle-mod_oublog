@@ -253,6 +253,7 @@ class oublog_user_participation_table extends flexible_table {
             get_string('time'),
             get_string('title', 'oublog'),
             get_string('content'),
+            get_string('attachments', 'oublog'),
         );
 
         $this->commentsheader = array(
