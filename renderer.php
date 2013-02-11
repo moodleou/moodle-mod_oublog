@@ -461,6 +461,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 echo $table->grade_form_footer();
             }
         }
+        $table->finish_output();
     }
 
     /**
@@ -693,6 +694,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 }
             }
         }
+        $table->finish_output();
     }
 
     /**
