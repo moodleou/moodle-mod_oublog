@@ -3194,6 +3194,12 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
         if (!$this->cm = get_coursemodule_from_instance('oublog', $this->oublogid)) {
             throw new portfolio_caller_exception('invalidcoursemodule');
         }
+        // Convert tag from id to name.
+        if (!empty($this->tag)) {
+            if ($tagrec = $DB->get_record('oublog_tags', array('id' => $this->tag), 'tag')) {
+                $this->tag = $tagrec->tag;
+            }
+        }
         // Call early to cache group mode - stops debugging warning from oublog_get_posts later.
         $this->cm->activitygroupmode = oublog_get_activity_groupmode($this->cm, $COURSE);
         $context = context_module::instance($this->cm->id);

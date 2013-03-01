@@ -407,6 +407,13 @@ if ($posts) {
         if (empty($oubloguser->id)) {
             $oubloguser->id = 0;
         }
+        $tagid = null;
+        if (!is_null($tag)) {
+            // Make tag work with portfolio param cleaning by looking up id.
+            if ($tagrec = $DB->get_record('oublog_tags', array('tag' => $tag), 'id')) {
+                $tagid = $tagrec->id;
+            }
+        }
         $button = new portfolio_add_button();
         $button->set_callback_options('oublog_all_portfolio_caller',
                 array('postid' => $post->id,
@@ -416,7 +423,7 @@ if ($posts) {
                         'currentindividual' => $currentindividual,
                         'oubloguserid' => $oubloguser->id,
                         'canaudit' => $canaudit,
-                        'tag' => $tag,
+                        'tag' =>  $tagid,
                         'cmid' => $cm->id,), 'mod_oublog');
         echo $button->to_html(PORTFOLIO_ADD_TEXT_LINK) .
         get_string('exportpostscomments', 'oublog');
