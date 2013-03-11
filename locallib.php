@@ -342,10 +342,23 @@ function oublog_is_writable_group($cm) {
  * @return bool
  */
 function oublog_can_view_post($post, $user, $context, $personalblog) {
-
+    if($personalblog && empty($post->userid)) {
+        // Not sent userid from pluginfile etc so get it.
+        global $DB;
+        if ($instance = $DB->get_record('oublog_instances',
+                array('id' => $post->oubloginstancesid), 'userid')) {
+            $post->userid = $instance->userid;
+        }
+    }
     // Public visibility means everyone
-    if($post->visibility==OUBLOG_VISIBILITY_PUBLIC) {
-        return true;
+    if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
+        if (!$post->deletedby || ($post->userid == $user->id ||
+                has_capability('mod/oublog:manageposts', $context, $user->id))) {
+            // If not deleted, or is and author or has manage cap then show.
+            return true;
+        } else {
+            return false;
+        }
     }
     // Logged-in user visibility means everyone logged in, but no guests
     if($post->visibility==OUBLOG_VISIBILITY_LOGGEDINUSER &&
@@ -361,16 +374,6 @@ function oublog_can_view_post($post, $user, $context, $personalblog) {
 
     // Otherwise this is set to course visibility
     if($personalblog) {
-        if (empty($post->userid)) {
-            // Not sent userid from pluginfile etc so get it.
-            global $DB;
-            if ($instance = $DB->get_record('oublog_instances',
-                    array('id' => $post->oubloginstancesid), 'userid')) {
-                $post->userid = $instance->userid;
-            } else {
-                return false;
-            }
-        }
         return $post->userid==$user->id;
     } else {
         // Check oublog:view capability at module level
