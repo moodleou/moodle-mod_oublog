@@ -38,7 +38,7 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
 
         // Define each element separated
         $oublog = new backup_nested_element('oublog', array('id'), array('name', 'course',
-                'accesstoken', 'summary', 'allowcomments', 'individual',
+                'accesstoken', 'intro', 'introformat', 'allowcomments', 'individual',
                 'maxbytes', 'maxattachments', 'maxvisibility', 'global', 'views',
                 'completionposts', 'completioncomments'));
 
@@ -116,10 +116,12 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
         $link->annotate_ids('oublog_instances', 'id');
 
         // Define file annotations
-        $oublog->annotate_files('mod_oublog', 'summary', null); // This file area hasn't itemid
+        $oublog->annotate_files('mod_oublog', 'intro', null); // This file area hasn't itemid
+        $instance->annotate_files('mod_oublog', 'summary', 'id');
         $post->annotate_files('mod_oublog', 'attachment', 'id');
         $post->annotate_files('mod_oublog', 'message', 'id');
         $edit->annotate_files('mod_oublog', 'edit', 'id');
+        $comment->annotate_files('mod_oublog', 'messagecomment', 'id');
 
         // Return the root element (oublog), wrapped into standard activity structure
         return $this->prepare_activity_structure($oublog);

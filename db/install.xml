@@ -9,11 +9,12 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="accesstoken"/>
         <FIELD NAME="accesstoken" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="course" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="accesstoken" NEXT="summary"/>
-        <FIELD NAME="summary" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="allowcomments"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="accesstoken" NEXT="intro"/>
+        <FIELD NAME="intro" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="introformat"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="text format of intro field" PREVIOUS="intro" NEXT="allowcomments" />
         <FIELD NAME="allowcomments" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = do not allow comments
 1 = allow comments from signed-in users
-2 = allow comments from signed-in users, and moderated comments from external users" PREVIOUS="summary" NEXT="maxbytes"/>
+2 = allow comments from signed-in users, and moderated comments from external users" PREVIOUS="introformat" NEXT="maxbytes"/>
         <FIELD NAME="maxbytes" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="512000" SEQUENCE="false" PREVIOUS="allowcomments" NEXT="maxattachments"/>
         <FIELD NAME="maxattachments" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="9" SEQUENCE="false" COMMENT="Number of attachments allowed per post" PREVIOUS="maxbytes" NEXT="maxvisibility"/>
         <FIELD NAME="maxvisibility" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="100" SEQUENCE="false" PREVIOUS="maxattachments" NEXT="global"/>

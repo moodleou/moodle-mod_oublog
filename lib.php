@@ -450,7 +450,8 @@ function oublog_post_install() {
     $oublog = new stdClass;
     $oublog->course = SITEID;
     $oublog->name = 'Personal Blogs';
-    $oublog->summary = '';
+    $oublog->intro = '';
+    $oublog->introformat = FORMAT_HTML;
     $oublog->accesstoken = md5(uniqid(rand(), true));
     $oublog->maxvisibility = OUBLOG_VISIBILITY_PUBLIC;
     $oublog->global = 1;
@@ -622,7 +623,7 @@ function oublog_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
         case FEATURE_COMPLETION_HAS_RULES: return true;
         case FEATURE_BACKUP_MOODLE2: return true;
-        case FEATURE_MOD_INTRO: return false;
+        case FEATURE_MOD_INTRO: return true;
         case FEATURE_GROUPINGS: return true;
         case FEATURE_GROUPS: return true;
         case FEATURE_GROUPMEMBERSONLY: return true;
@@ -792,7 +793,7 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
         return false;
     }
 
-    $fileareas = array('attachment', 'message', 'edit');
+    $fileareas = array('attachment', 'message', 'edit', 'messagecomment', 'summary');
     if (!in_array($filearea, $fileareas)) {
         return false;
     }
@@ -810,11 +811,19 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
         $fileid = $postid;
     }
 
-    if (!$post = $DB->get_record('oublog_posts', array('id'=>$postid))) {
-        return false;
-    }
-    if (!($oublog = oublog_get_blog_from_postid($post->id))) {
-        return false;
+    if ($filearea != 'summary') {
+        if ($filearea == 'messagecomment') {
+            if (!$comment = $DB->get_record('oublog_comments', array('id' => $postid), 'postid')) {
+                return false;
+            }
+            $postid = $comment->postid;
+        }
+        if (!$post = $DB->get_record('oublog_posts', array('id'=>$postid))) {
+            return false;
+        }
+        if (!($oublog = oublog_get_blog_from_postid($post->id))) {
+            return false;
+        }
     }
 
     $fs = get_file_storage();
@@ -827,12 +836,16 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
 
     // Make sure we're allowed to see it...
 
-    if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+    if ($filearea != 'summary' && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
         return false;
     }
-
-    // finally send the file
-    send_stored_file($file, 0, 0, true); // download MUST be forced - security!
+    if ($filearea == 'attachment') {
+        $forcedownload = true;
+    } else {
+        $forcedownload = false;
+    }
+    // Finally send the file.
+    send_stored_file($file, 0, 0, $forcedownload);
 }
 
 /**
@@ -851,28 +864,33 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
  */
 function oublog_get_file_info($browser, $areas, $course, $cm, $context, $filearea,
         $itemid, $filepath, $filename) {
-    global $CFG, $USER;
+    global $CFG, $USER, $DB;
     require_once($CFG->dirroot . '/mod/oublog/locallib.php');
 
     if ($context->contextlevel != CONTEXT_MODULE) {
         return null;
     }
-    $fileareas = array('attachment', 'message', 'edit');
+    $fileareas = array('attachment', 'message', 'edit', 'messagecomment');
     if (!in_array($filearea, $fileareas)) {
         return null;
     }
-
-    if (!($oublog = oublog_get_blog_from_postid($itemid))) {
-        return null;
-    }
-    // Check if the user is allowed to view the blog
-    try {
-        oublog_check_view_permissions($oublog, $context, $cm);
-    } catch (mod_forumng_exception $e) {
-        return null;
+    $postid = $itemid;
+    if ($filearea == 'messagecomment') {
+        if (!$comment = $DB->get_record('oublog_comments', array('id' => $postid), 'postid')) {
+            return null;
+        }
+        $postid = $comment->postid;
     }
 
-    if (!$post = oublog_get_post($itemid)) {
+    if (!($oublog = oublog_get_blog_from_postid($postid))) {
+        return null;
+    }
+    // Check if the user is allowed to view the blog.
+    if (!has_capability('mod/oublog:view', $context)) {
+        return null;
+    }
+
+    if (!$post = oublog_get_post($postid)) {
         return null;
     }
     // Check if the user is allowed to view the post
@@ -902,8 +920,13 @@ function oublog_get_file_info($browser, $areas, $course, $cm, $context, $fileare
  * @param cm_info $cm
  */
 function oublog_cm_info_dynamic(cm_info $cm) {
-    if (!has_capability('mod/oublog:view',
-            get_context_instance(CONTEXT_MODULE,$cm->id))) {
+    $capability = 'mod/oublog:view';
+    if ($cm->course == SITEID && $cm->instance == 1) {
+        // Is global blog (To save DB call we make suspect assumption it is instance 1)?
+        $capability = 'mod/oublog:viewpersonal';
+    }
+    if (!has_capability($capability,
+            context_module::instance($cm->id))) {
         $cm->uservisible = false;
         $cm->set_available(false);
     }

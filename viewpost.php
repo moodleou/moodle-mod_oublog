@@ -124,7 +124,7 @@ echo '<div class="oublog-topofpage"></div>';
 
 // Print blog posts.
 echo '<div id="middle-column" >';
-
+echo '<div class="oublog-post-commented">';
 echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype, $canmanageposts,
         $canaudit, false, false);
 
@@ -132,7 +132,7 @@ if (!empty($post->comments)) {
     // Code extracted to new renderer function.
     echo $oublogoutput->render_comments($post, $oublog, $canaudit, $canmanagecomments, false, $cm);
 }
-
+echo '</div>';
 // If it is your own post, then see if there are any moderated comments -
 // for security reasons, you must also be allowed to comment on the post in
 // order to moderate it (because 'approving' a comment is basically equivalent

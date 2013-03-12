@@ -77,7 +77,8 @@ $mform = new mod_oublog_comment_form('editcomment.php', array(
         'blogid' => $blog,
         'postid' => $postid,
         'moderated' => $moderated,
-        'confirmed' => $confirmed
+        'confirmed' => $confirmed,
+        'maxbytes' => $oublog->maxbytes
         ));
 
 if ($mform->is_cancelled()) {

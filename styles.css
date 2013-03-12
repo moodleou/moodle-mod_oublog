@@ -4,12 +4,25 @@
 #oublog-tags a:hover .oublog-tagname{
     text-decoration:underline;
 }
+.oublog-sideblock a:hover,
+#oublog-links a:hover,
+.oublog-post-links a:hover,
+.oublog-post-top a:hover,
+.oublog-post-bottom a:hover,
+.oublog-paging a:hover,
+.oublog-postedby a:hover {
+    text-decoration:underline;
+}
 
 #oublog-feeds a {
     text-decoration:none;
 }
 #oublog-feeds a:hover .oublog-tagname{
     text-decoration:underline;
+}
+
+.oublog-post-date a, .oublog-post-tags a, .oublog-post-links a, .oublog-post-editsummary a, .oublog-post-attachments a {
+    text-decoration: none;
 }
 
 .oublog-tagcount {
@@ -41,12 +54,15 @@
     margin-bottom:1em;
 }
 
-.oublog-post, .oublog-comment {
-    border: 1px solid #ddd;
-    margin: 0 0 1em;
-    padding: 0.5em;
-    background-color: #FCFCFC;
+.oublog-post {
+    padding: 1em;
     min-height:0; /* ie7 */
+}
+.oublog-post.oublog-odd, .oublog-post-commented {
+    background-color: #F2F2F2;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
 }
 .oublog-sideblock {
     border: 1px solid #ddd;
@@ -69,6 +85,12 @@
 .ie6 .oublog-comment li {
     height:auto;
 }
+.oublog-post .oublog-post-top {
+    margin-bottom: 1em;
+}
+.oublog-post .oublog-post-top-details {
+    margin-left: 80px;
+}
 
 .oublog-post-date, .oublog-post-visibility, .oublog-post-tags, .oublog-post-links, .oublog-post-editsummary, .oublog-links {
     font-size: 0.85em;
@@ -78,24 +100,23 @@
     margin-bottom:0.7em;
 }
 
-.oublog-post-links {
-    margin-bottom:1.5em;
+.oublog-post-links a {
+    margin-right: 1em;
 }
 
 .oublog-postedby {
-    font-size: 0.85em;
     margin-top: 0.4em;
     margin-bottom: 0.4em;
 }
 
 .oublog-post-visibility {
-    margin-top: 0.4em;
-    color:#aaa;
+    margin-bottom: 0.4em;
+    font-weight: bold;
 }
 
 .oublog-post h2.oublog-title {
     margin: 0 0 0.5em 0;
-    font-size:1em;
+    font-size: 1.2em;
 }
 
 .oublog-post h3.oublog-title {
@@ -107,11 +128,29 @@
     border-bottom-color: #aaaaaa;
 }
 
+.oublog-post .oublog-post-attachments {
+    float: right;
+    padding: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #E7E7E7;
+    width: 200px;
+    margin-bottom: 1em;
+    font-size: 0.85em;
+}
+.oublog-post .oublog-post-attachment {
+    display: inline;
+    word-break: break-all;
+    margin-right: .75em;
+}
+
 .oublog-post-content,
 .oublog-comment-content {
     margin:0.4em 0;
     margin-bottom:1.2em;
     min-height:0; /* ie7... */
+    clear: both;
 }
 .ie6 .oublog-post-content,
 .ie6 .oublog-comment-content {
@@ -123,13 +162,46 @@
     color: #aaa;
 }
 
+.oublog-paging {
+    border-top: 1px solid #F2F2F2;
+    margin-top: .5em;
+    margin-bottom: 1em;
+}
 
 #oublog-single-post-view .oublog-post {
     border: none;
     background-color: transparent;
     padding: 0;
 }
+#oublogcomments {
+    padding: 1em;
+}
+#oublogcomments.oublogpartcomments {
+    background-color: #F2F2F2;
+}
+#oublogcomments .oublog-comment {
+    padding: 1em;
+    background-color: #FFFFFF;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    margin-bottom: .5em;
+}
 
+#oublogcomments .oublog-comment h2.oublog-commentstitle {
+    margin-top: 0;
+    padding-bottom: .5em;
+    border-bottom: 1px solid #F2F2F2;
+}
+
+.oublog-comment .oublog-userpic {
+    margin-right: 10px;
+    margin-bottom: 1em;
+}
+.oublog-comment h2.oublog-title {
+    margin: 0 0 0.5em 0;
+    font-weight: normal;
+}
 .oublog-comment h2.oublog-comment-title {
     margin: 0 0 0.5em 0;
     font-size:1em;
@@ -174,7 +246,6 @@
     font-weight: bold;
 }
 .oublog-comment-deletedby {
-    margin-left: -42px;
     margin-bottom: 8px;
 }
 
@@ -202,23 +273,14 @@
   margin-left:13em;
 }
 
-.oublog-post.oublog-hasuserpic,
-.oublog-comment.oublog-hasuserpic {
-  padding-left:50px;
-  position:relative;
-}
 .oublog-userpic {
-  position:absolute;
-  left:8px;
+    float: left;
+    width: 70px;
+    padding-top: .25em;
 }
-/* I don't like CSS hacks, but unfortunately standard Moodle does not have the
-   OU's .ie6 class on body. */
-* html .oublog-hasuserpic {
-  padding-left:0;
-  margin-left:50px;
-}
-* html .oublog-userpic {
-  left:-42px;
+.oublog-userpic .userpicture {
+    width: 70px;
+    height: 70px;
 }
 
 #page-mod-oublog-view .groupselector {
@@ -271,12 +333,16 @@ div.oublog-individualselector {
 }
 
 .oublog-newerposts {
-    margin: 1.5em 0 2em;
+    margin: .5em 0 1em;
+    float: right;
 }
 .oublog-olderposts {
-    margin: 0 0 2em;
+    margin: .5em 0 1em;
+    float: left;
 }
-
+.oublog-newerposts a, .oublog-olderposts a {
+    text-decoration: none;
+}
 #page-mod-oublog-participation table#participation {
     margin-top: 1em;
 }
@@ -290,4 +356,19 @@ div.oublog-individualselector {
 }
 #oublogbuttons .participationbutton {
     margin-left: 0.5em;
+}
+#page-mod-oublog-editpost .fp-pathbar {
+    display: none;
+}
+#oublog-links a {
+    text-decoration: none;
+}
+#oublog-feedtext {
+    font-size: 0.85em;
+}
+.oublog-feedlinks a {
+    text-decoration: none;
+}
+#addexportpostsbutton {
+    clear:both;
 }

@@ -3,6 +3,11 @@ $string['attachments'] = "Attachments";
 $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
 $string['modulenameplural'] = 'OU blogs';
+$string['modulename_help'] = 'The blog activity module allows for creation of blogs within a course
+ (these are separate to the core Moodle blog system). You can have course-wide blogs (everyone in
+ the course posts to the same blog), group blogs, or individual blogs.';
+
+$string['oublogintro'] = 'Intro';
 
 $string['oublog:view'] = 'View posts';
 $string['oublog:addinstance'] = 'Add a new OU blog';
@@ -17,6 +22,7 @@ $string['oublog:audit'] = 'View deleted posts and old versions';
 $string['oublog:viewindividual'] = 'View individual blogs';
 $string['oublog:exportownpost'] = 'Export own post';
 $string['oublog:exportpost'] = 'Export post';
+$string['oublog:exportposts'] = 'Export posts';
 $string['mustprovidepost'] = 'Must provide postid';
 $string['newpost'] = 'New blog post';
 $string['title'] = 'Title';
@@ -63,8 +69,8 @@ $string['editonsummary'] = 'Edited {$a->editdate}';
 $string['edit'] = 'Edit';
 $string['delete'] = 'Delete';
 
-$string['olderposts'] = '&lt; Older posts';
-$string['newerposts'] = 'Newer posts &gt;';
+$string['olderposts'] = 'Previous posts';
+$string['newerposts'] = 'Newer posts';
 $string['extranavolderposts'] = 'Older posts: {$a->from}-{$a->to}';
 $string['extranavtag'] = 'Tag: {$a}';
 
@@ -378,6 +384,8 @@ $string['posttitle'] = 'Post title';
 
 // Export
 $string['exportedpost'] = 'Exported blog post';
+$string['exportpostscomments'] = ' all currently visible posts and their comments.';
+$string['exportuntitledpost'] = 'An untitled post ';
 
 $string['configmaxattachments'] = 'Default maximum number of attachments allowed per blog post.';
 $string['configmaxbytes'] = 'Default maximum size for all blog attachments on the site.

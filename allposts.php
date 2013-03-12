@@ -67,8 +67,6 @@ $strnewposts    = get_string('newerposts', 'oublog');
 $strolderposts  = get_string('olderposts', 'oublog');
 $strfeeds       = get_string('feeds', 'oublog');
 
-$strfeeds       .= '<img src="'.$OUTPUT->pix_url('i/rss') . '" alt="' . get_string('blogfeed',
-        'oublog') . '"  class="feedicon" />';
 $strblogsearch  = get_string('searchblogs', 'oublog');
 
 // Get Posts.
@@ -147,20 +145,21 @@ print skip_main_destination();
 // Print blog posts.
 if ($posts) {
     echo '<div id="oublog-posts">';
-    if ($offset > 0) {
-        if ($offset-OUBLOG_POSTS_PER_PAGE == 0) {
-            echo "<a href=\"$returnurl\">$strnewposts</a>";
-        } else {
-            echo "<a href=\"$returnurl&amp;offset=" . ($offset-OUBLOG_POSTS_PER_PAGE) .
-                    "\">$strnewposts</a>";
-        }
-    }
-
+    $rowcounter = 1;
     foreach ($posts as $post) {
+        $post->row = $rowcounter;
         echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype,
                 $canmanageposts, $canaudit, false, false);
+        $rowcounter++;
     }
-
+    if ($offset > 0) {
+        if ($offset-OUBLOG_POSTS_PER_PAGE == 0) {
+            print "<div class='oublog-newerposts'><a href=\"$returnurl\">$strnewposts</a></div>";
+        } else {
+            print "<div class='oublog-newerposts'><a href=\"$returnurl&amp;offset=" .
+            ($offset-OUBLOG_POSTS_PER_PAGE) . "\">$strnewposts</a></div>";
+        }
+    }
     if ($recordcount - $offset > OUBLOG_POSTS_PER_PAGE) {
         echo "<a href=\"$returnurl&amp;offset=" . ($offset+OUBLOG_POSTS_PER_PAGE) .
                 "\">$strolderposts</a>";

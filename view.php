@@ -100,6 +100,7 @@ $canaudit       = has_capability('mod/oublog:audit', $context);
 $stroublogs     = get_string('modulenameplural', 'oublog');
 $stroublog      = get_string('modulename', 'oublog');
 $straddpost     = get_string('newpost', 'oublog');
+$strexportposts = get_string('oublog:exportposts', 'oublog');
 $strtags        = get_string('tags', 'oublog');
 $stredit        = get_string('edit', 'oublog');
 $strdelete      = get_string('delete', 'oublog');
@@ -239,15 +240,25 @@ if (!$hideunusedblog) {
         $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
         $links .= html_writer::link($allpostsurl, $strallposts);
         $links .= html_writer::end_tag('div');
+        $format = FORMAT_HTML;
     } else {
-        $summary = $oublog->summary;
+        $summary = $oublog->intro;
         $title = $oublog->name;
+        $format = $oublog->introformat;
     }
+
     // Name, summary, related links.
     $bc = new block_contents();
     $bc->attributes['class'] = 'oublog-sideblock block';
     $bc->title = format_string($title);
-    $bc->content = format_text($summary . $links);
+    $bc->content = format_text($summary, $format) . $links;
+    if ($oublog->global) {
+        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php',
+                $context->id, 'mod_oublog', 'summary', $oubloginstance->id);
+    } else {
+        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php',
+                $context->id, 'mod_oublog', 'intro', null);
+    }
     $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 
     // Tag Cloud.
@@ -276,7 +287,7 @@ if (!$hideunusedblog) {
         $feedicon = ' <img src="'.$OUTPUT->pix_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
         $bc = new block_contents();
         $bc->attributes['class'] = 'oublog-sideblock block';
-        $bc->title = $strfeeds . $feedicon;
+        $bc->title = $strfeeds;
         $bc->content = $feeds;
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
@@ -359,6 +370,14 @@ echo '</div>';
 // Print blog posts.
 if ($posts) {
     echo '<div id="oublog-posts">';
+    $rowcounter = 1;
+    foreach ($posts as $post) {
+        $post->row = $rowcounter;
+        echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype,
+                $canmanageposts, $canaudit, true, false);
+        $rowcounter++;
+    }
+    echo "<div class='oublog-paging'>";
     if ($offset > 0) {
         if ($offset-OUBLOG_POSTS_PER_PAGE == 0) {
             print "<div class='oublog-newerposts'><a href=\"$returnurl\">$strnewposts</a></div>";
@@ -368,31 +387,62 @@ if ($posts) {
         }
     }
 
-    foreach ($posts as $post) {
-        echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype,
-                $canmanageposts, $canaudit, true, false);
-    }
-
     if ($recordcount - $offset > OUBLOG_POSTS_PER_PAGE) {
         print "<div class='oublog-olderposts'><a href=\"$returnurl&amp;offset=" .
                 ($offset+OUBLOG_POSTS_PER_PAGE) . "\">$strolderposts</a></div>";
     }
+    echo '</div></div>';
+    echo '<div id="addexportpostsbutton">';
+    // Show portfolio export link.
+    // Will need to be passed enough details on the blog so it can accurately work out what
+    // posts are displayed (as oublog_get_posts above).
+    if (!empty($CFG->enableportfolios) &&
+            (has_capability('mod/oublog:exportpost', $context))) {
+        require_once($CFG->libdir . '/portfoliolib.php');
+        if ($canaudit) {
+            $canaudit = 1;
+        } else {
+            $canaudit = 0;
+        }
+        if (empty($oubloguser->id)) {
+            $oubloguser->id = 0;
+        }
+        $tagid = null;
+        if (!is_null($tag)) {
+            // Make tag work with portfolio param cleaning by looking up id.
+            if ($tagrec = $DB->get_record('oublog_tags', array('tag' => $tag), 'id')) {
+                $tagid = $tagrec->id;
+            }
+        }
+        $button = new portfolio_add_button();
+        $button->set_callback_options('oublog_all_portfolio_caller',
+                array('postid' => $post->id,
+                        'oublogid' => $oublog->id,//$offset
+                        'offset' => $offset,//
+                        'currentgroup' => $currentgroup,
+                        'currentindividual' => $currentindividual,
+                        'oubloguserid' => $oubloguser->id,
+                        'canaudit' => $canaudit,
+                        'tag' =>  $tagid,
+                        'cmid' => $cm->id,), '/mod/oublog/locallib.php');
+        echo $button->to_html(PORTFOLIO_ADD_TEXT_LINK) .
+        get_string('exportpostscomments', 'oublog');
+    }
     echo '</div>';
 }
-
 // Print information allowing the user to log in if necessary, or letting
 // them know if there are no posts in the blog.
 if (isguestuser() && $USER->id==$user) {
     print '<p class="oublog_loginnote">'.
-        get_string('guestblog', 'oublog',
-            'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
+            get_string('guestblog', 'oublog',
+                    'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
 } else if (!isloggedin() || isguestuser()) {
     print '<p class="oublog_loginnote">'.
-        get_string('maybehiddenposts', 'oublog',
-            'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
+            get_string('maybehiddenposts', 'oublog',
+                    'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
 } else if (!$posts) {
     print '<p class="oublog_noposts">'.
-        get_string('noposts', 'oublog').'</p>';
+            get_string('noposts', 'oublog').'</p>';
 }
 
 // Log visit and bump view count.
