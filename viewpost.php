@@ -26,6 +26,27 @@ require_once("../../config.php");
 require_once("locallib.php");
 
 $postid = required_param('post', PARAM_INT);       // Post id.
+// Support redirects across systems - find post by username and time created.
+$username = optional_param('u', '', PARAM_USERNAME);
+$time = optional_param('time', 0, PARAM_INT);
+if ($postid == 0 && !empty($username) && $time != 0) {
+    // Search DB for an existing post (Personal blog only).
+    $redirectto = new moodle_url('/mod/oublog/view.php', array('u' => $username));
+    if (!$user = $DB->get_record('user', array('username' => $username), 'id')) {
+        print_error('invaliduser');
+    }
+    if (!list($oublog, $oubloginstance) = oublog_get_personal_blog($user->id)) {
+        // We redirect on error as system can create blog on access.
+        redirect($redirectto);
+    }
+    // Get any posts matching user and time (If more than one just get first record).
+    if (!$post = $DB->get_record('oublog_posts', array('oubloginstancesid' => $oubloginstance->id,
+            'timeposted' => $time), 'id', IGNORE_MULTIPLE)) {
+        // Go to their blog home page if no post found.
+        redirect($redirectto);
+    }
+    $postid = $post->id;
+}
 
 // This query based on the post id is so that we can get the blog etc to
 // check permissions before calling oublog_get_post.

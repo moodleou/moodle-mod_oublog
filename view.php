@@ -27,8 +27,17 @@ require_once('locallib.php');
 
 $id     = optional_param('id', 0, PARAM_INT);       // Course Module ID.
 $user   = optional_param('user', 0, PARAM_INT);     // User ID.
+$username = optional_param('u', '', PARAM_USERNAME);// User login name.
 $offset = optional_param('offset', 0, PARAM_INT);   // Offset fo paging.
 $tag    = optional_param('tag', null, PARAM_TAG);   // Tag to display.
+
+// Set user value if u (username) set.
+if ($username != '') {
+    if (!$oubloguser = $DB->get_record('user', array('username' => $username))) {
+        print_error('invaliduser');
+    }
+    $user = $oubloguser->id;
+}
 
 $url = new moodle_url('/mod/oublog/view.php', array('id'=>$id, 'user'=>$user, 'offset'=>$offset,
         'tag'=>$tag));
@@ -53,8 +62,10 @@ if ($id) {
     $oubloginstanceid = null;
 
 } else if ($user) {
-    if (!$oubloguser = $DB->get_record('user', array('id'=>$user))) {
-        print_error('invaliduserid');
+    if (!isset($oubloguser)) {
+        if (!$oubloguser = $DB->get_record('user', array('id' => $user))) {
+            print_error('invaliduserid');
+        }
     }
     if (!list($oublog, $oubloginstance) = oublog_get_personal_blog($oubloguser->id)) {
         print_error('invalidcoursemodule');
