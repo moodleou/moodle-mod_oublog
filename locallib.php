@@ -2753,7 +2753,7 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
     function prepare_package() {
         global $CFG;
 
-        $posthtml = $this->prepare_post($this->post);
+        $posthtml = $this->prepare_post($this->post, true);
 
         $content = $posthtml;
         $name = 'post.html';
@@ -2773,16 +2773,19 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
      * @param int $post
      * @return string
      */
-    protected function prepare_post($post, $fileoutputextras=null) {
+    protected function prepare_post($post, $usehtmls = true) {
         global $PAGE;
-        $output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" ' .
-                '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' .
-                html_writer::start_tag('html', array('xmlns' => 'http://www.w3.org/1999/xhtml'));
-        $output .= html_writer::tag('head',
-                html_writer::empty_tag('meta',
+        $output = '';
+        if ($usehtmls) {
+            $output .= '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" ' .
+                    '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' .
+                    html_writer::start_tag('html', array('xmlns' => 'http://www.w3.org/1999/xhtml'));
+            $output .= html_writer::tag('head',
+                    html_writer::empty_tag('meta',
                     array('http-equiv' => 'Content-Type', 'content' => 'text/html; charset=utf-8')) .
-                html_writer::tag('title', get_string('exportedpost', 'oublog')));
-        $output .= html_writer::start_tag('body') . "\n";
+                    html_writer::tag('title', get_string('exportedpost', 'oublog')));
+            $output .= html_writer::start_tag('body') . "\n";
+        }
         if (!$oublog = oublog_get_blog_from_postid($post->id)) {
             print_error('invalidpost', 'oublog');
         }
@@ -2806,7 +2809,9 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         if (!empty($post->comments)) {
             $output .= $oublogoutput->render_comments($post, $oublog, false, false, true, $cm, $format);
         }
-        $output .= html_writer::end_tag('body') . html_writer::end_tag('html');
+        if ($usehtmls) {
+            $output .= html_writer::end_tag('body') . html_writer::end_tag('html');
+        }
         return $output;
     }
     /**
@@ -3286,33 +3291,46 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
      */
     function prepare_package() {
         global $CFG;
+        $plugin = $this->get('exporter')->get('instance')->get('plugin');
         $posttitles = array();
+        $outputhtml = '';
         // Exporting a set of posts from the view page.
         foreach ($this->posts as $post) {
             $post = oublog_get_post($post->id);
-            $posthtml = $this->prepare_post($post);
-            $content = $posthtml;
-            // If post is titled use that as the exported file name.
-            if ($post->title) {
-                $name = $post->title . '.html';
+            if ($plugin != 'rtf') {
+                $outputhtml = $this->prepare_post($post, true);
+                // If post is titled use that as file name for export.
+                if ($post->title) {
+                    $name = $post->title . '.html';
+                } else {
+                    $name = get_string('exportuntitledpost', 'oublog') . $post->id . '.html';
+                }
+                // If post title already exists make it unique.
+                if (in_array(strtolower($post->title), $posttitles) and $post->title != '' ) {
+                    $name = $post->title . ' ' . $post->id . '.html';
+                    $post->title = $post->title . ' id ' . $post->id;
+                }
             } else {
-                $name = get_string('exportuntitledpost', 'oublog') . $post->id . '.html';
-            }
-            // If post title already exists make it unique.
-            if (in_array(strtolower($post->title), $posttitles) and $post->title != '' ) {
-                $name = $post->title . ' ' . $post->id . '.html';
-                $post->title = $post->title . ' id ' . $post->id;
+                // Ensure multiple posts and their comments
+                // are included in the html for export.
+                $outputhtml .= $this->prepare_post($post, false);
             }
             // Ensure multiple files contained within this post and it's comments
-            // are included in the exported zip file.
+            // are included in the exported file.
             $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
             if (!empty($this->multifiles)) {
                 foreach ($this->multifiles as $file) {
                     $this->get('exporter')->copy_existing_file($file);
                 }
             }
-            $this->get('exporter')->write_new_file($content, $name, $manifest);
-            $posttitles[] = strtolower($post->title);
+            if ($plugin != 'rtf') {
+                $this->get('exporter')->write_new_file($outputhtml, $name, $manifest);
+                $posttitles[] = strtolower($post->title);
+            }
+        }
+        if ($plugin == 'rtf') {
+            $name = $this->oublog->name . '.html';
+            $this->get('exporter')->write_new_file($outputhtml, $name, $manifest);
         }
     }
 
