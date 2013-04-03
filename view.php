@@ -264,7 +264,7 @@ if (!$hideunusedblog) {
     $bc->title = format_string($title);
     $bc->content = format_text($summary, $format) . $links;
     if ($oublog->global) {
-        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php',
+        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'mod/oublog/pluginfile.php',
                 $context->id, 'mod_oublog', 'summary', $oubloginstance->id);
     } else {
         $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php',

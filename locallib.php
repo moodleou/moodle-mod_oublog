@@ -35,7 +35,7 @@ if (!class_exists('transaction_wrapper')) {
 }
 require_once($CFG->libdir . '/portfolio/caller.php');
 require_once($CFG->libdir . '/gradelib.php');
-
+require_once($CFG->libdir . '/filelib.php');
 /**#@+
  * Constants defining the visibility levels of blog posts
  */
@@ -1405,9 +1405,14 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
             ORDER BY GREATEST(c.timeapproved, c.timeposted) DESC ";
 
     $rs = $DB->get_recordset_sql($sql, $params, 0, OUBLOG_MAX_FEED_ITEMS);
+    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     foreach ($rs as $item) {
         $item->link = $CFG->wwwroot.'/mod/oublog/viewpost.php?post='.$item->postid;
+        // Rewrite image urls in oublog posts comments.
+        $item->description = file_rewrite_pluginfile_urls($item->description,
+                'mod/oublog/pluginfile.php', $modcontext->id, 'mod_oublog',
+                'messagecomment', $item->id);
 
         if ($item->title) {
             $item->description = "<h3>" . s($item->title) . "</h3>"
@@ -1509,7 +1514,8 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
             ORDER BY p.timeposted DESC ";
 
     $rs = $DB->get_recordset_sql($sql, $params, 0, OUBLOG_MAX_FEED_ITEMS);
-    foreach($rs as $item) {
+    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    foreach ($rs as $item) {
         $item->link = $CFG->wwwroot.'/mod/oublog/viewpost.php?post='.$item->id;
         $item->author = fullname($item);
         $item->tags = array();
@@ -1518,6 +1524,10 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
         if ((string)$item->title === '') {
             $item->title = html_to_text(shorten_text($item->description));
         }
+        // Rewrite image urls in oublog posts.
+        $item->description = file_rewrite_pluginfile_urls($item->description,
+                'mod/oublog/pluginfile.php', $modcontext->id,
+                'mod_oublog', 'message', $item->id);
         $items[$item->id] = $item;
     }
     $rs->close();

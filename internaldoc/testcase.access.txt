@@ -1,0 +1,177 @@
+This script describes steps to test the OU Blog facility for Public access from a user
+perspective. It is intended to cover most of the UI and features.
+
+NOTE: In this test case, the word 'blog' always refers to the OU blog.
+
+The test steps in this script follow on from each other and aren't independent.
+
+
+Initial setup
+=============
+
+This test case requires:
+
+- six different numbered images and six diferent numbered texts for upload.
+- a course which has at least one blog.
+- two test student users (US1, and US2).
+- at least two web browsers, to enable distinctly different sessions.
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+
+CRE Creating blog and data
+===========================
+
+
+CRE01 / Logged in as admin.
+   Create a blog called CRE01 which is a whole-course blog (no groups) and
+   visible to anyone in the world.
+
+CRE01-A /  Log out user Admin.
+CRE01-B /  Log in as US1.
+
+CRE02-P1 / Logged in as US1.
+   Go to blog CRE01.
+   Add a new post with title "CRE01-P1" and text "Post one visible to participants on this course".
+   Below the text upload the first numbered image, provide an image description.
+   Below the image enter a similar description, plus image one.
+   Attach the first text file to the post.
+   Leave 'Who can read this?' at the 'Visible to participants on this course' default setting.
+   To save the post.
+--  Click 'Add blog post'.
+
+CRE02-P2 / Logged in as US1.
+   Add a new post with title "CRE01-P2" and text "Post two visible to everyone who is logged in to the system".
+   Below the text upload the second numbered image, provide an image description.
+   Below the image enter a similar description, plus image two.
+   Attach the second text file.
+   Change 'Who can read this?' to the 'Visible to everyone who is logged in to the system' setting.
+   To save the post.
+-- Click 'Add blog post'.
+
+CRE02-P3 / Logged in as US1.
+   Add a new post with title "CRE01-P3" and text "Post three visible to anyone in the world".
+   Below the text upload the third numbered image, provide an image description.
+   Below the image enter a similar description, plus image three.
+   Attach the third text file.
+   Attach the third numbered image file.
+   Change 'Who can read this?' to the 'Visible to anyone in the world' setting.
+   To save the post.
+-- Click 'Add blog post'.
+
+CRE03-A /  Log out user US1.
+CRE03-B /  Log in as US2.
+
+CRE05-P1 / Logged in as US2.
+   Go to blog CRE01.
+   Add a new post with title "CRE01-P4" and text "Post four visible to participants on this course".
+   Below the text upload the fourth numbered image, provide an image description.
+   Below the image enter a similar description, plus image four.
+   Attach the fourth text file.
+   Leave 'Who can read this?' at the default setting 'Visible to participants on this course'.
+   To save the post.
+-- Click 'Add blog post'.
+
+CRE05-P2 / Logged in as US2.
+   Add a new post with title "CRE01-P5" and text "Post five visible to everyone who is logged in to the system".
+   Below the text upload the fifth image, provide an image description.
+   Below the image enter a similar description, plus image five.
+   Attach the fifth text file.
+   Change 'Who can read this?' to the 'Visible to everyone who is logged in to the system' setting.
+   To save the post.
+-- Click 'Add blog post'.
+
+CRE05-P3 / Logged in as US2.
+   Add a new post with title "CRE01-P6" and text "Post six visible to anyone in the world".
+   Below the text upload the sixth image, provide an image description.
+   Below the image enter a similar description, plus image six.
+   Attach the sixth text file.
+   Attach the sixth numbered image file.
+   Change 'Who can read this?' to the 'Visible to anyone in the world' setting.
+   To save the post.
+-- Click 'Add blog post'.
+
+
+CRE06-C1 / Logged in as US2.
+   Add a comment to post "CRE01-P1", with title "CRE01-P1-C1".
+   Add text "CRE01-P1-C1 user two comment, adding an existing image here which is not the same as that in this post."
+   Below this text upload an image different from that in the post, provide an image description.
+   Below the image enter a similar description, plus image seven.
+
+CRE06-CS
+   Do this for each post changing the comment title and texts to reflect the post number and image number.
+
+CRE07-A /  Log out user US2.
+CRE07-B /  Log in as US1.
+
+CRE08-C2 / Logged in as US1.
+  Add a comment to post "CRE01-P1", with title "CRE01-P1-C2"
+  Add text "CRE01-P1-C2 user one comment, adding an existing image here which is not the same as that in this post."
+  Below this text upload an image different from that in the post, provide an image description.
+  Below the image enter a similar description, plus image thirteen.
+
+CRE08-CS / Logged in as US1.
+  Do this for each post changing the comment title and texts to reflect the post number and image number.
+
+
+BSC Basic usage
+===============
+   Copy the url of the blog CRE01 from the address bar.   https://at4737.vledev2.open.ac.uk/ou-moodle2/mod/oublog/view.php?id=2726
+
+   Either close the current browser so there are no currently open browser sessions,
+   or open a different browser.
+
+BSC01-A / Main page not logged in.
+   In the new browser window.
+   Enter the url of the in use blog from the address bar.
+-- Verify that there only two posts visible, and that this message appears at the bottom of the blog.
+   'This blog might contain posts that are only visible to logged-in users, or where only logged-in
+   users can comment. If you have an account on the system, please log in for full blog access.'
+
+BSC01-B
+-- Verify that the page looks as expected and contains two visible posts in the center,
+   a CRE01 block description and a Feeds block on the right.
+-- Verify that the Feeds block contains four links; Atom, RSS, Comments Atom, and Comments RSS.
+
+BSC01-C
+-- Verify that the visible posts are CRE01-P6 and CRE01-P3, one by each test user, and that
+   the detail on the left of the posts contains the phrase 'Visible to anyone in the world',
+   above the post content.
+   No other posts should be visible.
+
+BSC01-D
+-- Verify that each post contains: two attachments, a text block containing an image, and two links.
+
+BSC02
+   Open the Permalink and Comments links in post CRE01-P3
+-- Verify that the post view contains the same text, image and attachments as the main page.
+-- Verify that the Comments CRE01-P3-C1 and C2 are visible and that each contains an image
+   as described in the text.
+
+BSC02-A
+   Click on the link for the attachments in both the view post page and the main page.
+-- Verify that a download requester opens in each case, giving the options to open or save the file.
+-- Verify that the download requester opens the file and that the contents are visible,
+   and that it is not necessary to log in the open and view the files.
+
+BSC02-B
+   Open the Permalink and Comments links in post CRE01-P6,
+-- Verify that the images are visible in the post and comments,
+   and that the attached files open correctly as BSC02-A.
+
+BSC02-C
+   Return to the main blog page.
+
+BSC03 / Main page Feeds block not logged in.
+   Right click the Atom and RSS blog links in turn and open each in a new tab.
+-- Verify that each page opened shows only the posts CRE01-P6 and CRE01-P3,
+   and that the post content contains the images present in the main page.
+-- Verify that the Atom feed does not contain the user information, but that the RSS Feed does.
+
+BSC04
+   Right click the Comments Atom and Comments RSS blog links in turn and open each in a new tab.
+-- Verify that each page opened shows only the comments for CRE01-P6 and CRE01-P3,
+   and that the content contains the images present in the permalink post view page, for the post.
+-- Verify that the Atom feed does not contain the user information, but that the RSS Feed does.

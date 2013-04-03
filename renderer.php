@@ -75,10 +75,15 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $mimetype = $file->get_mimetype();
                     $iconimage = html_writer::empty_tag('img',
                             array('src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
-                                    'alt' => $mimetype, 'class' => 'icon'));
-                    $path = file_encode_url($CFG->wwwroot . '/pluginfile.php', '/' .
-                            $modcontext->id . '/mod_oublog/attachment/' . $post->id . '/' .
-                            $filename);
+                            'alt' => $mimetype, 'class' => 'icon'));
+                    if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
+                        $fileurlbase = $CFG->wwwroot . '/mod/oublog/pluginfile.php';
+                    } else {
+                        $fileurlbase = $CFG->wwwroot . '/pluginfile.php';
+                    }
+                    $filepath = '/' . $modcontext->id . '/mod_oublog/attachment/'
+                            . $post->id . '/' . $filename;
+                    $path = $fileurlbase . $filepath;
                     $output .= html_writer::start_tag('div', array('class'=>'oublog-post-attachment'));
                     $output .= html_writer::tag('a', $iconimage, array('href' => $path));
                     $output .= html_writer::tag('a', s($filename), array('href' => $path));
@@ -193,7 +198,12 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('div');
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-content'));
         if (!$forexport) {
-            $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
+            if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
+                $fileurlbase = 'mod/oublog/pluginfile.php';
+            } else {
+                $fileurlbase = 'pluginfile.php';
+            }
+            $post->message = file_rewrite_pluginfile_urls($post->message, $fileurlbase,
                     $modcontext->id, 'mod_oublog', 'message', $post->id);
         } else {
             $post->message = portfolio_rewrite_pluginfile_urls($post->message, $modcontext->id,
@@ -832,8 +842,13 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $output .= html_writer::start_tag('div',
                     array('class' => 'oublog-comment-content'));
             if (!$forexport) {
+                if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
+                    $fileurlbase = 'mod/oublog/pluginfile.php';
+                } else {
+                    $fileurlbase = 'pluginfile.php';
+                }
                 $comment->message = file_rewrite_pluginfile_urls($comment->message,
-                        'pluginfile.php', $modcontext->id, 'mod_oublog', 'messagecomment',
+                        $fileurlbase, $modcontext->id, 'mod_oublog', 'messagecomment',
                         $comment->id);
             } else {
                 $comment->message = portfolio_rewrite_pluginfile_urls($comment->message,
