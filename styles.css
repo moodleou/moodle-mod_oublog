@@ -363,6 +363,9 @@ div.oublog-individualselector {
 #oublog-links a {
     text-decoration: none;
 }
+#oublog-links .unlist form div {
+    display: inline;
+}
 #oublog-feedtext {
     font-size: 0.85em;
 }

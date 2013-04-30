@@ -1186,20 +1186,24 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
             if ($canmanagelinks) {
                 if ($i > 1) {
                     $html .= '<form action="movelink.php" method="post" style="display:inline" title="'.$strmoveup.'">';
+                    $html .= '<div>';
                     $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/up').'" alt="'.$strmoveup.'" />';
                     $html .= '<input type="hidden" name="down" value="0" />';
                     $html .= '<input type="hidden" name="link" value="'.$link->id.'" />';
                     $html .= '<input type="hidden" name="returnurl" value="'.$_SERVER['REQUEST_URI'].'" />';
                     $html .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+                    $html .= '</div>';
                     $html .= '</form>';
                 }
                 if ($i < $numlinks) {
                     $html .= '<form action="movelink.php" method="post" style="display:inline" title="'.$strmovedown.'">';
+                    $html .= '<div>';
                     $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/down').'" alt="'.$strmovedown.'" />';
                     $html .= '<input type="hidden" name="down" value="1" />';
                     $html .= '<input type="hidden" name="link" value="'.$link->id.'" />';
                     $html .= '<input type="hidden" name="returnurl" value="'.$_SERVER['REQUEST_URI'].'" />';
                     $html .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+                    $html .= '</div>';
                     $html .= '</form>';
                 }
                 $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.$stredit.'"><img src="'.$OUTPUT->pix_url('t/edit').'" alt="'.$stredit.'" class="iconsmall" /></a>';
