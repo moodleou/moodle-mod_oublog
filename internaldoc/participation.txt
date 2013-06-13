@@ -85,4 +85,5 @@ A user with the capability ''mod/oublog:grade'' in relation to the current blog 
 This can either be done as a bulk action on the '''Participation by user''' page or as a single update on the more detailed
 single user page.
 
-Grading will only be available if it has been set for the particular blog instance in the '''OU blog administration''' '''edit''' screen.
+Grading will only be available if it has been set for the particular blog instance in the
+'''OU blog administration''' '''edit''' screen.

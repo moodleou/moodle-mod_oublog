@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * This page allows a user to delete a blog comments
  *
@@ -13,11 +27,11 @@ $commentid  = required_param('comment', PARAM_INT);    // Comment ID to delete
 $confirm = optional_param('confirm', 0, PARAM_INT);    // Confirm that it is ok to delete comment
 
 if (!$comment = $DB->get_record('oublog_comments', array('id'=>$commentid))) {
-    print_error('invalidcomment','oublog');
+    print_error('invalidcomment',  'oublog');
 }
 
 if (!$post = oublog_get_post($comment->postid)) {
-    print_error("invalidpost",'oublog');
+    print_error("invalidpost", 'oublog');
 }
 
 if (!$cm = get_coursemodule_from_instance('oublog', $post->oublogid)) {
@@ -34,13 +48,13 @@ if (!$oublog = $DB->get_record("oublog", array("id"=>$cm->instance))) {
 $url = new moodle_url('/mod/oublog/deletepost.php', array('comment'=>$commentid, 'confirm'=>$confirm));
 $PAGE->set_url($url);
 
-/// Check security
+// Check security.
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 // You can always delete your own comments, or any comment on your own
 // personal blog
-if(!($comment->userid==$USER->id ||
+if (!($comment->userid==$USER->id ||
     ($oublog->global && $post->userid == $USER->id))) {
     require_capability('mod/oublog:managecomments', $context);
 }
@@ -73,11 +87,11 @@ if (!empty($commentid) && !empty($confirm)) {
     exit;
 }
 
-/// Get Strings
+// Get Strings.
 $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
 
-/// Print the header
+// Print the header.
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($course->fullname));
 if ($blogtype == 'personal') {
@@ -86,5 +100,5 @@ if ($blogtype == 'personal') {
 }
 echo $OUTPUT->header();
 echo $OUTPUT->confirm(get_string('confirmdeletecomment', 'oublog'),
-                 new moodle_url('/mod/oublog/deletecomment.php',array('comment'=>$commentid, 'confirm'=>'1')),
+                 new moodle_url('/mod/oublog/deletecomment.php', array('comment'=>$commentid, 'confirm'=>'1')),
                  $viewurl);

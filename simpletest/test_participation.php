@@ -25,7 +25,7 @@
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.'); /// It must be included from a Moodle page.
+    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
 require_once($CFG->dirroot . '/mod/oublog/locallib.php');

@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * This page allows a user to add and edit blog comments
  *
@@ -17,7 +31,7 @@ $postid = required_param('post', PARAM_INT);            // Post ID for editing
 $commentid = optional_param('comment', 0, PARAM_INT);   // Comment ID for editing
 
 if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
-    print_error('invalidblog','oublog');
+    print_error('invalidblog', 'oublog');
 }
 if (!$cm = get_coursemodule_from_instance('oublog', $blog)) {
     print_error('invalidcoursemodule');
@@ -26,30 +40,30 @@ if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
     print_error('coursemisconf');
 }
 if (!$post = $DB->get_record('oublog_posts', array('id'=>$postid))) {
-    print_error('invalidpost','oublog');
+    print_error('invalidpost', 'oublog');
 }
 if (!$oubloginstance = $DB->get_record('oublog_instances', array('id'=>$post->oubloginstancesid))) {
-    print_error('invalidblog','oublog');
+    print_error('invalidblog', 'oublog');
 }
 $url = new moodle_url('/mod/oublog/editcomment.php', array('blog'=>$blog, 'post'=>$postid, 'comment'=>$commentid));
 $PAGE->set_url($url);
 
-/// Check security
+// Check security.
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
 oublog_check_view_permissions($oublog, $context, $cm);
 $post->userid=$oubloginstance->userid; // oublog_can_view_post needs this
-if(!oublog_can_view_post($post,$USER,$context,$oublog->global)) {
-    print_error('accessdenied','oublog');
+if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+    print_error('accessdenied', 'oublog');
 }
 
 oublog_get_activity_groupmode($cm, $course);
 if (!oublog_can_comment($cm, $oublog, $post)) {
-    print_error('accessdenied','oublog');
+    print_error('accessdenied', 'oublog');
 }
 
 if ($oublog->allowcomments == OUBLOG_COMMENTS_PREVENT || $post->allowcomments == OUBLOG_COMMENTS_PREVENT) {
-    print_error('commentsnotallowed','oublog');
+    print_error('commentsnotallowed', 'oublog');
 }
 
 $viewurl = 'viewpost.php?post='.$post->id;
@@ -62,7 +76,7 @@ if ($oublog->global) {
     $blogtype = 'course';
 }
 
-/// Get strings
+// Get strings.
 $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
 $straddcomment  = get_string('newcomment', 'oublog');
@@ -135,7 +149,7 @@ if (!$comment = $mform->get_data()) {
         }
 
         if (!oublog_add_comment_moderated($oublog, $oubloginstance, $post, $comment)) {
-            print_error('couldnotaddcomment','oublog');
+            print_error('couldnotaddcomment', 'oublog');
         }
         $approvaltime = oublog_get_typical_approval_time($post->userid);
 
@@ -152,8 +166,8 @@ if (!$comment = $mform->get_data()) {
 
     $comment->userid = $USER->id;
 
-    if (!oublog_add_comment($course,$cm,$oublog,$comment)) {
-        print_error('couldnotaddcomment','oublog');
+    if (!oublog_add_comment($course, $cm, $oublog, $comment)) {
+        print_error('couldnotaddcomment', 'oublog');
     }
     add_to_log($course->id, "oublog", "add comment", $viewurl, $oublog->id, $cm->id);
     redirect($viewurl);

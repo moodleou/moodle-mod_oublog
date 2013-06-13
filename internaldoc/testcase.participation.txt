@@ -252,4 +252,3 @@ PER Permalink
     comments and those without)
   Click one of the Permalink links.
   - Verify that it takes you to the viewpost.php view page for that post.
-

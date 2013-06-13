@@ -1,4 +1,21 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// Script used to approve moderated comments. This can be called in two ways;
+// from email (which is a GET request) and from the web (which is POST).
+
 /**
  * Unit tests for (some of) mod/oublog/locallib.php.
  *
@@ -8,7 +25,7 @@
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.'); /// It must be included from a Moodle page.
+    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
 require_once($CFG->dirroot . '/mod/oublog/locallib.php');
@@ -36,8 +53,8 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
                                       'oublog_edits',
                                       'oublog_comments',
                                       'oublog_tags',
-                                      'oublog_taginstances'
-                                     ,'oublog_links')
+                                      'oublog_taginstances',
+                                      'oublog_links')
                             );
     public $courseid = 1;
     public $course = array();
@@ -47,10 +64,10 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
 
 
      /**
-     * Create temporary test tables and entries in the database for these tests.
-     * These tests have to work on a brand new site.
-     */
-    function setUp() {
+      * Create temporary test tables and entries in the database for these tests.
+      * These tests have to work on a brand new site.
+      */
+    public function setUp() {
         global $CFG;
 
         parent::setup();
@@ -76,11 +93,11 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
 
     }
 
-    function tearDown() {
+    public function tearDown() {
         parent::tearDown(); // All the test tables created in setUp will be dropped by this
     }
 
-    function load_user() {
+    public function load_user() {
         $user = new stdClass();
         $user->username = 'testuser';
         $user->firstname = 'Test';
@@ -88,7 +105,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $this->userid = $this->testdb->insert_record('user', $user);
     }
 
-    function load_course_categories() {
+    public function load_course_categories() {
         $cat = new stdClass();
         $cat->name = 'misc';
         $cat->depth = 1;
@@ -99,14 +116,14 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
     /**
      * Load module entries in modules table
      */
-    function load_modules() {
+    public function load_modules() {
         $module = new stdClass();
         $module->name = 'subpage';
         $module->id = $this->testdb->insert_record('modules', $module);
         $this->modules[] = $module;
     }
 
-    function load_capabilities() {
+    public function load_capabilities() {
         $cap = new stdClass();
         $cap->name = 'mod/oublog:view';
         $cap->id = $this->testdb->insert_record('capabilities', $cap);
@@ -165,7 +182,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
 
         // whole course - basic post
         $post = $this->get_post_hash($oublog->id);
-        $postid = oublog_add_post($post,$cm,$oublog,$course);
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
         $this->assertIsA($postid, 'integer');
 
         // personal blog
@@ -176,7 +193,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
 
         // personal - basic post
         $post = $this->get_post_hash($oublog->id);
-        $postid = oublog_add_post($post,$cm,$oublog,$course);
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
         $this->assertIsA($postid, 'integer');
 
     }
@@ -191,7 +208,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $cm     = $this->get_new_course_module($course->id, $oublog->id, $coursesection->id);
 
         $post = $this->get_post_hash($oublog->id);
-        $postid = oublog_add_post($post,$cm,$oublog,$course);
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
 
         $comment = new stdClass();
         $comment->title = 'Test Comment';
@@ -199,20 +216,20 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $comment->authorname = 'Tester';
         $comment->postid = $postid;
 
-        $commentid = oublog_add_comment($course,$cm,$oublog,$comment);
+        $commentid = oublog_add_comment($course, $cm, $oublog, $comment);
         $this->assertIsA($commentid, 'integer');
 
         // whole course
         $oublog = $this->get_new_oublog_whole_course($course->id);
-        $cm     = $this->get_new_course_module($course->id, $oublog->id,$coursesection->id);
+        $cm     = $this->get_new_course_module($course->id, $oublog->id, $coursesection->id);
 
         $post = $this->get_post_hash($oublog->id);
-        $postid = oublog_add_post($post,$cm,$oublog,$course);
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
 
         // only reset what we need to
         $comment->postid = $postid;
 
-        $commentid = oublog_add_comment($course,$cm,$oublog,$comment);
+        $commentid = oublog_add_comment($course, $cm, $oublog, $comment);
         $this->assertIsA($commentid, 'integer');
     }
 
@@ -238,7 +255,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $post_hash->message['text'] = $message_check;
 
         // create the post - assumes oublog_add_post is working
-        $postid = oublog_add_post($post_hash,$cm,$oublog,$course);
+        $postid = oublog_add_post($post_hash, $cm, $oublog,      $course);
 
         // get the actual post - what we're really testing
         $post = oublog_get_post($postid);
@@ -272,8 +289,8 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
 
         // create the posts - assumes oublog_add_post is working
         $postids = array();
-        foreach($post_hashes as $post_hash) {
-            $postids[] = oublog_add_post($post_hash,$cm,$oublog,$course);
+        foreach ($post_hashes as $post_hash) {
+            $postids[] = oublog_add_post($post_hash, $cm, $oublog, $course);
         }
 
         // get a list of the posts
@@ -292,7 +309,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
     }
 
     /* test_oublog_get_last_modified */
-    function test_oublog_get_last_modified() {
+    public function test_oublog_get_last_modified() {
 
         $course = $this->get_new_course();
         $coursesection = $this->get_new_course_section($course->id);
@@ -300,7 +317,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         $cm     = $this->get_new_course_module($course->id, $oublog->id, $coursesection->id);
 
         $post = $this->get_post_hash($oublog->id);
-        $postid = oublog_add_post($post,$cm,$oublog,$course);
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
 
         $lastmodified = oublog_get_last_modified($cm, $course, $this->userid);
         $this->assertNotNull($lastmodified, 'integer');
@@ -313,7 +330,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
 
     */
 
-    function get_new_user() {
+    public function get_new_user() {
 
         $this->usercount++;
 
@@ -325,7 +342,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         return $user;
     }
 
-    function get_new_course() {
+    public function get_new_course() {
         $course = new stdClass();
         $course->category = 1;
         $course->fullname = 'Anonymous test course';
@@ -336,7 +353,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         return $course;
     }
 
-    function get_new_course_section($courseid, $sectionid=1) {
+    public function get_new_course_section($courseid, $sectionid=1) {
         $section = new stdClass();
         $section->course = $courseid;
         $section->section = $sectionid;
@@ -358,7 +375,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
     }
 
     /* Returns a global AKA personal blog */
-    public function get_new_oublog_personal($courseid){
+    public function get_new_oublog_personal($courseid) {
         $oublog = new stdClass();
         $oublog->course = $courseid;
         $oublog->name = 'Personal Blog';
@@ -373,7 +390,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
     }
 
     /* Returns a whole course blog */
-    public function get_new_oublog_whole_course($courseid){
+    public function get_new_oublog_whole_course($courseid) {
         $oublog = new stdClass();
         $oublog->course = $courseid;
         $oublog->name = 'Whole Course';

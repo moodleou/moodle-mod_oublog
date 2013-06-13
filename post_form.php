@@ -1,10 +1,24 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require_once($CFG->libdir.'/formslib.php');
 
 class mod_oublog_post_form extends moodleform {
 
-    function definition() {
+    public function definition() {
 
         global $CFG;
 
@@ -16,7 +30,6 @@ class mod_oublog_post_form extends moodleform {
         $maxbytes      = $this->_customdata['maxbytes'];
 
         $mform    =& $this->_form;
-
 
         $mform->addElement('header', 'general', '');
 
@@ -57,18 +70,18 @@ class mod_oublog_post_form extends moodleform {
 
         $options = array();
         if (OUBLOG_VISIBILITY_COURSEUSER <= $maxvisibility) {
-            $options[OUBLOG_VISIBILITY_COURSEUSER] = oublog_get_visibility_string(OUBLOG_VISIBILITY_COURSEUSER,$personal);
+            $options[OUBLOG_VISIBILITY_COURSEUSER] = oublog_get_visibility_string(OUBLOG_VISIBILITY_COURSEUSER, $personal);
         }
         if (OUBLOG_VISIBILITY_LOGGEDINUSER <= $maxvisibility) {
-            $options[OUBLOG_VISIBILITY_LOGGEDINUSER] = oublog_get_visibility_string(OUBLOG_VISIBILITY_LOGGEDINUSER,$personal);
+            $options[OUBLOG_VISIBILITY_LOGGEDINUSER] = oublog_get_visibility_string(OUBLOG_VISIBILITY_LOGGEDINUSER, $personal);
         }
         if (OUBLOG_VISIBILITY_PUBLIC <= $maxvisibility) {
-            $options[OUBLOG_VISIBILITY_PUBLIC] = oublog_get_visibility_string(OUBLOG_VISIBILITY_PUBLIC,$personal);
+            $options[OUBLOG_VISIBILITY_PUBLIC] = oublog_get_visibility_string(OUBLOG_VISIBILITY_PUBLIC, $personal);
         }
         if ($individualblog > OUBLOG_NO_INDIVIDUAL_BLOGS) {
             $mform->addElement('hidden', 'visibility', OUBLOG_VISIBILITY_COURSEUSER);
             $mform->setType('visibility', PARAM_INT);
-        }elseif (OUBLOG_VISIBILITY_COURSEUSER != $maxvisibility) {
+        } else if (OUBLOG_VISIBILITY_COURSEUSER != $maxvisibility) {
             $mform->addElement('select', 'visibility', get_string('visibility', 'oublog'), $options);
             $mform->setType('visibility', PARAM_INT);
             $mform->addHelpButton('visibility', 'visibility', 'oublog');
@@ -89,7 +102,7 @@ class mod_oublog_post_form extends moodleform {
 
         $this->add_action_buttons(true, $submitstring);
 
-    /// Hidden form vars
+        // Hidden form vars.
         $mform->addElement('hidden', 'blog');
         $mform->setType('blog', PARAM_INT);
 

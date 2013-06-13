@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 // You can restrict comments (=change your posts so that they only permit
 // comments from signed-in users) on either a post or a blog. A confirmation
 // screen displays first.
@@ -54,7 +69,7 @@ WHERE
 }
 
 // Is this the actual change or just the confirm?
-if($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     require_sesskey();
 
     // Apply actual change
@@ -76,7 +91,7 @@ SELECT bp.id FROM
 WHERE
     bi.userid = ?
     AND bp.allowcomments >= " . OUBLOG_COMMENTS_ALLOWPUBLIC . "
-    AND $restriction)", array_merge(array($USER->id),$rparam))) {
+    AND $restriction)", array_merge(array($USER->id), $rparam))) {
         print_error('error_unspecified', 'oublog', 'RC3');
     }
 

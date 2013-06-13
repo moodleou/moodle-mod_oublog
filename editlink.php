@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * This page allows a user to add and edit related blog links
  *
@@ -16,7 +30,7 @@ $linkid = optional_param('link', 0, PARAM_INT);                     // Comment I
 
 if ($blog) {
     if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
-        print_error('invalidblog','oublog');
+        print_error('invalidblog', 'oublog');
     }
     if (!$cm = get_coursemodule_from_instance('oublog', $blog)) {
         print_error('invalidcoursemodule');
@@ -25,23 +39,25 @@ if ($blog) {
         print_error('coursemisconf');
     }
 }
-//TODO: the following if statement doesn't look right!
+// TODO: If statement didn't look right! CC-Inline control structures not allowed.
 if ($linkid) {
-    if (!$link = $DB->get_record('oublog_links', array('id'=>$linkid)));
+    if (!$link = $DB->get_record('oublog_links', array('id'=>$linkid))) {
+        $link = false;
+    }
 }
 
 $url = new moodle_url('/mod/oublog/editlink.php', array('blog'=>$blog, 'bloginstance'=>$bloginstancesid, 'link'=>$linkid));
 $PAGE->set_url($url);
 
-/// Check security
+// Check security.
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
-if($linkid) {
+if ($linkid) {
     $bloginstancesid=$link->oubloginstancesid;
 }
 $oubloginstance = $bloginstancesid ? $DB->get_record('oublog_instances', array('id'=>$bloginstancesid)) : null;
-    oublog_require_userblog_permission('mod/oublog:managelinks', $oublog,$oubloginstance,$context);
+    oublog_require_userblog_permission('mod/oublog:managelinks', $oublog, $oubloginstance, $context);
 
 if ($oublog->global) {
     $blogtype = 'personal';
@@ -52,7 +68,7 @@ if ($oublog->global) {
     $viewurl = 'view.php?id='.$cm->id;
 }
 
-/// Get strings
+// Get strings.
 $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
 $straddlink  = get_string('addlink', 'oublog');
@@ -103,7 +119,7 @@ if (!$frmlink = $mform->get_data()) {
         $frmlink->oublogid = $oublog->id;
 
         if (!oublog_edit_link($frmlink)) {
-            print_error('couldnotaddlink','oublog');
+            print_error('couldnotaddlink', 'oublog');
         }
 
     } else {
@@ -112,7 +128,7 @@ if (!$frmlink = $mform->get_data()) {
         $frmlink->oubloginstancesid = $bloginstancesid;
 
         if (!oublog_add_link($frmlink)) {
-            print_error('couldnotaddlink','oublog');
+            print_error('couldnotaddlink', 'oublog');
         }
     }
 

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -52,7 +51,7 @@ class backup_oublog_activity_task extends backup_activity_task {
     static public function encode_content_links($content) {
         global $CFG;
 
-        $base = preg_quote($CFG->wwwroot,"/");
+        $base = preg_quote($CFG->wwwroot, "/");
 
         // Link to the list of oublog
         $search="/(".$base."\/mod\/oublog\/index.php\?id\=)([0-9]+)/";
@@ -63,10 +62,10 @@ class backup_oublog_activity_task extends backup_activity_task {
         $content= preg_replace($search, '$@OUBLOGVIEW*$2@$', $content);
 
         $search = "/(".$base."\/mod\/oublog\/view.php\?user\=)([0-9]+)/";
-        $content = preg_replace($search,'$@OUBLOGVIEWUSER*$2@$',$content);
+        $content = preg_replace($search, '$@OUBLOGVIEWUSER*$2@$', $content);
 
         $search = "/(".$base."\/mod\/oublog\/viewpost.php\?post\=)([0-9]+)/";
-        $content = preg_replace($search,'$@OUBLOGVIEWPOST*$2@$',$content);
+        $content = preg_replace($search, '$@OUBLOGVIEWPOST*$2@$', $content);
 
         return $content;
     }
