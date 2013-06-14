@@ -158,10 +158,16 @@ echo '</div>';
 // for security reasons, you must also be allowed to comment on the post in
 // order to moderate it (because 'approving' a comment is basically equivalent
 // to commenting).
-if ($post->userid == $USER->id &&
-        $post->allowcomments >= OUBLOG_COMMENTS_ALLOWPUBLIC &&
-        oublog_can_comment($cm, $oublog, $post)) {
-    $moderated = oublog_get_moderated_comments($oublog, $post, $canaudit);
+// Logic should be if public comments are allowed and,
+// either post user and can comment, or can manage comments.
+$includeset = $canaudit;
+if ($post->allowcomments >= OUBLOG_COMMENTS_ALLOWPUBLIC &&
+        (($post->userid == $USER->id && oublog_can_comment($cm, $oublog, $post)) || $canmanagecomments)) {
+    // Also, if this is a personal global blog include accepted/rejected comments.
+    if ($oublog->global) {
+        $includeset = true;
+    }
+    $moderated = oublog_get_moderated_comments($oublog, $post, $includeset);
     $display = array();
     foreach ($moderated as $comment) {
         if ($comment->approval != OUBLOG_MODERATED_APPROVED) {
