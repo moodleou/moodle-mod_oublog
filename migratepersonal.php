@@ -407,6 +407,13 @@ function migrate_backup($dir) {
                 $commenttags = null;
                 output('Loaded user data file ' . $xmlfilenum);
             }
+            // Store posts info for this instance (used in link checks).
+            $postinfo = array();
+            if (isset($allposts[$instance->id])) {
+                // Create a clone of the array as it contains objects...
+                $postinfo = serialize($allposts[$instance->id]);
+                $postinfo = unserialize($postinfo);
+            }
 
             // Create instance links.
             // $links = $xpath->query("/DATA/LINKS/LINK[OUBLOGINSTANCESID=$instance->id]");
@@ -432,7 +439,7 @@ function migrate_backup($dir) {
             usort($linksa, 'oublog_sort_links');
             foreach ($linksa as $link) {
                 // Create link.
-                $link->url = oublog_decode_perbloglinks($link->url, $xpath);
+                $link->url = oublog_decode_perbloglinks($link->url, $xpath, $postinfo, $instance->userid);
                 if (!oublog_add_link($link)) {
                     output("Error: Failed to create link for blog:$instance->newid");
                 }
@@ -493,7 +500,7 @@ function migrate_backup($dir) {
                         }
                     }
                 }
-                $newpost->message = oublog_decode_perbloglinks($newpost->message, $xpath);
+                $newpost->message = oublog_decode_perbloglinks($newpost->message, $xpath, $postinfo, $instance->userid);
                 if (!$postid = $DB->insert_record('oublog_posts', $newpost)) {
                     output("<b>Error: Failed to create post, old id = $oldid</b>");
                     continue;
@@ -569,7 +576,7 @@ function migrate_backup($dir) {
                             $newedit->userid = $instance->newuserid;
                         }
                     }
-                    $newedit->oldmessage = oublog_decode_perbloglinks($newedit->oldmessage, $xpath);
+                    $newedit->oldmessage = oublog_decode_perbloglinks($newedit->oldmessage, $xpath, $postinfo, $instance->userid);
                     output('', true);// Output dots.
                     // Migrate any mystuff images in message.
                     if (strpos($newedit->oldmessage, '@@PLUGINFILE@@')
@@ -637,7 +644,7 @@ function migrate_backup($dir) {
                             }
                         }
                     }
-                    $newcomment->message = oublog_decode_perbloglinks($newcomment->message, $xpath);
+                    $newcomment->message = oublog_decode_perbloglinks($newcomment->message, $xpath, $postinfo, $instance->userid);
                     unset($newcomment->id);
                     if (!$newid = $DB->insert_record('oublog_comments', $newcomment)) {
                         output("Error: Failed to create comment for old post id: $oldpostid");
@@ -824,7 +831,7 @@ function oublog_add_files($text, $dir, $contextid, $filearea, $itemid) {
  * @param string $content
  * @param xpath $xpath
  */
-function oublog_decode_perbloglinks($content, $xpath) {
+function oublog_decode_perbloglinks($content, $xpath, $userposts = null, $olduserid = null) {
     global $CFG, $SOURCESERVER;
     $result = $content;
     if (strpos($content, '$@OUBLOGVIEWUSER') !== false) {
@@ -863,19 +870,20 @@ function oublog_decode_perbloglinks($content, $xpath) {
             foreach ($foundset[2] as $old_id) {
                 $newusername = false;
                 $newposttime = false;
-                // We get the needed variables here (stored in post in xml).
-                $posts = $xpath->query("/DATA/POSTS/POST[@id=$old_id]");
-                if ($posts->length != 0) {
-                    $post = childnodes_to_object($posts->item(0));
-                    if (!empty($post->timeposted) && !empty($post->userid)) {
-                        $newposttime = $post->timeposted;
-                        // We get the needed variables here (stored in users in xml).
-                        $users = $xpath->query("/DATA/USERS/USER[@id={$post->userid}]");
-                        if ($users->length != 0) {
-                            $user = childnodes_to_object($users->item(0));
-                            if (!empty($user->username)) {
-                                $newusername = urlencode($user->username);
+                //See if this user made the post refered to, if so use their details.
+                if ($userposts && $olduserid) {
+                    foreach ($userposts as $post) {
+                        if (isset($post->id) && $post->id == $old_id && !empty($post->timeposted)) {
+                            $newposttime = $post->timeposted;
+                            // We get the needed variables here (stored in users in xml).
+                            $users = $xpath->query("/DATA/USERS/USER[@id={$olduserid}]");
+                            if ($users->length != 0) {
+                                $user = childnodes_to_object($users->item(0));
+                                if (!empty($user->username)) {
+                                    $newusername = urlencode($user->username);
+                                }
                             }
+                            break;;
                         }
                     }
                 }
@@ -886,7 +894,7 @@ function oublog_decode_perbloglinks($content, $xpath) {
                     $result = str_replace("$@OUBLOGVIEWPOST*$old_id@$", $posturl->out(false), $result);
                 } else {
                     // Can't find, leave it as original.
-                    $result = str_replace("$@OUBLOGVIEWPOST*$old_id@$", $SOURCESERVER . '/mod/oublog/viewpost.php?id=' . $old_id, $result);
+                    $result = str_replace("$@OUBLOGVIEWPOST*$old_id@$", $SOURCESERVER . '/mod/oublog/viewpost.php?post=' . $old_id, $result);
                 }
             }
         }
