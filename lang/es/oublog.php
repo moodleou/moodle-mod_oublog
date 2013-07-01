@@ -35,22 +35,22 @@ $string['visiblepublic'] = 'Cualquier usuario en el mundo';
 
 $string['addpost'] = 'Guardar mensaje de blog';
 $string['editpost'] = 'Actualizar mensaje de blog';
-$string['editsummary'] = 'Editado por $a->editby, $a->editdate';
-$string['editonsummary'] = 'Editado $a->editdate';
+$string['editsummary'] = 'Editado por {$a->editby}, {$a->editdate}';
+$string['editonsummary'] = 'Editado {$a->editdate}';
 
 $string['edit'] = 'Editar';
 $string['delete'] = 'Borrar';
 
 $string['olderposts'] = '&lt; Mensajes antiguos';
 $string['newerposts'] = 'Mensaje recientes &gt;';
-$string['extranavolderposts'] = 'Mensajes antiguos: $a->from-$a->to';
-$string['extranavtag'] = 'Etiqueta: $a';
+$string['extranavolderposts'] = 'Mensajes antiguos: {$a->from}-{$a->to}';
+$string['extranavtag'] = 'Etiqueta: {$a}';
 
 $string['comments'] = 'Comentarios';
-$string['ncomments'] = '$a comments';
+$string['ncomments'] = '{$a} comments';
 $string['1comment'] = '1 comentario';
 $string['comment'] = 'Comenta esta noticia';
-$string['lastcomment'] = '(Último comentario por $a->fullname, $a->timeposted)';
+$string['lastcomment'] = '(Último comentario por {$a->fullname}, {$a->timeposted})';
 $string['addcomment'] = 'Publicar comentario';
 
 $string['confirmdeletepost'] = '¿Seguro que quieres eliminar este mensaje?';
@@ -77,17 +77,17 @@ $string['newblogposts'] = 'Nuevos mensajes de blog';
 $string['blogsummary'] = 'Resumen de blog';
 $string['posts'] = 'Mensajes';
 
-$string['defaultpersonalblogname'] = '$a\'s blog';
+$string['defaultpersonalblogname'] = '{$a}\'s blog';
 
-$string['numposts'] = '$a posts';
+$string['numposts'] = '{$a} posts';
 
 $string['noblogposts'] = 'No hay mensajes de blog';
 
 $string['blogoptions'] = 'Opciones de blog';
 
-$string['postedby'] = 'por $a';
+$string['postedby'] = 'por {$a}';
 
-$string['deletedby'] = 'Eliminado por $a->fullname, $a->timedeleted';
+$string['deletedby'] = 'Eliminado por {$a->fullname}, {$a->timedeleted}';
 
 $string['newcomment'] = 'Nuevo comentario';
 
@@ -111,5 +111,5 @@ $string['completioncommentsgroup']='Se requiere comentario';
 $string['completioncomments']='El usuario puede hacer comentarios a las noticias:';
 $string['completioncommentshelp']='Se requiere comentario para completar';
 
-$string['maybehiddenposts']='Este blog contiene mensajes que Únicamente son visibles para los usuarios inscritos. Si usted tiene una cuenta de usuario, por favor <a href=\'$a\'>acceda para poder verlos</a>.';
+$string['maybehiddenposts']='Este blog contiene mensajes que Únicamente son visibles para los usuarios inscritos. Si usted tiene una cuenta de usuario, por favor <a href=\'{$a}\'>acceda para poder verlos</a>.';
 $string['noposts']='No hay mensajes visibles en este blog.';
