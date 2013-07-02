@@ -993,3 +993,89 @@ function oublog_grade_item_delete($oublog) {
 function oublog_get_extra_capabilities() {
     return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames');
 }
+
+/**
+ * Implementation of the function for printing the form elements that control
+ * whether the course reset functionality affects the oublog.
+ *
+ * @param object $mform form passed by reference
+ */
+function oublog_reset_course_form_definition(&$mform) {
+    $mform->addElement('header', 'oublogheader', get_string('modulenameplural', 'oublog'));
+    $mform->addElement('advcheckbox', 'reset_oublog', get_string('removeblogs', 'oublog'));
+}
+
+/**
+ * Actual implementation of the reset course functionality, delete all
+ * oublog posts.
+ *
+ * @global object
+ * @global object
+ * @param object $data the data submitted from the reset course.
+ * @return array status array
+ */
+function oublog_reset_userdata($data) {
+    global $DB;
+
+    $componentstr = get_string('modulenameplural', 'oublog');
+    $status = array();
+
+    if (!empty($data->reset_oublog)) {
+        // Delete post-related data.
+        $postidsql = "
+            SELECT pst.id
+            FROM {oublog_posts} pst
+            JOIN {oublog_instances} ins ON (ins.id = pst.oubloginstancesid)
+            JOIN {oublog} obl ON (obl.id = ins.oublogid)
+            WHERE obl.course = ?
+        ";
+        $params = array($data->courseid);
+        $DB->delete_records_select('oublog_comments', "postid IN ($postidsql)", $params);
+        $DB->delete_records_select('oublog_comments_moderated', "postid IN ($postidsql)", $params);
+        $DB->delete_records_select('oublog_edits', "postid IN ($postidsql)", $params);
+
+        // Delete instance-related data.
+        $insidsql = "
+            SELECT ins.id
+            FROM {oublog_instances} ins
+            JOIN {oublog} obl ON (obl.id = ins.oublogid)
+            WHERE obl.course = ?
+        ";
+        $DB->delete_records_select('oublog_links', "oubloginstancesid IN ($insidsql)", $params);
+        $DB->delete_records_select('oublog_taginstances', "oubloginstancesid IN ($insidsql)", $params);
+        $DB->delete_records_select('oublog_posts', "oubloginstancesid IN ($insidsql)", $params);
+
+        $blogidsql = "
+            SELECT obl.id
+            FROM {oublog} obl
+            WHERE obl.course = ?
+        ";
+        // Delete instances:
+        $DB->delete_records_select('oublog_instances', "oublogid IN ($blogidsql)", $params);
+
+        // Reset views:
+        $DB->execute("UPDATE {oublog} SET views = 0 WHERE course = ?", $params);
+
+        // Now get rid of all attachments.
+        $fs = get_file_storage();
+        $oublogs = get_coursemodules_in_course('oublog', $data->courseid);
+        if ($oublogs) {
+            foreach ($oublogs as $oublogid => $unused) {
+                if (!$cm = get_coursemodule_from_instance('oublog', $oublogid)) {
+                    continue;
+                }
+                $context = context_module::instance($cm->id);
+                $fs->delete_area_files($context->id, 'mod_oublog', 'attachment');
+                $fs->delete_area_files($context->id, 'mod_oublog', 'message');
+                $fs->delete_area_files($context->id, 'mod_oublog', 'messagecomment');
+            }
+        }
+
+        $status[] = array(
+                'component' => $componentstr,
+                'item' => get_string('removeblogs', 'oublog'),
+                'error' => false
+        );
+    }
+    return $status;
+}
