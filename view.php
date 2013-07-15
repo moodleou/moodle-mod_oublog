@@ -457,7 +457,7 @@ if (isguestuser() && $USER->id==$user) {
 }
 
 // Log visit and bump view count.
-add_to_log($course->id, "oublog", "view", $returnurl, $oublog->id, $cm->id);
+add_to_log($course->id, "oublog", "view", 'view.php?id='.$cm->id, $oublog->id, $cm->id);
 $views = oublog_update_views($oublog, $oubloginstance);
 
 // Finish the page.
