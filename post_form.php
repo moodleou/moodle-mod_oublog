@@ -107,7 +107,7 @@ class mod_oublog_post_form extends moodleform {
         $mform->setType('blog', PARAM_INT);
 
         $mform->addElement('hidden', 'post');
-        $mform->setType('postid', PARAM_INT);
+        $mform->setType('post', PARAM_INT);
 
     }
 }
