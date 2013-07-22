@@ -463,15 +463,13 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $currentposition++;
             }
         }
+        $table->finish_output();
         if (!$table->is_downloading()) {
-            $table->print_html();  // Print the whole table.
-
             // Print the grade form footer if necessary.
             if ($oublog->grade != 0 && !empty($participation)) {
                 echo $table->grade_form_footer();
             }
         }
-        $table->finish_output();
     }
 
     /**
@@ -703,8 +701,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $table->add_data($row);
                 }
             }
+            $table->finish_output();
         }
-        $table->finish_output();
+
     }
 
     /**
