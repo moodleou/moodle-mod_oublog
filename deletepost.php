@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * This page allows a user to delete a blog posts
  *
@@ -14,7 +28,7 @@ $postid  = required_param('post', PARAM_INT);    // Post ID for editing
 $confirm = optional_param('confirm', 0, PARAM_INT); // Confirm that it is ok to delete post
 
 if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
-    print_error('invalidblog','oublog');
+    print_error('invalidblog', 'oublog');
 }
 if (!$cm = get_coursemodule_from_instance('oublog', $blog)) {
     print_error('invalidcoursemodule');
@@ -25,7 +39,7 @@ if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
 $url = new moodle_url('/mod/oublog/deletepost.php', array('blog'=>$blog, 'post'=>$postid, 'confirm'=>$confirm));
 $PAGE->set_url($url);
 
-/// Check security
+// Check security.
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
@@ -36,7 +50,7 @@ FROM
     {oublog_posts} p
     INNER JOIN {oublog_instances} i on p.oubloginstancesid=i.id
 WHERE p.id = ?", array($postid));
-if($postauthor!=$USER->id) {
+if ($postauthor!=$USER->id) {
     require_capability('mod/oublog:manageposts', $context);
 }
 
@@ -50,7 +64,7 @@ if ($oublog->global) {
 }
 
 if (!empty($postid) && !empty($confirm)) {
-    $expost=$DB->get_record('oublog_posts',array('id'=>$postid));
+    $expost=$DB->get_record('oublog_posts', array('id'=>$postid));
 
     $updatepost = (object)array(
         'id' => $postid,
@@ -60,15 +74,15 @@ if (!empty($postid) && !empty($confirm)) {
 
     $tw=new transaction_wrapper();
     $DB->update_record('oublog_posts', $updatepost);
-    if(!oublog_update_item_tags($expost->oubloginstancesid, $expost->id, array(),$expost->visibility)) {
+    if (!oublog_update_item_tags($expost->oubloginstancesid, $expost->id, array(), $expost->visibility)) {
         $tw->rollback();
-        print_error('tagupdatefailed','oublog');
+        print_error('tagupdatefailed', 'oublog');
     }
-    if(oublog_search_installed()) {
+    if (oublog_search_installed()) {
         $doc=oublog_get_search_document($updatepost, $cm);
         $doc->delete();
     }
-    // Inform completion system, if available
+    // Inform completion system, if available.
     $completion = new completion_info($course);
     if ($completion->is_enabled($cm) && ($oublog->completionposts)) {
         $completion->update_state($cm, COMPLETION_INCOMPLETE, $postauthor);
@@ -78,7 +92,7 @@ if (!empty($postid) && !empty($confirm)) {
     exit;
 }
 
-/// Get Strings
+// Get Strings.
 $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
 
@@ -92,5 +106,5 @@ $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($course->fullname));
 echo $OUTPUT->header();
 echo $OUTPUT->confirm(get_string('confirmdeletepost', 'oublog'),
-                     new moodle_url('/mod/oublog/deletepost.php',array('blog'=>$blog, 'post'=>$postid, 'confirm'=>'1')),
+                     new moodle_url('/mod/oublog/deletepost.php', array('blog'=>$blog, 'post'=>$postid, 'confirm'=>'1')),
                      $viewurl);

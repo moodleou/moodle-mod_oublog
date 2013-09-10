@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * This library provides functions to generate Atom feeds and tries to follow the same API as lib/rsslib.php
  *
@@ -7,9 +21,9 @@
  */
 
 
-//This function return all the common atom headers
+// This function return all the common atom headers.
 
-function atom_standard_header($uniqueid, $link, $updated, $title = NULL, $description = NULL) {
+function atom_standard_header($uniqueid, $link, $updated, $title = null, $description = null) {
 
     global $CFG, $USER, $OUTPUT;
 
@@ -24,32 +38,33 @@ function atom_standard_header($uniqueid, $link, $updated, $title = NULL, $descri
 
     if ($status) {
 
-        //Calculate title, link and description
+        // Calculate title, link and description.
         if (empty($title)) {
             $title = format_string($site->fullname);
         }
 
-        //xml headers
+        // Xml headers.
         $result .= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         $result .= "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n";
 
-        //open the channel
-        //write channel info
-        $result .= atom_full_tag('id',1, false, htmlspecialchars($uniqueid));
+        // Open the channel
+        // write channel info.
+        $result .= atom_full_tag('id', 1, false, htmlspecialchars($uniqueid));
         $result .= atom_full_tag('updated', 1, false, date_format_rfc3339($updated));
         $result .= atom_full_tag('title', 1, false, htmlspecialchars(html_to_text($title)));
-        $result .= atom_full_tag('link', 1, false, null,array('href'=>$link,'rel'=>'self'));
-        if(!empty($description)) {
+        $result .= atom_full_tag('link', 1, false, null, array('href' => $link, 'rel' => 'self'));
+        if (!empty($description)) {
             $result .= atom_full_tag('subtitle', 1, false, $description);
         }
         $result .= atom_full_tag('generator', 1, false, 'Moodle');
         $today = getdate();
-        $result .= atom_full_tag('rights', 1, false, '&#169; '. $today['year'] .' '. format_string($site->fullname));
+        $result .= atom_full_tag('rights', 1, false, '&#169; '. $today['year'] .' '.
+                format_string($site->fullname));
 
-        //write image info
+        // Write image info.
         $atompix = $OUTPUT->pix_url('i/rsssitelogo');
 
-        //write the info
+        // Write the info.
         $result .= atom_full_tag('logo', 1, false, $atompix);
 
     }
@@ -71,29 +86,30 @@ function atom_add_items($items) {
 
     if (!empty($items)) {
         foreach ($items as $item) {
-            $result .= atom_start_tag('entry',1,true);
-            $result .= atom_full_tag('title',2,false,htmlspecialchars(html_to_text($item->title)));
+            $result .= atom_start_tag('entry', 1, true);
+            $result .= atom_full_tag('title', 2, false, htmlspecialchars(html_to_text($item->title)));
             $result .= atom_full_tag('link', 2, false, null, array('href' => $item->link, 'rel'=>'alternate'));
-            $result .= atom_full_tag('updated',2,false,date_format_rfc3339($item->pubdate));
-            //Include the author if exists
+            $result .= atom_full_tag('updated', 2, false, date_format_rfc3339($item->pubdate));
+            // Include the author if exists.
             if (isset($item->author)) {
-                $result .= atom_start_tag('author',2,true);
-                $result .= atom_full_tag('name',3,false, $item->author);
-                $result .= atom_end_tag('author',2,true);
+                $result .= atom_start_tag('author', 2, true);
+                $result .= atom_full_tag('name', 3, false, $item->author);
+                $result .= atom_end_tag('author', 2, true);
             }
-            $result .= atom_full_tag('content',2,false,'<div xmlns="http://www.w3.org/1999/xhtml">'.clean_text($item->description, FORMAT_HTML).'</div>', $xhtmlattr);
-            $result .= atom_full_tag('id',2,false,$item->link);
+            $result .= atom_full_tag('content', 2, false, '<div xmlns="http://www.w3.org/1999/xhtml">'.
+                    clean_text($item->description, FORMAT_HTML).'</div>', $xhtmlattr);
+            $result .= atom_full_tag('id', 2, false, $item->link);
             if (isset($item->tags)) {
                 $tagdata = array();
                 if (isset($item->tagscheme)) {
                     $tagdata['scheme'] = $item->tagscheme;
                 }
-                foreach($item->tags as $tag) {
+                foreach ($item->tags as $tag) {
                     $tagdata['term'] = $tag;
                     $result .= atom_full_tag('category', 2, true, false, $tagdata);
                 }
             }
-            $result .= atom_end_tag('entry',1,true);
+            $result .= atom_end_tag('entry', 1, true);
 
         }
     } else {
@@ -103,15 +119,15 @@ function atom_add_items($items) {
 }
 
 
-//This function return all the common footers for every rss feed in the site
-function atom_standard_footer($title = NULL, $link = NULL, $description = NULL) {
+// This function return all the common footers for every rss feed in the site.
+function atom_standard_footer($title = null, $link = null, $description = null) {
 
     global $CFG, $USER;
 
     $status = true;
     $result = '';
 
-    ////Close the rss tag
+    // Close the rss tag.
     $result .= '</feed>';
 
     return $result;
@@ -119,12 +135,12 @@ function atom_standard_footer($title = NULL, $link = NULL, $description = NULL) 
 
 
 
-//Return the xml start tag
-function atom_start_tag($tag,$level=0,$endline=false,$attributes=null) {
+// Return the xml start tag.
+function atom_start_tag($tag, $level=0, $endline = false, $attributes = null) {
     if ($endline) {
-       $endchar = "\n";
+        $endchar = "\n";
     } else {
-       $endchar = "";
+        $endchar = "";
     }
     $attrstring = '';
     if (!empty($attributes) && is_array($attributes)) {
@@ -132,31 +148,31 @@ function atom_start_tag($tag,$level=0,$endline=false,$attributes=null) {
             $attrstring .= " ".$key."=\"".htmlspecialchars($value)."\"";
         }
     }
-    return str_repeat(" ",$level*2)."<".$tag.$attrstring.">".$endchar;
+    return str_repeat(" ", $level*2) . "<" . $tag . $attrstring . ">" . $endchar;
 }
 
-//Return the xml end tag
-function atom_end_tag($tag,$level=0,$endline=true) {
+// Return the xml end tag.
+function atom_end_tag($tag, $level = 0, $endline = true) {
     if ($endline) {
-       $endchar = "\n";
+        $endchar = "\n";
     } else {
-       $endchar = "";
+        $endchar = "";
     }
-    return str_repeat(" ",$level*2)."</".$tag.">".$endchar;
+    return str_repeat(" ", $level*2) . "</" . $tag . ">" . $endchar;
 }
 
 
-//Return the start tag, the contents and the end tag
-function atom_full_tag($tag,$level=0,$endline=true,$content,$attributes=null) {
+// Return the start tag, the contents and the end tag.
+function atom_full_tag($tag, $level = 0, $endline = true, $content, $attributes = null) {
     global $CFG;
-    $st = atom_start_tag($tag,$level,$endline,$attributes);
-    if($content === false) {
-        $st = preg_replace('~>$~',' />', $st);
+    $st = atom_start_tag($tag, $level, $endline, $attributes);
+    if ($content === false) {
+        $st = preg_replace('~>$~', ' />', $st);
         return $st;
     }
     $co="";
     $co = preg_replace("/\r\n|\r/", "\n", $content);
-    $et = atom_end_tag($tag,0,true);
+    $et = atom_end_tag($tag, 0, true);
 
     return $st.$co.$et;
 }

@@ -25,6 +25,7 @@ $string['oublog:exportpost'] = 'Export post';
 $string['oublog:exportposts'] = 'Export posts';
 $string['mustprovidepost'] = 'Must provide postid';
 $string['newpost'] = 'New blog post';
+$string['removeblogs'] = 'Remove all blog entries';
 $string['title'] = 'Title';
 $string['message'] = 'Message';
 $string['tags'] = 'Tags';

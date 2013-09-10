@@ -93,7 +93,7 @@ if (empty($download)) {
         echo $OUTPUT->notification($message, 'notifysuccess');
     }
 
-    /// Print Groups drop-down menu
+    // Print Groups drop-down menu.
     echo '<div class="oublog-groups-individual-selectors">';
     $returnurl = $CFG->wwwroot . '/mod/oublog/participation.php?id=' . $cm->id;
     if ($showgroupselector) {
@@ -110,6 +110,6 @@ if (empty($download)) {
     echo $OUTPUT->footer();
 }
 
-/// Log visit
+// Log visit.
 $logurl = "participation.php?id={$id}&group={$groupid}&download={$download}&page={$page}";
 add_to_log($course->id, 'oublog', 'view', $logurl, $oublog->id, $cm->id);

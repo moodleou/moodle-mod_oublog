@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -45,7 +44,7 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
         $instances = new backup_nested_element('instances');
 
         $instance = new backup_nested_element('instance', array('id'), array(
-            'userid','name','summary','accesstoken','views'));
+            'userid', 'name', 'summary', 'accesstoken', 'views'));
 
         $links = new backup_nested_element('links');
         $link = new backup_nested_element('link', array('id'), array('title', 'url', 'sortorder'));
@@ -87,12 +86,11 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
         $post->add_child($taginstances);
         $taginstances->add_child($taginstance);
 
-
         // Define sources
         $oublog->set_source_table('oublog', array('id' => backup::VAR_ACTIVITYID));
 
         // All the rest of elements only happen if we are including user info
-        if ($userinfo) {;
+        if ($userinfo) {
             $instance->set_source_table('oublog_instances', array('oublogid'=> backup::VAR_PARENTID));
             $link->set_source_table('oublog_links', array('oubloginstancesid'=> backup::VAR_PARENTID));
             $post->set_source_table('oublog_posts', array('oubloginstancesid'=> backup::VAR_PARENTID));
@@ -103,7 +101,6 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
                                           JOIN {oublog_taginstances} ti
                                            ON t.id=ti.tagid
                                           WHERE ti.postid=?", array(backup::VAR_PARENTID));
-
         }
 
         // Define id annotations

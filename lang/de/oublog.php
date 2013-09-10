@@ -1,5 +1,18 @@
 <?php
-
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 $string['oublog'] = 'OU Blog';
 $string['modulename'] = 'OU Blog';
 $string['modulenameplural'] = 'OU Blogs';
@@ -38,22 +51,22 @@ $string['visiblepublic'] = 'Sichtbar für jedermann weltweit';
 
 $string['addpost'] = 'Blogbeitrag hinzufügen';
 $string['editpost'] = 'Blogbeitrag aktualisieren';
-$string['editsummary'] = 'Bearbeitet von $a->editby, $a->editdate';
-$string['editonsummary'] = 'Bearbeitet $a->editdate';
+$string['editsummary'] = 'Bearbeitet von {$a->editby}, {$a->editdate}';
+$string['editonsummary'] = 'Bearbeitet {$a->editdate}';
 
 $string['edit'] = 'Bearbeiten';
 $string['delete'] = 'Löschen';
 
 $string['olderposts'] = '&lt; Ältere Beiträge';
 $string['newerposts'] = 'Neuere Beiträge &gt;';
-$string['extranavolderposts'] = 'Ältere Beiträge: $a->von-$a->an';
-$string['extranavtag'] = 'Tag: $a';
+$string['extranavolderposts'] = 'Ältere Beiträge: {$a->von}-{$a->an}';
+$string['extranavtag'] = 'Tag: {$a}';
 
 $string['comments'] = 'Kommentare';
-$string['ncomments'] = '$a Kommentare';
+$string['ncomments'] = '{$a} Kommentare';
 $string['1comment'] = '1 Kommentar';
 $string['comment'] = 'Fügen Sie Ihren Kommentar hinzu';
-$string['lastcomment'] = '(Letzter von $a->fullname, $a->timeposted)';
+$string['lastcomment'] = '(Letzter von {$a->fullname}, {$a->timeposted})';
 $string['addcomment'] = 'Kommentar hinzufügen';
 
 $string['confirmdeletepost'] = 'Sind Sie sicher diesen Blogbeitrag löschen zu wollen?';
@@ -80,17 +93,17 @@ $string['newblogposts'] = 'Neue Blogbeiträge';
 $string['blogsummary'] = 'Blogzusammenfassung';
 $string['posts'] = 'Beiträge';
 
-$string['defaultpersonalblogname'] = '$a\'s Blog';
+$string['defaultpersonalblogname'] = '{$a}\'s Blog';
 
-$string['numposts'] = '$a Beiträge';
+$string['numposts'] = '{$a} Beiträge';
 
 $string['noblogposts'] = 'Keine Blogbeiträge';
 
 $string['blogoptions'] = 'Blog Optionen';
 
-$string['postedby'] = 'von $a';
+$string['postedby'] = 'von {$a}';
 
-$string['deletedby'] = 'Gelöscht von $a->fullname, $a->timedeleted';
+$string['deletedby'] = 'Gelöscht von {$a->fullname}, {$a->timedeleted}';
 
 $string['newcomment'] = 'Neuer Blogkommentar';
 
@@ -113,9 +126,9 @@ $string['completioncommentsgroup']='Kommentare erforderlich';
 $string['completioncomments']='Sie müssen Blogbeiträge kommentieren:';
 $string['completioncommentshelp']='Zur Vervollständigung werden Kommentare benötigt';
 
-$string['maybehiddenposts']='Dieses Blog beinhaltet möglicherweise Einträge, die nur für eingeloggte Teilnehmer sichtbar sind. Wenn Sie einen Account für das System haben, bitte <a href=\'$a\'>loggen Sie sich für vollen Blogzugang ein</a>.';
+$string['maybehiddenposts']='Dieses Blog beinhaltet möglicherweise Einträge, die nur für eingeloggte Teilnehmer sichtbar sind. Wenn Sie einen Account für das System haben, bitte <a href=\'{$a}\'>loggen Sie sich für vollen Blogzugang ein</a>.';
 $string['guestblog']='Wenn Sie einen Account auf dem System haben, bitte
-<a href=\'$a\'>für vollen Blogzugang einloggen </a>.';
+<a href=\'{$a}\'>für vollen Blogzugang einloggen </a>.';
 $string['noposts']='Es gibt keine sichtbaren Beiträge in diesem Blog.';
 
 $string['accessdenied']='Entschuldigung: Sie haben keinen Zugriff auf diese Seite.';

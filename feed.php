@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * This page generates blog RSS and ATOM feeds
  *
@@ -21,22 +35,23 @@ $viewer             = optional_param('viewer', 0, PARAM_INT);
 $groupid            = optional_param('group', 0, PARAM_INT);
 $individualid       = optional_param('individual', 0, PARAM_INT);
 
-$url = new moodle_url('/mod/oublog/feed.php', array('format'=>$format, 'blog'=>$blogid, 'bloginstance'=>$bloginstancesid, 'post'=>$postid));
+$url = new moodle_url('/mod/oublog/feed.php', array('format'=>$format, 'blog'=>$blogid,
+        'bloginstance'=>$bloginstancesid, 'post'=>$postid));
 $PAGE->set_url($url);
 $PAGE->set_context(get_system_context());
-/// Validate Parameters
+// Validate Parameters.
 $format = strtolower($format);
 
 if (empty($CFG->enablerssfeeds)) {
-    print_error('feedsnotenabled','oublog');
+    print_error('feedsnotenabled', 'oublog');
 }
 if ($format != 'atom' && $format != 'rss') {
-    print_error('invalidformat','oublog');
+    print_error('invalidformat', 'oublog');
 }
 if (!$blogid && !$bloginstancesid && !$postid) {
     print_error('missingrequiredfield');
 }
-if(($loggedin || $full) && !$viewer) {
+if (($loggedin || $full) && !$viewer) {
     print_error('missingrequiredfield');
 }
 if ($groupid && !$viewer) {
@@ -46,10 +61,10 @@ if ($groupid && !$viewer) {
 if (isset($bloginstancesid) && $bloginstancesid!='all') {
     $bloginstance = $DB->get_record('oublog_instances', array('id'=>$bloginstancesid));
     $blog         = $DB->get_record('oublog', array('id'=>$bloginstance->oublogid));
-} elseif ($blogid) {
+} else if ($blogid) {
     $blog = $DB->get_record('oublog', array('id'=>$blogid));
 
-} elseif ($postid) {
+} else if ($postid) {
     $post         = $DB->get_record('oublog_posts', array('id'=>$postid));
     $bloginstance = $DB->get_record('oublog_instances', array('id'=>$post->oubloginstancesid));
     $blog         = $DB->get_record('oublog', array('id'=>$bloginstance->oublogid));
@@ -77,19 +92,19 @@ if ($blog->global) {
     $groupmode = oublog_get_activity_groupmode($cm, $course);
 }
 
-/// Check browser compatibility
+// Check browser compatibility.
 if (check_browser_version('MSIE', 0) || check_browser_version('Firefox', 0)) {
     if (!check_browser_version('MSIE', '7') && !check_browser_version('Firefox', '2')) {
-        if($blog->global) {
+        if ($blog->global) {
             $url='view.php?user='.$bloginstance->userid;
         } else {
             $url='view.php?id='.$cm->id.($groupid ? '&group='.$groupid : '');
         }
-        print_error('unsupportedbrowser', 'oublog',$url);
+        print_error('unsupportedbrowser', 'oublog', $url);
     }
 }
-/// Determine if feed has changed since the if-modified-since HTTP header and exit if it hasn't
-// Override default Moodle behaviour which prevents all caching (ouch)
+// Determine if feed has changed since the if-modified-since HTTP header and exit if it hasn't.
+// Override default Moodle behaviour which prevents all caching (ouch).
 header('Cache-Control:');
 header('Pragma: ');
 header('Expires: ');
@@ -116,9 +131,11 @@ if ($full) {
     // We had an issue where the system leaked 'full' view tokens to users
     // who should not get them. To resolve this, I changed the view tokens
     // to use 'v2' in the hash
-    if ($full == md5($accesstoken.$viewer.OUBLOG_VISIBILITY_COURSEUSER.'v2') && $user = $DB->get_record('user', array('id'=>$viewer))) {
+    if ($full == md5($accesstoken.$viewer.OUBLOG_VISIBILITY_COURSEUSER.'v2') && $user =
+            $DB->get_record('user', array('id'=>$viewer))) {
         $allowedvisibility = OUBLOG_VISIBILITY_COURSEUSER;
-    } else if ($full == md5($accesstoken.$viewer.OUBLOG_VISIBILITY_COURSEUSER) && $user = $DB->get_record('user', array('id'=>$viewer))) {
+    } else if ($full == md5($accesstoken.$viewer.OUBLOG_VISIBILITY_COURSEUSER) && $user =
+            $DB->get_record('user', array('id'=>$viewer))) {
         // This is the old token. Ooops. We know that at least users were
         // logged in, so they get that version...
         $allowedvisibility = OUBLOG_VISIBILITY_LOGGEDINUSER;
@@ -128,10 +145,11 @@ if ($full) {
             $allowedvisibility = OUBLOG_VISIBILITY_COURSEUSER;
         }
     } else {
-       print_error('nopermissiontoshow');
+        print_error('nopermissiontoshow');
     }
-} elseif ($loggedin) {
-    if ($loggedin == md5($accesstoken.$viewer.OUBLOG_VISIBILITY_LOGGEDINUSER) && $user = $DB->get_record('user', array('id'=>$viewer))) {
+} else if ($loggedin) {
+    if ($loggedin == md5($accesstoken.$viewer.OUBLOG_VISIBILITY_LOGGEDINUSER) && $user =
+            $DB->get_record('user', array('id'=>$viewer))) {
         $allowedvisibility = OUBLOG_VISIBILITY_LOGGEDINUSER;
     } else {
         print_error('nopermissiontoshow');
@@ -151,7 +169,7 @@ if ($blog->individual) {
 if ($groupmode == SEPARATEGROUPS) {
     // If you are a member of the group and viewing a specified group then
     // you are OK
-    if($groupid && groups_is_member($groupid, $user->id)) {
+    if ($groupid && groups_is_member($groupid, $user->id)) {
         // Group members are OK
     } else {
         // Must have access all groups
@@ -160,10 +178,11 @@ if ($groupmode == SEPARATEGROUPS) {
     }
 }
 
-/// Get data for feed in a standard form
+// Get data for feed in a standard form.
 if ($comments) {
-    $feeddata = oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $allowedvisibility, $groupid, $cm);
-    $feedname=strip_tags($blog->name).': '.get_string('commentsfeed','oublog');
+    $feeddata = oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user,
+            $allowedvisibility, $groupid, $cm);
+    $feedname = strip_tags($blog->name) . ': ' . get_string('commentsfeed', 'oublog');
     $feedsummary='';
 } else {
     $feeddata = oublog_get_feed_posts($blogid,
@@ -177,7 +196,7 @@ if ($comments) {
     }
 }
 
-/// Generate feed in RSS or ATOM format
+// Generate feed in RSS or ATOM format.
 if ($format == 'rss') {
     header('Content-type: application/rss+xml');
     echo rss_standard_header($feedname, $url, $feedsummary);
@@ -186,7 +205,7 @@ if ($format == 'rss') {
 } else {
     header('Content-type: application/atom+xml');
     $updated=count($feeddata)==0 ? time() : reset($feeddata)->pubdate;
-    echo atom_standard_header($FULLME,$FULLME,$updated,$feedname, $feedsummary);
+    echo atom_standard_header($FULLME, $FULLME, $updated, $feedname, $feedsummary);
     echo atom_add_items($feeddata);
     echo atom_standard_footer();
 }

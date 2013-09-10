@@ -1,5 +1,18 @@
 <?php
-
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
 $string['modulenameplural'] = 'OU blogs';
@@ -34,22 +47,22 @@ $string['visiblepublic'] = 'Qualsevol usuari en el món';
 
 $string['addpost'] = 'Desa missatge de blog';
 $string['editpost'] = 'Actualitza missatge de blog';
-$string['editsummary'] = 'Editat prr $a->editby, $a->editdate';
-$string['editonsummary'] = 'Editat $a->editdate';
+$string['editsummary'] = 'Editat prr {$a->editby}, {$a->editdate}';
+$string['editonsummary'] = 'Editat {$a->editdate}';
 
 $string['edit'] = 'Edita';
 $string['delete'] = 'Esborra';
 
 $string['olderposts'] = '&lt; Missatges antics';
 $string['newerposts'] = 'Missatges recents &gt;';
-$string['extranavolderposts'] = 'Missatges antics: $a->from-$a->to';
-$string['extranavtag'] = 'Etiqueta: $a';
+$string['extranavolderposts'] = 'Missatges antics: {$a->from}-{$a->to}';
+$string['extranavtag'] = 'Etiqueta: {$a}';
 
 $string['comments'] = 'Comentaris';
-$string['ncomments'] = '$a comentaris';
+$string['ncomments'] = '{$a} comentaris';
 $string['1comment'] = '1 comentari';
 $string['comment'] = 'Comenta aquesta notícia';
-$string['lastcomment'] = '(Últim comentari per $a->fullname, $a->timeposted)';
+$string['lastcomment'] = '(Últim comentari per {$a->fullname}, {$a->timeposted})';
 $string['addcomment'] = 'Publica comentari';
 
 $string['confirmdeletepost'] = 'Segur que voleu eliminar aquest missatge?';
@@ -76,17 +89,17 @@ $string['newblogposts'] = 'Nous missatges de blog';
 $string['blogsummary'] = 'Resum de blog';
 $string['posts'] = 'Missatges';
 
-$string['defaultpersonalblogname'] = '$a\'s blog';
+$string['defaultpersonalblogname'] = '{$a}\'s blog';
 
-$string['numposts'] = '$a posts';
+$string['numposts'] = '{$a} posts';
 
 $string['noblogposts'] = 'No hi ha missatges de blog';
 
 $string['blogoptions'] = 'Opcions de blog';
 
-$string['postedby'] = 'per $a';
+$string['postedby'] = 'per {$a}';
 
-$string['deletedby'] = 'Eliminat per $a->fullname, $a->timedeleted';
+$string['deletedby'] = 'Eliminat per {$a->fullname}, {$a->timedeleted}';
 
 $string['newcomment'] = 'Nou comentari';
 
@@ -110,5 +123,5 @@ $string['completioncommentsgroup']='Es requereix comentari';
 $string['completioncomments']='L\'usuari pot fer comentaris a les notícies:';
 $string['completioncommentshelp']='Es requereix comentari per a completar';
 
-$string['maybehiddenposts']='Aquest blog conté missatges que únicament són visibles pels usuaris registrats. Si vosté té un compte d\'usuari, sisplau <a href=\'$a\'>entri per poder veure\'ls</a>.';
+$string['maybehiddenposts']='Aquest blog conté missatges que únicament són visibles pels usuaris registrats. Si vosté té un compte d\'usuari, sisplau <a href=\'{$a}\'>entri per poder veure\'ls</a>.';
 $string['noposts']='No hi ha missatges visibles en aquest blog.';

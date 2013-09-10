@@ -428,14 +428,14 @@ if ($posts) {
         $button = new portfolio_add_button();
         $button->set_callback_options('oublog_all_portfolio_caller',
                 array('postid' => $post->id,
-                        'oublogid' => $oublog->id,//$offset
-                        'offset' => $offset,//
+                        'oublogid' => $oublog->id,
+                        'offset' => $offset,
                         'currentgroup' => $currentgroup,
                         'currentindividual' => $currentindividual,
                         'oubloguserid' => $oubloguser->id,
                         'canaudit' => $canaudit,
                         'tag' =>  $tagid,
-                        'cmid' => $cm->id,), 'mod_oublog');
+                        'cmid' => $cm->id, ), 'mod_oublog');
         echo $button->to_html(PORTFOLIO_ADD_TEXT_LINK) .
         get_string('exportpostscomments', 'oublog');
     }
@@ -457,7 +457,7 @@ if (isguestuser() && $USER->id==$user) {
 }
 
 // Log visit and bump view count.
-add_to_log($course->id, "oublog", "view", $returnurl, $oublog->id, $cm->id);
+add_to_log($course->id, "oublog", "view", 'view.php?id='.$cm->id, $oublog->id, $cm->id);
 $views = oublog_update_views($oublog, $oubloginstance);
 
 // Finish the page.

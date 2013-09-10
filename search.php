@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Search results page.
  *
@@ -13,7 +28,7 @@ require_once($CFG->dirroot.'/local/ousearch/searchlib.php');
 
 $id     = optional_param('id', 0, PARAM_INT);       // Course Module ID
 $user   = optional_param('user', 0, PARAM_INT);     // User ID
-$querytext = required_param('query',PARAM_RAW);
+$querytext = required_param('query', PARAM_RAW);
 $querytexthtml = htmlspecialchars($querytext);
 
 if ($id) {
@@ -32,7 +47,7 @@ if ($id) {
     $oubloginstance = null;
     $oubloginstanceid = null;
 
-} elseif ($user) {
+} else if ($user) {
     if (!$oubloguser = $DB->get_record('user', array('id'=>$user))) {
         print_error('invaliduserid');
     }
@@ -61,7 +76,7 @@ oublog_check_view_permissions($oublog, $context, $cm);
 
 if ($oublog->global) {
     // Check this user is allowed to view the user's blog
-    if($oublog->maxvisibility != OUBLOG_VISIBILITY_PUBLIC && isset($oubloguser)) {
+    if ($oublog->maxvisibility != OUBLOG_VISIBILITY_PUBLIC && isset($oubloguser)) {
         $usercontext = get_context_instance(CONTEXT_USER, $oubloguser->id);
         require_capability('mod/oublog:view', $usercontext);
     }
@@ -77,8 +92,8 @@ $currentgroup = oublog_get_activity_group($cm, true);
 $groupmode = oublog_get_activity_groupmode($cm, $course);
 // Note I am not sure this check is necessary, maybe it is handled by
 // oublog_get_activity_group? Or maybe more checks are needed? Not sure.
-if($currentgroup===0 && $groupmode==SEPARATEGROUPS) {
-    require_capability('moodle/site:accessallgroups',$context);
+if ($currentgroup===0 && $groupmode==SEPARATEGROUPS) {
+    require_capability('moodle/site:accessallgroups', $context);
 }
 
 // Print the header
@@ -88,7 +103,7 @@ $strblogssearch  = get_string('searchblogs', 'oublog');
 
 
 if ($oublog->global) {
-    if(!is_null($oubloginstance)) {
+    if (!is_null($oubloginstance)) {
         $name = $oubloginstance->name;
         $buttontext = oublog_get_search_form('user', $oubloguser->id, $strblogsearch,
                 $querytexthtml);
@@ -97,7 +112,7 @@ if ($oublog->global) {
                 $querytexthtml);
     }
 
-    if(isset($name)){
+    if (isset($name)) {
         $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id'=>$oubloguser->id)));
         $PAGE->navbar->add(format_string($oubloginstance->name), $mreturnurl);
     } else {
@@ -110,25 +125,25 @@ if ($oublog->global) {
     $buttontext = oublog_get_search_form('id', $cm->id, $strblogsearch, $querytexthtml);
 }
 
-$PAGE->navbar->add(get_string('searchfor','local_ousearch',$querytext));
+$PAGE->navbar->add(get_string('searchfor', 'local_ousearch', $querytext));
 $PAGE->set_button($buttontext);
-//$CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm);
+
 echo $OUTPUT->header();
 
 // Print Groups
 groups_print_activity_menu($cm, $returnurl);
 
-global $modulecontext,$personalblog;
+global $modulecontext, $personalblog;
 $modulecontext=$context;
 $personalblog=$oublog->global ? true : false;
 
 // FINALLY do the actual query
 $query=new local_ousearch_search($querytext);
 $query->set_coursemodule($cm);
-if($oublog->global && isset($oubloguser)) {
+if ($oublog->global && isset($oubloguser)) {
     $query->set_user_id($oubloguser->id);
 }
-if($groupmode && $currentgroup) {
+if ($groupmode && $currentgroup) {
     $query->set_group_id($currentgroup);
 }
 $query->set_filter('visibility_filter');
@@ -137,13 +152,13 @@ $searchurl='search.php?'.($oublog->global ? 'user='.$oubloguser->id : 'id='.$cm-
 
 $foundsomething=$query->display_results($searchurl);
 
-if(!$foundsomething) {
-    add_to_log($COURSE->id,'oublog','view searchfailure',
+if (!$foundsomething) {
+    add_to_log($COURSE->id, 'oublog', 'view searchfailure',
         $searchurl.'&query='.urlencode($querytext));
 }
 echo $foundsomething;
 
-//Add link to search the rest of this website if service available
+// Add link to search the rest of this website if service available.
 if (!empty($CFG->block_resources_search_baseurl)) {
     $params = array('course' => $course->id, 'query' => $querytext);
     $restofwebsiteurl = new moodle_url('/blocks/resources_search/search.php', $params);
@@ -164,6 +179,6 @@ echo $OUTPUT->footer();
  * @param object $result Search result data
  */
 function visibility_filter(&$result) {
-    global $USER,$modulecontext,$personalblog;
-    return oublog_can_view_post($result->data,$USER,$modulecontext,$personalblog);
+    global $USER, $modulecontext, $personalblog;
+    return oublog_can_view_post($result->data, $USER, $modulecontext, $personalblog);
 }

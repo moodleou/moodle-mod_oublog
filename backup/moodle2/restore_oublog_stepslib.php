@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -110,7 +109,7 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
         $data->oubloginstancesid = $this->get_new_parentid('oublog_instance');
         $data->groupid = $this->get_mappingid('group', $data->groupid);
 
-        //following comment copied from old 1.9 restore code.
+        // Following comment copied from old 1.9 restore code.
         // Currently OUBlog has no "start time" or "deadline" fields
         // that make sense to offset at restore time. Edit and delete times
         // must remain stable even through restores with startdateoffsets.
@@ -151,22 +150,21 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
         $data = (object)$data;
         $oldid = $data->id;
 
-        //first check to see if tag exists:
+        // First check to see if tag exists:
         $existingtag = $DB->get_record('oublog_tags', array('tag'=>$data->tag));
-        if(empty($existingtag->id)) {
-           $tag = new stdclass();
-           $tag->tag = $data->tag;
-           $tagid = $DB->insert_record('oublog_tags', $tag);
+        if (empty($existingtag->id)) {
+            $tag = new stdclass();
+            $tag->tag = $data->tag;
+            $tagid = $DB->insert_record('oublog_tags', $tag);
         } else {
             $tagid = $existingtag->id;
         }
-        //now insert taginstance record
+        // Now insert taginstance record.
         $taginstance = new stdclass();
         $taginstance->oubloginstancesid = $this->get_new_parentid('oublog_instance');
         $taginstance->postid = $this->get_new_parentid('oublog_post');
         $taginstance->tagid = $tagid;
         $newitemid = $DB->insert_record('oublog_taginstances', $taginstance);
-
 
         $this->set_mapping('oublog_tag', $oldid, $newitemid);
     }

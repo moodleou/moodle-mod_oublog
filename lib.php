@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Library of functions for the oublog module.
  *
@@ -80,7 +94,7 @@ function oublog_delete_instance($oublogid) {
     }
 
     if ($oublog->global) {
-        print_error('deleteglobalblog','oublog');
+        print_error('deleteglobalblog', 'oublog');
     }
 
     if ($instances = $DB->get_records('oublog_instances', array('oublogid'=>$oublog->id))) {
@@ -91,7 +105,7 @@ function oublog_delete_instance($oublogid) {
 
             if ($posts = $DB->get_records('oublog_posts', array('oubloginstancesid'=>$oubloginstancesid))) {
 
-                foreach($posts as $postid => $post) {
+                foreach ($posts as $postid => $post) {
                     // comments
                     $DB->delete_records('oublog_comments', array('postid'=>$postid));
 
@@ -114,10 +128,10 @@ function oublog_delete_instance($oublogid) {
 
     // Fulltext search data
     require_once(dirname(__FILE__).'/locallib.php');
-    if(oublog_search_installed()) {
-        $moduleid=$DB->get_field('modules','id',array('name'=>'oublog'));
-        $cm=$DB->get_record('course_modules',array('module'=>$moduleid,'instance'=>$oublog->id));
-        if(!$cm) {
+    if (oublog_search_installed()) {
+        $moduleid=$DB->get_field('modules', 'id', array('name'=>'oublog'));
+        $cm=$DB->get_record('course_modules', array('module'=>$moduleid, 'instance'=>$oublog->id));
+        if (!$cm) {
             print_error('invalidcoursemodule');
         }
         local_ousearch_document::delete_module_instance_data($cm);
@@ -151,7 +165,7 @@ function oublog_user_outline($course, $user, $mod, $oublog) {
                 INNER JOIN {oublog_instances} i ON p.oubloginstancesid = i.id
             WHERE p.deletedby IS NULL AND i.userid = ? AND oublogid = ?";
 
-    if ($postinfo = $DB->get_record_sql($sql, array($user->id,$mod->instance))) {
+    if ($postinfo = $DB->get_record_sql($sql, array($user->id, $mod->instance))) {
         $result = new stdClass();
         $result->info = get_string('numposts', 'oublog', $postinfo->postcnt);
         $result->time = $postinfo->lastpost;
@@ -188,7 +202,7 @@ function oublog_user_complete($course, $user, $mod, $oublog) {
             WHERE p.deletedby IS NULL AND i.userid = ? AND oublogid = ? ";
 
     if ($posts = $DB->get_records_sql($sql, array($user->id, $mod->instance))) {
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $postdata = oublog_get_post($post->id);
             echo $oublogoutput->render_post($mod, $oublog, $postdata, $baseurl, 'course');
         }
@@ -233,7 +247,7 @@ function oublog_print_recent_activity($course, $isteacher, $timestart) {
     echo $OUTPUT->heading(get_string('newblogposts', 'oublog'), 3);
 
     echo "\n<ul class='unlist'>\n";
-    foreach($rs as $blog) {
+    foreach ($rs as $blog) {
         if (!isset($modinfo->instances['oublog'][$blog->oublogid])) {
             // not visible
             continue;
@@ -248,7 +262,6 @@ function oublog_print_recent_activity($course, $isteacher, $timestart) {
         if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_USER, $blog->userid))) {
             continue;
         }
-
 
         $groupmode = oublog_get_activity_groupmode($cm, $course);
 
@@ -269,7 +282,6 @@ function oublog_print_recent_activity($course, $isteacher, $timestart) {
                 }
             }
         }
-
 
         echo '<li><div class="head">'.
                '<div class="date">'.oublog_date($blog->timeposted, $strftimerecent).'</div>'.
@@ -299,9 +311,8 @@ function oublog_print_recent_activity($course, $isteacher, $timestart) {
  * @param int $groupid
  * @return bool
  */
-function oublog_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0)  {
+function oublog_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0) {
     global $CFG, $COURSE, $DB;
-
 
     $sql = "SELECT i.oublogid, p.id AS postid, p.*, u.firstname, u.lastname, u.email, u.idnumber, u.picture, u.imagealt, i.userid
             FROM {oublog_posts} p
@@ -316,9 +327,7 @@ function oublog_get_recent_mod_activity(&$activities, &$index, $timestart, $cour
 
     $modinfo = get_fast_modinfo($COURSE);
 
-
-
-    foreach($rs as $blog) {
+    foreach ($rs as $blog) {
         if (!isset($modinfo->instances['oublog'][$blog->oublogid])) {
             // not visible
             continue;
@@ -333,7 +342,6 @@ function oublog_get_recent_mod_activity(&$activities, &$index, $timestart, $cour
         if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_USER, $blog->userid))) {
             continue;
         }
-
 
         $groupmode = oublog_get_activity_groupmode($cm, $COURSE);
 
@@ -354,7 +362,6 @@ function oublog_get_recent_mod_activity(&$activities, &$index, $timestart, $cour
                 }
             }
         }
-
 
         $tmpactivity = new object();
 
@@ -443,10 +450,10 @@ function oublog_cron() {
  * @return boolean true if success, false on error
  */
 function oublog_post_install() {
-    global $DB,$CFG;
+    global $DB, $CFG;
     require_once('locallib.php');
 
-    /// Setup the global blog
+    // Setup the global blog.
     $oublog = new stdClass;
     $oublog->course = SITEID;
     $oublog->name = 'Personal Blogs';
@@ -468,7 +475,6 @@ function oublog_post_install() {
     $mod->visible  = 1;
     $mod->visibleold  = 0;
     $mod->section = 1;
-
 
     if (!$cm = add_course_module($mod)) {
         return(true);
@@ -496,13 +502,13 @@ function oublog_ousearch_get_document($document) {
     require_once('locallib.php');
 
     // Get data
-    if(!($cm=$DB->get_record('course_modules',array('id'=>$document->coursemoduleid)))) {
+    if (!($cm=$DB->get_record('course_modules', array('id' => $document->coursemoduleid)))) {
         return false;
     }
-    if(!($oublog=$DB->get_record('oublog',array('id'=>$cm->instance)))) {
+    if (!($oublog=$DB->get_record('oublog', array('id' => $cm->instance)))) {
         return false;
     }
-    if(!($post=$DB->get_record_sql("
+    if (!($post=$DB->get_record_sql("
 SELECT
     p.*,bi.userid
 FROM
@@ -510,14 +516,14 @@ FROM
     INNER JOIN {oublog_instances} bi ON p.oubloginstancesid=bi.id
 WHERE
     p.id= ? ", array($document->intref1)))) {
-return false;
+        return false;
     }
 
     $result=new StdClass;
 
     // Set up activity name and URL
     $result->activityname=$oublog->name;
-    if($oublog->global) {
+    if ($oublog->global) {
         $result->activityurl=$CFG->wwwroot.'/mod/oublog/view.php?user='.
         $document->userid;
     } else {
@@ -531,8 +537,8 @@ return false;
     $result->url=$CFG->wwwroot.'/mod/oublog/viewpost.php?post='.$document->intref1;
 
     // Sort out tags for use as extrastrings
-    $taglist=oublog_get_post_tags($post,true);
-    if(count($taglist)!=0) {
+    $taglist=oublog_get_post_tags($post, true);
+    if (count($taglist)!=0) {
         $result->extrastrings=$taglist;
     }
 
@@ -547,8 +553,8 @@ return false;
  * @param bool $feedback If true, prints feedback as HTML list items
  * @param int $courseid If specified, restricts to particular courseid
  */
-function oublog_ousearch_update_all($feedback=false,$courseid=0) {
-    global $CFG,$DB;
+function oublog_ousearch_update_all($feedback=false, $courseid=0) {
+    global $CFG, $DB;
     require_once($CFG->dirroot . '/mod/oublog/locallib.php');
 
     // Get all existing blogs as $cm objects (which we are going to need to
@@ -568,12 +574,12 @@ WHERE
     }
 
     // Display info and loop around each coursemodule
-    if($feedback) {
+    if ($feedback) {
         print '<li><strong>'.count($coursemodules).'</strong> instances to process.</li>';
         $dotcount=0;
     }
     $posts=0; $instances=0;
-    foreach($coursemodules as $coursemodule) {
+    foreach ($coursemodules as $coursemodule) {
 
         // Get all the posts that aren't deleted
         $rs=$DB->get_recordset_sql("
@@ -586,17 +592,17 @@ WHERE
     p.deletedby IS NULL AND i.oublogid= ? ", array($coursemodule->instance));
 
         foreach ($rs as $post) {
-            oublog_search_update($post,$coursemodule);
+            oublog_search_update($post, $coursemodule);
 
             // Add to count and do user feedback every 100 posts
             $posts++;
-            if($feedback && ($posts%100)==0) {
-                if($dotcount==0) {
+            if ($feedback && ($posts%100)==0) {
+                if ($dotcount==0) {
                     print '<li>';
                 }
                 print '.';
                 $dotcount++;
-                if($dotcount==20 || $count==count($coursemodules)) {
+                if ($dotcount==20 || $count==count($coursemodules)) {
                     print "done $posts posts ($instances instances)</li>";
                     $dotcount=0;
                 }
@@ -607,7 +613,7 @@ WHERE
 
         $instances++;
     }
-    if($feedback && ($dotcount!=0 || $posts<100)) {
+    if ($feedback && ($dotcount!=0 || $posts<100)) {
         print ($dotcount==0?'<li>':'')."done $posts posts ($instances instances)</li>";
     }
 }
@@ -642,17 +648,17 @@ function oublog_supports($feature) {
  * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
  * @return bool True if completed, false if not, $type if conditions not set.
  */
-function oublog_get_completion_state($course,$cm,$userid,$type) {
+function oublog_get_completion_state($course, $cm, $userid, $type) {
     global $DB;
 
     // Get oublog details
-    if(!($oublog=$DB->get_record('oublog',array('id'=>$cm->instance)))) {
+    if (!($oublog=$DB->get_record('oublog', array('id' => $cm->instance)))) {
         throw new Exception("Can't find oublog {$cm->instance}");
     }
 
     $result=$type; // Default return value
 
-    if($oublog->completionposts) {
+    if ($oublog->completionposts) {
         // Count of posts by user
         $value = $oublog->completionposts <= $DB->get_field_sql("
 SELECT
@@ -661,14 +667,14 @@ FROM
 {oublog_instances} i
     INNER JOIN {oublog_posts} p ON i.id=p.oubloginstancesid
 WHERE
-    i.userid= ? AND i.oublogid=? AND p.deletedby IS NULL", array($userid,$oublog->id));
-if($type==COMPLETION_AND) {
-    $result=$result && $value;
-} else {
-    $result=$result || $value;
-}
+    i.userid= ? AND i.oublogid=? AND p.deletedby IS NULL", array($userid, $oublog->id));
+        if ($type==COMPLETION_AND) {
+            $result=$result && $value;
+        } else {
+            $result=$result || $value;
+        }
     }
-    if($oublog->completioncomments) {
+    if ($oublog->completioncomments) {
         // Count of comments by user (on posts by any user)
         $value = $oublog->completioncomments <= $DB->get_field_sql("
 SELECT
@@ -678,12 +684,12 @@ FROM
     INNER JOIN {oublog_posts} p ON p.id=c.postid
     INNER JOIN {oublog_instances} i ON i.id=p.oubloginstancesid
 WHERE
-    c.userid= ? AND i.oublogid= ? AND p.deletedby IS NULL AND c.deletedby IS NULL", array($userid,$oublog->id));
-if($type==COMPLETION_AND) {
-    $result=$result && $value;
-} else {
-    $result=$result || $value;
-}
+    c.userid= ? AND i.oublogid= ? AND p.deletedby IS NULL AND c.deletedby IS NULL", array($userid, $oublog->id));
+        if ($type==COMPLETION_AND) {
+            $result=$result && $value;
+        } else {
+            $result=$result || $value;
+        }
     }
 
     return $result;
@@ -694,14 +700,14 @@ if($type==COMPLETION_AND) {
  * This function returns a summary of all the postings since the current user
  * last logged in.
  */
-function oublog_print_overview($courses,&$htmlarray){
+function oublog_print_overview($courses, &$htmlarray) {
     global $USER, $CFG, $DB;
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
         return array();
     }
 
-    if (!$blogs = get_all_instances_in_courses('oublog',$courses)) {
+    if (!$blogs = get_all_instances_in_courses('oublog', $courses)) {
         return;
     }
 
@@ -715,9 +721,9 @@ function oublog_print_overview($courses,&$htmlarray){
         $params[] = $course->id;
         $params[] = $course->lastaccess;
     }
-    $sql = substr($sql,0,-3); // take off the last OR
+    $sql = substr($sql, 0, -3); // take off the last OR
 
-    //Ignore comment actions for now, only entries.
+    // Ignore comment actions for now, only entries.
     $sql .= ") AND l.module = 'oublog' AND action in('add post','edit post')
       AND userid != ? GROUP BY cmid,l.course,instance";
     $params[] = $USER->id;
@@ -725,32 +731,32 @@ function oublog_print_overview($courses,&$htmlarray){
         $new = array(); // avoid warnings
     }
 
-    $strblogs = get_string('modulenameplural','oublog');
+    $strblogs = get_string('modulenameplural', 'oublog');
 
     $site = get_site();
-    if( count( $courses ) == 1 && isset( $courses[$site->id] ) ){
-        $strnumrespsince1 = get_string('overviewnumentrylog1','oublog');
-        $strnumrespsince = get_string('overviewnumentrylog','oublog');
-    }else{
-        $strnumrespsince1 = get_string('overviewnumentryvw1','oublog');
-        $strnumrespsince = get_string('overviewnumentryvw','oublog');
+    if (count( $courses ) == 1 && isset( $courses[$site->id])) {
+        $strnumrespsince1 = get_string('overviewnumentrylog1', 'oublog');
+        $strnumrespsince = get_string('overviewnumentrylog', 'oublog');
+    } else {
+        $strnumrespsince1 = get_string('overviewnumentryvw1', 'oublog');
+        $strnumrespsince = get_string('overviewnumentryvw', 'oublog');
     }
 
-    //Go through the list of all oublog instances build previously, and check whether
-    //they have had any activity.
+    // Go through the list of all oublog instances build previously, and check whether
+    // they have had any activity.
     foreach ($blogs as $blog) {
         if (array_key_exists($blog->id, $new) && !empty($new[$blog->id])) {
             $count = $new[$blog->id]->count;
-            if( $count > 0 ){
-                if( $count == 1 ){
+            if ($count > 0) {
+                if ($count == 1) {
                     $strresp = $strnumrespsince1;
-                }else{
+                } else {
                     $strresp = $strnumrespsince;
                 }
 
                 $str = '<div class="overview oublog"><div class="name">'.
                 $strblogs.': <a title="'.$strblogs.'" href="';
-                if ($blog->global=='1'){
+                if ($blog->global=='1') {
                     $str .= $CFG->wwwroot.'/mod/oublog/allposts.php">'.$blog->name.'</a></div>';
                 } else {
                     $str .= $CFG->wwwroot.'/mod/oublog/view.php?id='.$new[$blog->id]->cmid.'">'.$blog->name.'</a></div>';
@@ -759,10 +765,10 @@ function oublog_print_overview($courses,&$htmlarray){
                 $str .= $count.' '.$strresp;
                 $str .= '</div></div>';
 
-                if (!array_key_exists($blog->course,$htmlarray)) {
+                if (!array_key_exists($blog->course, $htmlarray)) {
                     $htmlarray[$blog->course] = array();
                 }
-                if (!array_key_exists('oublog',$htmlarray[$blog->course])) {
+                if (!array_key_exists('oublog', $htmlarray[$blog->course])) {
                     $htmlarray[$blog->course]['oublog'] = ''; // initialize, avoid warnings
                 }
                 $htmlarray[$blog->course]['oublog'] .= $str;
@@ -933,7 +939,7 @@ function oublog_cm_info_dynamic(cm_info $cm) {
 }
 
 /**
-* Create grade item for given oublog
+ * Create grade item for given oublog
  *
  * @param object $oublog
  * @param mixed $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
@@ -986,4 +992,90 @@ function oublog_grade_item_delete($oublog) {
  */
 function oublog_get_extra_capabilities() {
     return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames');
+}
+
+/**
+ * Implementation of the function for printing the form elements that control
+ * whether the course reset functionality affects the oublog.
+ *
+ * @param object $mform form passed by reference
+ */
+function oublog_reset_course_form_definition(&$mform) {
+    $mform->addElement('header', 'oublogheader', get_string('modulenameplural', 'oublog'));
+    $mform->addElement('advcheckbox', 'reset_oublog', get_string('removeblogs', 'oublog'));
+}
+
+/**
+ * Actual implementation of the reset course functionality, delete all
+ * oublog posts.
+ *
+ * @global object
+ * @global object
+ * @param object $data the data submitted from the reset course.
+ * @return array status array
+ */
+function oublog_reset_userdata($data) {
+    global $DB;
+
+    $componentstr = get_string('modulenameplural', 'oublog');
+    $status = array();
+
+    if (!empty($data->reset_oublog)) {
+        // Delete post-related data.
+        $postidsql = "
+            SELECT pst.id
+            FROM {oublog_posts} pst
+            JOIN {oublog_instances} ins ON (ins.id = pst.oubloginstancesid)
+            JOIN {oublog} obl ON (obl.id = ins.oublogid)
+            WHERE obl.course = ?
+        ";
+        $params = array($data->courseid);
+        $DB->delete_records_select('oublog_comments', "postid IN ($postidsql)", $params);
+        $DB->delete_records_select('oublog_comments_moderated', "postid IN ($postidsql)", $params);
+        $DB->delete_records_select('oublog_edits', "postid IN ($postidsql)", $params);
+
+        // Delete instance-related data.
+        $insidsql = "
+            SELECT ins.id
+            FROM {oublog_instances} ins
+            JOIN {oublog} obl ON (obl.id = ins.oublogid)
+            WHERE obl.course = ?
+        ";
+        $DB->delete_records_select('oublog_links', "oubloginstancesid IN ($insidsql)", $params);
+        $DB->delete_records_select('oublog_taginstances', "oubloginstancesid IN ($insidsql)", $params);
+        $DB->delete_records_select('oublog_posts', "oubloginstancesid IN ($insidsql)", $params);
+
+        $blogidsql = "
+            SELECT obl.id
+            FROM {oublog} obl
+            WHERE obl.course = ?
+        ";
+        // Delete instances:
+        $DB->delete_records_select('oublog_instances', "oublogid IN ($blogidsql)", $params);
+
+        // Reset views:
+        $DB->execute("UPDATE {oublog} SET views = 0 WHERE course = ?", $params);
+
+        // Now get rid of all attachments.
+        $fs = get_file_storage();
+        $oublogs = get_coursemodules_in_course('oublog', $data->courseid);
+        if ($oublogs) {
+            foreach ($oublogs as $oublogid => $unused) {
+                if (!$cm = get_coursemodule_from_instance('oublog', $oublogid)) {
+                    continue;
+                }
+                $context = context_module::instance($cm->id);
+                $fs->delete_area_files($context->id, 'mod_oublog', 'attachment');
+                $fs->delete_area_files($context->id, 'mod_oublog', 'message');
+                $fs->delete_area_files($context->id, 'mod_oublog', 'messagecomment');
+            }
+        }
+
+        $status[] = array(
+                'component' => $componentstr,
+                'item' => get_string('removeblogs', 'oublog'),
+                'error' => false
+        );
+    }
+    return $status;
 }
