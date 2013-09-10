@@ -106,8 +106,6 @@ $PAGE->set_button($buttontext);
 
 $PAGEWILLCALLSKIPMAINDESTINATION = true; // OU accessibility feature.
 
-// The left column ...
-$hasleft = !empty($CFG->showblocksonmodpages);
 // The right column, BEFORE the middle-column.
 if (isloggedin() and !isguestuser()) {
     list($oublog, $oubloginstance) = oublog_get_personal_blog($USER->id);
@@ -131,15 +129,8 @@ if ($feeds = oublog_get_feedblock($oublog, 'all', '', false, $cm)) {
 // Must be called after add_fake_blocks.
 echo $OUTPUT->header();
 // Start main column.
-$classes='';
-$classes.=$hasleft ? 'has-left-column ' : '';
-$classes.='has-right-column ';
-$classes=trim($classes);
-if ($classes) {
-    print '<div id="middle-column" class="'.$classes.'">';
-} else {
-    print '<div id="middle-column">';
-}
+print '<div id="middle-column" class="has-right-column">';
+
 print skip_main_destination();
 
 // Print blog posts.

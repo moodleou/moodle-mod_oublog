@@ -230,7 +230,7 @@ $PAGE->set_heading(format_string($oublog->name));
 $editing = $PAGE->user_is_editing();
 
 // The left column ...
-$hasleft = !empty($CFG->showblocksonmodpages) || $editing;
+$hasleft = !empty($CFG->showblocksonmodpages);
 // The right column, BEFORE the middle-column.
 if (!$hideunusedblog) {
     global $USER, $CFG;
@@ -307,17 +307,7 @@ if (!$hideunusedblog) {
 echo $OUTPUT->header();
 
 // Start main column.
-$classes='';
-
-$classes.=$hasleft ? 'has-left-column ' : '';
-$classes.='has-right-column ';
-
-$classes=trim($classes);
-if ($classes) {
-    print '<div id="middle-column" class="'.$classes.'">';
-} else {
-    print '<div id="middle-column">';
-}
+print '<div id="middle-column" class="has-right-column">';
 
 echo $OUTPUT->skip_link_target();
 

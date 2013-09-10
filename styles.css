@@ -267,12 +267,6 @@
     float:right;
 }
 
-#page-mod-oublog-view #middle-column.has-left-column,
-#page-mod-oublog-viewpost #middle-column.has-left-column,
-#page-mod-oublog-allposts #middle-column.has-left-column {
-  margin-left:13em;
-}
-
 .oublog-userpic {
     float: left;
     width: 70px;
