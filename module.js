@@ -26,7 +26,10 @@ M.mod_oublog = {};
 
 M.mod_oublog.init = function(Y) {
     M.mod_oublog.hidewarning(Y);
-    Y.one('#id_allowcomments').on('change', function(e){M.mod_oublog.hidewarning(Y);});
+    var comments = Y.one('#id_allowcomments');
+    if (comments) {
+        comments.on('change', function(e){M.mod_oublog.hidewarning(Y);});
+    }
 };
 
 M.mod_oublog.hidewarning = function(Y) {
