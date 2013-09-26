@@ -149,7 +149,7 @@ if ($posts) {
     foreach ($posts as $post) {
         $post->row = $rowcounter;
         echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype,
-                $canmanageposts, $canaudit, false, false);
+                $canmanageposts, $canaudit, true, false);
         $rowcounter++;
     }
     if ($offset > 0) {
