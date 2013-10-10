@@ -1,0 +1,215 @@
+This script describes steps to test the OU blog interface with the OU alert facility
+perspective. It is intended to cover most of the UI and features.
+
+NOTE:
+In this test case, the word 'blog' always refers to the OU blog.
+This does not cover the specifics of the OU alerts functionality itself -
+only the interface with oublog.
+
+The test steps in this script follow on from each other and aren't independent.
+
+
+Initial setup
+=============
+
+This test case requires:
+
+-  access to multiple valid email account(s) for testing reporting email addresses use.
+
+-  a course blog which is visible to the world, with posts which are visible to the world.
+-  a student user U S1
+   Ensure that the admin role has the report/oualerts:managealerts capability.
+
+The test server must have debugging set to DEVELOPER level and to display errors
+during all parts of the test script, there should be no debugging warnings.
+
+
+CRE Creating blogs and data
+===========================
+
+CRE01 / admin
+   In your test course, create a blog called 'CRE01' with the following settings.
+   Set 'Allow comments' to Yes, from everybody (even if not logged in).
+   Leave 'Individual blogs' at the default setting.
+   Set 'Maximum visibility' to visible to anyone in the world.
+   In 'Reporting email addresses' enter one or more address(s), these need to be separated by commas.
+   Leave all other settings at their defaults.
+   Click 'Save and return to website'.
+
+CRE02 / admin
+   Enter the blog 'CRE01'.
+   Click 'New blog post' to add a new post, with title 'CRE02-1' and text 'Admin Post No one'.
+   Change the setting of 'Allow comments' to Yes, from everybody(even if not loggd in).
+   Change the setting of 'Who can read this' to Visible to anyone in the world
+   Click 'Add blog post' to save the post and return to the blog'
+
+CRE03 / admin
+   Click 'New blog post' to add a new post, with title 'CRE03-1' and text 'Admin Post No two for deletion.'.
+   Change the setting of 'Allow comments' to Yes, from everybody(even if not loggd in).
+   Change the setting of 'Who can read this' to Visible to anyone in the world
+   Click 'Add blog post' to save the post and return to the blog'
+
+CRE04 / admin
+   Click 'Add your comment' to add a new comment, to the first post 'CRE02-1' give it the title
+   'CRE02-1-C1' and text 'Admin Post No one comment No one'.
+   Click 'Add your comment' to add a second comment, with no title, but the text
+   'Admin Post No one comment No two for deletion'.
+
+CRE05 / U.S1 [change]
+   Go to blog CRE01.
+   Click 'New blog post' to add a post, with title 'CRE04-1' and text 'US1 Post No one'.
+   Change the setting of 'Allow comments' to Yes, from everybody(even if not loggd in).
+   Change the setting of 'Who can read this' to Visible to anyone in the world
+   Click 'Add blog post' to save the post and return to the blog'
+
+CRE06 / U.S1
+-  Confirm that Admin posts show a set of links including 'Report post'.
+-  Confirm that the US1 post shows the set of links excluding 'Report post'.
+
+CRE07 / U.S1
+   Click 'Permalink' beneath the Admin post 'CRE02-1' to view the post and comments.
+-  Verify that each Admin comment has a 'Report comment' link visible.
+   Click 'Add your comment' to add a comment, with title 'CRE02-1-C2' and text
+   'US1 Post CRE02-1-C2 comment No three.'.
+   Click 'Add your comment' to add another new comment, with no title, but the text
+   'US1 Post CRE02-1-C3 comment No four for deletion.'.
+
+CRE08 / U.S1
+-  Verify that neither US1 comment has a 'Report comment' link visible.
+   Click to delete the untitled US1 comment.
+-  Confirm that the comment is no longer visible by the student user.
+
+CRE10 / admin [change]
+   Enter blog 'CRE01'.
+   Click 'Permalink' beneath the post 'CRE02-1' to view the post and its comments.
+-  Confirm that post 'CRE02-1' has 4 comments two by each user.
+   Admin comments; 'CRE02-1-C1' and an untitled comment, both with 'Delete' links.
+   User one comments; 'CRE02-1-C2' with 'Delete' and 'Report comment' links, and an untitled comment,
+   deleted by Student user one showing no links beneath.
+
+CRE11 / admin
+   Delete the untitled Admin comment 'Admin Post No one comment No two for deletion'.
+-  Confirm that the comment is now marked as Deleted by Admin user,
+   and that it now has no links beneath it.
+
+
+BSC Basic usage
+===============
+
+BSC01 / admin
+   Go to blog 'CRE01'.
+-  Verify that the 'Report post' link is only visible in the Student user post.
+   Click to delete 'CRE03-1' Admin post for deletion.
+-  Confirm that the post is now marked as deleted by the Admin, and that the only link available
+   for it is the 'Permalink' link.
+
+BSC02 / admin
+   Open the Administration menu to the left of the posts.
+   Open the OU Blog administration menu
+-  Verify that the last option on the menu is 'Manage reported post/comment alerts'.
+
+BSC03 / admin
+   Click 'Permalink' beneath the top post 'CRE04-1' to view the post.
+   Note the id of the post on the URL in the Browser Address bar.
+   Click the 'Report post' link for this post.
+-  Confirm that the 'Report abuse' page loads.
+
+BSC04 / admin
+-  Verify that the navigation crumb trail contains a link back to the post, and when hovered over,
+   that the URL and post id are the same as recorded above.
+-  Verify that there is also a link back to the post above the text, 'The Alert feature will send
+  the alerted content to a staff member who will investigate.', and that this link has the same URL.
+-  Verify that the page shows 'Reasons for Alert' as a required field, with
+   6 checkboxes for selecting abuse statements, and a large text entry box for 'Other information'.
+-  Verify that 'Reporter details' appear beneath the box, followed by the
+   'Send alert' and 'Cancel' buttons.
+
+BSC05 / admin
+   Click the checkbox beside 'It is against the rules for some other reason.'
+   Enter 'BSC05 Admin testing the OU Blog Alert interface.'
+   Click 'Send alert'.
+
+BSC06 / admin
+   Confirm that you are returned to the 'CRE01' blog view page,
+   and that an email has been recieved by the testaccount(s).
+
+BSC07 / U.S1 [change]
+   Enter 'CRE01'.
+-  Confirm that only the remaining visible Admin user post shows the 'Report post' link.
+
+BSC08 / U.S1
+   Click the '2 comments' link beneath 'CRE02-1'.
+-  Confirm that the viewpost page opens at the first comment, and that the page displays
+   the post 'CRE02-1' and two comments.
+-  Verify that only the Admin comment has a 'Report comment' link.
+Note: The previously deleted comments are not visible to the student user.
+
+BSC09 / U.S1
+   Note the id of the post on the URL in the Browser Address bar.
+Note: You may need to highlight the URL to read this, in IE for example.
+   Click the 'Report comment' link below the comment by user Admin.
+-  Confirm that the 'Report abuse' page loads.
+   Take note of the itemid from the URL in the address bar.
+-  Verify that the navigation crumb trail contains a link back to the post, and when hovered over,
+   that the URL contains the post and #cid which matches the itemid recorded above.
+-  Verify that there is also a link back to the post above the text 'The Alert feature will send
+   the alerted content to a staff member who will investigate.' and that this link has the same URL.
+-  Verify that the page shows 'Reasons for Alert' as a required field, with
+   6 checkboxes for selecting abuse statements, and a large text entry box for 'Other information'.
+-  Verify that 'Reporter details' appear beneath the box, followed by the
+   'Send alert' and 'Cancel' buttons.
+
+BSC10 / U.S1
+   Click the checkbox beside 'It is against the rules for some other reason.'
+   Enter 'BSC10 US1 testing the OU Blog Alert interface as a user.'
+   Click 'Send alert'.
+
+BSC11 / U.S1
+-  Confirm that you are returned to the viewpost page with the selected comment placed at the top
+   of the screen showing the post 'CRE02-1'
+-  Verify that an email has been received by the testaccount(s).
+-  Confirm the address in the URL contains the post and #cid previously noted.
+
+BSC12 / U.S1
+   Click the 'Report comment' link again.
+   Confirm that the 'Report abuse' page loads.
+-  Verify that 'Reporter details' appear beneath the box, followed by the
+   'Send alert' and 'Cancel' buttons.
+
+BSC13 / U.S1
+   Click 'Cancel'.
+-  Confirm that you are returned to the viewpost page with the selected comment placed at the top
+   of the screen for the post 'CRE02-1' and its comments
+-  Verify that no new email has been received by the testaccount(s).
+
+BSC14 / U.S1
+   Select and copy the URL in the address bar.
+   Open a different Web Browser and paste the URL into the address bar.
+-  Confirm that you are presented with the viewpost page with the selected comment placed at the top
+   of the screen for the post 'CRE02-1' and its 2 student visible comments.
+-  Verify that the post does not display a 'Report post' link along side the 'Permalink' and
+   'Add you comment' links, beneath the post.
+-  Verify that the comments do not display 'Report comment' links.
+
+BSC15 / admin [Change]
+   Enter 'CRE01'.
+   Click the Administration link 'Manage reported post/comments'.
+-  Confirm that the OU Alerts management page opens, showing a record of the alerts generated
+   during the testcase.
+
+BSC16 / admin
+   Return to the course and enter the blog 'CRE01'
+   Click the OU Blog administration link, 'Edit settings'.
+   Remove the 'Reporting email addresses' setting for the blog 'CRE01' so there are no email addresses.
+   Save and display.
+
+BSC17 / admin
+   Confirm that the 'Report post' link is no longer available in posts.
+   Confirm that the 'Report comment' link is no longer available in comments.
+
+BSC18 / tester
+   Confirm that emails notifying the testaccounts have been received and contain
+   information regarding the individual posts or comments including links to those items.
+
+End test.
+=========

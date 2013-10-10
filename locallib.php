@@ -192,7 +192,7 @@ function oublog_can_post($oublog, $bloguserid=0, $cm=null) {
     global $USER;
     if ($oublog->global) {
         if ($bloguserid==0) {
-            debugging('Calls to oublog_can_post for personal blogs must supply userid!', DEBUG_DEVELOPER);//at4737wip6616
+            debugging('Calls to oublog_can_post for personal blogs must supply userid!', DEBUG_DEVELOPER);
         }
         // This needs to be your blog and you need the 'contributepersonal'
         // permission at system level
@@ -3372,4 +3372,25 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
         $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
         return (has_capability('mod/oublog:exportpost', $context));
     }
+}
+
+function oublog_get_reportingemail($oublog) {
+    return $oublog->reportingemail;
+}
+
+/*
+ * Call to check if OU Alerts plugin exists.
+ * If so, includes the library suppport, otherwise return false.
+ *
+ * @return bool True if OU Alerts extension is enabled.
+ */
+function oublog_oualerts_enabled() {
+    global $CFG;
+
+    if (file_exists($CFG->dirroot . '/report/oualerts/locallib.php')) {
+        @include_once($CFG->dirroot . '/report/oualerts/locallib.php');
+        return oualerts_enabled();
+    }
+
+    return false;
 }

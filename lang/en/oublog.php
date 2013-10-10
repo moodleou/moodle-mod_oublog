@@ -396,3 +396,13 @@ $string['maxattachments'] = 'Maximum number of attachments';
 $string['maxattachments_help'] = 'This setting specifies the maximum number of files that can be attached to a blog post.';
 $string['maxattachmentsize_help'] = 'This setting specifies the largest size of file that can be attached to a blog post.';
 $string['attachments_help'] = 'You can optionally attach one or more files to a blog post. If you attach an image, it will be displayed after the message.';
+
+$string['reportingemail'] = 'Reporting email addresses';
+$string['reportingemail_help'] = 'This setting specifies the email addresses of those who will be informed
+about issues with posts or comments within the OUBlog.
+They should be entered as a comma separated list.';
+$string['postalert'] = 'Report post';
+$string['commentalert'] = 'Report comment';
+$string['oublog_managealerts'] = 'Manage reported post/comment alerts';
+$string['untitledpost'] = 'Untitled post';
+$string['untitledcomment'] = 'Untitled comment';

@@ -991,7 +991,8 @@ function oublog_grade_item_delete($oublog) {
  * Returns all other caps used in oublog at module level.
  */
 function oublog_get_extra_capabilities() {
-    return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames');
+    return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames',
+            'report/oualerts:managealerts');
 }
 
 /**
@@ -1078,4 +1079,84 @@ function oublog_reset_userdata($data) {
         );
     }
     return $status;
+}
+
+function oublog_oualerts_additional_recipients($type, $id) {
+    global $CFG, $USER, $DB;
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+    $additionalemails = '';
+
+    switch ($type) {
+        case 'post':
+            $data = oublog_get_blog_from_postid ($id);
+            break;
+        case 'comment':
+            $postid = $DB->get_field('oublog_comments', 'postid', array('id' => $id));
+            $data = oublog_get_blog_from_postid($postid);
+            break;
+        default:
+            $data = false;
+            break;
+    }
+    if ($data != false) {
+        // Return alert recipients addresses for notification.
+        $reportingemails = oublog_get_reportingemail($data);
+        if ($reportingemails != false) {
+            $additionalemails = explode(',', trim($reportingemails));
+        }
+    }
+    return $additionalemails;
+}
+
+function oublog_oualerts_custom_info($item, $id) {
+    global $CFG, $USER, $DB;
+
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+
+    switch ($item) {
+        case 'post':
+            $data =  oublog_get_post($id);
+            $itemtitle = get_string('untitledpost', 'oublog');
+            break;
+        case 'comment':
+            $data = $DB->get_record('oublog_comments', array('id' => $id));
+            $itemtitle = get_string('untitledcomment', 'oublog');
+            break;
+        default:
+            $data = false;
+            break;
+    }
+
+    if ($data != false && !empty($data->title)) {
+        $itemtitle = $data->title;
+    }
+    // Return just the title string value of the post or comment.
+    return $itemtitle;
+}
+
+/**
+ * If OU alerts is enabled, and the blog has reporting email setup,
+ * if the user has the report/oualerts:managealerts capability for the context then
+ * the link to the alerts report should be added.
+ *
+ * @global object
+ * @global object
+ */
+function oublog_extend_settings_navigation(settings_navigation $settings, navigation_node $node) {
+    global $DB, $CFG, $PAGE;
+
+    if (!$oublog = $DB->get_record("oublog", array("id" => $PAGE->cm->instance))) {
+        return;
+    }
+
+    include_once($CFG->dirroot.'/mod/oublog/locallib.php');
+    if (oublog_oualerts_enabled() && oublog_get_reportingemail($oublog)) {
+        if (has_capability('report/oualerts:managealerts',
+                get_context_instance(CONTEXT_MODULE, $PAGE->cm->id))) {
+            $node->add(get_string('oublog_managealerts', 'oublog'),
+                    new moodle_url('/report/oualerts/manage.php', array('cmid' => $PAGE->cm->id,
+                            'coursename' => $PAGE->course->id, 'contextcourseid' => $PAGE->course->id)),
+                            settings_navigation::TYPE_CUSTOM);
+        }
+    }
 }
