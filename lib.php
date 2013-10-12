@@ -37,6 +37,8 @@
  * @param object $oublog the data from the mod form
  * @return int The id od the newly inserted module
  */
+
+
 function oublog_add_instance($oublog) {
     global $DB;
     // Generate an accesstoken
@@ -463,6 +465,7 @@ function oublog_post_install() {
     $oublog->maxvisibility = OUBLOG_VISIBILITY_PUBLIC;
     $oublog->global = 1;
     $oublog->allowcomments = OUBLOG_COMMENTS_ALLOWPUBLIC;
+    $oublog->forcesubscribe = OUBLOG_CHOOSESUBSCRIBE;
 
     if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
         return(false);

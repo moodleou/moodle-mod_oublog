@@ -25,6 +25,7 @@ class mod_oublog_post_form extends moodleform {
         $individualblog = $this->_customdata['individual'];
         $maxvisibility = $this->_customdata['maxvisibility'];
         $allowcomments = $this->_customdata['allowcomments'];
+        $forcesubscribe = $this->_customdata['forcesubscribe'];
         $edit          = $this->_customdata['edit'];
         $personal      = $this->_customdata['personal'];
         $maxbytes      = $this->_customdata['maxbytes'];

@@ -14,8 +14,9 @@
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="text format of intro field" PREVIOUS="intro" NEXT="allowcomments" />
         <FIELD NAME="allowcomments" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = do not allow comments
 1 = allow comments from signed-in users
-2 = allow comments from signed-in users, and moderated comments from external users" PREVIOUS="introformat" NEXT="maxbytes"/>
-        <FIELD NAME="maxbytes" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="512000" SEQUENCE="false" PREVIOUS="allowcomments" NEXT="maxattachments"/>
+2 = allow comments from signed-in users, and moderated comments from external users" PREVIOUS="introformat" NEXT="forcesubscribe"/>
+        <FIELD NAME="forcesubscribe" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="allowcomments" NEXT="maxbytes"/> 
+        <FIELD NAME="maxbytes" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="512000" SEQUENCE="false" PREVIOUS="forcesubscribe" NEXT="maxattachments"/>
         <FIELD NAME="maxattachments" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="9" SEQUENCE="false" COMMENT="Number of attachments allowed per post" PREVIOUS="maxbytes" NEXT="maxvisibility"/>
         <FIELD NAME="maxvisibility" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="100" SEQUENCE="false" PREVIOUS="maxattachments" NEXT="global"/>
         <FIELD NAME="global" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is this the global blog?" PREVIOUS="maxvisibility" NEXT="views"/>
@@ -185,5 +186,20 @@
         <INDEX NAME="authorip" UNIQUE="false" FIELDS="authorip"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="oublog_subscriptions" COMMENT="Keeps track of who is subscribed to what blog">
+    <FIELDS>
+    <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+    <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+    <FIELD NAME="oublog" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+    </FIELDS>
+    <KEYS>
+    <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+    <KEY NAME="oublog" TYPE="foreign" FIELDS="oublog" REFTABLE="oublog" REFFIELDS="id"/>
+    </KEYS>
+    <INDEXES>
+    <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+    </INDEXES>
+    </TABLE>
+
   </TABLES>
 </XMLDB>

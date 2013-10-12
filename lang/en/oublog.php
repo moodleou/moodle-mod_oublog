@@ -396,3 +396,18 @@ $string['maxattachments'] = 'Maximum number of attachments';
 $string['maxattachments_help'] = 'This setting specifies the maximum number of files that can be attached to a blog post.';
 $string['maxattachmentsize_help'] = 'This setting specifies the largest size of file that can be attached to a blog post.';
 $string['attachments_help'] = 'You can optionally attach one or more files to a blog post. If you attach an image, it will be displayed after the message.';
+
+// Subscriptions
+$string['subscriptionmode'] = 'Subscription mode';
+$string['subscriptionmode_help'] = 'When a participant is subscribed to a blog it means they will receive blog post notifications. There are 4 subscription mode options:
+
+* Optional subscription - Participants can choose whether to be subscribed
+* Forced subscription - Everyone is subscribed and cannot unsubscribe
+* Auto subscription - Everyone is subscribed initially but can choose to unsubscribe at any time
+* Subscription disabled - Subscriptions are not allowed
+
+Note: Any subscription mode changes will only affect users who enrol in the course in the future, and not existing users.';
+$string['subscriptionoptional'] = 'Optional subscription';
+$string['subscriptionforced'] = 'Forced subscription';
+$string['subscriptionauto'] = 'Auto subscription';
+$string['subscriptiondisabled'] = 'Subscription disabled';

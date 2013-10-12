@@ -27,6 +27,7 @@
  * @package oublog
  */
 
+
 // OU shared APIs which (for OU system) are present in local, elsewhere
 // are incorporated in module
 @include_once(dirname(__FILE__).'/../../local/transaction_wrapper.php');
@@ -79,6 +80,15 @@ define('OUBLOG_USER_PARTICIPATION', 2);
 define('OUBLOG_MY_PARTICIPATION', 1);
 define('OUBLOG_NO_PARTICIPATION', 0);
 define('OUBLOG_PARTICIPATION_PERPAGE', 100);
+/**#@-*/
+
+/**#@+
+  * Constants defining subscription modes
+  */
+define('OUBLOG_CHOOSESUBSCRIBE', 0);
+define('OUBLOG_FORCESUBSCRIBE', 1);
+define('OUBLOG_INITIALSUBSCRIBE', 2);
+define('OUBLOG_DISALLOWSUBSCRIBE',3);
 /**#@-*/
 
 /**

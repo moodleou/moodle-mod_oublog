@@ -55,6 +55,17 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->setType('allowcomments', PARAM_INT);
             $mform->addHelpButton('allowcomments', 'allowcomments', 'oublog');
 
+            // Adding the "forcesubscribe" field
+
+            $options = array();
+            $options[OUBLOG_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'oublog');
+            $options[OUBLOG_FORCESUBSCRIBE] = get_string('subscriptionforced', 'oublog');
+            $options[OUBLOG_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'oublog');
+            $options[OUBLOG_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled','oublog');
+            $mform->addElement('select', 'forcesubscribe', get_string('subscriptionmode', 'oublog'), $options);
+            $mform->addHelpButton('forcesubscribe', 'subscriptionmode', 'oublog');
+
+
             // Adding the "individual" field.
             $options = array(OUBLOG_NO_INDIVIDUAL_BLOGS       => get_string('no_blogtogetheroringroups', 'oublog'),
                              OUBLOG_SEPARATE_INDIVIDUAL_BLOGS => get_string('separateindividualblogs', 'oublog'),
