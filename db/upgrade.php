@@ -155,11 +155,11 @@ function xmldb_oublog_upgrade($oldversion=0) {
         // Adding fields to table oublog_subscriptions.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('oublog', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('oubloginstanceid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
 
         // Adding keys to table oublog_subscriptions.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('oublog', XMLDB_KEY_FOREIGN, array('oublog'), 'oublog', array('id'));
+        $table->add_key('oubloginstanceid', XMLDB_KEY_FOREIGN, array('oubloginstanceid'), 'oublog', array('id'));
 
         // Adding indexes to table oublog_subscriptions.
         $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));

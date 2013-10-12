@@ -429,18 +429,82 @@ function oublog_print_recent_mod_activity($activity, $courseid, $detail, $modnam
 
 /**
  * Function to be run periodically according to the moodle cron
- * This function runs every 4 hours.
+ * This function runs every 30-minutes.
  *
  * @uses $CFG
  * @return boolean true on success, false on failure.
  **/
 function oublog_cron() {
-    global $DB;
+    global $CFG, $COURSE, $DB;
 
     // Delete outdated (> 30 days) moderated comments
     $outofdate = time() - 30 * 24 * 3600;
     $DB->delete_records_select('oublog_comments_moderated', "timeposted < ?", array($outofdate));
 
+    $timenow = time();
+    $lastRunTime = get_config('oublog_last_cron_run');
+    
+
+
+    // Find all the posts which are newer than $lastRunTime
+
+
+    $sql = "SELECT i.obid, i.oublogid, p.id AS postid, p.*, u.firstname, u.lastname, u.email, u.idnumber, i.userid
+        FROM {oublog_posts} p
+        INNER JOIN {oublog_instances} i ON p.oubloginstancesid = i.id
+        INNER JOIN {oublog} b ON i.oublogid = b.id
+        INNER JOIN {user} u ON i.userid = u.id
+        WHERE p.deletedby IS NULL AND p.timeposted >= ? ";
+
+    if (!$rs = $DB->get_recordset_sql($sql, array($lastRunTime))) {
+        return true;
+    }
+
+    // Get all subscriptions linked to instances where there were posts recently
+
+    $sql = "SELECT oubloginstanceid AS obid, userid AS uid, u.firstname, u.lastname, u.email
+        FROM {oublog_subscriptions} s
+        INNER JOIN {user} u ON s.userid = u.id
+        INNER JOIN {oublog_posts} p ON p.oubloginstanceid = obid
+        WHERE p.timeposted >= ?";
+
+    if (!$sub_rs = $DB->get_recordset_sql($sql, array($lastRunTime))) {
+        return true;
+    }
+
+    $emails = array();
+
+    foreach ($rs as $blog) {
+        // Produce email for that particular blog post:
+        $emailForPost = '<li><div class="head">'.
+            '<div class="date">'.oublog_date($blog->timeposted, get_string('strftimerecent')).'</div>'.
+            '<div class="name">'.fullname($blog).'</div>'.
+            '</div>'.
+            '<div class="info">'.
+            "<a href=\"{$CFG->wwwroot}/mod/oublog/viewpost.php?post={$blog->postid}\">".
+            break_up_long_words(format_string(empty($blog->title) ? $blog->message : $blog->title)).
+            '</a>'.
+            '</div>';
+        foreach ($sub_rs as $subscription) {
+            if ($subscription->obid == $blog->obid) {
+                // add the email to the user's queue
+                $emails[$subscription->uid]->posts .= $emailForPost;
+                $emails[$subscription->uid]->sub = $subscription; // there might be many assignments -- OK for now?
+            }
+            
+        }
+        
+    }
+
+    foreach ($emails as $uid => $posts) {
+        $outputEmail = "Dear ". $posts->subscription->firstname . ",\n here is a list of the latest updates from Moolde OUBlog: \n";
+        $outputEmail .= "<ul>" . $posts->posts . "</ul>";
+        $outputEmail .= "\nSincerely,\n~The OUBlog Email Robot";
+        mail($posts->subscription->email, "OUBlog Updates", $outputEmail);
+    }
+    
+
+    set_config('oublog_last_cron_run', $lastRunTime);
     return true;
 }
 

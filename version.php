@@ -25,6 +25,6 @@
 
 $module->version  = 2013101200;
 $module->requires = 2011120100;
-$module->cron     = 60*60*4; // 4 hours.
+$module->cron     = 60*30; // 30-minutes.
 
 $module->displayversion = 'Unused';
