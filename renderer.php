@@ -386,6 +386,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
         if (!empty($participation)) {
             if (!$table->is_downloading()) {
+                if ($perpage > count($participation)) {
+                    $perpage = count($participation);
+                }
                 $table->pagesize($perpage, count($participation));
                 $offset = $page * $perpage;
                 $endposition = $offset + $perpage;
