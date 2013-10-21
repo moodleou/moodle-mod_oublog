@@ -1081,6 +1081,22 @@ function oublog_reset_userdata($data) {
     return $status;
 }
 
+/**
+ * List of view style log actions
+ * @return array
+ */
+function oublog_get_view_actions() {
+    return array('view', 'view all');
+}
+
+/**
+ * List of update style log actions
+ * @return array
+ */
+function oublog_get_post_actions() {
+    return array('update', 'add', 'add comment', 'add post', 'edit post');
+}
+
 function oublog_oualerts_additional_recipients($type, $id) {
     global $CFG, $USER, $DB;
     require_once($CFG->dirroot . '/mod/oublog/locallib.php');
