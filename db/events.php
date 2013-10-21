@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org//
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,16 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Code fragment to define the version of oublog
- * This fragment is called by moodle_needs_upgrading() and /admin/index.php
+ * Meta course enrolment plugin event handler definition.
  *
- * @author Matt Clarkson <mattc@catalyst.net.nz>
- * @author Sam Marshall <s.marshall@open.ac.uk>
- * @package oublog
- **/
+ * @package mod_oublog
+ * @category event
+ * @copyright 2010 Petr Skoda  {@link http://skodak.org}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-$module->version  = 2013101202;
-$module->requires = 2011120100;
-$module->cron     = 60*30; // 30-minutes.
+/* List of handlers */
+$handlers = array (
+    'role_assigned' => array (
+        'handlerfile'      => '/mod/oublog/lib.php',
+        'handlerfunction'  => 'oublog_user_role_assigned',
+        'schedule'         => 'instant',
+        'internal'         => 1,
+    )
 
-$module->displayversion = 'Unused';
+);

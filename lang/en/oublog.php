@@ -411,3 +411,7 @@ $string['subscriptionoptional'] = 'Optional subscription';
 $string['subscriptionforced'] = 'Forced subscription';
 $string['subscriptionauto'] = 'Auto subscription';
 $string['subscriptiondisabled'] = 'Subscription disabled';
+$string['subscribe'] = 'subscribe';
+$string['unsubscribe'] = 'unsubscribe';
+$string['nowsubscribed'] = '{$a->name} will be notified of new posts in \'{$a->oublog}\'';
+$string['nownotsubscribed'] = '{$a->name} will NOT be notified of new posts in \'{$a->oublog}\'';
