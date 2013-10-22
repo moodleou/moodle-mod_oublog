@@ -1217,77 +1217,77 @@ function oublog_get_forcesubscribed($oublog) {
  * @param navigation_node $forumnode The node to add module settings to
  */
 function oublog_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $oublognode) {
-	global $USER, $PAGE, $CFG, $DB, $OUTPUT;
-	
-	if (oublog_oualerts_enabled()) {
-/**
- * If OU alerts is enabled, and the blog has reporting email setup,
- * if the user has the report/oualerts:managealerts capability for the context then
- * the link to the alerts report should be added.
- *
- * @global object
- * @global object
- */
-    if (!$oublog = $DB->get_record("oublog", array("id" => $PAGE->cm->instance))) {
-        return;
-    }
+    global $USER, $PAGE, $CFG, $DB, $OUTPUT;
 
-    include_once($CFG->dirroot.'/mod/oublog/locallib.php');
-
-
-    if (oublog_get_reportingemail($oublog)) {
-        if (has_capability('report/oualerts:managealerts',
-                get_context_instance(CONTEXT_MODULE, $PAGE->cm->id))) {
-            $node->add(get_string('oublog_managealerts', 'oublog'),
-                    new moodle_url('/report/oualerts/manage.php', array('cmid' => $PAGE->cm->id,
-                            'coursename' => $PAGE->course->id, 'contextcourseid' => $PAGE->course->id)),
-                            settings_navigation::TYPE_CUSTOM);
+    if (oublog_oualerts_enabled()) {
+        /**
+         * If OU alerts is enabled, and the blog has reporting email setup,
+         * if the user has the report/oualerts:managealerts capability for the context then
+         * the link to the alerts report should be added.
+         *
+         * @global object
+         * @global object
+         */
+        if (!$oublog = $DB->get_record("oublog", array("id" => $PAGE->cm->instance))) {
+            return;
         }
-    } 
-	} else {
-	$oublogobject = $DB->get_record ( "oublog", array (
-			"id" => $PAGE->cm->instance 
-	) );
-	if (empty ( $PAGE->cm->context )) {
-		$PAGE->cm->context = context_module::instance ( $PAGE->cm->instance );
-	}
-	
-	// for some actions you need to be enrolled, being admin is not enough sometimes here
-	$enrolled = is_enrolled ( $PAGE->cm->context, $USER, '', false );
-	$activeenrolled = is_enrolled ( $PAGE->cm->context, $USER, '', true );
-	
-	$subscriptionmode = oublog_get_forcesubscribed ( $oublogobject );
-	$cansubscribe = ($activeenrolled && $subscriptionmode != OUBLOG_FORCESUBSCRIBE && ($subscriptionmode != OUBLOG_DISALLOWSUBSCRIBE));
-	
-	switch ($subscriptionmode) {
-		case OUBLOG_CHOOSESUBSCRIBE : // 0
-			$notenode = $oublognode->add ( get_string ( 'subscriptionoptional', 'oublog' ) );
-			break;
-		case OUBLOG_FORCESUBSCRIBE : // 1
-			$notenode = $oublognode->add ( get_string ( 'subscriptionforced', 'oublog' ) );
-			break;
-		case OUBLOG_INITIALSUBSCRIBE : // 2
-			$notenode = $oublognode->add ( get_string ( 'subscriptionauto', 'oublog' ) );
-			break;
-		case OUBLOG_DISALLOWSUBSCRIBE : // 3
-			$notenode = $oublognode->add ( get_string ( 'subscriptiondisabled', 'oublog' ) );
-			break;
-	}
-	
-	if ($cansubscribe) {
-		if (oublog_is_subscribed ( $USER->id, $oublogobject )) {
-			$linktext = get_string('unsubscribe', 'oublog');
-		} else {
-			$linktext = get_string('subscribe', 'oublog');
-		}
-		$url = new moodle_url ( '/mod/oublog/subscribe.php', array (
-				'id' => $oublogobject->id,
-				'sesskey' => sesskey () 
-		) );
-		$oublognode->add ( $linktext, $url, navigation_node::TYPE_SETTING );
-	}
 
-	}
+        include_once($CFG->dirroot.'/mod/oublog/locallib.php');
+
+
+        if (oublog_get_reportingemail($oublog)) {
+            if (has_capability('report/oualerts:managealerts',
+                        get_context_instance(CONTEXT_MODULE, $PAGE->cm->id))) {
+                $node->add(get_string('oublog_managealerts', 'oublog'),
+                        new moodle_url('/report/oualerts/manage.php', array('cmid' => $PAGE->cm->id,
+                                'coursename' => $PAGE->course->id, 'contextcourseid' => $PAGE->course->id)),
+                        settings_navigation::TYPE_CUSTOM);
+            }
+        } 
+    } else {
+        $oublogobject = $DB->get_record ( "oublog", array (
+                    "id" => $PAGE->cm->instance 
+                    ) );
+        if (empty ( $PAGE->cm->context )) {
+            $PAGE->cm->context = context_module::instance ( $PAGE->cm->instance );
+        }
+
+        // for some actions you need to be enrolled, being admin is not enough sometimes here
+        $enrolled = is_enrolled ( $PAGE->cm->context, $USER, '', false );
+        $activeenrolled = is_enrolled ( $PAGE->cm->context, $USER, '', true );
+
+        $subscriptionmode = oublog_get_forcesubscribed ( $oublogobject );
+        $cansubscribe = ($activeenrolled && $subscriptionmode != OUBLOG_FORCESUBSCRIBE && ($subscriptionmode != OUBLOG_DISALLOWSUBSCRIBE));
+
+        switch ($subscriptionmode) {
+            case OUBLOG_CHOOSESUBSCRIBE : // 0
+                $notenode = $oublognode->add ( get_string ( 'subscriptionoptional', 'oublog' ) );
+                break;
+            case OUBLOG_FORCESUBSCRIBE : // 1
+                $notenode = $oublognode->add ( get_string ( 'subscriptionforced', 'oublog' ) );
+                break;
+            case OUBLOG_INITIALSUBSCRIBE : // 2
+                $notenode = $oublognode->add ( get_string ( 'subscriptionauto', 'oublog' ) );
+                break;
+            case OUBLOG_DISALLOWSUBSCRIBE : // 3
+                $notenode = $oublognode->add ( get_string ( 'subscriptiondisabled', 'oublog' ) );
+                break;
+        }
+
+        if ($cansubscribe) {
+            if (oublog_is_subscribed ( $USER->id, $oublogobject )) {
+                $linktext = get_string('unsubscribe', 'oublog');
+            } else {
+                $linktext = get_string('subscribe', 'oublog');
+            }
+            $url = new moodle_url ( '/mod/oublog/subscribe.php', array (
+                        'id' => $oublogobject->id,
+                        'sesskey' => sesskey () 
+                        ) );
+            $oublognode->add ( $linktext, $url, navigation_node::TYPE_SETTING );
+        }
+
+    }
 }
 
 
@@ -1422,4 +1422,6 @@ function oublog_oualerts_custom_info($item, $id) {
     }
     // Return just the title string value of the post or comment.
     return $itemtitle;
+}
+
 }
