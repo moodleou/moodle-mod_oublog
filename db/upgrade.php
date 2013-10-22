@@ -138,6 +138,21 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013010801, 'oublog');
     }
 
+    if ($oldversion < 2013101000) {
+        // Define field maxbytes to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('reportingemail', XMLDB_TYPE_CHAR, '255',
+                null, null, null, null, 'grade');
+
+        // Conditionally launch add field maxbytes.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // OUblog savepoint reached.
+        upgrade_mod_savepoint(true, 2013101000, 'oublog');
+    }
+
     if ($oldversion < 2013101200) {
 
         // Define field forcesubscribe to be added to oublog.

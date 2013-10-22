@@ -37,8 +37,6 @@
  * @param object $oublog the data from the mod form
  * @return int The id od the newly inserted module
  */
-
-
 function oublog_add_instance($oublog) {
     global $DB;
     // Generate an accesstoken
@@ -1089,7 +1087,8 @@ function oublog_grade_item_delete($oublog) {
  * Returns all other caps used in oublog at module level.
  */
 function oublog_get_extra_capabilities() {
-    return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames');
+    return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames',
+            'report/oualerts:managealerts');
 }
 
 /**
@@ -1177,6 +1176,7 @@ function oublog_reset_userdata($data) {
     }
     return $status;
 }
+
 function oublog_is_subscribed($userid, $oublog) {
 	global $DB;
 	if (is_numeric($oublog)) {
@@ -1219,6 +1219,32 @@ function oublog_get_forcesubscribed($oublog) {
 function oublog_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $oublognode) {
 	global $USER, $PAGE, $CFG, $DB, $OUTPUT;
 	
+	if (oublog_oualerts_enabled()) {
+/**
+ * If OU alerts is enabled, and the blog has reporting email setup,
+ * if the user has the report/oualerts:managealerts capability for the context then
+ * the link to the alerts report should be added.
+ *
+ * @global object
+ * @global object
+ */
+    if (!$oublog = $DB->get_record("oublog", array("id" => $PAGE->cm->instance))) {
+        return;
+    }
+
+    include_once($CFG->dirroot.'/mod/oublog/locallib.php');
+
+
+    if (oublog_get_reportingemail($oublog)) {
+        if (has_capability('report/oualerts:managealerts',
+                get_context_instance(CONTEXT_MODULE, $PAGE->cm->id))) {
+            $node->add(get_string('oublog_managealerts', 'oublog'),
+                    new moodle_url('/report/oualerts/manage.php', array('cmid' => $PAGE->cm->id,
+                            'coursename' => $PAGE->course->id, 'contextcourseid' => $PAGE->course->id)),
+                            settings_navigation::TYPE_CUSTOM);
+        }
+    } 
+	} else {
 	$oublogobject = $DB->get_record ( "oublog", array (
 			"id" => $PAGE->cm->instance 
 	) );
@@ -1259,6 +1285,8 @@ function oublog_extend_settings_navigation(settings_navigation $settingsnav, nav
 				'sesskey' => sesskey () 
 		) );
 		$oublognode->add ( $linktext, $url, navigation_node::TYPE_SETTING );
+	}
+
 	}
 }
 
@@ -1327,4 +1355,71 @@ function oublog_user_role_assigned($cp) {
 	foreach ($oublogs as $oublog) {
 			oublog_subscribe($cp->userid, $oublog->id);
 	}
+/**
+ * List of view style log actions
+ * @return array
+ */
+function oublog_get_view_actions() {
+    return array('view', 'view all');
+}
+
+/**
+ * List of update style log actions
+ * @return array
+ */
+function oublog_get_post_actions() {
+    return array('update', 'add', 'add comment', 'add post', 'edit post');
+}
+
+function oublog_oualerts_additional_recipients($type, $id) {
+    global $CFG, $USER, $DB;
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+    $additionalemails = '';
+
+    switch ($type) {
+        case 'post':
+            $data = oublog_get_blog_from_postid ($id);
+            break;
+        case 'comment':
+            $postid = $DB->get_field('oublog_comments', 'postid', array('id' => $id));
+            $data = oublog_get_blog_from_postid($postid);
+            break;
+        default:
+            $data = false;
+            break;
+    }
+    if ($data != false) {
+        // Return alert recipients addresses for notification.
+        $reportingemails = oublog_get_reportingemail($data);
+        if ($reportingemails != false) {
+            $additionalemails = explode(',', trim($reportingemails));
+        }
+    }
+    return $additionalemails;
+}
+
+function oublog_oualerts_custom_info($item, $id) {
+    global $CFG, $USER, $DB;
+
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+
+    switch ($item) {
+        case 'post':
+            $data =  oublog_get_post($id);
+            $itemtitle = get_string('untitledpost', 'oublog');
+            break;
+        case 'comment':
+            $data = $DB->get_record('oublog_comments', array('id' => $id));
+            $itemtitle = get_string('untitledcomment', 'oublog');
+            break;
+        default:
+            $data = false;
+            break;
+    }
+
+    if ($data != false && !empty($data->title)) {
+        $itemtitle = $data->title;
+    }
+    // Return just the title string value of the post or comment.
+    return $itemtitle;
 }

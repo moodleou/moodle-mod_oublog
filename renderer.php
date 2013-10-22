@@ -280,6 +280,18 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $output .= get_string('oublog:exportpost', 'oublog');
                 }
             }
+            // Show OU Alerts reporting link.
+            if (isloggedin() && oublog_oualerts_enabled()
+                    && oublog_get_reportingemail($oublog) && !($post->userid == $USER->id)
+                    && !$post->deletedby) {
+                $itemnurl = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
+                $reportlink = oualerts_generate_alert_form_url('oublog', $modcontext->id,
+                        'post', $post->id, $itemnurl, $itemnurl, '', false, true);
+                if ($reportlink != '') {
+                    $output .= html_writer::tag('a', get_string('postalert', 'oublog'),
+                            array('href' => $reportlink));
+                }
+            }
 
             // Show comments.
             if ($post->allowcomments) {
@@ -374,6 +386,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
         if (!empty($participation)) {
             if (!$table->is_downloading()) {
+                if ($perpage > count($participation)) {
+                    $perpage = count($participation);
+                }
                 $table->pagesize($perpage, count($participation));
                 $offset = $page * $perpage;
                 $endposition = $offset + $perpage;
@@ -775,7 +790,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $extraclasses .= ' oublog-hasuserpic';
 
             $output .= html_writer::start_tag('div', array('class' =>
-                    'oublog-comment' . $extraclasses));
+                    'oublog-comment' . $extraclasses, 'id' => 'cid' . $comment->id));
             if ($counter == 0) {
                 $output .= html_writer::tag('h2', format_string($strcomments),
                         array('class' => 'oublog-commentstitle'));
@@ -871,6 +886,24 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     }
                 }
             }
+            // Show OU Alerts reporting link.
+            if (isloggedin() && oublog_oualerts_enabled()
+                    && oublog_get_reportingemail($oublog) && !($comment->userid == $USER->id)
+                    && !$comment->deletedby) {
+                $itmurl = new moodle_url('/mod/oublog/viewpost.php',
+                         array('post' => $post->id));
+                $itemurl = $itmurl->out() . '#cid' . $comment->id;
+                $retnurl = new moodle_url('/mod/oublog/viewpost.php',
+                         array('post' => $post->id));
+                $returnurl = $retnurl->out() . '#cid' . $comment->id;
+                $reportlink = oualerts_generate_alert_form_url('oublog', $modcontext->id,
+                        'comment', $comment->id, $itemurl, $returnurl, '', false, true);
+                if ($reportlink != '') {
+                    $output .= html_writer::tag('a', get_string('commentalert', 'oublog'),
+                            array('href' => $reportlink));
+                }
+            }
+
             $output .= html_writer::end_tag('div');
             $output .= html_writer::end_tag('div');
             $counter++;

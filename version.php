@@ -23,6 +23,7 @@
  * @package oublog
  **/
 
+
 $module->version  = 2013101202;
 $module->requires = 2011120100;
 $module->cron     = 60*30; // 30-minutes.

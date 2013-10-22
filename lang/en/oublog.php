@@ -397,6 +397,7 @@ $string['maxattachments_help'] = 'This setting specifies the maximum number of f
 $string['maxattachmentsize_help'] = 'This setting specifies the largest size of file that can be attached to a blog post.';
 $string['attachments_help'] = 'You can optionally attach one or more files to a blog post. If you attach an image, it will be displayed after the message.';
 
+
 // Subscriptions
 $string['subscriptionmode'] = 'Subscription mode';
 $string['subscriptionmode_help'] = 'When a participant is subscribed to a blog it means they will receive blog post notifications. There are 4 subscription mode options:
@@ -415,3 +416,16 @@ $string['subscribe'] = 'subscribe';
 $string['unsubscribe'] = 'unsubscribe';
 $string['nowsubscribed'] = '{$a->name} will be notified of new posts in \'{$a->oublog}\'';
 $string['nownotsubscribed'] = '{$a->name} will NOT be notified of new posts in \'{$a->oublog}\'';
+
+
+
+$string['reportingemail'] = 'Reporting email addresses';
+$string['reportingemail_help'] = 'This setting specifies the email addresses of those who will be informed
+about issues with posts or comments within the OUBlog.
+They should be entered as a comma separated list.';
+$string['postalert'] = 'Report post';
+$string['commentalert'] = 'Report comment';
+$string['oublog_managealerts'] = 'Manage reported post/comment alerts';
+$string['untitledpost'] = 'Untitled post';
+$string['untitledcomment'] = 'Untitled comment';
+
