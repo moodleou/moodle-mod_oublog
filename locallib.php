@@ -973,7 +973,9 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
         foreach ($tags as $idx => $tag) {
             $tags[$idx]->weight = round(($tag->count-$min)/$delta*4);
         }
-        sort($tags);
+        uasort($tags, function($a, $b) {
+            return strcmp ($a->tag,  $b->tag);
+        });
     }
     return($tags);
 }

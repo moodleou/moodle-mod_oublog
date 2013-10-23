@@ -526,7 +526,7 @@ function migrate_backup($dir) {
                     $tags = $alltags[$oldid];
                 }
                 foreach ($tags as $tag) {
-                    $tagnames = $tag->tagname;
+                    $tagnames[] = $tag->tagname;
                 }
                 if (!empty($tagnames)) {
                     oublog_update_item_tags($instance->newid, $postid, $tagnames);
