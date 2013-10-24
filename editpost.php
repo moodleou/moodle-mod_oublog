@@ -159,6 +159,15 @@ if (!$frmpost = $mform->get_data()) {
     $PAGE->set_heading(format_string($course->fullname));
     echo $OUTPUT->header();
 
+    if (!empty($oublog->intro)) {
+        echo $OUTPUT->box(format_module_intro('oublog', $oublog, $cm->id), 'generalbox', 'intro');
+
+        if (!empty($CFG->enableplagiarism)) {
+            require_once($CFG->libdir.'/plagiarismlib.php');
+            echo plagiarism_print_disclosure($cm->id);
+        }
+    }
+    
     $mform->display();
 
     echo $OUTPUT->footer();
