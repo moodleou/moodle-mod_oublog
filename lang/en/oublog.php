@@ -12,6 +12,7 @@ $string['oublogintro'] = 'Intro';
 $string['oublog:view'] = 'View posts';
 $string['oublog:addinstance'] = 'Add a new OU blog';
 $string['oublog:viewpersonal'] = 'View posts in personal blogs';
+$string['oublog:viewprivate'] = 'View private posts in personal blogs';
 $string['oublog:contributepersonal'] = 'Post and comment in personal blogs';
 $string['oublog:post'] = 'Create a new post';
 $string['oublog:comment'] = 'Comment on a post';

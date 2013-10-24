@@ -372,7 +372,11 @@ function oublog_can_view_post($post, $user, $context, $personalblog) {
 
     // Otherwise this is set to course visibility
     if ($personalblog) {
-        return $post->userid==$user->id;
+        // Private posts - only same user or has capability viewprivate can see.
+        if (has_capability('mod/oublog:viewprivate', context_system::instance(), $user->id)) {
+            return true;
+        }
+        return $post->userid == $user->id;
     } else {
         // Check oublog:view capability at module level
         // This might not have been checked yet because if the blog is
