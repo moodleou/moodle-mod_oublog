@@ -18,10 +18,6 @@
 
 include_once($CFG->dirroot.'/mod/oublog/lib.php');
 
-if (!isset($CFG->oublogsetup)) {
-    oublog_post_install();
-}
-
 $module = new stdClass;
 require($CFG->dirroot . '/mod/oublog/version.php');
 $settings->add(new admin_setting_heading('oublog_version', '',

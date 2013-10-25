@@ -442,55 +442,6 @@ function oublog_cron() {
     return true;
 }
 
-
-
-/**
- * Execute post-install custom actions for the module
- *
- * @return boolean true if success, false on error
- */
-function oublog_post_install() {
-    global $DB, $CFG;
-    require_once('locallib.php');
-
-    // Setup the global blog.
-    $oublog = new stdClass;
-    $oublog->course = SITEID;
-    $oublog->name = 'Personal Blogs';
-    $oublog->intro = '';
-    $oublog->introformat = FORMAT_HTML;
-    $oublog->accesstoken = md5(uniqid(rand(), true));
-    $oublog->maxvisibility = OUBLOG_VISIBILITY_PUBLIC;
-    $oublog->global = 1;
-    $oublog->allowcomments = OUBLOG_COMMENTS_ALLOWPUBLIC;
-
-    if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
-        return(false);
-    }
-
-    $mod = new stdClass;
-    $mod->course   = SITEID;
-    $mod->module   = $DB->get_field('modules', 'id', array('name'=>'oublog'));
-    $mod->instance = $oublog->id;
-    $mod->visible  = 1;
-    $mod->visibleold  = 0;
-    $mod->section = 1;
-
-    if (!$cm = add_course_module($mod)) {
-        return(true);
-    }
-    $mod->id = $cm;
-    $mod->coursemodule = $cm;
-
-    $mod->section = course_add_cm_to_section($mod->course, $mod->coursemodule, 1);
-
-    $DB->update_record('course_modules', $mod);
-
-    set_config('oublogsetup', true);
-
-    return(true);
-}
-
 /**
  * Obtains a search document given the ousearch parameters.
  * @param object $document Object containing fields from the ousearch documents table
