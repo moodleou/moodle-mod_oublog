@@ -912,4 +912,8 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('div');
         return $output;
     }
+
+    function render_pre_postform($oublog, $cm) {
+        // Render 'hook' before post edit form. Override in theme.
+    }
 }
