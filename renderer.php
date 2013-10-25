@@ -442,7 +442,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     }
 
                     // Grades.
-                    if ($oublog->grade != 0) {
+                    if ($oublog->grade != 0 && isset($user->gradeobj)) {
                         if (!$table->is_downloading()) {
                             $attributes = array('userid' => $user->id);
                             if (empty($user->gradeobj->grade)) {
