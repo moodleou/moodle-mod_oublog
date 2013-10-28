@@ -56,12 +56,7 @@ function xmldb_oublog_install() {
     if (!$cm = add_course_module($mod)) {
         return true;
     }
-    $mod->id = $cm;
-    $mod->coursemodule = $cm;
-
-    $mod->section = course_add_cm_to_section($mod->course, $mod->coursemodule, 1);
-
-    $DB->update_record('course_modules', $mod);
+    set_config('oublogsetup', null);
 
     return true;
 }
