@@ -55,6 +55,12 @@ $string['yes'] = 'Yes';
 $string['no'] = 'No';
 $string['blogname'] = 'Blog name';
 $string['summary'] = 'Summary';
+$string['statblockon'] = 'Show blog usage extra statistics';
+$string['statblockon_help'] = 'Enable extra statistics display in the Blog usage \'block\'.
+Personal (global), Visible Individual and Visible Group blogs only.';
+$string['oublogallpostslogin'] = 'Force login on all posts page';
+$string['oublogallpostslogin_desc'] = 'Enable to force login to the personal blog site entries page.
+When enabled only logged-in users will see the link to this page.';
 
 $string['displayname_default'] = 'blog';
 $string['displayname'] = 'Alternate activity name (blank uses default)';
@@ -416,3 +422,32 @@ $string['commentalert'] = 'Report comment';
 $string['oublog_managealerts'] = 'Manage reported post/comment alerts';
 $string['untitledpost'] = 'Untitled post';
 $string['untitledcomment'] = 'Untitled comment';
+
+// Discovery block.
+$string['discovery'] = '{$a} usage';
+$string['timefilter_alltime'] = 'All time';
+$string['timefilter_thismonth'] = 'Past month';
+$string['timefilter_thisyear'] = 'Past year';
+$string['timefilter_label'] = 'Time period';
+$string['timefilter_submit'] = 'Update';
+$string['timefilter_open'] = 'Show options';
+$string['timefilter_close'] = 'Hide options';
+$string['visits'] = 'Most visited';
+$string['activeblogs'] = 'Active';
+$string['numberviews'] = '{$a} views';
+$string['visits_info_alltime'] = '{$a}s with the most number of visits';
+$string['visits_info_active'] = 'Active {$a} (contain a post in the past month) with the most number of visits';
+$string['posts'] = 'Most posts';
+$string['numberposts'] = '{$a} posts';
+$string['posts_info_alltime'] = '{$a}s with the most number of posts';
+$string['posts_info_thisyear'] = '{$a}s with the most number of posts in the past year';
+$string['posts_info_thismonth'] = '{$a}s with the most number of posts in the past month';
+$string['comments'] = 'Most comments';
+$string['numbercomments'] = '{$a} comments';
+$string['comments_info_alltime'] = '{$a}s with the most number of comments';
+$string['comments_info_thisyear'] = '{$a}s with the most number of comments added in the past year';
+$string['comments_info_thismonth'] = '{$a}s with the most number of comments added in the past month';
+$string['commentposts'] = 'Most commented posts';
+$string['commentposts_info_alltime'] = 'Posts with the most number of comments';
+$string['commentposts_info_thisyear'] = 'Posts with the most number of comments added in the past year';
+$string['commentposts_info_thismonth'] = 'Posts with the most number of comments added in the past month';

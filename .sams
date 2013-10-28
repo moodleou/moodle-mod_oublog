@@ -13,6 +13,12 @@ OPTIONAL_SAMS
 <Files feed.php>
 OPTIONAL_SAMS
 </Files>
+<Files stats_update.php>
+OPTIONAL_SAMS
+</Files>
 <Files pluginfile.php>
+DISABLE_SAMS
+</Files>
+<Files *.js>
 DISABLE_SAMS
 </Files>

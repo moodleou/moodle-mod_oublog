@@ -170,5 +170,18 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013102800, 'oublog');
     }
 
+    if ($oldversion < 2013102801) {
+
+        // Define field statblockon to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('statblockon', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'displayname');
+
+        // Conditionally launch add field statblockon.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_mod_savepoint(true, 2013102801, 'oublog');
+    }
+
     return true;
 }

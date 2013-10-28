@@ -92,6 +92,10 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->addHelpButton('maxattachments', 'maxattachments', 'oublog');
             $mform->setDefault('maxattachments', $modulesettings->maxattachments);
 
+            // Enable the stats block.
+            $mform->addElement('checkbox', 'statblockon', get_string('statblockon', 'oublog', 0));
+            $mform->addHelpButton('statblockon', 'statblockon', 'oublog');
+
             // Show OU Alerts reporting link.
             if (oublog_oualerts_enabled()) {
                 $mform->addElement('text', 'reportingemail', get_string('reportingemail', 'oublog'),
@@ -182,6 +186,10 @@ class mod_oublog_mod_form extends moodleform_mod {
         // Set the reportingemail to null if empty so that we have consistency.
         if (empty($data->reportingemail)) {
             $data->reportingemail = null;
+        }
+        // Set statblockon to null if empty so that we have consistency.
+        if (empty($data->statblockon)) {
+            $data->statblockon = 0;
         }
         if (empty($data->displayname)) {
             $data->displayname = null;

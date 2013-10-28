@@ -914,7 +914,152 @@ class mod_oublog_renderer extends plugin_renderer_base {
         return $output;
     }
 
+    /**
+     * Override this within theme to add content before posts in view.php
+     */
+    public function render_viewpage_prepost() {
+        return;
+    }
+
     function render_pre_postform($oublog, $cm) {
         // Render 'hook' before post edit form. Override in theme.
+    }
+
+    // Blog stats renderers.
+
+    /**
+     * Output an unordered list - for accordion
+     * @param string $name
+     * @param array $tabs
+     * @param int $default Default tab to open
+     */
+    public function render_stats_container($name, $tabs, $default = 1) {
+        global $PAGE;
+        $out = html_writer::start_tag('ul', array('class' => "oublog-accordion oublog-accordion-$name"));
+        foreach ($tabs as $tab) {
+            if (!empty($tab)) {
+                $out .= html_writer::tag('li', $tab);
+            }
+        }
+        $out .= html_writer::end_tag('ul');
+
+        $default = get_user_preferences("oublog_accordion_{$name}_open", $default);
+        user_preference_allow_ajax_update("oublog_accordion_{$name}_open", PARAM_INT);
+        $PAGE->requires->yui_module('moodle-mod_oublog-accordion', 'M.mod_oublog.accordion.init',
+                array($name, $default));
+
+        return $out;
+    }
+
+    public function render_stats_view($name, $maintitle, $content, $subtitle = '', $info = '', $form = null, $ajax = false) {
+        global $PAGE, $OUTPUT;
+        if ($ajax) {
+            // Don't render - return the data.
+            $out = new stdClass();
+            $out->name = $name;
+            $out->maintitle = $maintitle;
+            $out->maintitleclass = 'oublog_statsview_title';
+            $out->subtitle = $subtitle;
+            $out->subtitleclass = 'oublog_statsview_subtitle';
+            $out->content = $content;
+            $out->info = $info;
+            $out->infoclass = "oublog_{$name}_info";
+            $out->containerclass = "oublog_statsview_content_$name";
+            $out->contentclass = "oublog_statsview_innercontent_$name";
+            return $out;
+        }
+        $out = '';
+        if (!empty($subtitle)) {
+            $out .= $OUTPUT->heading($subtitle, 3, 'oublog_statsview_subtitle');
+        }
+
+        $out .= html_writer::start_tag('a', array('class' => 'block_action_oublog', 'tabindex' => 0, 'href' => '#'));
+        $minushide = '';
+        $plushide = ' oublog_displaynone';
+        if ($userpref = get_user_preferences("mod_oublog_hidestatsform_$name", false)) {
+            $minushide = ' oublog_displaynone';
+            $plushide = '';
+        }
+        // Setup Javascript for stats view.
+        user_preference_allow_ajax_update("mod_oublog_hidestatsform_$name", PARAM_BOOL);
+        $PAGE->requires->js('/mod/oublog/module.js');
+        $module = array ('name' => 'mod_oublog');
+        $module['fullpath'] = '/mod/oublog/module.js';
+        $module['requires'] = array('node', 'node-event-delegate');
+        $module['strings'] = array();
+        $PAGE->requires->js_init_call('M.mod_oublog.init_showhide', array($name, $userpref), false, $module);
+
+        $out .= $this->output->pix_icon('t/switch_minus', get_string('timefilter_close', 'oublog'), 'moodle',
+                array('class' => 'oublog_stats_minus' . $minushide));
+        $out .= $this->output->pix_icon('t/switch_plus', get_string('timefilter_open', 'oublog'), 'moodle',
+                array('class' => 'oublog_stats_plus' . $plushide));
+        $out .= html_writer::end_tag('a');
+
+        // Stats bar - call once per 'view'.
+        $PAGE->requires->yui_module('moodle-mod_oublog-statsbar', 'M.mod_oublog.statsbar.init',
+                array("oublog_statsview_content_$name"));
+
+        if (!empty($info)) {
+            $out .= html_writer::tag('p', $info, array('class' => "oublog_{$name}_info"));
+        }
+        if (!empty($form)) {
+            $out .= $form->render();
+        }
+        $out .= html_writer::div($content, "oublog_statsview_innercontent oublog_statsview_innercontent_$name");
+        return html_writer::div($this->output->heading($maintitle, 2), 'oublog_statsview_title') .
+            $this->output->container($out, "oublog_statsview_content oublog_statsview_content_$name");
+    }
+
+    /**
+     * Renders the 'statsinfo' widget - info chart on a blog/post
+     * @param oublog_statsinfo $info
+     * @return string
+     */
+    public function render_oublog_statsinfo(oublog_statsinfo $info) {
+        global $COURSE, $OUTPUT;
+        $out = '';
+        // Get the avatar picture for user/group.
+        if (isset($info->user->courseid)) {
+            // Group not user.
+            if (!$userpic = print_group_picture($info->user, $info->user->courseid, true, true, false)) {
+                // No group pic set, use default user image.
+                $userpic = $OUTPUT->pix_icon('u/f2', '');
+            }
+        } else {
+            $userpic = $this->output->user_picture($info->user, array('courseid' => $COURSE->id, 'link' => false));
+        }
+        $avatar = html_writer::link($info->url, $userpic, array('class' => 'oublog_statsinfo_avatar'));
+        $infodiv = html_writer::start_div('oublog_statsinfo_infocol');
+        $infodiv .= html_writer::start_div('oublog_statsinfo_bar');
+        $infodiv .= html_writer::tag('span', $info->stat, array('class' => 'percent_' . $info->percent));
+        $infodiv .= html_writer::end_div();
+        $infodiv .= html_writer::div($info->label, 'oublog_statsinfo_label');
+        $infodiv .= html_writer::end_div();
+        $out = $avatar . $infodiv;
+        return $this->output->container($out, 'oublog_statsinfo');
+    }
+}
+
+class oublog_statsinfo implements renderable {
+    public $percent = 0;
+    public $url = '';
+    public $label = '';
+    public $user;
+    public $stat = '';
+
+    /**
+     *
+     * @param stdClass $user user/group for avatar picture
+     * @param int $percent Percent bar will go
+     * @param string $stat Stat text shown in bar
+     * @param moodle_url $url url for user pic link
+     * @param string $label Label that appears under bar
+     */
+    public function __construct(stdClass $user, $percent, $stat, moodle_url $url, $label) {
+        $this->percent = round($percent);
+        $this->label = $label;
+        $this->url = $url;
+        $this->user = $user;
+        $this->stat = $stat;
     }
 }

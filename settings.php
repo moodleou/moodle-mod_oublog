@@ -41,3 +41,6 @@ if (isset($CFG->maxbytes)) {
 $settings->add(new admin_setting_configtext('mod_oublog/maxattachments',
         get_string('maxattachments', 'oublog'),
         get_string('configmaxattachments', 'oublog'), 9, PARAM_INT));
+
+$settings->add(new admin_setting_configcheckbox('oublogallpostslogin',
+        get_string('oublogallpostslogin', 'oublog'), get_string('oublogallpostslogin_desc', 'oublog'), 1));

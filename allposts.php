@@ -43,7 +43,14 @@ $url = new moodle_url('/mod/oublog/allposts.php', array('offset' => $offset, 'ta
 $PAGE->set_url($url);
 
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-oublog_check_view_permissions($oublog, $context, $cm);
+if (!empty($CFG->oublogallpostslogin) && $oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC) {
+    // Set blog visibility temporarily to loggedin user to force login to this page.
+    $oublog->maxvisibility = OUBLOG_VISIBILITY_LOGGEDINUSER;
+    oublog_check_view_permissions($oublog, $context, $cm);
+    $oublog->maxvisibility = OUBLOG_VISIBILITY_PUBLIC;
+} else {
+    oublog_check_view_permissions($oublog, $context, $cm);
+}
 
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
@@ -71,7 +78,7 @@ $strblogsearch  = get_string('searchblogs', 'oublog');
 
 // Get Posts.
 list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, null, -1, null,
-        $tag, $canaudit);
+        $tag, $canaudit, true);
 
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($course->fullname));
@@ -118,6 +125,24 @@ if (isloggedin() and !isguestuser()) {
     $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 }
 
+if ($oublog->statblockon) {
+    // 'Discovery' block.
+    $stats = array();
+    $stats[] = oublog_stats_output_visitstats($oublog, $cm, $oublogoutput);
+    $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);
+    $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput);
+    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, true);
+    $stats = $oublogoutput->render_stats_container('allposts', $stats);
+    $bc = new block_contents();
+    $bc->attributes['id'] = 'oublog-discover';
+    $bc->attributes['class'] = 'oublog-sideblock block';
+    $bc->title = get_string('discovery', 'oublog', oublog_get_displayname($oublog, true));
+    $bc->content = $stats;
+    if (!empty($stats)) {
+        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
+    }
+}
+
 if ($feeds = oublog_get_feedblock($oublog, 'all', '', false, $cm)) {
     $bc = new block_contents();
     $bc->attributes['id'] = 'oublog-feeds';
@@ -132,6 +157,9 @@ echo $OUTPUT->header();
 print '<div id="middle-column" class="has-right-column">';
 
 print skip_main_destination();
+
+// Renderer hook so extra info can be added to global blog pages in theme.
+echo $oublogoutput->render_viewpage_prepost();
 
 // Print blog posts.
 if ($posts) {

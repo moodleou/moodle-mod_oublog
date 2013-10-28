@@ -246,11 +246,13 @@ if (!$hideunusedblog) {
             $links .= html_writer::link($editinstanceurl, $streditinstance);
             $links .= html_writer::end_tag('div');
         }
-        $allpostsurl = new moodle_url('/mod/oublog/allposts.php');
-        $strallposts = get_string('siteentries', 'oublog');
-        $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
-        $links .= html_writer::link($allpostsurl, $strallposts);
-        $links .= html_writer::end_tag('div');
+        if (empty($CFG->oublogallpostslogin) || isloggedin()) {
+            $allpostsurl = new moodle_url('/mod/oublog/allposts.php');
+            $strallposts = get_string('siteentries', 'oublog');
+            $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
+            $links .= html_writer::link($allpostsurl, $strallposts);
+            $links .= html_writer::end_tag('div');
+        }
         $format = FORMAT_HTML;
     } else {
         $summary = $oublog->intro;
@@ -261,6 +263,7 @@ if (!$hideunusedblog) {
     // Name, summary, related links.
     $bc = new block_contents();
     $bc->attributes['class'] = 'oublog-sideblock block';
+    $bc->attributes['id'] = 'oublog_info_block';
     $bc->title = format_string($title);
     $bc->content = format_text($summary, $format) . $links;
     if ($oublog->global) {
@@ -290,6 +293,26 @@ if (!$hideunusedblog) {
         $bc->attributes['class'] = 'oublog-sideblock block';
         $bc->title = $strlinks;
         $bc->content = $links;
+        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
+    }
+
+    // 'Discovery' block.
+    $stats = array();
+    if ($oublog->statblockon) {
+        // Add to 'Discovery' block when enabled only.
+        $stats[] = oublog_stats_output_visitstats($oublog, $cm, $oublogoutput);
+        $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);
+        $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput);
+    }
+    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual);
+    $stats = array_filter($stats);
+    if (!empty($stats)) {
+        $stats = $oublogoutput->render_stats_container('view', $stats, count($stats));
+        $bc = new block_contents();
+        $bc->attributes['id'] = 'oublog-discover';
+        $bc->attributes['class'] = 'oublog-sideblock block';
+        $bc->title = get_string('discovery', 'oublog', oublog_get_displayname($oublog, true));
+        $bc->content = $stats;
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 
@@ -327,7 +350,10 @@ if ($oublog->individual) {
     }
 }
 echo '</div>';
-
+if (!$hideunusedblog && $oublog->global) {
+    // Renderer hook so extra info can be added to global blog pages in theme.
+    echo $oublogoutput->render_viewpage_prepost();
+}
 // Print the main part of the page.
 
 echo '<div id="oublogbuttons">';
