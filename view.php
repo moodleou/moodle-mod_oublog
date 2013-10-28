@@ -110,7 +110,7 @@ $canaudit       = has_capability('mod/oublog:audit', $context);
 // Get strings.
 $stroublogs     = get_string('modulenameplural', 'oublog');
 $stroublog      = get_string('modulename', 'oublog');
-$straddpost     = get_string('newpost', 'oublog');
+$straddpost = get_string('newpost', 'oublog', oublog_get_displayname($oublog));
 $strexportposts = get_string('oublog:exportposts', 'oublog');
 $strtags        = get_string('tags', 'oublog');
 $stredit        = get_string('edit', 'oublog');
@@ -118,10 +118,10 @@ $strdelete      = get_string('delete', 'oublog');
 $strnewposts    = get_string('newerposts', 'oublog');
 $strolderposts  = get_string('olderposts', 'oublog');
 $strcomment     = get_string('comment', 'oublog');
-$strviews       = get_string('views', 'oublog');
+$strviews = get_string('views', 'oublog', oublog_get_displayname($oublog));
 $strlinks       = get_string('links', 'oublog');
 $strfeeds       = get_string('feeds', 'oublog');
-$strblogsearch  = get_string('searchthisblog', 'oublog');
+$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($oublog));
 
 // Set-up groups.
 $groupmode = oublog_get_activity_groupmode($cm, $course);
@@ -440,10 +440,11 @@ if (isguestuser() && $USER->id==$user) {
 } else if (!isloggedin() || isguestuser()) {
     print '<p class="oublog_loginnote">'.
             get_string('maybehiddenposts', 'oublog',
-                    'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
+                    (object) array('link' => 'bloglogin.php?returnurl='.urlencode($returnurl),
+                            'name' => oublog_get_displayname($oublog))).'</p>';
 } else if (!$posts) {
     print '<p class="oublog_noposts">'.
-            get_string('noposts', 'oublog').'</p>';
+            get_string('noposts', 'oublog', oublog_get_displayname($oublog)).'</p>';
 }
 
 // Log visit and bump view count.

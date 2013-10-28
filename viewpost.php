@@ -91,7 +91,6 @@ if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
 // Get strings.
 $stroublogs     = get_string('modulenameplural', 'oublog');
 $stroublog      = get_string('modulename', 'oublog');
-$straddpost     = get_string('newpost', 'oublog');
 $strdelete      = get_string('delete', 'oublog');
 $strtags        = get_string('tags', 'oublog');
 $strcomments    = get_string('comments', 'oublog');

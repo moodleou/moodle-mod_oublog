@@ -98,7 +98,7 @@ if ($currentgroup===0 && $groupmode==SEPARATEGROUPS) {
 
 // Print the header
 $stroublog      = get_string('modulename', 'oublog');
-$strblogsearch  = get_string('searchthisblog', 'oublog');
+$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($oublog));
 $strblogssearch  = get_string('searchblogs', 'oublog');
 
 

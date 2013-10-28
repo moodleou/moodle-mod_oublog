@@ -154,5 +154,21 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013101000, 'oublog');
     }
 
+    if ($oldversion < 2013102800) {
+
+        // Define field displayname to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('displayname', XMLDB_TYPE_CHAR, '255', null, null, null, null,
+                'reportingemail');
+
+        // Conditionally launch add field displayname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2013102800, 'oublog');
+    }
+
     return true;
 }

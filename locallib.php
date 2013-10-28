@@ -96,7 +96,8 @@ function oublog_get_personal_blog($userid) {
 
     if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid'=>$blog->id, 'userid'=>$userid))) {
         $user = $DB->get_record('user', array('id'=>$userid));
-        oublog_add_bloginstance($blog->id, $userid, get_string('defaultpersonalblogname', 'oublog', fullname($user)));
+        $a = (object) array('name' => fullname($user), 'displayname' => oublog_get_displayname($blog));
+        oublog_add_bloginstance($blog->id, $userid, get_string('defaultpersonalblogname', 'oublog', $a));
         if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid'=>$blog->id, 'userid'=>$user->id))) {
             print_error('invalidblog', 'oublog');
         }
@@ -1649,10 +1650,11 @@ function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $i
         $commentsurlrss = oublog_get_feedurl('rss',  $oublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
     }
 
-    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog') . '</div>';
+    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog',
+            oublog_get_displayname($oublog)) . '</div>';
     $html .= $OUTPUT->help_icon('feedhelp', 'oublog');
     $html .= '<div class="oublog-feedlinks">';
-    $html .= get_string('blogfeed', 'oublog').': ';
+    $html .= get_string('blogfeed', 'oublog', oublog_get_displayname($oublog, true)).': ';
     $html .= '<a href="'.$blogurlatom.'">'.get_string('atom', 'oublog').'</a> ';
     $html .= '<a href="'.$blogurlrss.'">'.get_string('rss', 'oublog').'</a>';
 
@@ -3377,6 +3379,19 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
     public function check_permissions() {
         $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
         return (has_capability('mod/oublog:exportpost', $context));
+    }
+}
+
+function oublog_get_displayname($oublog, $upperfirst = false) {
+    if (empty($oublog->displayname)) {
+        $string = get_string('displayname_default', 'oublog');
+    } else {
+        $string = $oublog->displayname;
+    }
+    if ($upperfirst) {
+        return ucfirst($string);
+    } else {
+        return $string;
     }
 }
 

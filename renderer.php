@@ -114,7 +114,8 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $output .= html_writer::tag('h2',
                     format_string($post->title), array('class' => 'oublog-title'));
         } else if (!$forexport) {
-            $posttitle = get_accesshide(get_string('newpost', 'mod_oublog'));
+            $posttitle = get_accesshide(get_string('newpost', 'mod_oublog',
+                    oublog_get_displayname($oublog)));
             $output .= html_writer::tag('h2', $posttitle, array('class' => 'oublog-title'));
         }
 

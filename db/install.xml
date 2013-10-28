@@ -1,186 +1,171 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/oublog/db" VERSION="20100624" COMMENT="XMLDB file for Moodle mod/oublog"
+<XMLDB PATH="mod/oublog/db" VERSION="20131028" COMMENT="XMLDB file for Moodle mod/oublog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="oublog" COMMENT="Blog activity instance" NEXT="oublog_instances">
+    <TABLE NAME="oublog" COMMENT="Blog activity instance">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
-        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="accesstoken"/>
-        <FIELD NAME="accesstoken" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="course" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="accesstoken" NEXT="intro"/>
-        <FIELD NAME="intro" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="introformat"/>
-        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="text format of intro field" PREVIOUS="intro" NEXT="allowcomments" />
-        <FIELD NAME="allowcomments" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = do not allow comments
-1 = allow comments from signed-in users
-2 = allow comments from signed-in users, and moderated comments from external users" PREVIOUS="introformat" NEXT="maxbytes"/>
-        <FIELD NAME="maxbytes" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="512000" SEQUENCE="false" PREVIOUS="allowcomments" NEXT="maxattachments"/>
-        <FIELD NAME="maxattachments" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="9" SEQUENCE="false" COMMENT="Number of attachments allowed per post" PREVIOUS="maxbytes" NEXT="maxvisibility"/>
-        <FIELD NAME="maxvisibility" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="100" SEQUENCE="false" PREVIOUS="maxattachments" NEXT="global"/>
-        <FIELD NAME="global" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is this the global blog?" PREVIOUS="maxvisibility" NEXT="views"/>
-        <FIELD NAME="views" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="global" NEXT="completionposts"/>
-        <FIELD NAME="completionposts" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="If set, specifies a number of blog posts that a student must make for this activity to be marked completed." PREVIOUS="views" NEXT="completioncomments"/>
-        <FIELD NAME="completioncomments" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="If set, specifies a number of blog comments that a student must make for this activity to be marked completed." PREVIOUS="completionposts" NEXT="individual"/>
-        <FIELD NAME="individual" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is this the individual blog?" PREVIOUS="completioncomments" NEXT="grade"/>
-        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="individual" NEXT="reportingemail"/>
-        <FIELD NAME="reportingemail" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Email addresses for reporting posts or comments" PREVIOUS="grade"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="accesstoken" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="text format of intro field"/>
+        <FIELD NAME="allowcomments" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = do not allow comments 1 = allow comments from signed-in users 2 = allow comments from signed-in users, and moderated comments from external users"/>
+        <FIELD NAME="maxbytes" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="512000" SEQUENCE="false"/>
+        <FIELD NAME="maxattachments" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="9" SEQUENCE="false" COMMENT="Number of attachments allowed per post"/>
+        <FIELD NAME="maxvisibility" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="100" SEQUENCE="false"/>
+        <FIELD NAME="global" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is this the global blog?"/>
+        <FIELD NAME="views" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="completionposts" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If set, specifies a number of blog posts that a student must make for this activity to be marked completed."/>
+        <FIELD NAME="completioncomments" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If set, specifies a number of blog comments that a student must make for this activity to be marked completed."/>
+        <FIELD NAME="individual" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is this the individual blog?"/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="reportingemail" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Email addresses for reporting posts or comments"/>
+        <FIELD NAME="displayname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Alternative name used in some areas of the interface"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-
-        <INDEX NAME="course" UNIQUE="false" FIELDS="course" NEXT="global"/>
-        <INDEX NAME="global" UNIQUE="false" FIELDS="global" PREVIOUS="course"/>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+        <INDEX NAME="global" UNIQUE="false" FIELDS="global"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="oublog_instances" COMMENT="Blog instance" PREVIOUS="oublog" NEXT="oublog_posts">
+    <TABLE NAME="oublog_instances" COMMENT="Blog instance">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="oublogid"/>
-        <FIELD NAME="oublogid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="oublogid" NEXT="name"/>
-
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="summary"/>
-        <FIELD NAME="summary" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="accesstoken"/>
-        <FIELD NAME="accesstoken" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="summary" NEXT="views"/>
-        <FIELD NAME="views" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="accesstoken"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="oublogid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="summary" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="accesstoken" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="views" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_instances_oublog_fk"/>
-        <KEY NAME="oublog_instances_oublog_fk" TYPE="foreign" FIELDS="oublogid" REFTABLE="oublog" REFFIELDS="id" PREVIOUS="primary"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="oublog_instances_oublog_fk" TYPE="foreign" FIELDS="oublogid" REFTABLE="oublog" REFFIELDS="id"/>
       </KEYS>
-
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="oublog_posts" COMMENT="Blog posts" PREVIOUS="oublog_instances" NEXT="oublog_comments">
+    <TABLE NAME="oublog_posts" COMMENT="Blog posts">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="oubloginstancesid"/>
-        <FIELD NAME="oubloginstancesid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="groupid"/>
-        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="oubloginstancesid" NEXT="title"/>
-        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="groupid" NEXT="message"/>
-        <FIELD NAME="message" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" PREVIOUS="title" NEXT="timeposted"/>
-        <FIELD NAME="timeposted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="message" NEXT="allowcomments"/>
-        <FIELD NAME="allowcomments" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="0 = do not allow comments
-1 = allow comments from signed-in users
-2 = allow comments from signed-in users, and moderated comments from external users" PREVIOUS="timeposted" NEXT="timeupdated"/>
-        <FIELD NAME="timeupdated" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="allowcomments" NEXT="deletedby"/>
-        <FIELD NAME="deletedby" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timeupdated" NEXT="timedeleted"/>
-        <FIELD NAME="timedeleted" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="deletedby" NEXT="visibility"/>
-        <FIELD NAME="visibility" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="100" SEQUENCE="false" PREVIOUS="timedeleted" NEXT="lasteditedby"/>
-        <FIELD NAME="lasteditedby" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="User ID of user to last edit post, or null if not edited" PREVIOUS="visibility"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="oubloginstancesid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="message" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timeposted" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="allowcomments" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="0 = do not allow comments 1 = allow comments from signed-in users 2 = allow comments from signed-in users, and moderated comments from external users"/>
+        <FIELD NAME="timeupdated" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="deletedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timedeleted" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="visibility" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="100" SEQUENCE="false"/>
+        <FIELD NAME="lasteditedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="User ID of user to last edit post, or null if not edited"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_posts_oublog_instances_fk"/>
-        <KEY NAME="oublog_posts_oublog_instances_fk" TYPE="foreign" FIELDS="oubloginstancesid" REFTABLE="oublog_instances" REFFIELDS="id" PREVIOUS="primary" NEXT="oublog_posts_deletedby_users_fk"/>
-
-        <KEY NAME="oublog_posts_deletedby_users_fk" TYPE="foreign" FIELDS="deletedby" REFTABLE="user" REFFIELDS="id" PREVIOUS="oublog_posts_oublog_instances_fk"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="oublog_posts_oublog_instances_fk" TYPE="foreign" FIELDS="oubloginstancesid" REFTABLE="oublog_instances" REFFIELDS="id"/>
+        <KEY NAME="oublog_posts_deletedby_users_fk" TYPE="foreign" FIELDS="deletedby" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="timeposted" UNIQUE="false" FIELDS="timeposted" NEXT="timeupdated"/>
-        <INDEX NAME="timeupdated" UNIQUE="false" FIELDS="timeupdated" PREVIOUS="timeposted"/>
+        <INDEX NAME="timeposted" UNIQUE="false" FIELDS="timeposted"/>
+        <INDEX NAME="timeupdated" UNIQUE="false" FIELDS="timeupdated"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="oublog_comments" COMMENT="Blog Comments" PREVIOUS="oublog_posts" NEXT="oublog_edits">
+    <TABLE NAME="oublog_comments" COMMENT="Blog Comments">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="postid"/>
-        <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="postid" NEXT="title"/>
-        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="message"/>
-        <FIELD NAME="message" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" PREVIOUS="title" NEXT="timeposted"/>
-
-        <FIELD NAME="timeposted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="message" NEXT="deletedby"/>
-        <FIELD NAME="deletedby" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timeposted" NEXT="timedeleted"/>
-        <FIELD NAME="timedeleted" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="deletedby" NEXT="authorname"/>
-        <FIELD NAME="authorname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="For moderated comments: author name (required). For non-moderated comments, must be null." PREVIOUS="timedeleted" NEXT="authorip"/>
-        <FIELD NAME="authorip" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="For moderated comments: author IP address (required). For non-moderated comments, must be null." PREVIOUS="authorname" NEXT="timeapproved"/>
-        <FIELD NAME="timeapproved" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="For moderated comments: time at which comment was approved. For non-moderated comments, must be null." PREVIOUS="authorip"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="message" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timeposted" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="deletedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timedeleted" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="authorname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="For moderated comments: author name (required). For non-moderated comments, must be null."/>
+        <FIELD NAME="authorip" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="For moderated comments: author IP address (required). For non-moderated comments, must be null."/>
+        <FIELD NAME="timeapproved" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="For moderated comments: time at which comment was approved. For non-moderated comments, must be null."/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_comments_oublog_post_fk"/>
-        <KEY NAME="oublog_comments_oublog_post_fk" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_posts" REFFIELDS="id" PREVIOUS="primary" NEXT="oublog_comments_userid_users_fk"/>
-        <KEY NAME="oublog_comments_userid_users_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="oublog_comments_oublog_post_fk" NEXT="oublog_comments_deletedby_users_fk"/>
-        <KEY NAME="oublog_comments_deletedby_users_fk" TYPE="foreign" FIELDS="deletedby" REFTABLE="user" REFFIELDS="id" PREVIOUS="oublog_comments_userid_users_fk"/>
-
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="oublog_comments_oublog_post_fk" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_posts" REFFIELDS="id"/>
+        <KEY NAME="oublog_comments_userid_users_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="oublog_comments_deletedby_users_fk" TYPE="foreign" FIELDS="deletedby" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="oublog_edits" COMMENT="Blog post edits" PREVIOUS="oublog_comments" NEXT="oublog_tags">
+    <TABLE NAME="oublog_edits" COMMENT="Blog post edits">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="postid"/>
-        <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="postid" NEXT="timeupdated"/>
-        <FIELD NAME="timeupdated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="userid" NEXT="oldtitle"/>
-        <FIELD NAME="oldtitle" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="timeupdated" NEXT="oldmessage"/>
-
-        <FIELD NAME="oldmessage" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="oldtitle"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timeupdated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="oldtitle" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="oldmessage" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_edits_oublog_posts_fk"/>
-        <KEY NAME="oublog_edits_oublog_posts_fk" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_instances" REFFIELDS="id" PREVIOUS="primary" NEXT="oublog_edits_users_fk"/>
-        <KEY NAME="oublog_edits_users_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="oublog_edits_oublog_posts_fk"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="oublog_edits_oublog_posts_fk" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_instances" REFFIELDS="id"/>
+        <KEY NAME="oublog_edits_users_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="oublog_tags" COMMENT="Blog tags" PREVIOUS="oublog_edits" NEXT="oublog_taginstances">
-
+    <TABLE NAME="oublog_tags" COMMENT="Blog tags">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="tag"/>
-        <FIELD NAME="tag" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="tag" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="oublog_taginstances" COMMENT="Blog tag instances" PREVIOUS="oublog_tags" NEXT="oublog_links">
-
+    <TABLE NAME="oublog_taginstances" COMMENT="Blog tag instances">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="oubloginstancesid"/>
-        <FIELD NAME="oubloginstancesid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="postid"/>
-        <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="oubloginstancesid" NEXT="tagid"/>
-        <FIELD NAME="tagid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="postid"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="oubloginstancesid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="tagid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_taginstances_oublogs_blogs_fk"/>
-        <KEY NAME="oublog_taginstances_oublogs_blogs_fk" TYPE="foreign" FIELDS="oubloginstancesid" REFTABLE="oublog_instances" REFFIELDS="id" PREVIOUS="primary" NEXT="oublog_taginstances_oublog_posts_fk"/>
-
-        <KEY NAME="oublog_taginstances_oublog_posts_fk" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_posts" REFFIELDS="id" PREVIOUS="oublog_taginstances_oublogs_blogs_fk" NEXT="oublog_taginstances_oublog_tags_fk"/>
-        <KEY NAME="oublog_taginstances_oublog_tags_fk" TYPE="foreign" FIELDS="tagid" REFTABLE="oublog_tags" REFFIELDS="id" PREVIOUS="oublog_taginstances_oublog_posts_fk"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="oublog_taginstances_oublogs_blogs_fk" TYPE="foreign" FIELDS="oubloginstancesid" REFTABLE="oublog_instances" REFFIELDS="id"/>
+        <KEY NAME="oublog_taginstances_oublog_posts_fk" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_posts" REFFIELDS="id"/>
+        <KEY NAME="oublog_taginstances_oublog_tags_fk" TYPE="foreign" FIELDS="tagid" REFTABLE="oublog_tags" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="oublog_links" COMMENT="Blog links" PREVIOUS="oublog_taginstances" NEXT="oublog_comments_moderated">
+    <TABLE NAME="oublog_links" COMMENT="Blog links">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="oublogid"/>
-        <FIELD NAME="oublogid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="oubloginstancesid"/>
-        <FIELD NAME="oubloginstancesid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="oublogid" NEXT="title"/>
-
-        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="oubloginstancesid" NEXT="url"/>
-        <FIELD NAME="url" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="title" NEXT="sortorder"/>
-        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="url"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="oublogid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="oubloginstancesid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="url" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="oublog_links_oublog_fk"/>
-        <KEY NAME="oublog_links_oublog_fk" TYPE="foreign" FIELDS="oublogid" REFTABLE="oublog" REFFIELDS="id" PREVIOUS="primary" NEXT="oublog_links_oublog_instances_fk"/>
-        <KEY NAME="oublog_links_oublog_instances_fk" TYPE="foreign" FIELDS="oubloginstancesid" REFTABLE="oublog_instances" REFFIELDS="id" PREVIOUS="oublog_links_oublog_fk"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="oublog_links_oublog_fk" TYPE="foreign" FIELDS="oublogid" REFTABLE="oublog" REFFIELDS="id"/>
+        <KEY NAME="oublog_links_oublog_instances_fk" TYPE="foreign" FIELDS="oubloginstancesid" REFTABLE="oublog_instances" REFFIELDS="id"/>
       </KEYS>
-
     </TABLE>
-    <TABLE NAME="oublog_comments_moderated" COMMENT="Stores comments which are awaiting moderation or were recently moderated. (Comments are held in this table for 30 days even if they are approved or rejected, to make some calculation easier.)" PREVIOUS="oublog_links">
+    <TABLE NAME="oublog_comments_moderated" COMMENT="Stores comments which are awaiting moderation or were recently moderated. (Comments are held in this table for 30 days even if they are approved or rejected, to make some calculation easier.)">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="postid"/>
-        <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="ID of blog post which this is going to be a comment for (if approved)." PREVIOUS="id" NEXT="title"/>
-        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Optional title of blog comment. (Blank if no title required.)" PREVIOUS="postid" NEXT="message"/>
-        <FIELD NAME="message" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="Text of blog comment" PREVIOUS="title" NEXT="timeposted"/>
-        <FIELD NAME="timeposted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Time at which comment was posted." PREVIOUS="message" NEXT="authorname"/>
-        <FIELD NAME="authorname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of author (required)." PREVIOUS="timeposted" NEXT="authorip"/>
-        <FIELD NAME="authorip" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="IP address in string form." PREVIOUS="authorname" NEXT="approval"/>
-        <FIELD NAME="approval" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Approval status: 0 = not confirmed, 1 = approved, 2 = rejected." PREVIOUS="authorip" NEXT="timeset"/>
-        <FIELD NAME="timeset" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="The time (seconds since epoch) at which this comment was either approved or rejected. Initially null until rejection." PREVIOUS="approval" NEXT="secretkey"/>
-        <FIELD NAME="secretkey" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Field containing randomly-generated secret key which is used when approving posts via GET request (when session key is unavailable)." PREVIOUS="timeset"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of blog post which this is going to be a comment for (if approved)."/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Optional title of blog comment. (Blank if no title required.)"/>
+        <FIELD NAME="message" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Text of blog comment"/>
+        <FIELD NAME="timeposted" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Time at which comment was posted."/>
+        <FIELD NAME="authorname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of author (required)."/>
+        <FIELD NAME="authorip" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="IP address in string form."/>
+        <FIELD NAME="approval" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Approval status: 0 = not confirmed, 1 = approved, 2 = rejected."/>
+        <FIELD NAME="timeset" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The time (seconds since epoch) at which this comment was either approved or rejected. Initially null until rejection."/>
+        <FIELD NAME="secretkey" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Field containing randomly-generated secret key which is used when approving posts via GET request (when session key is unavailable)."/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="postid"/>
-        <KEY NAME="postid" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_posts" REFFIELDS="id" PREVIOUS="primary"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="postid" TYPE="foreign" FIELDS="postid" REFTABLE="oublog_posts" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="authorip" UNIQUE="false" FIELDS="authorip"/>

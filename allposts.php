@@ -162,9 +162,9 @@ if ($posts) {
 // them know if there are no posts in the blog.
 if (!isloggedin() || isguestuser()) {
     print '<p class="oublog_loginnote">' . get_string('maybehiddenposts', 'oublog',
-            'bloglogin.php') . '</p>';
+            (object) array('link' => 'bloglogin.php', 'name' => oublog_get_displayname($oublog))) . '</p>';
 } else if (!$posts) {
-    print '<p class="oublog_noposts">' . get_string('noposts', 'oublog') . '</p>';
+    print '<p class="oublog_noposts">' . get_string('noposts', 'oublog', oublog_get_displayname($oublog)) . '</p>';
 }
 print '</div>';
 // Finish the page.

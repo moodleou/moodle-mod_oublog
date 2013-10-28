@@ -94,7 +94,7 @@ if (!(
 // Get strings.
 $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
-$straddpost  = get_string('newpost', 'oublog');
+$straddpost  = get_string('newpost', 'oublog', oublog_get_displayname($oublog));
 $streditpost = get_string('editpost', 'oublog');
 
 

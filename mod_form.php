@@ -102,6 +102,13 @@ class mod_oublog_mod_form extends moodleform_mod {
                         'maxlength', 255, 'client');
             }
 
+            $mform->addElement('text', 'displayname', get_string('displayname', 'oublog'),
+                    array('size'=>'48'));
+            $mform->addHelpButton('displayname', 'displayname', 'oublog');
+            $mform->setType('displayname', PARAM_NOTAGS);
+            $mform->addRule('displayname', get_string('maximumchars', '', 255),
+                    'maxlength', 255, 'client');
+
             $this->standard_grading_coursemodule_elements();
             $mform->setDefault('grade', 0);
 
@@ -175,6 +182,9 @@ class mod_oublog_mod_form extends moodleform_mod {
         // Set the reportingemail to null if empty so that we have consistency.
         if (empty($data->reportingemail)) {
             $data->reportingemail = null;
+        }
+        if (empty($data->displayname)) {
+            $data->displayname = null;
         }
         return $data;
     }
