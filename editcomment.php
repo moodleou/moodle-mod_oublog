@@ -52,6 +52,7 @@ $PAGE->set_url($url);
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
 oublog_check_view_permissions($oublog, $context, $cm);
+$oublogoutput = $PAGE->get_renderer('mod_oublog');
 $post->userid=$oubloginstance->userid; // oublog_can_view_post needs this
 if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
     print_error('accessdenied', 'oublog');
@@ -123,7 +124,7 @@ if (!$comment = $mform->get_data()) {
     $PAGE->navbar->add($comment->general);
     echo $OUTPUT->header();
 
-
+    echo $oublogoutput->render_post($cm, $oublog, $post, $url, ($oublog->global) ? 'personal' : 'course');
     echo '<br />';
     $mform->display();
 
