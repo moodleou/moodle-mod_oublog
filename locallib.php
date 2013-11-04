@@ -3196,7 +3196,7 @@ function oublog_stats_output_visitstats($oublog, $cm, $renderer = null, $ajax = 
                 JOIN {oublog_posts} p on p.oubloginstancesid = bi2.id
                 JOIN {user} u on u.id = bi2.userid
                 WHERE bi2.oublogid = ?
-                AND bi.views > 0
+                AND bi2.views > 0
                 AND p.deletedby IS NULL AND p.timeposted >= ?';
         $params = array($oublog->id, $filtertime);
         if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC && !isloggedin())) {
