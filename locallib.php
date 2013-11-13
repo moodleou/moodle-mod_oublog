@@ -3361,7 +3361,7 @@ function oublog_stats_output_poststats($oublog, $cm, $renderer = null, $ajax = f
     $blogs = $DB->get_records_sql($sql, $params, 0, 5);
 
     // Generate content data ready to send to renderer.
-    $maintitle = get_string('posts', 'oublog');// The title of the 'section';
+    $maintitle = get_string('mostposts', 'oublog');// The title of the 'section';
     switch ($filterselected) {
         case OUBLOG_STATS_TIMEFILTER_ALL:
             $title = get_string('timefilter_alltime', 'oublog');// Sub-heading.
@@ -3541,7 +3541,7 @@ function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax 
     $blogs = $DB->get_records_sql($sql, $params, 0, 5);
 
     // Generate content data ready to send to renderer.
-    $maintitle = get_string('comments', 'oublog');// The title of the 'section';
+    $maintitle = get_string('mostcomments', 'oublog');// The title of the 'section';
     switch ($filterselected) {
         case OUBLOG_STATS_TIMEFILTER_ALL:
             $title = get_string('timefilter_alltime', 'oublog');// Sub-heading.
