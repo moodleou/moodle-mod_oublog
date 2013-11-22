@@ -2860,7 +2860,7 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
     $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
     $out .= html_writer::start_tag('div');
     $out .= html_writer::tag('label', $strblogsearch . ' ', array('for' => 'oublog_searchquery'));
-    $out .= $OUTPUT->help_icon('searchthisblog', 'oublog');
+    $out .= $OUTPUT->help_icon('searchblogs', 'oublog');
     $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => $name,
             'value' => $value));
     $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',

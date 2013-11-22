@@ -148,7 +148,7 @@ if ($groupmode && $currentgroup) {
 }
 $query->set_filter('visibility_filter');
 
-$searchurl='search.php?'.($oublog->global ? 'user='.$oubloguser->id : 'id='.$cm->id);
+$searchurl = 'search.php?'.(empty($id) ? 'user='.$oubloguser->id : 'id='.$cm->id);
 
 $foundsomething=$query->display_results($searchurl);
 

@@ -143,8 +143,8 @@ $string['deletedby'] = 'Deleted by {$a->fullname}, {$a->timedeleted}';
 $string['newcomment'] = 'New comment';
 
 $string['searchthisblog'] = 'Search this {$a}';
-$string['searchblogs'] = 'Search blogs';
-$string['searchthisblog_help'] = 'Type your search term and press Enter or click the button.
+$string['searchblogs'] = 'Search';
+$string['searchblogs_help'] = 'Type your search term and press Enter or click the button.
 
 To search for exact phrases use quote marks.
 
