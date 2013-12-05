@@ -28,14 +28,14 @@ comments are moderated.
 
 Branch:
 
-This is the MOODLE_24_STABLE branch. This branch is configured to match the
-latest stable branch at the Open University that uses Moodle 2.4. Once we stop
-using Moodle 2.4, there will be no more fixes in this branch (but of course
-anyone can fork the reposistory and make a fixed version).
+This stable branch is configured to match the latest stable branch at the
+Open University that uses Moodle 2.5. Once we stop using Moodle 2.5, there
+will be no more fixes in this branch (but of course anyone can fork the
+reposistory and make a fixed version).
 
 Support:
 
-We cannot offer direct support. Please do not contact me directly. If you
+We cannot offer direct support. Please do not contact us directly. If you
 need assistance, try the blog forum on moodle.org. (Remember to make clear
 that you are using OU blog and not the standard blog.)
 
@@ -62,7 +62,7 @@ community for testing on other systems.
 
 Requires:
 
-Moodle 2.4+
+Moodle 2.5+
 Postgres / MySQL
 
 Install:
