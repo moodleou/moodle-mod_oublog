@@ -65,7 +65,6 @@ if ($USER->id != $oubloginstance->userid && !has_capability('mod/oublog:managepo
 // Get strings.
 $stroublogs     = get_string('modulenameplural', 'oublog');
 $stroublog      = get_string('modulename', 'oublog');
-$straddpost     = get_string('newpost', 'oublog');
 $streditpost    = get_string('editpost', 'oublog');
 $strblogoptions = get_string('blogoptions', 'oublog');
 

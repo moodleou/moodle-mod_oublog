@@ -14,15 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// Dodgy hack to setup the global blog instance - see MDL-13808 for the proposed solution
-
-include_once($CFG->dirroot.'/mod/oublog/lib.php');
-
+// Dodgy hack to setup the global blog instance (section not created yet on install).
 if (!isset($CFG->oublogsetup)) {
-    oublog_post_install();
+    if ($pbcm = get_coursemodule_from_instance('oublog', 1 , SITEID, 1)) {
+        $mod = new stdClass();
+        $mod->id= $pbcm->id;
+        $mod->section = course_add_cm_to_section($pbcm->course, $pbcm->id, 1);
+        $DB->update_record('course_modules', $mod);
+    }
+    set_config('oublogsetup', true);
 }
 
-$module = new stdClass;
+$module = new stdClass();
 require($CFG->dirroot . '/mod/oublog/version.php');
 $settings->add(new admin_setting_heading('oublog_version', '',
     get_string('displayversion', 'oublog', $module->displayversion)));
@@ -38,3 +41,6 @@ if (isset($CFG->maxbytes)) {
 $settings->add(new admin_setting_configtext('mod_oublog/maxattachments',
         get_string('maxattachments', 'oublog'),
         get_string('configmaxattachments', 'oublog'), 9, PARAM_INT));
+
+$settings->add(new admin_setting_configcheckbox('oublogallpostslogin',
+        get_string('oublogallpostslogin', 'oublog'), get_string('oublogallpostslogin_desc', 'oublog'), 1));

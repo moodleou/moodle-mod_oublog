@@ -61,6 +61,12 @@ $capabilities = array(
             'user' => CAP_ALLOW
         )
     ),
+    'mod/oublog:viewprivate' => array(
+            'riskbitmask' => RISK_PERSONAL,
+            'captype' => 'read',
+            'contextlevel' => CONTEXT_SYSTEM,
+            'legacy' => array()
+    ),
 
     'mod/oublog:post' => array(
 

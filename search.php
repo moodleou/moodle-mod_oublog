@@ -98,7 +98,7 @@ if ($currentgroup===0 && $groupmode==SEPARATEGROUPS) {
 
 // Print the header
 $stroublog      = get_string('modulename', 'oublog');
-$strblogsearch  = get_string('searchthisblog', 'oublog');
+$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($oublog));
 $strblogssearch  = get_string('searchblogs', 'oublog');
 
 
@@ -148,7 +148,7 @@ if ($groupmode && $currentgroup) {
 }
 $query->set_filter('visibility_filter');
 
-$searchurl='search.php?'.($oublog->global ? 'user='.$oubloguser->id : 'id='.$cm->id);
+$searchurl = 'search.php?'.(empty($id) ? 'user='.$oubloguser->id : 'id='.$cm->id);
 
 $foundsomething=$query->display_results($searchurl);
 

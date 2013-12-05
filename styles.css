@@ -267,12 +267,6 @@
     float:right;
 }
 
-#page-mod-oublog-view #middle-column.has-left-column,
-#page-mod-oublog-viewpost #middle-column.has-left-column,
-#page-mod-oublog-allposts #middle-column.has-left-column {
-  margin-left:13em;
-}
-
 .oublog-userpic {
     float: left;
     width: 70px;
@@ -374,4 +368,72 @@ div.oublog-individualselector {
 }
 #addexportpostsbutton {
     clear:both;
+}
+
+/* Stats block. */
+#oublog-discover .oublog_statsinfo {
+    clear: both;
+    margin-bottom: .5em;
+}
+#oublog-discover .oublog_statsinfo_avatar {
+    float: left;
+}
+#oublog-discover .oublog_statsinfo_avatar .userpicture {
+    width: 35px;
+    height: 35px;
+    margin-right: 6px;
+}
+#oublog-discover .oublog_statsinfo_infocol {
+    margin-left: 41px;
+}
+.oublog_displaynone {
+    display: none;
+}
+.oublog_statsview_content h3 {
+    float: left;
+    margin-top: 0;
+}
+.oublog_statsview_content p {
+    clear: both;
+    margin-bottom: .5em;
+}
+.block_action_oublog {
+    float: right;
+    display: none;
+}
+.jsenabled .block_action_oublog {
+    display: block;
+}
+.oublog_statsinfo_bar span.oublogbar {
+    padding-top: .25em;
+    padding-bottom: .25em;
+    padding-left: 5px;
+    position: relative;
+    display: block;
+}
+#oublog-discover .oublog_statsview_content .felement.fsubmit input {
+    float: left;
+}
+#oublog-discover .ajaxworking {
+    position: relative;
+    float: left;
+    width: 20px;
+    height: 20px;
+    background: url([[pix:i/ajaxloader]]) no-repeat;
+    top: 4px;
+    left: 2px;
+}
+#oublog-discover .oublogstats_commentposts_blogname {
+    font-size: .85em;
+}
+ul.oublog-accordion {
+    list-style: none;
+    margin: 0;
+}
+div.oublog-accordion-closed {
+    display: none;
+}
+.oublog-accordion li .oublog_statsview_title h2 {
+    cursor: pointer;
+    font-size: 1.15em;
 }

@@ -80,8 +80,6 @@ class mod_oublog_mod_form extends moodleform_mod {
             $modulesettings = get_config('mod_oublog');
             $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
             $choices[-1] = get_string('uploadnotallowed');
-            $choices[0] = get_string('courseuploadlimit') . ' (' .
-                    display_size($COURSE->maxbytes) . ')';
             $mform->addElement('select', 'maxbytes',
                     get_string('maxattachmentsize', 'oublog'), $choices);
             $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'oublog');
@@ -93,6 +91,27 @@ class mod_oublog_mod_form extends moodleform_mod {
                     get_string('maxattachments', 'oublog'), $choices);
             $mform->addHelpButton('maxattachments', 'maxattachments', 'oublog');
             $mform->setDefault('maxattachments', $modulesettings->maxattachments);
+
+            // Enable the stats block.
+            $mform->addElement('checkbox', 'statblockon', get_string('statblockon', 'oublog', 0));
+            $mform->addHelpButton('statblockon', 'statblockon', 'oublog');
+
+            // Show OU Alerts reporting link.
+            if (oublog_oualerts_enabled()) {
+                $mform->addElement('text', 'reportingemail', get_string('reportingemail', 'oublog'),
+                        array('size'=>'48'));
+                $mform->addHelpButton('reportingemail', 'reportingemail', 'oublog');
+                $mform->setType('reportingemail', PARAM_NOTAGS);
+                $mform->addRule('reportingemail', get_string('maximumchars', '', 255),
+                        'maxlength', 255, 'client');
+            }
+
+            $mform->addElement('text', 'displayname', get_string('displayname', 'oublog'),
+                    array('size'=>'48'));
+            $mform->addHelpButton('displayname', 'displayname', 'oublog');
+            $mform->setType('displayname', PARAM_NOTAGS);
+            $mform->addRule('displayname', get_string('maximumchars', '', 255),
+                    'maxlength', 255, 'client');
 
             $this->standard_grading_coursemodule_elements();
             $mform->setDefault('grade', 0);
@@ -164,6 +183,17 @@ class mod_oublog_mod_form extends moodleform_mod {
                 || $data->individual == OUBLOG_VISIBLE_INDIVIDUAL_BLOGS)) {
             $data->maxvisibility = OUBLOG_VISIBILITY_COURSEUSER;
         }
+        // Set the reportingemail to null if empty so that we have consistency.
+        if (empty($data->reportingemail)) {
+            $data->reportingemail = null;
+        }
+        // Set statblockon to null if empty so that we have consistency.
+        if (empty($data->statblockon)) {
+            $data->statblockon = 0;
+        }
+        if (empty($data->displayname)) {
+            $data->displayname = null;
+        }
         return $data;
     }
 
@@ -188,6 +218,14 @@ class mod_oublog_mod_form extends moodleform_mod {
         if (!empty($data['groupmode']) && isset($data['allowcomments']) &&
                 $data['allowcomments'] == OUBLOG_COMMENTS_ALLOWPUBLIC) {
             $errors['allowcomments'] = get_string('error_grouppubliccomments', 'oublog');
+        }
+        if (!empty($data['reportingemail'])) {
+            $emails = explode(',', trim($data['reportingemail']));
+            foreach ($emails as $email) {
+                if (!validate_email($email)) {
+                    $errors['reportingemail'] = get_string('invalidemail', 'forumng');
+                }
+            }
         }
         return $errors;
     }

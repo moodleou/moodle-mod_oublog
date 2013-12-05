@@ -94,7 +94,7 @@ if (!(
 // Get strings.
 $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
-$straddpost  = get_string('newpost', 'oublog');
+$straddpost  = get_string('newpost', 'oublog', oublog_get_displayname($oublog));
 $streditpost = get_string('editpost', 'oublog');
 
 
@@ -158,7 +158,8 @@ if (!$frmpost = $mform->get_data()) {
     $PAGE->set_title(format_string($oublog->name));
     $PAGE->set_heading(format_string($course->fullname));
     echo $OUTPUT->header();
-
+    $renderer = $PAGE->get_renderer('mod_oublog');
+    echo $renderer->render_pre_postform($oublog, $cm);
     $mform->display();
 
     echo $OUTPUT->footer();

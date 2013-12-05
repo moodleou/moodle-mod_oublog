@@ -81,6 +81,11 @@ define('OUBLOG_NO_PARTICIPATION', 0);
 define('OUBLOG_PARTICIPATION_PERPAGE', 100);
 /**#@-*/
 
+// Constants defining stats time filter.
+define('OUBLOG_STATS_TIMEFILTER_ALL', 0);
+define('OUBLOG_STATS_TIMEFILTER_MONTH', 1);
+define('OUBLOG_STATS_TIMEFILTER_YEAR', 2);
+
 /**
  * Get a blog from a user id
  *
@@ -96,7 +101,8 @@ function oublog_get_personal_blog($userid) {
 
     if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid'=>$blog->id, 'userid'=>$userid))) {
         $user = $DB->get_record('user', array('id'=>$userid));
-        oublog_add_bloginstance($blog->id, $userid, get_string('defaultpersonalblogname', 'oublog', fullname($user)));
+        $a = (object) array('name' => fullname($user), 'displayname' => oublog_get_displayname($blog));
+        oublog_add_bloginstance($blog->id, $userid, get_string('defaultpersonalblogname', 'oublog', $a));
         if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid'=>$blog->id, 'userid'=>$user->id))) {
             print_error('invalidblog', 'oublog');
         }
@@ -192,7 +198,7 @@ function oublog_can_post($oublog, $bloguserid=0, $cm=null) {
     global $USER;
     if ($oublog->global) {
         if ($bloguserid==0) {
-            debugging('Calls to oublog_can_post for personal blogs must supply userid!', DEBUG_DEVELOPER);//at4737wip6616
+            debugging('Calls to oublog_can_post for personal blogs must supply userid!', DEBUG_DEVELOPER);
         }
         // This needs to be your blog and you need the 'contributepersonal'
         // permission at system level
@@ -372,7 +378,11 @@ function oublog_can_view_post($post, $user, $context, $personalblog) {
 
     // Otherwise this is set to course visibility
     if ($personalblog) {
-        return $post->userid==$user->id;
+        // Private posts - only same user or has capability viewprivate can see.
+        if (has_capability('mod/oublog:viewprivate', context_system::instance(), $user->id)) {
+            return true;
+        }
+        return $post->userid == $user->id;
     } else {
         // Check oublog:view capability at module level
         // This might not have been checked yet because if the blog is
@@ -533,9 +543,11 @@ function oublog_edit_post($post, $cm) {
  * @param object $oublog
  * @param int $offset
  * @param int $userid
+ * @param bool $ignoreprivate set true to not return private posts (global blog only)
  * @return mixed all data to print a list of blog posts
  */
-function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individualid=-1, $userid=null, $tag='', $canaudit=false) {
+function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $individualid = -1,
+        $userid = null, $tag = '', $canaudit = false, $ignoreprivate = null) {
     global $CFG, $USER, $DB;
     $params = array();
     $sqlwhere = "bi.oublogid = ?";
@@ -574,7 +586,9 @@ function oublog_get_posts($oublog, $context, $offset=0, $cm, $groupid, $individu
         if ($oublog->global) {
             // Unless the current user has manageposts capability,
             // they cannot view 'private' posts except their own.
-            if (!has_capability('mod/oublog:manageposts', context_system::instance())) {
+            if ($ignoreprivate) {
+                $sqlwhere .= ' AND (p.visibility > ' . OUBLOG_VISIBILITY_COURSEUSER . ')';
+            } else if (!has_capability('mod/oublog:manageposts', context_system::instance())) {
                 $sqlwhere .= " AND (p.visibility >" . OUBLOG_VISIBILITY_COURSEUSER .
                         " OR (p.visibility = " . OUBLOG_VISIBILITY_COURSEUSER . " AND u.id = ?))";
                 $params[] = $USER->id;
@@ -973,7 +987,9 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
         foreach ($tags as $idx => $tag) {
             $tags[$idx]->weight = round(($tag->count-$min)/$delta*4);
         }
-        sort($tags);
+        uasort($tags, function($a, $b) {
+            return strcmp ($a->tag,  $b->tag);
+        });
     }
     return($tags);
 }
@@ -1643,10 +1659,11 @@ function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $i
         $commentsurlrss = oublog_get_feedurl('rss',  $oublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
     }
 
-    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog') . '</div>';
+    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog',
+            oublog_get_displayname($oublog)) . '</div>';
     $html .= $OUTPUT->help_icon('feedhelp', 'oublog');
     $html .= '<div class="oublog-feedlinks">';
-    $html .= get_string('blogfeed', 'oublog').': ';
+    $html .= get_string('blogfeed', 'oublog', oublog_get_displayname($oublog, true)).': ';
     $html .= '<a href="'.$blogurlatom.'">'.get_string('atom', 'oublog').'</a> ';
     $html .= '<a href="'.$blogurlrss.'">'.get_string('rss', 'oublog').'</a>';
 
@@ -2277,40 +2294,6 @@ WHERE
 }
 
 /**
- * Prints mobile specific links on the view page
- * @param int $id blog id
- * @param string $blogdets whether blog details of posts are being shown
- */
-function ou_print_mobile_navigation($id = null , $blogdets = null, $post = null, $user=null) {
-    global $CFG;
-
-    if ($id) {
-        $qs   = 'id='.$id.'&amp;direct=1';
-        $file = 'view';
-    } else if ($user) {
-        $qs   = 'user='.$user;
-        $file = 'view';
-    } else {
-        $qs   = 'post=' . $post;
-        $file = 'viewpost';
-    }
-
-    if ($blogdets != 'show') {
-        $qs           .= '&amp;blogdets=show';
-        $desc        = get_string('viewblogdetails', 'oublog');
-        $class_extras = '';
-    } else {
-        $qs           .= '';
-        $desc         = get_string('viewblogposts', 'oublog');
-        $class_extras = ' oublog-mobile-space';
-    }
-    print '<div class="oublog-mobile-main-link'.$class_extras.'">';
-    print '<a href="'.$CFG->wwwroot.'/mod/oublog/'.$file.'.php?'.$qs.'">';
-    print $desc;
-    print '</a></div>';
-}
-
-/**
  * For moderated users; rate-limits comments by IP address.
  * @return True if user has made too many comments within past hour
  */
@@ -2877,7 +2860,7 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
     $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
     $out .= html_writer::start_tag('div');
     $out .= html_writer::tag('label', $strblogsearch . ' ', array('for' => 'oublog_searchquery'));
-    $out .= $OUTPUT->help_icon('searchthisblog', 'oublog');
+    $out .= $OUTPUT->help_icon('searchblogs', 'oublog');
     $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => $name,
             'value' => $value));
     $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
@@ -3157,6 +3140,773 @@ function oublog_update_grades($newgrades, $oldgrades, $cm, $oublog, $course) {
     }
 }
 
+// Blog 'discovery'/stats functions.
+/**
+ * Generates oublog visitor statistics output.
+ * @param object $oublog
+ * @param object $cm
+ * @param mod_oublog_renderer $renderer
+ * @param bool $ajax true to return data object rather than html
+ */
+function oublog_stats_output_visitstats($oublog, $cm, $renderer = null, $ajax = false) {
+    global $PAGE, $DB;
+    if (!$renderer) {
+        $renderer = $PAGE->get_renderer('mod_oublog');
+    }
+    // This is only for personal blogs (can't support course, individual or group blogs).
+    if (!$oublog->global || ($oublog->global && ($oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS
+            || $cm->groupmode != NOGROUPS))) {
+        return;
+    }
+    if (isset($_POST['timefilter_visitstats']) && isloggedin()) {
+        // Get the posted form value to set user pref (do this from post as need to to init form).
+        set_user_preference('mod_oublog_visitformfilter', $_POST['timefilter_visitstats']);
+    }
+
+    $default = get_user_preferences('mod_oublog_visitformfilter', OUBLOG_STATS_TIMEFILTER_MONTH);
+
+    // Create time filter options form.
+    $customdata = array(
+            'options' => array(OUBLOG_STATS_TIMEFILTER_ALL => get_string('timefilter_alltime', 'oublog'),
+                    OUBLOG_STATS_TIMEFILTER_MONTH => get_string('activeblogs', 'oublog')),
+            'default' => $default,
+            'type' => 'visitstats',
+            );
+    if ($oublog->global && $curindividual = optional_param('user', 0, PARAM_INT)) {
+        $customdata['params']['user'] = $curindividual;
+    }
+    if (!$oublog->global) {
+        $customdata['cmid'] = $cm->id;
+    }
+
+    $timefilter = new oublog_stats_timefilter_form(null, $customdata);
+
+    // First, get the stats for this blog.
+    list($filtertime, $filterselected) = $timefilter->get_selected_time($default);
+
+    if ($filtertime == 0) {
+        // No time filter - just get instances from table.
+        $blogs = $DB->get_records_select('oublog_instances', 'oublogid =? AND views >0',
+                array($oublog->id), 'views DESC, name ASC', '*', 0, 5);
+    } else {
+        // Time filter - get instances from sub-query based on matching post criteria.
+        $sql = 'SELECT bi.* FROM {oublog_instances} bi
+            WHERE bi.id IN (
+                (SELECT bi2.id FROM {oublog_instances} bi2
+                JOIN {oublog_posts} p on p.oubloginstancesid = bi2.id
+                JOIN {user} u on u.id = bi2.userid
+                WHERE bi2.oublogid = ?
+                AND bi2.views > 0
+                AND p.deletedby IS NULL AND p.timeposted >= ?';
+        $params = array($oublog->id, $filtertime);
+        if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC && !isloggedin())) {
+            // Only include visible posts on global blogs and public blogs when not logged in.
+            $sql .= 'AND p.visibility >= ? ';
+            if (!isloggedin()) {
+                $params[] = OUBLOG_VISIBILITY_PUBLIC;
+            } else {
+                $params[] = OUBLOG_VISIBILITY_LOGGEDINUSER;
+            }
+        }
+        $sql .= ' GROUP BY bi2.id)) ORDER BY bi.views DESC, bi.name ASC';
+        $blogs = $DB->get_records_sql($sql, $params, 0, 5);
+    }
+    // Generate content data ready to send to renderer.
+    $maintitle = get_string('visits', 'oublog');// The title of the 'section';
+    if ($filterselected == OUBLOG_STATS_TIMEFILTER_ALL) {
+        $title = get_string('timefilter_alltime', 'oublog');// Sub-heading.
+        $info = get_string('visits_info_alltime', 'oublog', oublog_get_displayname($oublog, true));
+    } else {
+        $title = get_string('activeblogs', 'oublog');// Sub-heading.
+        $info = get_string('visits_info_active', 'oublog', oublog_get_displayname($oublog));
+    }
+    $content = '';
+    if ($blogs) {
+        $maxnum = reset($blogs)->views;
+        foreach ($blogs as $blog) {
+            // Create the stat view for the blog.
+            $percent = $blog->views / $maxnum * 100;
+            $stat = get_string('numberviews', 'oublog', number_format($blog->views));
+            if ($oublog->global) {
+                $url = new moodle_url('/mod/oublog/view.php', array('user' => $blog->userid));
+            } else {
+                $url = new moodle_url('/mod/oublog/view.php',
+                        array('id' => $cm->id, 'individual' => $blog->userid));
+            }
+            $user = $DB->get_record('user', array('id' => $blog->userid));
+            if ($blog->name == '') {
+                $a = (object) array('name' => fullname($user),
+                        'displayname' => oublog_get_displayname($oublog));
+                $blog->name = get_string('defaultpersonalblogname', 'oublog', $a);
+            }
+            $label = html_writer::link($url, $blog->name);
+            $statinfo = new oublog_statsinfo($user, $percent, $stat, $url, $label);
+            $content .= $renderer->render($statinfo);
+        }
+    }
+
+    return $renderer->render_stats_view('visitstats', $maintitle, $content, $title, $info, $timefilter, $ajax);
+}
+/**
+ * Generates oublog most posts statistics output.
+ * @param object $oublog
+ * @param object $cm
+ * @param mod_oublog_renderer $renderer
+ * @param bool $ajax true to return data object rather than html
+ */
+function oublog_stats_output_poststats($oublog, $cm, $renderer = null, $ajax = false) {
+    global $PAGE, $DB;
+    if (!$renderer) {
+        $renderer = $PAGE->get_renderer('mod_oublog');
+    }
+    // This is only for personal blogs, visible individual blogs, visible group blogs.
+    if (!$oublog->global && ($oublog->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS ||
+            ($oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS && $cm->groupmode <= SEPARATEGROUPS))) {
+        return;
+    }
+
+    $curgroup = -1;
+    if ($cm->groupmode > NOGROUPS) {
+        // Get currently viewed group.
+        $curgroup = optional_param('curgroup', oublog_get_activity_group($cm), PARAM_INT);
+    }
+
+    if (isset($_POST['timefilter_poststats']) && isloggedin()) {
+        // Get the posted form value to set user pref (do this from post as need to to init form).
+        set_user_preference('mod_oublog_postformfilter', $_POST['timefilter_poststats']);
+    }
+    $default = get_user_preferences('mod_oublog_postformfilter', OUBLOG_STATS_TIMEFILTER_MONTH);
+
+    // Create time filter options form.
+    $customdata = array(
+            'options' => array(OUBLOG_STATS_TIMEFILTER_ALL => get_string('timefilter_alltime', 'oublog'),
+                    OUBLOG_STATS_TIMEFILTER_YEAR => get_string('timefilter_thisyear', 'oublog'),
+                    OUBLOG_STATS_TIMEFILTER_MONTH => get_string('timefilter_thismonth', 'oublog')),
+            'default' => $default,
+            'type' => 'poststats',
+            'params' => array('curgroup', $curgroup)
+    );
+    if ($oublog->global && $curindividual = optional_param('user', 0, PARAM_INT)) {
+        $customdata['params']['user'] = $curindividual;
+    }
+    if (!$oublog->global) {
+        $customdata['cmid'] = $cm->id;
+    }
+
+    $timefilter = new oublog_stats_timefilter_form(null, $customdata);
+
+    // First, get the stats for this blog.
+    list($filtertime, $filterselected) = $timefilter->get_selected_time($default);
+
+    $listgroups = false;
+    if (!$oublog->global && $cm->groupmode == VISIBLEGROUPS &&
+            $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        // We show groups rather than individuals (Visible groups set).
+        $listgroups = true;
+    }
+
+    if ($listgroups) {
+        // Get group posts, not individuals.
+        $params = array($oublog->id, $filtertime);
+        $sql = "SELECT p.groupid, count(p.id) as posts
+                    FROM {oublog_posts} p
+                    JOIN {oublog_instances} bi on p.oubloginstancesid = bi.id
+                    JOIN {groups} as g on g.id = p.groupid
+                    WHERE bi.oublogid = ?
+                    AND p.deletedby IS NULL AND p.timeposted >= ?
+                    AND p.groupid > 0
+                    GROUP BY p.groupid
+                    ORDER BY posts DESC";
+    } else {
+        $subwhere = '';
+        $extrajoin = '';
+        $params = array($oublog->id, $filtertime);
+        if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC && !isloggedin())) {
+            // Only include visible posts on global blogs and public blogs when not logged in.
+            $subwhere .= 'AND p.visibility >= ? ';
+            if (!isloggedin()) {
+                $params[] = OUBLOG_VISIBILITY_PUBLIC;
+            } else {
+                $params[] = OUBLOG_VISIBILITY_LOGGEDINUSER;
+            }
+        }
+        if (!$oublog->global && $cm->groupmode != NOGROUPS && $curgroup > 0 &&
+                $oublog->individual > OUBLOG_NO_INDIVIDUAL_BLOGS) {
+            // Selected a group in an individual blog - get users in that group to filter results.
+            if ($users = groups_get_members($curgroup, 'u.id')) {
+                list($insql, $inparams) = $DB->get_in_or_equal(array_keys($users));
+                $subwhere .= " AND bi2.userid $insql";
+                $params = array_merge($params, $inparams);
+            } else {
+                // No users in this group! Hack to return nothing.
+                $subwhere .= " AND bi2.userid IS NULL";
+            }
+        } else {
+            // Not getting specific user(s) so join user table to ensure they still exist in system.
+            $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
+        }
+        // Time filter - get instances from sub query based on matching post criteria.
+        $sql = "SELECT bi.*, pos.posts
+        FROM {oublog_instances} bi
+        JOIN (SELECT p.oubloginstancesid, count(p.id) as posts
+              FROM {oublog_posts} p
+              JOIN {oublog_instances} bi2 on bi2.id = p.oubloginstancesid
+              $extrajoin
+              WHERE bi2.oublogid = ?
+              AND p.deletedby IS NULL AND p.timeposted >= ? $subwhere
+              GROUP BY p.oubloginstancesid
+        ) as pos on pos.oubloginstancesid = bi.id
+        ORDER BY posts DESC";
+    }
+    $blogs = $DB->get_records_sql($sql, $params, 0, 5);
+
+    // Generate content data ready to send to renderer.
+    $maintitle = get_string('mostposts', 'oublog');// The title of the 'section';
+    switch ($filterselected) {
+        case OUBLOG_STATS_TIMEFILTER_ALL:
+            $title = get_string('timefilter_alltime', 'oublog');// Sub-heading.
+            $info = get_string('posts_info_alltime', 'oublog', oublog_get_displayname($oublog, true));
+            break;
+        case OUBLOG_STATS_TIMEFILTER_YEAR:
+            $title = get_string('timefilter_thisyear', 'oublog');// Sub-heading.
+            $info = get_string('posts_info_thisyear', 'oublog', oublog_get_displayname($oublog, true));
+            break;
+        case OUBLOG_STATS_TIMEFILTER_MONTH:
+            $title = get_string('timefilter_thismonth', 'oublog');// Sub-heading.
+            $info = get_string('posts_info_thismonth', 'oublog', oublog_get_displayname($oublog, true));
+            break;
+    }
+    $content = '';
+    if ($blogs) {
+        $maxnum = reset($blogs)->posts;
+        foreach ($blogs as $blog) {
+            // Create the stat view for the blog.
+            $percent = $blog->posts / $maxnum * 100;
+            $stat = get_string('numberposts', 'oublog', number_format($blog->posts));
+            if ($oublog->global) {
+                $url = new moodle_url('/mod/oublog/view.php', array('user' => $blog->userid));
+            } else if ($listgroups && isset($blog->groupid)) {
+                $url = new moodle_url('/mod/oublog/view.php',
+                        array('id' => $cm->id, 'group' => $blog->groupid));
+            } else {
+                $urlparams = array('id' => $cm->id, 'individual' => $blog->userid);
+                if ($curgroup != -1) {
+                    $urlparams['group'] = $curgroup;
+                }
+                $url = new moodle_url('/mod/oublog/view.php', $urlparams);
+            }
+            if ($listgroups && isset($blog->groupid)) {
+                // We are reffering to a group, not a user.
+                $user = $DB->get_record('groups', array('id' => $blog->groupid));
+                $a = (object) array('name' => $user->name,
+                        'displayname' => oublog_get_displayname($oublog));
+                $blog->name = format_string(get_string('defaultpersonalblogname', 'oublog', $a));
+            } else {
+                $user = $DB->get_record('user', array('id' => $blog->userid));
+                if ($blog->name == '') {
+                    $a = (object) array('name' => fullname($user),
+                            'displayname' => oublog_get_displayname($oublog));
+                    $blog->name = get_string('defaultpersonalblogname', 'oublog', $a);
+                }
+            }
+            $label = html_writer::link($url, $blog->name);
+            $statinfo = new oublog_statsinfo($user, $percent, $stat, $url, $label);
+            $content .= $renderer->render($statinfo);
+        }
+    }
+
+    return $renderer->render_stats_view('poststats', $maintitle, $content, $title, $info, $timefilter, $ajax);
+}
+/**
+ * Generates oublog most number of comments statistics output.
+ * @param object $oublog
+ * @param object $cm
+ * @param mod_oublog_renderer $renderer
+ * @param bool $ajax true to return data object rather than html
+ */
+function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax = false) {
+    global $PAGE, $DB;
+    if (!$renderer) {
+        $renderer = $PAGE->get_renderer('mod_oublog');
+    }
+    // This is only for personal blogs, visible individual blogs, visible group blogs.
+    if ($oublog->allowcomments == OUBLOG_COMMENTS_PREVENT ||
+            $oublog->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS ||
+            (!$oublog->global && $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS &&
+                    $cm->groupmode <= SEPARATEGROUPS)) {
+        return;
+    }
+
+    $curgroup = -1;
+    if ($cm->groupmode > NOGROUPS) {
+        // Get currently viewed group.
+        $curgroup = optional_param('curgroup', oublog_get_activity_group($cm), PARAM_INT);
+    }
+
+    if (isset($_POST['timefilter_commentstats']) && isloggedin()) {
+        // Get the posted form value to set user pref (do this from post as need to to init form).
+        set_user_preference('mod_oublog_commentformfilter', $_POST['timefilter_commentstats']);
+    }
+    $default = get_user_preferences('mod_oublog_commentformfilter', OUBLOG_STATS_TIMEFILTER_MONTH);
+
+    // Create time filter options form.
+    $customdata = array(
+            'options' => array(OUBLOG_STATS_TIMEFILTER_ALL => get_string('timefilter_alltime', 'oublog'),
+                    OUBLOG_STATS_TIMEFILTER_YEAR => get_string('timefilter_thisyear', 'oublog'),
+                    OUBLOG_STATS_TIMEFILTER_MONTH => get_string('timefilter_thismonth', 'oublog')),
+            'default' => $default,
+            'type' => 'commentstats',
+            'params' => array('curgroup', $curgroup)
+    );
+    if ($oublog->global && $curindividual = optional_param('user', 0, PARAM_INT)) {
+        $customdata['params']['user'] = $curindividual;
+    }
+    if (!$oublog->global) {
+        $customdata['cmid'] = $cm->id;
+    }
+
+    $timefilter = new oublog_stats_timefilter_form(null, $customdata);
+
+    // First, get the stats for this blog.
+    list($filtertime, $filterselected) = $timefilter->get_selected_time($default);
+
+    $listgroups = false;
+    if (!$oublog->global && $cm->groupmode == VISIBLEGROUPS &&
+            $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        // We show groups rather than individuals.
+        $listgroups = true;
+    }
+
+    if ($listgroups) {
+        // Get group posts, not individuals.
+        $sql = 'SELECT p.groupid, count(c.id) as comments
+            FROM {oublog_comments} c
+            JOIN {oublog_posts} p on p.id = c.postid
+            JOIN {oublog_instances} bi on p.oubloginstancesid = bi.id
+            JOIN {groups} as g on g.id = p.groupid
+            WHERE bi.oublogid = ?
+            AND p.groupid > 0
+            AND p.deletedby IS NULL
+            AND p.allowcomments > ?
+            AND c.deletedby IS NULL AND c.timeposted >= ? AND c.userid <> bi.userid
+            GROUP BY p.groupid
+            ORDER BY comments DESC';
+        $params = array($oublog->id, OUBLOG_COMMENTS_PREVENT, $filtertime);
+    } else {
+        $subwhere = '';
+        $extrajoin = '';
+        $params = array($oublog->id, OUBLOG_COMMENTS_PREVENT);
+        if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC && !isloggedin())) {
+            // Only include visible posts on global blogs and public blogs when not logged in.
+            $subwhere .= 'AND p.visibility >= ? ';
+            if (!isloggedin()) {
+                $params[] = OUBLOG_VISIBILITY_PUBLIC;
+            } else {
+                $params[] = OUBLOG_VISIBILITY_LOGGEDINUSER;
+            }
+        }
+        if (!$oublog->global && $cm->groupmode != NOGROUPS && $curgroup > 0 &&
+                $oublog->individual > OUBLOG_NO_INDIVIDUAL_BLOGS) {
+            // Selected a group in an individual blog - get users in that group to filter results.
+            if ($users = groups_get_members($curgroup, 'u.id')) {
+                list($insql, $inparams) = $DB->get_in_or_equal(array_keys($users));
+                $subwhere .= " AND bi2.userid $insql";
+                $params = array_merge($params, $inparams);
+            } else {
+                // No users in this group! Hack to return nothing.
+                $subwhere .= " AND bi2.userid IS NULL";
+            }
+        } else {
+            // Not getting specific user(s) so join user table to ensure they still exist in system.
+            $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
+        }
+        $params[] = $filtertime;
+        // Time filter - get instances from sub query based on matching post criteria.
+        $sql = "SELECT bi.*, pos.comments
+        FROM {oublog_instances} bi
+        JOIN (SELECT p.oubloginstancesid, count(c.id) as comments
+            FROM {oublog_comments} c
+            JOIN {oublog_posts} p on p.id = c.postid
+            JOIN {oublog_instances} bi2 on bi2.id = p.oubloginstancesid
+            $extrajoin
+            WHERE bi2.oublogid = ?
+            AND p.allowcomments > ?
+            AND p.deletedby IS NULL $subwhere
+            AND c.deletedby IS NULL AND c.timeposted >= ?
+            AND (c.userid <> bi2.userid OR c.userid IS NULL)
+            GROUP BY p.oubloginstancesid
+        ) as pos on pos.oubloginstancesid = bi.id
+        ORDER BY comments DESC";
+    }
+    $blogs = $DB->get_records_sql($sql, $params, 0, 5);
+
+    // Generate content data ready to send to renderer.
+    $maintitle = get_string('mostcomments', 'oublog');// The title of the 'section';
+    switch ($filterselected) {
+        case OUBLOG_STATS_TIMEFILTER_ALL:
+            $title = get_string('timefilter_alltime', 'oublog');// Sub-heading.
+            $info = get_string('comments_info_alltime', 'oublog', oublog_get_displayname($oublog, true));
+        break;
+        case OUBLOG_STATS_TIMEFILTER_YEAR:
+            $title = get_string('timefilter_thisyear', 'oublog');// Sub-heading.
+            $info = get_string('comments_info_thisyear', 'oublog', oublog_get_displayname($oublog, true));
+                break;
+        case OUBLOG_STATS_TIMEFILTER_MONTH:
+            $title = get_string('timefilter_thismonth', 'oublog');// Sub-heading.
+            $info = get_string('comments_info_thismonth', 'oublog', oublog_get_displayname($oublog, true));
+        break;
+    }
+    $content = '';
+    if ($blogs) {
+        $maxnum = reset($blogs)->comments;
+        foreach ($blogs as $blog) {
+            // Create the stat view for the blog.
+            $percent = $blog->comments / $maxnum * 100;
+            $stat = get_string('numbercomments', 'oublog', number_format($blog->comments));
+            if ($oublog->global) {
+                $url = new moodle_url('/mod/oublog/view.php', array('user' => $blog->userid));
+            } else if ($listgroups && isset($blog->groupid)) {
+                $url = new moodle_url('/mod/oublog/view.php',
+                    array('id' => $cm->id, 'group' => $blog->groupid));
+            } else {
+                $urlparams = array('id' => $cm->id, 'individual' => $blog->userid);
+                if ($curgroup != -1) {
+                    $urlparams['group'] = $curgroup;
+                }
+                $url = new moodle_url('/mod/oublog/view.php', $urlparams);
+            }
+            if ($listgroups && isset($blog->groupid)) {
+                // We are reffering to a group, not a user.
+                $user = $DB->get_record('groups', array('id' => $blog->groupid));
+                $a = (object) array('name' => $user->name,
+                        'displayname' => oublog_get_displayname($oublog));
+                $blog->name = format_string(get_string('defaultpersonalblogname', 'oublog', $a));
+            } else {
+                $user = $DB->get_record('user', array('id' => $blog->userid));
+                if ($blog->name == '') {
+                    $a = (object) array('name' => fullname($user),
+                            'displayname' => oublog_get_displayname($oublog));
+                    $blog->name = get_string('defaultpersonalblogname', 'oublog', $a);
+                }
+            }
+            $label = html_writer::link($url, $blog->name);
+            $statinfo = new oublog_statsinfo($user, $percent, $stat, $url, $label);
+            $content .= $renderer->render($statinfo);
+        }
+    }
+
+    return $renderer->render_stats_view('commentstats', $maintitle, $content, $title, $info, $timefilter, $ajax);
+}
+/**
+ * Generates oublog most commented posts statistics output.
+ * @param object $oublog
+ * @param object $cm
+ * @param mod_oublog_renderer $renderer
+ * @param bool $ajax true to return data object rather than html
+ * @param bool $allposts true to include posts across all blogs in instance (personal blog only)
+ * @param int $curindividual User ID for current individual blog instance
+ */
+function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $ajax = false,
+        $allposts = false, $curindividual = -1) {
+    global $PAGE, $DB, $USER;
+    if (!$renderer) {
+        $renderer = $PAGE->get_renderer('mod_oublog');
+    }
+    // This is not for separate individual blogs.
+    if ($oublog->allowcomments == OUBLOG_COMMENTS_PREVENT ||
+            $oublog->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS) {
+        return;
+    }
+    if ($oublog->global) {
+        // Only search for sent value if global blog as we only support in this.
+        $allposts = optional_param('allposts', $allposts, PARAM_BOOL);
+    }
+    $curgroup = -1;
+    if (!$allposts && $cm->groupmode > NOGROUPS) {
+        // Get currently viewed group.
+        $curgroup = optional_param('curgroup', oublog_get_activity_group($cm), PARAM_INT);
+    }
+    if (!$allposts && $oublog->individual > OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        // Work out current individual.
+        $curindividual = optional_param('curindividual', $curindividual, PARAM_INT);
+    } else if ($oublog->global && !$allposts) {
+        $curindividual = optional_param('curindividual', $curindividual, PARAM_INT);
+        if ($curindividual == -1) {
+            // Get current user as not sent.
+            $curindividual = optional_param('user', $USER->id, PARAM_INT);
+        }
+    }
+
+    if (isset($_POST['timefilter_commentpoststats']) && isloggedin()) {
+        // Get the posted form value to set user pref (do this from post as need to to init form).
+        set_user_preference('mod_oublog_commentpostformfilter', $_POST['timefilter_commentpoststats']);
+    }
+
+    $default = get_user_preferences('mod_oublog_commentpostformfilter', OUBLOG_STATS_TIMEFILTER_MONTH);
+
+    // Create time filter options form.
+    $customdata = array(
+            'options' => array(OUBLOG_STATS_TIMEFILTER_ALL => get_string('timefilter_alltime', 'oublog'),
+                    OUBLOG_STATS_TIMEFILTER_YEAR => get_string('timefilter_thisyear', 'oublog'),
+                    OUBLOG_STATS_TIMEFILTER_MONTH => get_string('timefilter_thismonth', 'oublog')),
+            'default' => $default,
+            'type' => 'commentpoststats',
+            'params' => array(
+                    'allposts' => $allposts,
+                    'curgroup' => $curgroup,
+                    'curindividual' => $curindividual
+                    )
+    );
+    if ($oublog->global && !$allposts && $curindividual != -1) {
+        $customdata['params']['user'] = $curindividual;
+    }
+    if (!$oublog->global) {
+        $customdata['cmid'] = $cm->id;
+    }
+
+    $timefilter = new oublog_stats_timefilter_form(null, $customdata);
+
+    // First, get the stats for this blog.
+    list($filtertime, $filterselected) = $timefilter->get_selected_time($default);
+
+    $instwhere = '';
+    $postwhere = '';
+    $extrajoin = '';
+    if ($cm->groupmode > NOGROUPS && $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        // Join the group table so only groups that still exist included.
+        $extrajoin .= 'JOIN {groups} g on g.id = p.groupid ';
+    }
+    $params = array($oublog->id);
+    if ($curindividual > 0) {
+        $instwhere = 'AND bi2.userid = ?';
+        $params[] = $curindividual;
+    } else if ($cm->groupmode != NOGROUPS && $curgroup > 0 &&
+            $oublog->individual > OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        // Selected a group in an individual blog (no user selected) - get group to filter results.
+        if ($users = groups_get_members($curgroup, 'u.id')) {
+            list($insql, $inparams) = $DB->get_in_or_equal(array_keys($users));
+            $instwhere .= " AND bi2.userid $insql";
+            $params = array_merge($params, $inparams);
+        } else {
+            // No users in this group! Hack to return nothing.
+            $instwhere .= " AND bi2.userid IS NULL";
+        }
+    } else {
+        // Not getting specific user(s) so join user table to ensure they still exist in system.
+        $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
+    }
+    $params[] = OUBLOG_COMMENTS_PREVENT;
+    if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC && !isloggedin())) {
+        // Only include visible posts on global blogs and public blogs when not logged in.
+        $postwhere .= 'AND p.visibility >= ? ';
+        if (!isloggedin()) {
+            $params[] = OUBLOG_VISIBILITY_PUBLIC;
+        } else {
+            $params[] = OUBLOG_VISIBILITY_LOGGEDINUSER;
+        }
+    }
+    if ($curgroup > 0 && $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        $postwhere .= 'AND p.groupid = ?';
+        $params[] = $curgroup;
+    }
+    $params[] = $filtertime;
+    // Time filter - get instances from sub query based on matching post criteria.
+    $sql = "SELECT posts.*, bi.userid, bi.name, pos.comments
+        FROM {oublog_posts} posts
+        JOIN (SELECT p.id as pid, count(c.id) as comments
+            FROM {oublog_comments} c
+            JOIN {oublog_posts} p on p.id = c.postid
+            JOIN {oublog_instances} bi2 on bi2.id = p.oubloginstancesid
+            $extrajoin
+            WHERE bi2.oublogid = ? $instwhere
+            AND p.allowcomments > ?
+            AND p.deletedby IS NULL $postwhere
+            AND c.deletedby IS NULL AND c.timeposted >= ?
+            AND (c.userid <> bi2.userid OR c.userid IS NULL)
+            GROUP BY p.id
+        ) as pos on pos.pid = posts.id
+        JOIN {oublog_instances} bi on bi.id = posts.oubloginstancesid
+        ORDER BY pos.comments DESC, posts.title ASC, posts.id DESC";
+
+    $blogs = $DB->get_records_sql($sql, $params, 0, 5);
+
+    // Generate content data ready to send to renderer.
+    $maintitle = get_string('commentposts', 'oublog');// The title of the 'section';
+    switch ($filterselected) {
+        case OUBLOG_STATS_TIMEFILTER_ALL:
+            $title = get_string('timefilter_alltime', 'oublog');// Sub-heading.
+            $info = get_string('commentposts_info_alltime', 'oublog');
+        break;
+        case OUBLOG_STATS_TIMEFILTER_YEAR:
+            $title = get_string('timefilter_thisyear', 'oublog');// Sub-heading.
+            $info = get_string('commentposts_info_thisyear', 'oublog');
+        break;
+        case OUBLOG_STATS_TIMEFILTER_MONTH:
+            $title = get_string('timefilter_thismonth', 'oublog');// Sub-heading.
+            $info = get_string('commentposts_info_thismonth', 'oublog');
+        break;
+    }
+    $content = '';
+    if ($blogs) {
+        $maxnum = reset($blogs)->comments;
+        foreach ($blogs as $blog) {
+            // Create the stat view for the blog.
+            $percent = $blog->comments / $maxnum * 100;
+            $stat = get_string('numbercomments', 'oublog', number_format($blog->comments));
+            $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $blog->id));
+            $user = $DB->get_record('user', array('id' => $blog->userid));
+            if ($blog->name == '') {
+                // Default name.
+                $a = (object) array('name' => fullname($user),
+                        'displayname' => oublog_get_displayname($oublog));
+                $blog->name = get_string('defaultpersonalblogname', 'oublog', $a);
+            }
+            $showblogname = false;
+            if (!$oublog->global && $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS &&
+                    $cm->groupmode > NOGROUPS && $curgroup == 0) {
+                // We are reffering to all group blogs, not an individual or single group.
+                $group = $DB->get_record('groups', array('id' => $blog->groupid), 'name');
+                $a = (object) array('name' => $group->name,
+                        'displayname' => oublog_get_displayname($oublog));
+                $blog->name = format_string(get_string('defaultpersonalblogname', 'oublog', $a));
+                $showblogname = true;
+            }
+            if (($oublog->global && $curindividual <= 0) ||
+                    ($oublog->individual > OUBLOG_NO_INDIVIDUAL_BLOGS && $curindividual <= 0)) {
+                // Show the blog name in these cases.
+                $showblogname = true;
+            }
+
+            $postname = !(empty($blog->title)) ? $blog->title : get_string('untitledpost', 'oublog');
+            $label = html_writer::div(html_writer::link($url, $postname), 'oublogstats_commentposts_posttitle');
+            if ($showblogname) {
+                if ($oublog->global) {
+                    $bparams = array('user' => $blog->userid);
+                } else {
+                    $bparams = array('id' => $cm->id);
+                    if ($cm->groupmode > NOGROUPS && $oublog->individual >= OUBLOG_NO_INDIVIDUAL_BLOGS
+                            && $curgroup > 0) {
+                        // Force link to current group as post might be associated elsewhere(or 0).
+                        $bparams['group'] = $curgroup;
+                    } else if ($cm->groupmode > NOGROUPS && $blog->groupid > 0) {
+                        $bparams['group'] = $blog->groupid;
+                    }
+                    if ($oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS) {
+                        $bparams['individual'] = $blog->userid;
+                    }
+                }
+                $burl = new moodle_url('/mod/oublog/view.php', $bparams);
+                $label .= html_writer::div(oublog_date($blog->timeposted) .
+                             '<br/>' .
+                          html_writer::link($burl, $blog->name), 'oublogstats_commentposts_blogname');
+            } else {
+                // We have room to put post time instead.
+                $label .= html_writer::div(oublog_date($blog->timeposted) , 'oublogstats_commentposts_blogname');
+            }
+            $statinfo = new oublog_statsinfo($user, $percent, $stat, $url, $label);
+            $content .= $renderer->render($statinfo);
+        }
+    }
+
+    return $renderer->render_stats_view('commentpoststats', $maintitle, $content, $title, $info, $timefilter, $ajax);
+}
+
+require_once($CFG->libdir . '/formslib.php');
+class oublog_stats_timefilter_form extends moodleform {
+
+    private $type = '';
+
+    public function definition() {
+        global $CFG;
+
+        $mform =& $this->_form;
+        $cdata = $this->_customdata;
+        /*
+         * We Expect custom data to have following format:
+         * 'options' => array used for select drop down
+         * 'default' => default/selected option
+         * 'type' => 'type' of stat this is used in - must be same as function name suffix
+         * 'cmid' => blog course module id
+         * 'params' => key(name)/value array to make into hidden inputs (value must be integer)
+         */
+        if (isset($cdata['type'])) {
+            $this->type = $cdata['type'];
+        }
+        if (!empty($cdata['params']) && is_array($cdata['params'])) {
+            foreach ($cdata['params'] as $param => $value) {
+                $mform->addElement('hidden', $param, $value);
+                $mform->setType($param, PARAM_INT);
+            }
+        }
+        if (!empty($cdata['options'])) {
+            if (!isset($cdata['attributes']) || !is_array($cdata['attributes'])) {
+                $cdata['attributes'] = array();
+            }
+            $mform->addElement('select', 'timefilter_' . $this->type, get_string('timefilter_label', 'oublog'), $cdata['options'], $cdata['attributes']);
+            if (isset($cdata['default'])) {
+                $mform->setDefault('timefilter_' . $this->type, $cdata['default']);
+            }
+            if (isset($cdata['type'])) {
+                $mform->addElement('hidden', 'type', $cdata['type']);
+                $mform->setType('type', PARAM_ALPHA);
+            }
+            if (isset($cdata['cmid'])) {
+                $mform->addElement('hidden', 'id', $cdata['cmid']);
+                $mform->setType('id', PARAM_INT);
+            }
+            $this->add_action_buttons(false, get_string('timefilter_submit', 'oublog'));
+        }
+    }
+
+    public function render() {
+        // Override render so we can output js to page.
+        global $PAGE;
+        if (isset($this->type)) {
+            $PAGE->requires->yui_module('moodle-mod_oublog-statsupdate', 'M.mod_oublog.statsupdate.init',
+                    array($this->type));
+        }
+        return parent::render();
+    }
+
+    protected function get_form_identifier() {
+        // Override form name to ensure unique.
+        return parent::get_form_identifier() . '_' . $this->type;
+    }
+
+    function add_action_buttons($cancel = true, $submitlabel=null){
+        // Override submit to ensure name unique.
+        $mform =& $this->_form;
+        $mform->addElement('submit', 'submitbutton' . '_' . $this->type, $submitlabel);
+        $mform->closeHeaderBefore('submitbutton' . '_' . $this->type);
+    }
+
+    /**
+     * Returns time selected in this form or uses default if none yet.
+     * Returns as a unix time to use in sql or 0 if no time filter.
+     * @param int $default
+     * @return array (time ago, selected constant)
+     */
+    public function get_selected_time($default) {
+        if ($data = $this->get_data()) {
+            $elname = 'timefilter_' . $this->type;
+            if (isset($data->$elname)) {
+                $default = $data->$elname;
+            }
+        }
+        switch ($default) {
+            case OUBLOG_STATS_TIMEFILTER_ALL:
+                return array(0, OUBLOG_STATS_TIMEFILTER_ALL);
+                break;
+            case OUBLOG_STATS_TIMEFILTER_MONTH:
+                return array(strtotime('1 month ago'), OUBLOG_STATS_TIMEFILTER_MONTH);
+                break;
+            case OUBLOG_STATS_TIMEFILTER_YEAR:
+                return array(strtotime('1 year ago'), OUBLOG_STATS_TIMEFILTER_YEAR);
+                break;
+        }
+    }
+}
+
 class oublog_all_portfolio_caller extends oublog_portfolio_caller {
 
     protected $postid;
@@ -3372,4 +4122,38 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
         $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
         return (has_capability('mod/oublog:exportpost', $context));
     }
+}
+
+function oublog_get_displayname($oublog, $upperfirst = false) {
+    if (empty($oublog->displayname)) {
+        $string = get_string('displayname_default', 'oublog');
+    } else {
+        $string = $oublog->displayname;
+    }
+    if ($upperfirst) {
+        return ucfirst($string);
+    } else {
+        return $string;
+    }
+}
+
+function oublog_get_reportingemail($oublog) {
+    return $oublog->reportingemail;
+}
+
+/*
+ * Call to check if OU Alerts plugin exists.
+ * If so, includes the library suppport, otherwise return false.
+ *
+ * @return bool True if OU Alerts extension is enabled.
+ */
+function oublog_oualerts_enabled() {
+    global $CFG;
+
+    if (file_exists($CFG->dirroot . '/report/oualerts/locallib.php')) {
+        @include_once($CFG->dirroot . '/report/oualerts/locallib.php');
+        return oualerts_enabled();
+    }
+
+    return false;
 }

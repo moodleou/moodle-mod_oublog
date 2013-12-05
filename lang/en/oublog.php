@@ -12,6 +12,7 @@ $string['oublogintro'] = 'Intro';
 $string['oublog:view'] = 'View posts';
 $string['oublog:addinstance'] = 'Add a new OU blog';
 $string['oublog:viewpersonal'] = 'View posts in personal blogs';
+$string['oublog:viewprivate'] = 'View private posts in personal blogs';
 $string['oublog:contributepersonal'] = 'Post and comment in personal blogs';
 $string['oublog:post'] = 'Create a new post';
 $string['oublog:comment'] = 'Comment on a post';
@@ -24,7 +25,7 @@ $string['oublog:exportownpost'] = 'Export own post';
 $string['oublog:exportpost'] = 'Export post';
 $string['oublog:exportposts'] = 'Export posts';
 $string['mustprovidepost'] = 'Must provide postid';
-$string['newpost'] = 'New blog post';
+$string['newpost'] = 'New {$a} post';
 $string['removeblogs'] = 'Remove all blog entries';
 $string['title'] = 'Title';
 $string['message'] = 'Message';
@@ -43,17 +44,31 @@ $string['nocomments'] = 'Comments not allowed';
 $string['visibility'] = 'Who can read this?';
 $string['visibility_help'] = '
 <p><strong>Visible to participants on this course</strong> &ndash; to view the post you must
-have been granted access to the blog, usually by being enrolled on the course that contains it.</p>
+have been granted access to the activity, usually by being enrolled on the course that contains it.</p>
 
 <p><strong>Visible to everyone who is logged in to the system</strong> &ndash; everyone who is
 logged in can view the post, even if they\'re not enrolled on a specific course.</p>
 <p><strong>Visible to anyone in the world</strong> &ndash; any Internet user can see this post
-if you give them the blog\'s address.</p>';
+if you give them the address.</p>';
 $string['maxvisibility'] = 'Maximum visibility';
 $string['yes'] = 'Yes';
 $string['no'] = 'No';
 $string['blogname'] = 'Blog name';
 $string['summary'] = 'Summary';
+$string['statblockon'] = 'Show blog usage extra statistics';
+$string['statblockon_help'] = 'Enable extra statistics display in the Blog usage \'block\'.
+Personal (global), Visible Individual and Visible Group blogs only.';
+$string['oublogallpostslogin'] = 'Force login on all posts page';
+$string['oublogallpostslogin_desc'] = 'Enable to force login to the personal blog site entries page.
+When enabled only logged-in users will see the link to this page.';
+
+$string['displayname_default'] = 'blog';
+$string['displayname'] = 'Alternate activity name (blank uses default)';
+$string['displayname_help'] = 'Set an alternate activity type name within the interface.
+
+Leaving blank/empty will mean the default (\'blog\') is used.
+
+The alternate name should start with a lower-case letter, this will be capitalised where needed.';
 
 $string['visibleyou'] = 'Visible only to the blog owner (private)';
 $string['visiblecourseusers'] = 'Visible to participants on this course';
@@ -62,8 +77,8 @@ $string['visibleloggedinusers'] = 'Visible to everyone who is logged in to the s
 $string['visiblepublic'] = 'Visible to anyone in the world';
 $string['invalidpostid'] = 'Invalid Postid';
 
-$string['addpost'] = 'Add blog post';
-$string['editpost'] = 'Update blog post';
+$string['addpost'] = 'Add post';
+$string['editpost'] = 'Update post';
 $string['editsummary'] = 'Edited by {$a->editby}, {$a->editdate}';
 $string['editonsummary'] = 'Edited {$a->editdate}';
 
@@ -86,20 +101,20 @@ $string['comment'] = 'Add your comment';
 $string['lastcomment'] = '(latest by {$a->fullname}, {$a->timeposted})';
 $string['addcomment'] = 'Add comment';
 
-$string['confirmdeletepost'] = 'Are you sure you want to delete this blog post?';
+$string['confirmdeletepost'] = 'Are you sure you want to delete this post?';
 $string['confirmdeletecomment'] = 'Are you sure you want to delete this comment?';
 $string['confirmdeletelink'] = 'Are you sure you want to delete this link?';
 
 $string['viewedit'] = 'View edit';
-$string['views'] = 'Total visits to this blog:';
+$string['views'] = 'Total visits to this {$a}:';
 
 $string['addlink'] = 'Add link';
 $string['editlink'] = 'Edit link';
 $string['links'] = 'Related links';
 
-$string['subscribefeed'] = 'Subscribe to a feed (requires appropriate software) to receive notification when this blog is updated.';
+$string['subscribefeed'] = 'Subscribe to a feed (requires appropriate software) to receive notification when this {$a} is updated.';
 $string['feeds'] = 'Feeds';
-$string['blogfeed'] = 'Blog feeds';
+$string['blogfeed'] = '{$a} feeds';
 $string['commentsfeed'] = 'Comments only';
 $string['atom'] = 'Atom';
 $string['rss'] = 'RSS';
@@ -111,7 +126,7 @@ $string['newblogposts'] = 'New blog posts';
 $string['blogsummary'] = 'Blog summary';
 $string['posts'] = 'Posts';
 
-$string['defaultpersonalblogname'] = '{$a}\'s blog';
+$string['defaultpersonalblogname'] = '{$a->name}\'s {$a->displayname}';
 
 $string['numposts'] = '{$a} posts';
 
@@ -125,11 +140,11 @@ $string['postedbymoderatedaudit'] = 'by {$a->commenter} [{$a->ip}] (approved by 
 
 $string['deletedby'] = 'Deleted by {$a->fullname}, {$a->timedeleted}';
 
-$string['newcomment'] = 'New blog comment';
+$string['newcomment'] = 'New comment';
 
-$string['searchthisblog'] = 'Search this blog';
-$string['searchblogs'] = 'Search blogs';
-$string['searchthisblog_help'] = 'Type your search term and press Enter or click the button.
+$string['searchthisblog'] = 'Search this {$a}';
+$string['searchblogs'] = 'Search';
+$string['searchblogs_help'] = 'Type your search term and press Enter or click the button.
 
 To search for exact phrases use quote marks.
 
@@ -142,9 +157,10 @@ $string['url']='Full Web address';
 $string['bloginfo']='blog information';
 
 $string['feedhelp']='Feeds';
-$string['feedhelp_help']='If you use feeds you can add Atom or RSS links in order to keep up to date with this blog. Most feed readers support Atom and RSS.
+$string['feedhelp_help']='If you use feeds you can add these Atom or RSS links in order to keep up to date with posts.
+Most feed readers support Atom and RSS.
 
-If the blog allows comments there are feeds for &lsquo;Comments only&rsquo;.';
+If comments are enabled there are also feeds for &lsquo;Comments only&rsquo;.';
 $string['unsupportedbrowser']='<p>Your browser cannot display Atom or RSS feeds directly.</p>
 <p>Feeds are most useful in separate computer programs or websites. If you want
 to use this feed in such a program, copy and paste the address from your browser\'s
@@ -161,12 +177,12 @@ $string['computingguide']='Guide to OU blogs';
 $string['computingguideurl']='Computing guide URL';
 $string['computingguideurlexplained']='Enter the URL for the OU blogs omputing guide';
 
-$string['maybehiddenposts']='This blog might contain posts that are only
+$string['maybehiddenposts']='This {$a->name} might contain posts that are only
 visible to logged-in users, or where only logged-in users can comment. If you
-have an account on the system, please <a href=\'{$a}\'>log in for full blog access</a>.';
+have an account on the system, please <a href=\'{$a->link}\'>log in for full access</a>.';
 $string['guestblog']='If you have an account on the system, please
-<a href=\'{$a}\'>log in for full blog access</a>.';
-$string['noposts']='There are no visible posts in this blog.';
+<a href=\'{$a}\'>log in for full access</a>.';
+$string['noposts']='There are no visible posts in this {$a}.';
 
 //Errors
 $string['accessdenied']='Sorry: you do not have access to view this page.';
@@ -320,7 +336,7 @@ $string['displayversion'] = 'OU blog version: <strong>{$a}</strong>';
 $string['pluginadministration'] = 'OU Blog administration';
 $string['pluginname'] = 'OU Blog';
 //help strings
-$string['allowcomments_help'] = '&lsquo;Yes, from signed-on users&rsquo; allows comments from users who have access to the blog.
+$string['allowcomments_help'] = '&lsquo;Yes, from signed-on users&rsquo; allows comments from users who have access to the post.
 
 &lsquo;Yes, from everybody&rsquo; allows comments from users and from the general public. You will receive emails to approve or reject comments from users who are not signed in.
 
@@ -350,7 +366,7 @@ if you give them the blog\'s address.</p>
 option is set on the whole blog, that becomes a maximum. For example, if
 the whole blog is set to the first level, you cannot change the
 level of an individual post at all.</p>';
-$string['tags_help'] = 'Tags are labels that help you find and categorise blog posts.';
+$string['tags_help'] = 'Tags are labels that help you find and categorise posts.';
 // Used at OU only
 $string['externaldashboardadd'] = 'Add blog to dashboard';
 $string['externaldashboardremove'] = 'Remove blog from dashboard';
@@ -384,7 +400,7 @@ $string['posttime'] = 'Post time';
 $string['posttitle'] = 'Post title';
 
 // Export
-$string['exportedpost'] = 'Exported blog post';
+$string['exportedpost'] = 'Exported post';
 $string['exportpostscomments'] = ' all currently visible posts and their comments.';
 $string['exportuntitledpost'] = 'An untitled post ';
 
@@ -396,3 +412,42 @@ $string['maxattachments'] = 'Maximum number of attachments';
 $string['maxattachments_help'] = 'This setting specifies the maximum number of files that can be attached to a blog post.';
 $string['maxattachmentsize_help'] = 'This setting specifies the largest size of file that can be attached to a blog post.';
 $string['attachments_help'] = 'You can optionally attach one or more files to a blog post. If you attach an image, it will be displayed after the message.';
+
+$string['reportingemail'] = 'Reporting email addresses';
+$string['reportingemail_help'] = 'This setting specifies the email addresses of those who will be informed
+about issues with posts or comments within the OUBlog.
+They should be entered as a comma separated list.';
+$string['postalert'] = 'Report post';
+$string['commentalert'] = 'Report comment';
+$string['oublog_managealerts'] = 'Manage reported post/comment alerts';
+$string['untitledpost'] = 'Untitled post';
+$string['untitledcomment'] = 'Untitled comment';
+
+// Discovery block.
+$string['discovery'] = '{$a} usage';
+$string['timefilter_alltime'] = 'All time';
+$string['timefilter_thismonth'] = 'Past month';
+$string['timefilter_thisyear'] = 'Past year';
+$string['timefilter_label'] = 'Time period';
+$string['timefilter_submit'] = 'Update';
+$string['timefilter_open'] = 'Show options';
+$string['timefilter_close'] = 'Hide options';
+$string['visits'] = 'Most visited';
+$string['activeblogs'] = 'Active';
+$string['numberviews'] = '{$a} views';
+$string['visits_info_alltime'] = '{$a}s with the most number of visits';
+$string['visits_info_active'] = 'Active {$a} (contain a post in the past month) with the most number of visits';
+$string['mostposts'] = 'Most posts';
+$string['numberposts'] = '{$a} posts';
+$string['posts_info_alltime'] = '{$a}s with the most number of posts';
+$string['posts_info_thisyear'] = '{$a}s with the most number of posts in the past year';
+$string['posts_info_thismonth'] = '{$a}s with the most number of posts in the past month';
+$string['mostcomments'] = 'Most comments';
+$string['numbercomments'] = '{$a} comments';
+$string['comments_info_alltime'] = '{$a}s with the most number of comments';
+$string['comments_info_thisyear'] = '{$a}s with the most number of comments added in the past year';
+$string['comments_info_thismonth'] = '{$a}s with the most number of comments added in the past month';
+$string['commentposts'] = 'Most commented posts';
+$string['commentposts_info_alltime'] = 'Posts with the most number of comments';
+$string['commentposts_info_thisyear'] = 'Posts with the most number of comments added in the past year';
+$string['commentposts_info_thismonth'] = 'Posts with the most number of comments added in the past month';

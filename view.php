@@ -110,7 +110,7 @@ $canaudit       = has_capability('mod/oublog:audit', $context);
 // Get strings.
 $stroublogs     = get_string('modulenameplural', 'oublog');
 $stroublog      = get_string('modulename', 'oublog');
-$straddpost     = get_string('newpost', 'oublog');
+$straddpost = get_string('newpost', 'oublog', oublog_get_displayname($oublog));
 $strexportposts = get_string('oublog:exportposts', 'oublog');
 $strtags        = get_string('tags', 'oublog');
 $stredit        = get_string('edit', 'oublog');
@@ -118,10 +118,10 @@ $strdelete      = get_string('delete', 'oublog');
 $strnewposts    = get_string('newerposts', 'oublog');
 $strolderposts  = get_string('olderposts', 'oublog');
 $strcomment     = get_string('comment', 'oublog');
-$strviews       = get_string('views', 'oublog');
+$strviews = get_string('views', 'oublog', oublog_get_displayname($oublog));
 $strlinks       = get_string('links', 'oublog');
 $strfeeds       = get_string('feeds', 'oublog');
-$strblogsearch  = get_string('searchthisblog', 'oublog');
+$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($oublog));
 
 // Set-up groups.
 $groupmode = oublog_get_activity_groupmode($cm, $course);
@@ -230,7 +230,7 @@ $PAGE->set_heading(format_string($oublog->name));
 $editing = $PAGE->user_is_editing();
 
 // The left column ...
-$hasleft = !empty($CFG->showblocksonmodpages) || $editing;
+$hasleft = !empty($CFG->showblocksonmodpages);
 // The right column, BEFORE the middle-column.
 if (!$hideunusedblog) {
     global $USER, $CFG;
@@ -246,11 +246,13 @@ if (!$hideunusedblog) {
             $links .= html_writer::link($editinstanceurl, $streditinstance);
             $links .= html_writer::end_tag('div');
         }
-        $allpostsurl = new moodle_url('/mod/oublog/allposts.php');
-        $strallposts = get_string('siteentries', 'oublog');
-        $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
-        $links .= html_writer::link($allpostsurl, $strallposts);
-        $links .= html_writer::end_tag('div');
+        if (empty($CFG->oublogallpostslogin) || isloggedin()) {
+            $allpostsurl = new moodle_url('/mod/oublog/allposts.php');
+            $strallposts = get_string('siteentries', 'oublog');
+            $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
+            $links .= html_writer::link($allpostsurl, $strallposts);
+            $links .= html_writer::end_tag('div');
+        }
         $format = FORMAT_HTML;
     } else {
         $summary = $oublog->intro;
@@ -261,6 +263,7 @@ if (!$hideunusedblog) {
     // Name, summary, related links.
     $bc = new block_contents();
     $bc->attributes['class'] = 'oublog-sideblock block';
+    $bc->attributes['id'] = 'oublog_info_block';
     $bc->title = format_string($title);
     $bc->content = format_text($summary, $format) . $links;
     if ($oublog->global) {
@@ -293,6 +296,26 @@ if (!$hideunusedblog) {
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 
+    // 'Discovery' block.
+    $stats = array();
+    if ($oublog->statblockon) {
+        // Add to 'Discovery' block when enabled only.
+        $stats[] = oublog_stats_output_visitstats($oublog, $cm, $oublogoutput);
+        $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);
+        $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput);
+    }
+    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual);
+    $stats = array_filter($stats);
+    if (!empty($stats)) {
+        $stats = $oublogoutput->render_stats_container('view', $stats, count($stats));
+        $bc = new block_contents();
+        $bc->attributes['id'] = 'oublog-discover';
+        $bc->attributes['class'] = 'oublog-sideblock block';
+        $bc->title = get_string('discovery', 'oublog', oublog_get_displayname($oublog, true));
+        $bc->content = $stats;
+        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
+    }
+
     // Feeds.
     if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false, $cm, $currentindividual)) {
         $feedicon = ' <img src="'.$OUTPUT->pix_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
@@ -307,17 +330,7 @@ if (!$hideunusedblog) {
 echo $OUTPUT->header();
 
 // Start main column.
-$classes='';
-
-$classes.=$hasleft ? 'has-left-column ' : '';
-$classes.='has-right-column ';
-
-$classes=trim($classes);
-if ($classes) {
-    print '<div id="middle-column" class="'.$classes.'">';
-} else {
-    print '<div id="middle-column">';
-}
+print '<div id="middle-column" class="has-right-column">';
 
 echo $OUTPUT->skip_link_target();
 
@@ -337,7 +350,10 @@ if ($oublog->individual) {
     }
 }
 echo '</div>';
-
+if (!$hideunusedblog && $oublog->global) {
+    // Renderer hook so extra info can be added to global blog pages in theme.
+    echo $oublogoutput->render_viewpage_prepost();
+}
 // Print the main part of the page.
 
 echo '<div id="oublogbuttons">';
@@ -450,10 +466,11 @@ if (isguestuser() && $USER->id==$user) {
 } else if (!isloggedin() || isguestuser()) {
     print '<p class="oublog_loginnote">'.
             get_string('maybehiddenposts', 'oublog',
-                    'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
+                    (object) array('link' => 'bloglogin.php?returnurl='.urlencode($returnurl),
+                            'name' => oublog_get_displayname($oublog))).'</p>';
 } else if (!$posts) {
     print '<p class="oublog_noposts">'.
-            get_string('noposts', 'oublog').'</p>';
+            get_string('noposts', 'oublog', oublog_get_displayname($oublog)).'</p>';
 }
 
 // Log visit and bump view count.
