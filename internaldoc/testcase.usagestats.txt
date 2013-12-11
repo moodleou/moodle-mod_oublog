@@ -200,7 +200,7 @@ OFF01 / admin
     Select Edit settings from the Administration block again
     Tick Show blog usage extra statistics (turn back on)
     Update group mode from 'Visible groups' to 'Separate groups', save and display
- -- Blog usage block should not be showing at all.
+ -- Only 'Most commented posts' should now be showing in the Blog usage block.
 
 OFF02 / admin
 
