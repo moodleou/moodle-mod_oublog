@@ -79,7 +79,6 @@ class mod_oublog_mod_form extends moodleform_mod {
             // Max size of attachments.
             $modulesettings = get_config('mod_oublog');
             $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
-            $choices[-1] = get_string('uploadnotallowed');
             $mform->addElement('select', 'maxbytes',
                     get_string('maxattachmentsize', 'oublog'), $choices);
             $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'oublog');

@@ -410,7 +410,7 @@ $string['configmaxbytes'] = 'Default maximum size for all blog attachments on th
 $string['maxattachmentsize'] = 'Maximum attachment size';
 $string['maxattachments'] = 'Maximum number of attachments';
 $string['maxattachments_help'] = 'This setting specifies the maximum number of files that can be attached to a blog post.';
-$string['maxattachmentsize_help'] = 'This setting specifies the largest size of file that can be attached to a blog post.';
+$string['maxattachmentsize_help'] = 'This setting specifies the largest size of image/file that can be used in a blog post.';
 $string['attachments_help'] = 'You can optionally attach one or more files to a blog post. If you attach an image, it will be displayed after the message.';
 
 $string['reportingemail'] = 'Reporting email addresses';

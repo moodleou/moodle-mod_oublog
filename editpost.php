@@ -111,7 +111,8 @@ $mform = new mod_oublog_post_form('editpost.php', array(
     'allowcomments' => $oublog->allowcomments,
     'edit' => !empty($postid),
     'personal' => $oublog->global,
-    'maxbytes' => $oublog->maxbytes));
+    'maxbytes' => $oublog->maxbytes,
+    'maxattachments' => $oublog->maxattachments));
 if ($mform->is_cancelled()) {
     redirect($viewurl);
     exit;
