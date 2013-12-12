@@ -27,12 +27,6 @@
  * @package oublog
  */
 
-// OU shared APIs which (for OU system) are present in local, elsewhere
-// are incorporated in module
-@include_once(dirname(__FILE__).'/../../local/transaction_wrapper.php');
-if (!class_exists('transaction_wrapper')) {
-    require_once(dirname(__FILE__).'/null_transaction_wrapper.php');
-}
 require_once($CFG->libdir . '/portfolio/caller.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/filelib.php');
@@ -420,10 +414,9 @@ function oublog_add_post($post, $cm, $oublog, $course) {
     }
 
     // Begin transaction
-    $tw=new transaction_wrapper();
+    $tw = $DB->start_delegated_transaction();
 
     if (!$postid = $DB->insert_record('oublog_posts', $post)) {
-        $tw->rollback();
         return(false);
     }
     // Now do filestuff.
@@ -439,7 +432,6 @@ function oublog_add_post($post, $cm, $oublog, $course) {
 
     $post->id=$postid; // Needed by the below
     if (!oublog_search_update($post, $cm)) {
-        $tw->rollback();
         return(false);
     }
 
@@ -449,7 +441,7 @@ function oublog_add_post($post, $cm, $oublog, $course) {
         $completion->update_state($cm, COMPLETION_COMPLETE);
     }
 
-    $tw->commit();
+    $tw->allow_commit();
 
     return($postid);
 }
@@ -477,7 +469,7 @@ function oublog_edit_post($post, $cm) {
     }
 
     // Begin transaction
-    $tw=new transaction_wrapper();
+    $tw = $DB->start_delegated_transaction();
 
     // insert edit history
     $edit = new stdClass();
@@ -488,7 +480,6 @@ function oublog_edit_post($post, $cm) {
     $edit->oldmessage   = $oldpost->message;
 
     if (!$editid = $DB->insert_record('oublog_edits', $edit)) {
-        $tw->rollback();
         return(false);
     }
     // Get list of files attached to this post and attach them to the edit.
@@ -507,7 +498,6 @@ function oublog_edit_post($post, $cm) {
 
     // Update tags
     if (!oublog_update_item_tags($post->oubloginstancesid, $post->id, $post->tags, $post->visibility)) {
-        $tw->rollback();
         return(false);
     }
 
@@ -520,16 +510,14 @@ function oublog_edit_post($post, $cm) {
     }
 
     if (!$DB->update_record('oublog_posts', $post)) {
-        $tw->rollback();
         return(false);
     }
 
     if (!oublog_search_update($post, $cm)) {
-        $tw->rollback();
         return(false);
     }
 
-    $tw->commit();
+    $tw->allow_commit();
 
     return(true);
 }
@@ -1073,7 +1061,7 @@ function oublog_add_comment($course, $cm, $oublog, $comment) {
         $comment->timeposted = time();
     }
     // Begin transaction.
-    $tw = new transaction_wrapper();
+    $tw = $DB->start_delegated_transaction();
     // Prepare comment id for draft area.
     $comment->message = '';
     $id = $DB->insert_record('oublog_comments', $comment);
@@ -1093,7 +1081,7 @@ function oublog_add_comment($course, $cm, $oublog, $comment) {
         }
     }
     // Commit transaction and return id.
-    $tw->commit();
+    $tw->allow_commit();
     return $id;
 }
 
@@ -2569,7 +2557,7 @@ function oublog_approve_comment($mcomment, $approve) {
     global $DB;
     // Get current time and start transaction
     $now = time();
-    $tw=new transaction_wrapper();
+    $tw = $DB->start_delegated_transaction();;
 
     // Update the moderated comment record
     $update = (object)array(
@@ -2600,7 +2588,7 @@ function oublog_approve_comment($mcomment, $approve) {
     }
 
     // Commit transaction and return id
-    $tw->commit();
+    $tw->allow_commit();
     return $id;
 }
 

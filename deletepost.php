@@ -72,10 +72,8 @@ if (!empty($postid) && !empty($confirm)) {
         'timedeleted' => time()
     );
 
-    $tw=new transaction_wrapper();
     $DB->update_record('oublog_posts', $updatepost);
     if (!oublog_update_item_tags($expost->oubloginstancesid, $expost->id, array(), $expost->visibility)) {
-        $tw->rollback();
         print_error('tagupdatefailed', 'oublog');
     }
     if (oublog_search_installed()) {
@@ -87,7 +85,6 @@ if (!empty($postid) && !empty($confirm)) {
     if ($completion->is_enabled($cm) && ($oublog->completionposts)) {
         $completion->update_state($cm, COMPLETION_INCOMPLETE, $postauthor);
     }
-    $tw->commit();
     redirect($viewurl);
     exit;
 }
