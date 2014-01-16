@@ -3595,7 +3595,7 @@ function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax 
  * @param int $curindividual User ID for current individual blog instance
  */
 function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $ajax = false,
-        $allposts = false, $curindividual = -1) {
+        $allposts = false, $curindividual = -1, $globalindividual = null) {
     global $PAGE, $DB, $USER;
     if (!$renderer) {
         $renderer = $PAGE->get_renderer('mod_oublog');
@@ -3618,7 +3618,7 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
         // Work out current individual.
         $curindividual = optional_param('curindividual', $curindividual, PARAM_INT);
     } else if ($oublog->global && !$allposts) {
-        $curindividual = optional_param('curindividual', $curindividual, PARAM_INT);
+        $curindividual = optional_param('globalindividual', $globalindividual, PARAM_INT);
         if ($curindividual == -1) {
             // Get current user as not sent.
             $curindividual = optional_param('user', $USER->id, PARAM_INT);
@@ -3642,7 +3642,8 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
             'params' => array(
                     'allposts' => $allposts,
                     'curgroup' => $curgroup,
-                    'curindividual' => $curindividual
+                    'curindividual' => $curindividual,
+                    'globalindividual' => $globalindividual
                     )
     );
     if ($oublog->global && !$allposts && $curindividual != -1) {

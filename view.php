@@ -304,7 +304,7 @@ if (!$hideunusedblog) {
         $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);
         $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput);
     }
-    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual);
+    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual, $oubloguser->id);
     $stats = array_filter($stats);
     if (!empty($stats)) {
         $stats = $oublogoutput->render_stats_container('view', $stats, count($stats));
