@@ -77,13 +77,13 @@ class mod_oublog_renderer extends plugin_renderer_base {
                             array('src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
                             'alt' => $mimetype, 'class' => 'icon'));
                     if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
-                        $fileurlbase = $CFG->wwwroot . '/mod/oublog/pluginfile.php';
+                        $fileurlbase = '/mod/oublog/pluginfile.php';
                     } else {
-                        $fileurlbase = $CFG->wwwroot . '/pluginfile.php';
+                        $fileurlbase = '/pluginfile.php';
                     }
                     $filepath = '/' . $modcontext->id . '/mod_oublog/attachment/'
                             . $post->id . '/' . $filename;
-                    $path = $fileurlbase . $filepath;
+                    $path = moodle_url::make_file_url($fileurlbase, $filepath, true);
                     $output .= html_writer::start_tag('div', array('class'=>'oublog-post-attachment'));
                     $output .= html_writer::tag('a', $iconimage, array('href' => $path));
                     $output .= html_writer::tag('a', s($filename), array('href' => $path));
