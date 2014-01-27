@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 $string['attachments'] = "Attachments";
 $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
@@ -390,7 +391,7 @@ $string['viewblogposts'] = 'Return to blog';
 $string['oublog:grade'] = 'Grade OU Blog user participation';
 $string['oublog:viewparticipation'] = 'View OU Blog user participation';
 $string['userparticipation'] = 'User participation';
-$string['myparticipation'] = 'My participation';
+$string['myparticipation'] = 'My participation summary';
 $string['savegrades'] = 'Save grades';
 $string['participation'] = 'Participation';
 $string['participationbyuser'] = 'Participation by user';
@@ -399,8 +400,8 @@ $string['foruser'] = ' for {$a}';
 $string['postsby'] = 'Posts by {$a}';
 $string['commentsby'] = 'Comments by {$a}';
 $string['commentonby'] = 'Comment on <u>{$a->title}</u> by <u>{$a->author}</u>';
-$string['nouserposts'] = 'This user made no posts in this blog.';
-$string['nousercomments'] = 'This user added no comments in this blog.';
+$string['nouserposts'] = 'No posts made.';
+$string['nousercomments'] = 'No comments made.';
 $string['savegrades'] = 'Save grades';
 $string['gradesupdated'] = 'Grades updated';
 $string['usergrade'] = 'User grade';
@@ -520,3 +521,24 @@ $string['import_step2_prog'] = 'Importing in progress';
 $string['import_step2_total'] = 'Imported {$a} posts.';
 $string['import_step2_conflicts'] = '{$a} posts to import were identified as conflicts with existing posts.';
 $string['import_step2_conflicts_submit'] = 'Import conflicting posts';
+
+// My Participation.
+$string['contribution'] = 'Contribution';
+$string['contribution_all'] = 'Contribution - All time';
+$string['contribution_from'] = 'Contribution - From {$a}';
+$string['contribution_to'] = 'Contribution - To {$a}';
+$string['contribution_fromto'] = 'Contribution - From {$a->start} To {$a->end}';
+$string['start'] = 'From';
+$string['end'] = 'To';
+$string['displayperiod'] = 'Contribution selector From date - To date.';
+$string['info'] = 'Participation within the selected period.';
+$string['displayperiod_help'] = '<p>The default selects all entries.</p>
+<p>You can select \'From\' a date until todays entries.</p>
+<p>You can select all entries between a \'From\' date and a \'To\' date.</p>
+<p>Or you can select from the first entry \'To\' a date</p>';
+$string['nouserpostsfound'] = 'No posts made during this period.';
+$string['nousercommentsfound'] = 'No comments made during this period.';
+$string['numberpostsmore'] = 'Plus {$a} more posts';
+$string['numbercommentsmore'] = 'Plus {$a} more comments';
+$string['viewmyparticipation'] = 'View my participation';
+$string['timestartenderror'] = 'Selection end date cannot be earlier than the start date';

@@ -517,7 +517,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param string groupname group name for display, default ''
      */
     public function render_user_participation_list($cm, $course, $oublog, $participation, $groupid,
-        $download, $page, $context, $viewfullnames, $groupname) {
+        $download, $page, $context, $viewfullnames, $groupname, $start, $end) {
         global $DB, $CFG;
 
         $user = $participation->user;
@@ -531,7 +531,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         }
         $filename .= '-'.format_string($fullname, true);
         $table = new oublog_user_participation_table($cm->id, $course, $oublog,
-            $user->id, $fullname, $groupname, $groupid);
+            $user->id, $fullname, $groupname, $groupid, $start, $end);
         $table->setup($download);
         $table->is_downloading($download, $filename, get_string('participation', 'oublog'));
 
@@ -985,34 +985,33 @@ class mod_oublog_renderer extends plugin_renderer_base {
         if (!empty($subtitle)) {
             $out .= $OUTPUT->heading($subtitle, 3, 'oublog_statsview_subtitle');
         }
-
-        $out .= html_writer::start_tag('a', array('class' => 'block_action_oublog', 'tabindex' => 0, 'href' => '#'));
-        $minushide = '';
-        $plushide = ' oublog_displaynone';
-        if ($userpref = get_user_preferences("mod_oublog_hidestatsform_$name", false)) {
-            $minushide = ' oublog_displaynone';
-            $plushide = '';
-        }
-        // Setup Javascript for stats view.
-        user_preference_allow_ajax_update("mod_oublog_hidestatsform_$name", PARAM_BOOL);
-        $PAGE->requires->js('/mod/oublog/module.js');
-        $module = array ('name' => 'mod_oublog');
-        $module['fullpath'] = '/mod/oublog/module.js';
-        $module['requires'] = array('node', 'node-event-delegate');
-        $module['strings'] = array();
-        $PAGE->requires->js_init_call('M.mod_oublog.init_showhide', array($name, $userpref), false, $module);
-
-        $out .= $this->output->pix_icon('t/switch_minus', get_string('timefilter_close', 'oublog'), 'moodle',
-                array('class' => 'oublog_stats_minus' . $minushide));
-        $out .= $this->output->pix_icon('t/switch_plus', get_string('timefilter_open', 'oublog'), 'moodle',
-                array('class' => 'oublog_stats_plus' . $plushide));
-        $out .= html_writer::end_tag('a');
-
-        // Stats bar - call once per 'view'.
-        $PAGE->requires->yui_module('moodle-mod_oublog-statsbar', 'M.mod_oublog.statsbar.init',
-                array("oublog_statsview_content_$name"));
-
         if (!empty($info)) {
+            $out .= html_writer::start_tag('a', array('class' => 'block_action_oublog', 'tabindex' => 0, 'href' => '#'));
+
+            $minushide = '';
+            $plushide = ' oublog_displaynone';
+            if ($userpref = get_user_preferences("mod_oublog_hidestatsform_$name", false)) {
+                $minushide = ' oublog_displaynone';
+                $plushide = '';
+            }
+            // Setup Javascript for stats view.
+            user_preference_allow_ajax_update("mod_oublog_hidestatsform_$name", PARAM_BOOL);
+            $PAGE->requires->js('/mod/oublog/module.js');
+            $module = array ('name' => 'mod_oublog');
+            $module['fullpath'] = '/mod/oublog/module.js';
+            $module['requires'] = array('node', 'node-event-delegate');
+            $module['strings'] = array();
+            $PAGE->requires->js_init_call('M.mod_oublog.init_showhide', array($name, $userpref), false, $module);
+
+            $out .= $this->output->pix_icon('t/switch_minus', get_string('timefilter_close', 'oublog'), 'moodle',
+                    array('class' => 'oublog_stats_minus' . $minushide));
+            $out .= $this->output->pix_icon('t/switch_plus', get_string('timefilter_open', 'oublog'), 'moodle',
+                    array('class' => 'oublog_stats_plus' . $plushide));
+            $out .= html_writer::end_tag('a');
+
+            // Stats bar - call once per 'view'.
+            $PAGE->requires->yui_module('moodle-mod_oublog-statsbar', 'M.mod_oublog.statsbar.init',
+                    array("oublog_statsview_content_$name"));
             $out .= html_writer::tag('p', $info, array('class' => "oublog_{$name}_info"));
         }
         if (!empty($form)) {
@@ -1043,9 +1042,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
         }
         $avatar = html_writer::link($info->url, $userpic, array('class' => 'oublog_statsinfo_avatar'));
         $infodiv = html_writer::start_div('oublog_statsinfo_infocol');
-        $infodiv .= html_writer::start_div('oublog_statsinfo_bar');
-        $infodiv .= html_writer::tag('span', $info->stat, array('class' => 'percent_' . $info->percent));
-        $infodiv .= html_writer::end_div();
+        if ($info->stat) {
+            $infodiv .= html_writer::start_div('oublog_statsinfo_bar');
+            $infodiv .= html_writer::tag('span', $info->stat, array('class' => 'percent_' . $info->percent));
+            $infodiv .= html_writer::end_div();
+        }
         $infodiv .= html_writer::div($info->label, 'oublog_statsinfo_label');
         $infodiv .= html_writer::end_div();
         $out = $avatar . $infodiv;
