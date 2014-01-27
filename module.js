@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-M.mod_oublog = {};
+M.mod_oublog = M.mod_oublog || {};
 
 M.mod_oublog.init = function(Y) {
     M.mod_oublog.hidewarning(Y);

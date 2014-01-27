@@ -3174,8 +3174,20 @@ function oublog_stats_output_visitstats($oublog, $cm, $renderer = null, $ajax = 
 
     if ($filtertime == 0) {
         // No time filter - just get instances from table.
-        $blogs = $DB->get_records_select('oublog_instances', 'oublogid =? AND views >0',
-                array($oublog->id), 'views DESC, name ASC', '*', 0, 5);
+        if ($oublog->global && $excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+            // There are user ids to exclude in the global blog stats.
+            $sql = 'SELECT * from {oublog_instances} WHERE oublogid =? AND views >0';
+            $params = array($oublog->id);
+            list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                    SQL_PARAMS_QM, 'param', false);
+            $sql .= " AND userid $insql";
+            $params = array_merge($params, $inparams);
+            $sql .= ' order by views DESC, name ASC';
+            $blogs = $DB->get_records_sql($sql, $params, 0, 5);
+        } else {
+            $blogs = $DB->get_records_select('oublog_instances', 'oublogid =? AND views >0',
+                    array($oublog->id), 'views DESC, name ASC', '*', 0, 5);
+        }
     } else {
         // Time filter - get instances from sub-query based on matching post criteria.
         $sql = 'SELECT bi.* FROM {oublog_instances} bi
@@ -3194,6 +3206,15 @@ function oublog_stats_output_visitstats($oublog, $cm, $renderer = null, $ajax = 
                 $params[] = OUBLOG_VISIBILITY_PUBLIC;
             } else {
                 $params[] = OUBLOG_VISIBILITY_LOGGEDINUSER;
+            }
+        }
+        if ($oublog->global) {
+            if ($excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+                // There are user ids to exclude in the global blog stats.
+                list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                        SQL_PARAMS_QM, 'param', false);
+                $sql .= " AND bi2.userid $insql";
+                $params = array_merge($params, $inparams);
             }
         }
         $sql .= ' GROUP BY bi2.id)) ORDER BY bi.views DESC, bi.name ASC';
@@ -3330,6 +3351,15 @@ function oublog_stats_output_poststats($oublog, $cm, $renderer = null, $ajax = f
                 $subwhere .= " AND bi2.userid IS NULL";
             }
         } else {
+            if ($oublog->global) {
+                if ($excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+                    // There are user ids to exclude in the global blog stats.
+                    list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                            SQL_PARAMS_QM, 'param', false);
+                    $subwhere .= " AND bi2.userid $insql";
+                    $params = array_merge($params, $inparams);
+                }
+            }
             // Not getting specific user(s) so join user table to ensure they still exist in system.
             $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
         }
@@ -3505,6 +3535,15 @@ function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax 
                 $subwhere .= " AND bi2.userid IS NULL";
             }
         } else {
+            if ($oublog->global) {
+                if ($excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+                    // There are user ids to exclude in the global blog stats.
+                    list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                            SQL_PARAMS_QM, 'param', false);
+                    $subwhere .= " AND bi2.userid $insql";
+                    $params = array_merge($params, $inparams);
+                }
+            }
             // Not getting specific user(s) so join user table to ensure they still exist in system.
             $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
         }
@@ -3683,6 +3722,15 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
     } else {
         // Not getting specific user(s) so join user table to ensure they still exist in system.
         $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
+        if ($allposts) {
+            // Get any excluded user ids, add not in() against instance user id.
+            if ($excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+                 list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                         SQL_PARAMS_QM, 'param', false);
+                 $instwhere .= ' AND (bi2.userid ' . $insql . ')';
+                 $params = array_merge($params, $inparams);
+            }
+        }
     }
     $params[] = OUBLOG_COMMENTS_PREVENT;
     if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC && !isloggedin())) {

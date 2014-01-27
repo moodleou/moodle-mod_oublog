@@ -44,3 +44,6 @@ $settings->add(new admin_setting_configtext('mod_oublog/maxattachments',
 
 $settings->add(new admin_setting_configcheckbox('oublogallpostslogin',
         get_string('oublogallpostslogin', 'oublog'), get_string('oublogallpostslogin_desc', 'oublog'), 1));
+
+$settings->add(new admin_setting_configtext('mod_oublog/globalusageexclude',
+        get_string('globalusageexclude', 'oublog'), get_string('globalusageexclude_desc', 'oublog'), ''));

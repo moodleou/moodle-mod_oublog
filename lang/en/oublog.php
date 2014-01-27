@@ -62,6 +62,9 @@ $string['oublogallpostslogin'] = 'Force login on all posts page';
 $string['oublogallpostslogin_desc'] = 'Enable to force login to the personal blog site entries page.
 When enabled only logged-in users will see the link to this page.';
 
+$string['globalusageexclude'] = 'Exclude from global usage stats';
+$string['globalusageexclude_desc'] = 'Comma-separated list of user ids to exclude users from the top usage stats list for global blog';
+
 $string['displayname_default'] = 'blog';
 $string['displayname'] = 'Alternate activity name (blank uses default)';
 $string['displayname_help'] = 'Set an alternate activity type name within the interface.
@@ -436,7 +439,7 @@ $string['visits'] = 'Most visited';
 $string['activeblogs'] = 'Active';
 $string['numberviews'] = '{$a} views';
 $string['visits_info_alltime'] = '{$a}s with the most number of visits';
-$string['visits_info_active'] = 'Active {$a} (contain a post in the past month) with the most number of visits';
+$string['visits_info_active'] = 'Active {$a}s (contain a post in the past month) with the most number of visits';
 $string['mostposts'] = 'Most posts';
 $string['numberposts'] = '{$a} posts';
 $string['posts_info_alltime'] = '{$a}s with the most number of posts';
