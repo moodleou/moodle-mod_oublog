@@ -4194,3 +4194,346 @@ function oublog_oualerts_enabled() {
 
     return false;
 }
+
+/**
+ * Calls a remote server externallib web services during import
+ * We use the Moodle curl cache to store responses (for 120 secs default)
+ * @param string $function
+ * @param array $params (name => value)
+ * @return array json decoded result or false if not configured
+ */
+function oublog_import_remote_call($function, $params = null) {
+    $settings = get_config('mod_oublog');
+    if (empty($settings->remoteserver) && empty($settings->remotetoken)) {
+        return false;
+    }
+    if (is_null($params)) {
+        $params = array();
+    }
+    $curl = new curl(array('cache' => true, 'module_cache' => 'oublog_import'));
+    $url = $settings->remoteserver . '/webservice/rest/server.php';
+    $params['moodlewsrestformat'] = 'json';
+    $params['wsfunction'] = $function;
+    $params['wstoken'] = $settings->remotetoken;
+    $options = array();
+    $options['RETURNTRANSFER'] = true;
+    $options['SSL_VERIFYPEER'] = false;
+    $result = $curl->get($url, $params, $options);
+    $json = json_decode($result);
+    if (empty($result) || $curl->get_errno() || !empty($json->exception)) {
+        $errinfo = !empty($json->exception) ? !empty($json->debuginfo) ? $json->debuginfo : $json->message : $curl->error;
+        throw new moodle_exception('Failed to contact ' . $settings->remoteserver . ' : ' . $errinfo);
+        return false;
+    }
+    return $json;
+}
+
+/**
+ * Class defined here to extend the curl class and call the multi() function with no options set.
+ */
+class oublog_public_curl_multi extends curl {
+    public function public_multi($requests, $options = array()) {
+        return $this->multi($requests, $options);
+    }
+}
+
+/**
+ * Downloads files from remote system and adds into local file table
+ * Uses webservice pluginfile so lib picks up is from this and allows access to files.
+ * @param array $files - array of file-like objects (returned from externallib get_posts)
+ * @param int $newcontid - context id to use for new files
+ * @param int $newitemid - item id to use for new files
+ */
+function oublog_import_remotefiles($files, $newcontid, $newitemid) {
+    $settings = get_config('mod_oublog');
+    if (empty($settings->remoteserver) && empty($settings->remotetoken) || empty($files)) {
+        return false;
+    }
+    $fs = get_file_storage();
+    $options = array('RETURNTRANSFER' => true);
+    $requests = array();
+    foreach ($files as $file) {
+        $requests[] = array('url' => $settings->remoteserver . '/webservice/pluginfile.php/' .
+                $file->contextid . '/mod_oublog/' . $file->filearea . '/' . $file->itemid . $file->filepath .
+                rawurlencode($file->filename) . '?token=' . $settings->remotetoken);
+    }
+    $curl = new oublog_public_curl_multi();
+    $responses = $curl->public_multi($requests, $options);
+    $count = count($files);
+    for ($i = 0; $i < $count; $i++) {
+        if (empty($files[$i])) {
+            continue;
+        }
+        $fileinfo = $files[$i];
+        $fileinfo->contextid = $newcontid;
+        $fileinfo->itemid = $newitemid;
+        $fileinfo->component = 'mod_oublog';
+        $fs->create_file_from_string($fileinfo, $responses[$i]);
+    }
+    return true;
+}
+
+/**
+ * Gets all blogs on the system (and on remote system if defined) that can be imported from
+ * @param int $userid
+ * @param int $curcmid Current blog cmid (excludes this from list returned)
+ * @return array of blog 'info objects' [cmid, name, coursename, numposts]
+ */
+function oublog_import_getblogs($userid = 0, $curcmid = null) {
+    global $DB, $USER, $SITE;
+    if ($userid == 0) {
+        $userid = $USER->id;
+    }
+    $retarray = array();
+    $courses = enrol_get_users_courses($userid, true, array('modinfo', 'sectioncache'));
+    array_unshift($courses, get_site());
+    $courses[$SITE->id]->site = true;// Mark the global site.
+    foreach ($courses as $course) {
+        $crsmodinfo = get_fast_modinfo($course, $userid);
+        $blogs = $crsmodinfo->get_instances_of('oublog');
+        foreach ($blogs as $blogcm) {
+            if ($curcmid && $blogcm->id == $curcmid) {
+                continue;// Ignore current blog.
+            }
+            $blogcontext = context_module::instance($blogcm->id);
+            if ($blogoublog = $DB->get_record('oublog', array('id' => $blogcm->instance))) {
+                $canview = $blogcm->uservisible;
+                if ($canview) {
+                    $canview = has_capability('mod/oublog:view', $blogcontext, $userid);
+                }
+                if ($blogoublog->global) {
+                    // Ignore uservisible for global blog and only check cap.
+                    $canview = has_capability('mod/oublog:viewpersonal', context_system::instance(), $userid);
+                }
+                if ($canview) {
+                    if ($blogoublog->global) {
+                        // Global blog, only show if user instance available.
+                        if (!$blogoubloginst = $DB->get_record('oublog_instances',
+                                array('oublogid' => $blogoublog->id, 'userid' => $userid))) {
+                            continue;
+                        }
+                    } else if ($blogoublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+                        // Only allow individual blogs.
+                        continue;
+                    }
+                    $blogob = new stdClass();
+                    $blogob->cmid = $blogcm->id;
+                    $blogob->coursename = '';
+                    if (!$blogoublog->global) {
+                        $blogob->coursename = $blogcm->get_course()->shortname . ' ' .
+                                get_course_display_name_for_list($blogcm->get_course());
+                    }
+                    // Get number of posts (specific to user, doesn't work with group blogs).
+                    $sql = 'SELECT count(p.id) as total
+                        FROM {oublog_posts} p
+                        INNER JOIN {oublog_instances} bi on bi.id = p.oubloginstancesid
+                        WHERE bi.userid = ?
+                        AND bi.oublogid = ?
+                        AND p.deletedby IS NULL';
+                    $count = $DB->get_field_sql($sql, array($userid, $blogoublog->id));
+                    $blogob->numposts = $count ? $count : 0;
+                    $blogoublogname = $blogcm->get_formatted_name();
+                    if ($blogoublog->global) {
+                        $blogoublogname = $blogoubloginst->name;
+                    }
+                    $blogob->name = $blogoublogname;
+                    $retarray[] = $blogob;
+                }
+            }
+        }
+    }
+    return $retarray;
+}
+/**
+ * Returns blog info - cm, oublog
+ * Also checks is a valid blog for import
+ * (Throws exception on access error)
+ * @param int $cmid
+ * @param int $userid
+ * @return array (cm id, oublog id, context id, blog name, course shortname)
+ */
+function oublog_import_getbloginfo($cmid, $userid = 0) {
+    global $DB, $USER;
+    if ($userid == 0) {
+        $userid = $USER->id;
+    }
+    $bcourse = $DB->get_record_select('course',
+            'id = (SELECT course FROM {course_modules} WHERE id = ?)', array($cmid),
+            '*', MUST_EXIST);
+    $bmodinfo = get_fast_modinfo($bcourse, $userid);
+    $bcm = $bmodinfo->get_cm($cmid);
+    if ($bcm->modname !== 'oublog') {
+        throw new moodle_exception('invalidcoursemodule', 'error');
+    }
+    if (!$boublog = $DB->get_record('oublog', array('id' => $bcm->instance))) {
+        throw new moodle_exception('invalidcoursemodule', 'error');
+    }
+    $bcontext = get_context_instance(CONTEXT_MODULE, $bcm->id);
+    $canview = $bcm->uservisible;
+    if ($canview) {
+        $canview = has_capability('mod/oublog:view', $bcontext, $userid);
+    }
+    if ($boublog->global) {
+        // Ignore uservisible for global blog and only check cap.
+        $canview = has_capability('mod/oublog:viewpersonal', context_system::instance(), $userid);
+    }
+    if (!$canview ||
+            (!$boublog->global && $boublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS)) {
+        // Not allowed to get pages from selected blog.
+        throw new moodle_exception('import_notallowed', 'oublog', '', oublog_get_displayname($boublog));
+    }
+    if ($boublog->global) {
+        $boublogname = $DB->get_field('oublog_instances', 'name',
+                array('oublogid' => $boublog->id, 'userid' => $userid));
+        $shortname = '';
+    } else {
+        $boublogname = $bcm->get_course()->shortname . ' ' .
+                get_course_display_name_for_list($bcm->get_course()) .
+                ' : ' . $bcm->get_formatted_name();
+        $shortname = $bcm->get_course()->shortname;
+    }
+    return array($bcm->id, $boublog->id, $bcontext->id, $boublogname, $shortname);
+}
+
+/**
+ * Returns importable posts, total posts and selected tag info
+ * @param int $blogid - ID of blog
+ * @param string $sort - SQL sort for posts
+ * @param int $userid
+ * @param int $page - page number for pagination (100 per page)
+ * @param array $tags - comma separated sequence of selected tag ids to filter by
+ * @return array (posts, total in DB, selected tag info)
+ */
+function oublog_import_getallposts($blogid, $sort, $userid = 0, $page = 0, $tags = null) {
+    global $DB, $USER;
+    if ($userid == 0) {
+        $userid = $USER->id;
+    }
+    $perpage = 100;// Must match value in import.php.
+    $sqlparams = array($userid, $blogid);
+    $tagjoin = '';
+    $tagwhere = '';
+    $tagnames = '';
+    $total = 0;
+    if ($tags) {
+        $tagarr = array_unique(explode(',', $tags));
+        // Filter by joining tag instances.
+        list($taginwhere, $tagparams) = $DB->get_in_or_equal($tagarr);
+        $tagjoin = "INNER JOIN (
+        SELECT ti.postid, count(*) as tagcount FROM {oublog_taginstances} ti WHERE ti.tagid $taginwhere
+        group by ti.postid) as hastags on hastags.postid = p.id";
+        $tagwhere = 'AND hastags.tagcount = ?';
+        $sqlparams = array_merge($tagparams, $sqlparams, array(count($tagarr)));
+        // Get selected tag names.
+        $tagnames = $DB->get_records_select('oublog_tags', "id $taginwhere", $tagparams, 'tag ASC');
+    }
+    $sql = "SELECT p.id, p.timeposted, p.title
+        FROM {oublog_posts} p
+        INNER JOIN {oublog_instances} bi on bi.id = p.oubloginstancesid
+        $tagjoin
+        WHERE bi.userid = ?
+        AND bi.oublogid = ?
+        AND p.deletedby IS NULL
+        $tagwhere
+        ORDER BY p." . $sort;
+
+    $limitfrom = $page * $perpage;
+
+    if ($posts = $DB->get_records_sql($sql, $sqlparams, $limitfrom, $perpage)) {
+        // Add in post tags from single query.
+        list($inwhere, $inparams) = $DB->get_in_or_equal(array_keys($posts));
+        $tsql = 'SELECT t.*, ti.postid
+            FROM {oublog_taginstances} ti
+            INNER JOIN {oublog_tags} t ON ti.tagid = t.id
+            WHERE ti.postid ' . $inwhere . ' ORDER BY t.tag';
+        $rs = $DB->get_recordset_sql($tsql, $inparams);
+        foreach ($rs as $tag) {
+            $postid = $tag->postid;
+            if (!isset($posts[$postid]->tags)) {
+                $posts[$postid]->tags = array();
+            }
+            $posts[$postid]->tags[$tag->id] = $tag->tag;
+        }
+        $rs->close();
+        // Add total record count.
+        $total = $DB->get_field_sql('SELECT count(tot.id) FROM (' . $sql . ') as tot', $sqlparams);
+    }
+    return array($posts, $total, $tagnames);
+}
+
+/**
+ * Returns posts specified (inc tags and comments)
+ * @param int $blogid - oublog id
+ * @param int $bcontextid - oublog mod context id
+ * @param array $selected - array of selected post ids
+ * @param bool $inccomments - include comments?
+ * @param int $userid - user id (ensures user is post author)
+ * @return array posts
+ */
+function oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments = false, $userid = 0) {
+    global $DB, $USER;
+    if ($userid == 0) {
+        $userid = $USER->id;
+    }
+    list($inwhere, $sqlparams) = $DB->get_in_or_equal($selected);
+    $sql = "SELECT p.*
+        FROM {oublog_posts} p
+        INNER JOIN {oublog_instances} bi on bi.id = p.oubloginstancesid
+        WHERE bi.userid = ?
+        AND bi.oublogid = ?
+        AND p.deletedby IS NULL
+        AND p.id $inwhere
+        ORDER BY p.id ASC";
+
+    $sqlparams = array_merge(array($userid, $blogid), $sqlparams);
+    if (!$posts = $DB->get_records_sql($sql, $sqlparams)) {
+        return array();
+    }
+    $files = get_file_storage();
+    // Get post images and attachments.
+    foreach ($posts as &$post) {
+        $post->comments = array();// Add in a comment array for use later.
+        $post->images = $files->get_area_files($bcontextid, 'mod_oublog', 'message', $post->id, 'itemid', false);
+        $post->attachments = $files->get_area_files($bcontextid, 'mod_oublog', 'attachment', $post->id, 'itemid', false);
+        if (empty($post->images)) {
+            $post->images = array();
+        }
+        if (empty($post->attachments)) {
+            $post->attachments = array();
+        }
+    }
+    // Add in post tags from single query.
+    list($inwhere, $inparams) = $DB->get_in_or_equal(array_keys($posts));
+    $tsql = 'SELECT t.*, ti.postid
+        FROM {oublog_taginstances} ti
+        INNER JOIN {oublog_tags} t ON ti.tagid = t.id
+        WHERE ti.postid ' . $inwhere;
+    $rs = $DB->get_recordset_sql($tsql, $inparams);
+    foreach ($rs as $tag) {
+        $postid = $tag->postid;
+        if (!isset($posts[$postid]->tags)) {
+            $posts[$postid]->tags = array();
+        }
+        $posts[$postid]->tags[] = $tag;
+    }
+    $rs->close();
+    if ($inccomments) {
+        // Get comments for post on the page.
+        $sql = "SELECT c.*
+            FROM {oublog_comments} c
+            WHERE c.postid $inwhere AND c.deletedby IS NULL AND c.userid = ?
+            ORDER BY c.timeposted ASC";
+        $inparams[] = $userid;
+        $rs = $DB->get_recordset_sql($sql, $inparams);
+        foreach ($rs as $comment) {
+            $comment->images = $files->get_area_files($bcontextid, 'mod_oublog', 'messagecomment',
+                        $comment->id, 'itemid', false);
+            if (empty($comment->images)) {
+                $comment->images = array();
+            }
+            $posts[$comment->postid]->comments[$comment->id] = $comment;
+        }
+        $rs->close();
+    }
+    return $posts;
+}

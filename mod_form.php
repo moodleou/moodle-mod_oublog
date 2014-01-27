@@ -92,7 +92,7 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->setDefault('maxattachments', $modulesettings->maxattachments);
 
             // Enable the stats block.
-            $mform->addElement('checkbox', 'statblockon', get_string('statblockon', 'oublog', 0));
+            $mform->addElement('checkbox', 'statblockon', get_string('statblockon', 'oublog'), '', 0);
             $mform->addHelpButton('statblockon', 'statblockon', 'oublog');
 
             // Show OU Alerts reporting link.
@@ -111,6 +111,9 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->setType('displayname', PARAM_NOTAGS);
             $mform->addRule('displayname', get_string('maximumchars', '', 255),
                     'maxlength', 255, 'client');
+
+            $mform->addElement('checkbox', 'allowimport', get_string('allowimport', 'oublog'), '', 0);
+            $mform->addHelpButton('allowimport', 'allowimport', 'oublog');
 
             $this->standard_grading_coursemodule_elements();
             $mform->setDefault('grade', 0);
@@ -193,6 +196,9 @@ class mod_oublog_mod_form extends moodleform_mod {
         if (empty($data->displayname)) {
             $data->displayname = null;
         }
+        if (empty($data->allowimport)) {
+            $data->allowimport = 0;
+        }
         return $data;
     }
 
@@ -213,6 +219,7 @@ class mod_oublog_mod_form extends moodleform_mod {
     }
 
     public function validation($data, $files) {
+        global $DB;
         $errors = parent::validation($data, $files);
         if (!empty($data['groupmode']) && isset($data['allowcomments']) &&
                 $data['allowcomments'] == OUBLOG_COMMENTS_ALLOWPUBLIC) {
@@ -224,6 +231,16 @@ class mod_oublog_mod_form extends moodleform_mod {
                 if (!validate_email($email)) {
                     $errors['reportingemail'] = get_string('invalidemail', 'forumng');
                 }
+            }
+        }
+        if (!empty($data['allowimport']) && $data['individual'] == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+            // Can only import on individual or global blogs.
+            if (!empty($data['instance'])) {
+                if (!$DB->get_field('oublog', 'global', array('id' => $data['instance']))) {
+                    $errors['allowimport'] = get_string('allowimport_invalid', 'oublog');
+                }
+            } else {
+                $errors['allowimport'] = get_string('allowimport_invalid', 'oublog');
             }
         }
         return $errors;

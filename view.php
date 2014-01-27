@@ -369,6 +369,13 @@ if ($showpostbutton) {
     echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' =>
             $cm->instance)), $straddpost, 'get');
     echo '</div>';
+    if ($oublog->allowimport && ($oublog->global ||
+            $oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS)) {
+        echo '<div class="oublog_importpostbutton">';
+        echo $OUTPUT->single_button(new moodle_url('/mod/oublog/import.php', array('id' =>
+                $cm->id)), get_string('import', 'oublog'), 'get');
+        echo '</div>';
+    }
 }
 
 // View participation button.

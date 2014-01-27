@@ -792,8 +792,9 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     }
 
     // Make sure we're allowed to see it...
-
-    if ($filearea != 'summary' && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+    // Check if coming from webservice - if so always allow.
+    $ajax = constant('AJAX_SCRIPT') ? true : false;
+    if ($filearea != 'summary' && !$ajax && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
         return false;
     }
     if ($filearea == 'attachment') {

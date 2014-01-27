@@ -140,4 +140,84 @@ M.mod_oublog.init_deleteandemail = function(Y, cmid, postid) {
         e.preventDefault();
         Y.one('a.oublog_deleteandemail_' + postid).focus();
     });
+
+};
+
+/* Import table */
+M.mod_oublog.init_posttable = function(Y) {
+    var includehead = Y.one('.flexible .header.c3');
+    var postchecks = Y.all('.flexible td.c3 input[type=checkbox]');
+    if (includehead && postchecks) {
+        // Add select all/none links to column header.
+        includehead.append('<a href="#" class="oublog_import_all">' + M.util.get_string('import_step1_all', 'oublog') +
+                '</a> / <a href="#" class="oublog_import_none">' + M.util.get_string('import_step1_none', 'oublog') + '</a>');
+        var all = Y.one('.flexible .c3 .oublog_import_all');
+        if (all) {
+            all.on('click', function(e) {
+                postchecks.set('checked', true);
+                postchecks.each(function(check){updatepreselect(check);});
+                e.preventDefault();
+                return false;
+                });
+        }
+        var none = Y.one('.flexible .c3 .oublog_import_none');
+        if (none) {
+            none.on('click', function(e) {
+                postchecks.set('checked', false);
+                postchecks.each(function(check){updatepreselect(check);});
+                e.preventDefault();
+                return false;});
+        }
+    }
+
+    var updatepreselect = function(check) {
+        var preselect = preselectinput.get('value');
+        var id = check.get('name').substr(5);
+        if (check.get('checked')) {
+         // Add id to preselect value.
+            if (id) {
+                var prearray = preselect.split(',');
+                for (var i = 0, len = prearray.length; i < len; i++) {
+                    if (prearray[i] == id) {
+                        // Already have, return.
+                        return;
+                    }
+                }
+                prearray.push(id);
+                preselectinput.set('value', prearray.join());
+                updatelinks(prearray);
+            }
+        } else {
+         // De-selecting, remove from preselect.
+            if (preselect && id) {
+                var prearray = preselect.split(',');
+                for (var i = 0, len = prearray.length; i < len; i++) {
+                    if (prearray[i] == id) {
+                        prearray.splice(i, 1);
+                        preselectinput.set('value', prearray.join());
+                        updatelinks(prearray);
+                        return;
+                    }
+                }
+            }
+        }
+    };
+
+    var updatelinks = function(prearray) {
+        // Update link query strings.
+        Y.all('.oublog_import_step1 form .paging a, .flexible a').each(function(link) {
+            var linkurl = link.get('href');
+            var params = Y.QueryString.parse(linkurl.substr(linkurl.indexOf('&')));
+            params.preselected = prearray.join();
+            var newurl = Y.QueryString.stringify(params);
+            link.set('href', linkurl.substr(0, linkurl.indexOf('&')) + '&' + newurl);
+        });
+    };
+
+    var preselectinput = Y.one('form input[name=preselected]');
+    if (postchecks && preselectinput) {
+        postchecks.on('click', function(check) {
+            updatepreselect(check.target);
+        });
+    }
 };

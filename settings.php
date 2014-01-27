@@ -47,3 +47,10 @@ $settings->add(new admin_setting_configcheckbox('oublogallpostslogin',
 
 $settings->add(new admin_setting_configtext('mod_oublog/globalusageexclude',
         get_string('globalusageexclude', 'oublog'), get_string('globalusageexclude_desc', 'oublog'), ''));
+
+$settings->add(new admin_setting_configtext('mod_oublog/remoteserver',
+        get_string('remoteserver', 'oublog'),
+        get_string('configremoteserver', 'oublog'), '', PARAM_URL));
+$settings->add(new admin_setting_configtext('mod_oublog/remotetoken',
+        get_string('remotetoken', 'oublog'),
+        get_string('configremotetoken', 'oublog'), '', PARAM_ALPHANUM));

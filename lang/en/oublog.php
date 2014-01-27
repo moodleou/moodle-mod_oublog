@@ -426,6 +426,12 @@ $string['maxattachments_help'] = 'This setting specifies the maximum number of f
 $string['maxattachmentsize_help'] = 'This setting specifies the largest size of image/file that can be used in a blog post.';
 $string['attachments_help'] = 'You can optionally attach one or more files to a blog post. If you attach an image, it will be displayed after the message.';
 
+$string['remoteserver'] = 'Import from remote server';
+$string['configremoteserver'] = 'Root address (wwwroot) of remote server to be used for post imports.
+Blogs on this server will be shown in addition to those on local site when importing posts.';
+$string['remotetoken'] = 'Import remote server token';
+$string['configremotetoken'] = 'Web service user token for oublog webservices on import remote server.';
+
 $string['reportingemail'] = 'Reporting email addresses';
 $string['reportingemail_help'] = 'This setting specifies the email addresses of those who will be informed
 about issues with posts or comments within the OUBlog.
@@ -465,6 +471,7 @@ $string['commentposts_info_alltime'] = 'Posts with the most number of comments';
 $string['commentposts_info_thisyear'] = 'Posts with the most number of comments added in the past year';
 $string['commentposts_info_thismonth'] = 'Posts with the most number of comments added in the past month';
 
+// Delete and Email.
 $string['emailcontenthtml'] = 'This is a notification to advise you that your {$a->activityname} post with the
 following details has been deleted by \'{$a->firstname} {$a->lastname}\':<br />
 <br />
@@ -485,3 +492,31 @@ $string['emailerror'] = 'There was an error sending the email';
 $string['sendanddelete'] = 'Send and delete';
 $string['extra_emails'] = 'Email address of other recipients';
 $string['extra_emails_help'] = 'Enter one or more email address(es) separated by spaces or semicolons.';
+
+// Import pages.
+$string['allowimport'] = 'Enable post import';
+$string['allowimport_help'] = 'Allow any user to import pages from other blog activities they have access to.';
+$string['allowimport_invalid'] = 'Posts can only be imported when activity is set to individual mode.';
+$string['import'] = 'Import posts';
+$string['import_notallowed'] = 'Importing posts is disabled for this {$a}.';
+$string['import_step0_nonefound'] = 'You do not have access to any activities where posts can be imported from.';
+$string['import_step0_inst'] = 'Select an activity to import posts from:';
+$string['import_step0_numposts'] = '({$a} posts)';
+$string['import_step1_inst'] = 'Select posts to import:';
+$string['import_step1_from'] = 'Import from:';
+$string['import_step1_table_title'] = 'Title';
+$string['import_step1_table_posted'] = 'Date posted';
+$string['import_step1_table_tags'] = 'Tags';
+$string['import_step1_table_include'] = 'Include in import';
+$string['import_step1_addtag'] = 'Filter by tag - {$a}';
+$string['import_step1_removetag'] = 'Remove tag filter - {$a}';
+$string['import_step1_include_label'] = 'Import post - {$a}';
+$string['import_step1_submit'] = 'Import posts';
+$string['import_step1_all'] = 'Select all';
+$string['import_step1_none'] = 'Select none';
+$string['import_step2_inst'] = 'Importing posts:';
+$string['import_step2_none'] = 'No posts selected for import.';
+$string['import_step2_prog'] = 'Importing in progress';
+$string['import_step2_total'] = 'Imported {$a} posts.';
+$string['import_step2_conflicts'] = '{$a} posts to import were identified as conflicts with existing posts.';
+$string['import_step2_conflicts_submit'] = 'Import conflicting posts';

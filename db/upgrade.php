@@ -223,5 +223,20 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013121100, 'oublog');
     }
 
+    if ($oldversion < 2014012702) {
+
+        // Define field allowimport to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('allowimport', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'statblockon');
+
+        // Conditionally launch add field allowimport.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2014012702, 'oublog');
+    }
+
     return true;
 }
