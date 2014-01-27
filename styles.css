@@ -162,6 +162,13 @@
     color: #aaa;
 }
 
+div.oublog-deleted div.oublog-userpic,
+div.oublog-deleted .oublog-post-attachments a,
+div.oublog-deleted .oublog-post-content {
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
+
 .oublog-paging {
     border-top: 1px solid #F2F2F2;
     margin-top: .5em;

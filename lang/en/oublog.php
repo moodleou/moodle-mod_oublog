@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 $string['attachments'] = "Attachments";
 $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
@@ -187,7 +201,7 @@ $string['guestblog']='If you have an account on the system, please
 <a href=\'{$a}\'>log in for full access</a>.';
 $string['noposts']='There are no visible posts in this {$a}.';
 
-//Errors
+// Errors.
 $string['accessdenied']='Sorry: you do not have access to view this page.';
 $string['invalidpost'] = 'Invalid Post Id';
 $string['invalidcomment'] = 'Invalid Comment Id';
@@ -209,10 +223,6 @@ $string['globalblogmissing'] = 'Global blog is missing';
 $string['invalidvisibility'] = 'Invalid visbility level';
 $string['invalidvisbilitylevel'] = 'Invalid visibility level {$a}';
 $string['invalidblogdetails'] = 'Can\'t find details for blog post {$a}';
-
-
-
-
 
 $string['siteentries'] = 'View site entries';
 $string['overviewnumentrylog1'] = 'entry since last log in';
@@ -338,7 +348,7 @@ $string['displayversion'] = 'OU blog version: <strong>{$a}</strong>';
 
 $string['pluginadministration'] = 'OU Blog administration';
 $string['pluginname'] = 'OU Blog';
-//help strings
+// Help strings.
 $string['allowcomments_help'] = '&lsquo;Yes, from signed-on users&rsquo; allows comments from users who have access to the post.
 
 &lsquo;Yes, from everybody&rsquo; allows comments from users and from the general public. You will receive emails to approve or reject comments from users who are not signed in.
@@ -370,13 +380,13 @@ option is set on the whole blog, that becomes a maximum. For example, if
 the whole blog is set to the first level, you cannot change the
 level of an individual post at all.</p>';
 $string['tags_help'] = 'Tags are labels that help you find and categorise posts.';
-// Used at OU only
+// Used at OU only.
 $string['externaldashboardadd'] = 'Add blog to dashboard';
 $string['externaldashboardremove'] = 'Remove blog from dashboard';
 $string['viewblogdetails'] = 'View blog details';
 $string['viewblogposts'] = 'Return to blog';
 
-// User participation
+// User participation.
 $string['oublog:grade'] = 'Grade OU Blog user participation';
 $string['oublog:viewparticipation'] = 'View OU Blog user participation';
 $string['userparticipation'] = 'User participation';
@@ -395,14 +405,14 @@ $string['savegrades'] = 'Save grades';
 $string['gradesupdated'] = 'Grades updated';
 $string['usergrade'] = 'User grade';
 
-// Participation download strings
+// Participation download strings.
 $string['downloadas'] = 'Download data as';
 $string['postauthor'] = 'Post author';
 $string['postdate'] = 'Post date';
 $string['posttime'] = 'Post time';
 $string['posttitle'] = 'Post title';
 
-// Export
+// Export.
 $string['exportedpost'] = 'Exported post';
 $string['exportpostscomments'] = ' all currently visible posts and their comments.';
 $string['exportuntitledpost'] = 'An untitled post ';
@@ -454,3 +464,24 @@ $string['commentposts'] = 'Most commented posts';
 $string['commentposts_info_alltime'] = 'Posts with the most number of comments';
 $string['commentposts_info_thisyear'] = 'Posts with the most number of comments added in the past year';
 $string['commentposts_info_thismonth'] = 'Posts with the most number of comments added in the past month';
+
+$string['emailcontenthtml'] = 'This is a notification to advise you that your {$a->activityname} post with the
+following details has been deleted by \'{$a->firstname} {$a->lastname}\':<br />
+<br />
+Subject: {$a->subject}<br />
+{$a->activityname}: {$a->blog}<br />
+Course: {$a->course}<br />
+<br />
+<a href={$a->deleteurl} title="view deleted post">View the deleted post</a>';
+$string['deleteemailpostbutton'] = 'Delete and email';
+$string['deleteandemail'] = 'Delete and email';
+$string['emailmessage'] = 'Message';
+$string['cancel'] = 'Cancel';
+$string['deleteemailpostdescription'] = 'Select to delete the post or delete and send a customisable email notification.';
+$string['copytoself'] = 'Send a copy to yourself';
+$string['includepost'] = 'Include post';
+$string['deletedblogpost'] = 'Untitled post.';
+$string['emailerror'] = 'There was an error sending the email';
+$string['sendanddelete'] = 'Send and delete';
+$string['extra_emails'] = 'Email address of other recipients';
+$string['extra_emails_help'] = 'Enter one or more email address(es) separated by spaces or semicolons.';

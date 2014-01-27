@@ -308,7 +308,7 @@ function oublog_get_activity_groupmode($cm, $course=null) {
  * @param object $cm Moodle course-module
  */
 function oublog_is_writable_group($cm) {
-    $groupmode = oublog_get_activity_groupmode($cm);
+    $groupmode = oublog_get_activity_groupmode($cm, $cm->course);
     if ($groupmode != VISIBLEGROUPS) {
         // If no groups, then they must be allowed to access this;
         // if separate groups, then because this is defined to only work
@@ -340,7 +340,7 @@ function oublog_is_writable_group($cm) {
  * @return bool
  */
 function oublog_can_view_post($post, $user, $context, $personalblog) {
-    if ($personalblog && empty($post->userid)) {
+    if (empty($post->userid)) {
         // Not sent userid from pluginfile etc so get it.
         global $DB;
         if ($instance = $DB->get_record('oublog_instances',
@@ -348,15 +348,14 @@ function oublog_can_view_post($post, $user, $context, $personalblog) {
             $post->userid = $instance->userid;
         }
     }
+    // If you dont have capabilities and its not yours, you cant see it.
+    if ($post->deletedby && !has_capability('mod/oublog:manageposts', $context, $user->id) &&
+                ($post->userid !== $user->id)) {
+        return false;
+    }
     // Public visibility means everyone
     if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
-        if (!$post->deletedby || ($post->userid == $user->id ||
-                has_capability('mod/oublog:manageposts', $context, $user->id))) {
-            // If not deleted, or is and author or has manage cap then show.
-            return true;
-        } else {
-            return false;
-        }
+        return true;
     }
     // Logged-in user visibility means everyone logged in, but no guests
     if ($post->visibility==OUBLOG_VISIBILITY_LOGGEDINUSER &&
@@ -558,7 +557,8 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
         }
     }
     if (!$canaudit) {
-        $sqlwhere .= " AND p.deletedby IS NULL ";
+        $sqlwhere .= " AND (p.deletedby IS NULL or bi.userid = ?)";
+        $params[] = $USER->id;
     }
     if ($tag) {
         $sqlwhere .= " AND t.tag = ? ";
@@ -3910,7 +3910,7 @@ class oublog_stats_timefilter_form extends moodleform {
         return parent::get_form_identifier() . '_' . $this->type;
     }
 
-    function add_action_buttons($cancel = true, $submitlabel=null){
+    public function add_action_buttons($cancel = true, $submitlabel = null) {
         // Override submit to ensure name unique.
         $mform =& $this->_form;
         $mform->addElement('submit', 'submitbutton' . '_' . $this->type, $submitlabel);

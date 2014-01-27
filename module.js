@@ -81,3 +81,63 @@ M.mod_oublog.init_showhide = function(Y, name, curpref) {
         }
     }
 };
+
+M.mod_oublog.init_deleteandemail = function(Y, cmid, postid) {
+    this.Y = Y;
+    this.YAHOO = Y.YUI2;
+    // Trap for individual 'Delete' links.
+    var delbtns = Y.one('a.oublog_deleteandemail_' + postid);
+    delbtns.on('click', function(e) {
+        var uri =  e.target.get('href');
+        // Show the dialogue.
+        delbtns.set('disabled', false);
+        var content = M.util.get_string('deleteemailpostdescription', 'oublog');
+        var panel = new M.core.dialogue({
+            bodyContent: content,
+            width: 400,
+            centered: true,
+            render: true,
+            zIndex: 5000,
+            lightbox : true,
+            buttons: {},
+            plugins: [Y.Plugin.Drag],
+            modal: true});
+                // Add the two Delete and Cancel buttons to the bottom of the dialog.
+                panel.addButton({
+                    label: M.util.get_string('delete', 'oublog'),
+                    section: Y.WidgetStdMod.FOOTER,
+                    action : function (e) {
+                        e.preventDefault();
+                        // Add on the 'confirm' delete marker to the link uri.
+                        uri += '&confirm=1';
+                        document.location.href = uri;
+                        panel.hide();
+                        panel.destroy();
+                    }
+                });
+                panel.addButton({
+                    label: M.util.get_string('deleteandemail', 'oublog'),
+                    section: Y.WidgetStdMod.FOOTER,
+                    action : function (e) {
+                        e.preventDefault();
+                        // Add on the 'email' marker to the link uri.
+                        uri += '&email=1';
+                        document.location.href = uri;
+                        panel.hide();
+                        panel.destroy();
+                    }
+                });
+                panel.addButton({
+                    value  : 'Cancel',
+                    section: Y.WidgetStdMod.FOOTER,
+                    action : function (e) {
+                        e.preventDefault();
+                        panel.hide();
+                        panel.destroy();
+                        Y.one('a.oublog_deleteandemail_' + postid).focus();
+                    }
+                });
+        e.preventDefault();
+        Y.one('a.oublog_deleteandemail_' + postid).focus();
+    });
+};
