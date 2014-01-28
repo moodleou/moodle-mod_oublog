@@ -25,7 +25,7 @@ warnings.
 The completion system must be enabled for (a) the site, and (b) the test
 course.
 
-Show blog usage extra statistics must also be enabled                                               ..........
+Show blog usage extra statistics must also be enabled
 
 CRE Creating blogs and data
 ===========================
@@ -76,28 +76,27 @@ BSC01a / U T
   - Verify that when either 'Seperate groups' G1 or G2 are selected, there is a button
     'New blog post' alongside the 'Participation by user' button.
   - Verify that the "Blog usage" 'block' on the right, contains two 'blocks';
-    'My participation' and 'Most commented posts'.
-  - Verify that the 'My participation' block resembles the following;
+    'My participation summary' and 'Most commented posts'.
+  - Verify that the 'My participation summary' block resembles the following;
 
-    My participation
-    ----------------
+    My participation summary
+    ------------------------
     This user made no posts in this blog.
     1 comments
-    US 1    CRE06
+    U T     CRE06
     avatar  -----
             Tuesday, 17 December 2013, 15:30
-    See all contributions
+    View my participation
     ---------------------
 
   - Verify that clicking the 'CRE06' link opens the viewpost page for the post which contains comment CRE06.
     Return to the blog view.
-  - Verify that clicking the 'See all contributions' link opens the 'User participation' page for
+  - Verify that clicking the 'View my participation' link opens the 'User participation' page for
     the current user, the teacher user.
   - Confirm that the page contains a time filter selection form, a message box stating;
-    Posts: This user made no posts in this blog in this period.
-    Comments: This user made no comments in this blog in this period
-    A download button, with post and comment areas beneath, both devoid of teacher entries.
-    Lastly a User grade form.
+    Posts: No posts made during this period.
+    Comments: 1
+    A download button, with post and comment areas beneath.
 
     Return to the blog view.
 
@@ -160,24 +159,24 @@ BSC04 / U T
     Posts by U S2
     -------------
 
-    _CRE05-2_
-    29 March 2011, 10:52
-    Five
-
-    _29 March 2011, 10:53_
+    _29 March 2011, 10:55_
     Six
+
+    _CRE05-2_
+    29 March 2011, 10:50
+    Five
 
     Comments by U S2
     ----------------
 
     Comment on _CRE04-2_ by _U S1_
     CRE05-3
-    29 March 2011, 10:58
-    Seven
-
-    Comment on _CRE04-2_ by _U S1_
     29 March 2011, 10:59
     Eight
+
+    Comment on _CRE04-2_ by _U S1_
+    29 March 2011, 10:58
+    Seven
 
 BSC04 / U T
   Click to enable the 'To' date in the time filter form, select a previous days date, and click update.
@@ -214,13 +213,15 @@ Note: If opened in Excel the appearance will be tabulated with no commas.
 
     Posts
     Date, Time, Title, Content, Attachments
-    12 Dec 2013,11:36,CRE05-2,<p>Five</p>
     12 Dec 2013,11:37,,<p>Six</p>
+    12 Dec 2013,11:36,CRE05-2,<p>Five</p>
+
 
     Comments
     Date, Time, Title, Content, Post author,Post date, Post time, Post title
+    12 Dec 2013, 11:37, ,<p>Eight</p>, U S1, 12 Dec 2013, 11:38, CRE04-2
     12 Dec 2013, 11:37, CRE05-3,<p>Seven</p>, U S1, 12 Dec 2013, 11:37, CRE04-2
-    12 Dec 2013, 11:37, ,<p>Eight</p>, U S1, 12 Dec 2013, 11:37, CRE04-2
+
 
 FIL03 / admin
   Create a new blog (no groups) with title (exactly as shown including
