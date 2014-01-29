@@ -93,8 +93,8 @@ if ($blog->global) {
 }
 
 // Check browser compatibility.
-if (check_browser_version('MSIE', 0) || check_browser_version('Firefox', 0)) {
-    if (!check_browser_version('MSIE', '7') && !check_browser_version('Firefox', '2')) {
+if (core_useragent::check_browser_version('MSIE', 0) || core_useragent::check_browser_version('Firefox', 0)) {
+    if (!core_useragent::check_browser_version('MSIE', '7') && !core_useragent::check_browser_version('Firefox', '2')) {
         if ($blog->global) {
             $url='view.php?user='.$bloginstance->userid;
         } else {
