@@ -43,7 +43,7 @@ if (!$oublog = $DB->get_record('oublog', array('id' => $cm->instance))) {
     print_error('invalidcoursemodule');
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 $tempoublog = clone $oublog;
 if ($tempoublog->global) {
     $tempoublog->maxvisibility = OUBLOG_VISIBILITY_LOGGEDINUSER;// Force login regardless of setting.

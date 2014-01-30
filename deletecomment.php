@@ -49,7 +49,7 @@ $url = new moodle_url('/mod/oublog/deletepost.php', array('comment'=>$commentid,
 $PAGE->set_url($url);
 
 // Check security.
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 // You can always delete your own comments, or any comment on your own

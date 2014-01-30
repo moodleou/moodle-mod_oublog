@@ -47,7 +47,7 @@ if (!$oublog = $DB->get_record("oublog", array("id"=>$cm->instance))) {
     print_error('invalidcoursemodule');
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 $url = new moodle_url('/mod/oublog/viewedit.php', array('edit'=>$editid));

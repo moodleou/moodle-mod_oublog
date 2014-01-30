@@ -65,7 +65,7 @@ if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
 $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $postid));
 $PAGE->set_url($url);
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 $oublogoutput = $PAGE->get_renderer('mod_oublog');

@@ -98,7 +98,7 @@ if ($oublog->maxvisibility != OUBLOG_VISIBILITY_PUBLIC && !isloggedin()) {
             substr($FULLME, strpos($FULLME, 'view.php')));
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 

@@ -39,7 +39,7 @@ if (!$cm = get_coursemodule_from_instance('oublog', $link->oublogid)) {
 
 require_sesskey();
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 $oubloginstance = $link->oubloginstancesid ? $DB->get_record('oublog_instances', array('id'=>$link->oubloginstancesid)) : null;
 oublog_require_userblog_permission('mod/oublog:managelinks', $oublog, $oubloginstance, $context);

@@ -44,7 +44,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $forexport = false, $format = false, $email = false) {
         global $CFG, $USER;
         $output = '';
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext = context_module::instance($cm->id);
         // Get rid of any existing tag from the URL as we only support one at a time.
         $baseurl = preg_replace('~&amp;tag=[^&]*~', '', $baseurl);
 
@@ -537,7 +537,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
         // Print standard output.
         $output = '';
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext = context_module::instance($cm->id);
         if (!$table->is_downloading()) {
             $output .= html_writer::tag('h2', get_string('postsby', 'oublog', $fullname));
             if (!$participation->posts) {
@@ -790,7 +790,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $strdelete      = get_string('delete', 'oublog');
         $strcomments    = get_string('comments', 'oublog');
         $output = '';
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext = context_module::instance($cm->id);
         if (!$canmanagecomments) {
             $context = context_module::instance($cm->id);
             $canmanagecomments = has_capability('mod/oublog:managecomments', $context);

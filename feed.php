@@ -38,7 +38,7 @@ $individualid       = optional_param('individual', 0, PARAM_INT);
 $url = new moodle_url('/mod/oublog/feed.php', array('format'=>$format, 'blog'=>$blogid,
         'bloginstance'=>$bloginstancesid, 'post'=>$postid));
 $PAGE->set_url($url);
-$PAGE->set_context(get_system_context());
+$PAGE->set_context(context_system::instance());
 // Validate Parameters.
 $format = strtolower($format);
 
@@ -174,7 +174,7 @@ if ($groupmode == SEPARATEGROUPS) {
     } else {
         // Must have access all groups
         require_capability('moodle/site:accessallgroups',
-                get_context_instance(CONTEXT_MODULE, $cm->id), $user->id);
+                context_module::instance($cm->id), $user->id);
     }
 }
 

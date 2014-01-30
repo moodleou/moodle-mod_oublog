@@ -73,7 +73,7 @@ if ($email && $key !== $mcomment->secretkey) {
 
 // Require login, it to be your own post, and commenting permission
 require_login($course, $cm);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 if ($USER->id !== $post->userid ||
         !oublog_can_view_post($post, $USER, $context, $oublog->global) ||

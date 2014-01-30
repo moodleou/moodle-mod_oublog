@@ -198,11 +198,11 @@ function oublog_can_post($oublog, $bloguserid=0, $cm=null) {
         // permission at system level
         return $bloguserid==$USER->id &&
             has_capability('mod/oublog:contributepersonal',
-                get_context_instance(CONTEXT_SYSTEM));
+                context_system::instance());
     } else {
         // Need specific post permission in this blog
         return has_capability('mod/oublog:post',
-            get_context_instance(CONTEXT_MODULE, $cm->id));
+            context_module::instance($cm->id));
     }
 }
 
@@ -227,9 +227,9 @@ function oublog_can_comment($cm, $oublog, $post) {
         $blogok =
                 (!isloggedin() && $oublog->allowcomments == OUBLOG_COMMENTS_ALLOWPUBLIC) ||
                 has_capability('mod/oublog:contributepersonal',
-                    get_context_instance(CONTEXT_SYSTEM));
+                    context_system::instance());
     } else {
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext = context_module::instance($cm->id);
 
         // Three ways you can comment to a course blog:
         $blogok =
@@ -325,7 +325,7 @@ function oublog_is_writable_group($cm) {
     }
     $cm->writablegroups[$groupid] = groups_is_member($groupid) ||
         has_capability('moodle/site:accessallgroups',
-            get_context_instance(CONTEXT_MODULE, $cm->id));
+            context_module::instance($cm->id));
     return $cm->writablegroups[$groupid];
 }
 
@@ -399,7 +399,7 @@ function oublog_add_post($post, $cm, $oublog, $course) {
     require_once($CFG->libdir . '/completionlib.php');
     $post->itemid = $post->message['itemid'];
     $post->message = $post->message['text'];
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
 
     if (!isset($post->oubloginstancesid)) {
         if (!$post->oubloginstancesid = $DB->get_field('oublog_instances', 'id', array('oublogid'=>$post->oublogid, 'userid'=>$post->userid))) {
@@ -458,7 +458,7 @@ function oublog_edit_post($post, $cm) {
     global $USER, $DB;
     $post->itemid = $post->message['itemid'];
     $post->message = $post->message['text'];
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
     if (!isset($post->id) || !$oldpost = $DB->get_record('oublog_posts', array('id'=>$post->id))) {
         return(false);
     }
@@ -1416,7 +1416,7 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
             ORDER BY GREATEST(c.timeapproved, c.timeposted) DESC ";
 
     $rs = $DB->get_recordset_sql($sql, $params, 0, OUBLOG_MAX_FEED_ITEMS);
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
 
     foreach ($rs as $item) {
         $item->link = $CFG->wwwroot.'/mod/oublog/viewpost.php?post='.$item->postid;
@@ -1523,7 +1523,7 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
             ORDER BY p.timeposted DESC ";
 
     $rs = $DB->get_recordset_sql($sql, $params, 0, OUBLOG_MAX_FEED_ITEMS);
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
     foreach ($rs as $item) {
         $item->link = $CFG->wwwroot.'/mod/oublog/viewpost.php?post='.$item->id;
         $item->author = fullname($item);
@@ -2083,7 +2083,7 @@ function oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid
     }
 
     // Get context.
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     // No individual blogs.
     $individualmode = $oublog->individual;
@@ -2222,7 +2222,7 @@ function oublog_get_last_modified($cm, $course, $userid=0) {
     $restrictjoin = '';
     $restrictwhere = '';
     $rwparam = array();
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     // Restrict to separate groups
     if ($groupmode == SEPARATEGROUPS &&
@@ -2661,7 +2661,7 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
             throw new portfolio_caller_exception('invalidcoursemodule');
         }
 
-        $this->modcontext = get_context_instance(CONTEXT_MODULE, $this->cm->id);
+        $this->modcontext = context_module::instance($this->cm->id);
         $fs = get_file_storage();
         $files = array();
         $attach = $fs->get_area_files($this->modcontext->id, 'mod_oublog', 'attachment', $this->post->id);
@@ -2815,7 +2815,7 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
      * @return bool
      */
     public function check_permissions() {
-        $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
+        $context = context_module::instance($this->cm->id);
         return (has_capability('mod/oublog:exportpost', $context)
             || ($this->oubloginstance->userid == $this->user->id
                 && has_capability('mod/oublog:exportownpost', $context)));
@@ -2878,7 +2878,7 @@ function oublog_can_view_participation($course, $oublog, $cm, $groupid=0) {
         return OUBLOG_NO_PARTICIPATION;
     }
 
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     $groupmode = groups_get_activity_groupmode($cm, $course);
     $allowgroup =
@@ -2918,7 +2918,7 @@ function oublog_can_grade($course, $oublog, $cm, $groupid=0) {
     }
 
     // Cannot grade if you do not have the capability
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
     if (!has_capability('mod/oublog:grade', $context)) {
         return false;
     }
@@ -3894,7 +3894,7 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $co
     if (!$oublog->global && $canview == OUBLOG_NO_PARTICIPATION) {
         return;
     }
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
     // Get the participation object containing User, Posts and Comments.
     $participation = oublog_get_user_participation($oublog, $context,
             $USER->id, $curgroup, $cm, $course);
@@ -4279,7 +4279,7 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
      * @return bool
      */
     public function check_permissions() {
-        $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
+        $context = context_module::instance($this->cm->id);
         return (has_capability('mod/oublog:exportpost', $context));
     }
 }
@@ -4491,7 +4491,7 @@ function oublog_import_getbloginfo($cmid, $userid = 0) {
     if (!$boublog = $DB->get_record('oublog', array('id' => $bcm->instance))) {
         throw new moodle_exception('invalidcoursemodule', 'error');
     }
-    $bcontext = get_context_instance(CONTEXT_MODULE, $bcm->id);
+    $bcontext = context_module::instance($bcm->id);
     $canview = $bcm->uservisible;
     if ($canview) {
         $canview = has_capability('mod/oublog:view', $bcontext, $userid);

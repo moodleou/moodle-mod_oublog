@@ -256,10 +256,10 @@ function oublog_print_recent_activity($course, $isteacher, $timestart) {
         if (!$cm->uservisible) {
             continue;
         }
-        if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/oublog:view', context_module::instance($cm->id))) {
             continue;
         }
-        if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_USER, $blog->userid))) {
+        if (!has_capability('mod/oublog:view', context_user::instance($blog->userid))) {
             continue;
         }
 
@@ -336,10 +336,10 @@ function oublog_get_recent_mod_activity(&$activities, &$index, $timestart, $cour
         if (!$cm->uservisible) {
             continue;
         }
-        if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/oublog:view', context_module::instance($cm->id))) {
             continue;
         }
-        if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_USER, $blog->userid))) {
+        if (!has_capability('mod/oublog:view', context_user::instance($blog->userid))) {
             continue;
         }
 
@@ -1120,7 +1120,7 @@ function oublog_extend_settings_navigation(settings_navigation $settings, naviga
     include_once($CFG->dirroot.'/mod/oublog/locallib.php');
     if (oublog_oualerts_enabled() && oublog_get_reportingemail($oublog)) {
         if (has_capability('report/oualerts:managealerts',
-                get_context_instance(CONTEXT_MODULE, $PAGE->cm->id))) {
+                context_module::instance($PAGE->cm->id))) {
             $node->add(get_string('oublog_managealerts', 'oublog'),
                     new moodle_url('/report/oualerts/manage.php', array('cmid' => $PAGE->cm->id,
                             'coursename' => $PAGE->course->id, 'contextcourseid' => $PAGE->course->id)),

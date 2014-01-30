@@ -50,7 +50,7 @@ $url = new moodle_url('/mod/oublog/editlink.php', array('blog'=>$blog, 'bloginst
 $PAGE->set_url($url);
 
 // Check security.
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 if ($linkid) {

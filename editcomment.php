@@ -49,7 +49,7 @@ $url = new moodle_url('/mod/oublog/editcomment.php', array('blog'=>$blog, 'post'
 $PAGE->set_url($url);
 
 // Check security.
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 oublog_check_view_permissions($oublog, $context, $cm);
 $post->userid=$oubloginstance->userid; // oublog_can_view_post needs this

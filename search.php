@@ -65,7 +65,7 @@ if ($id) {
     print_error('missingrequiredfield');
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 
 $url = new moodle_url('/mod/oublog/search.php', array('id'=>$id, 'user'=>$user, 'query'=>$querytext));
@@ -77,7 +77,7 @@ oublog_check_view_permissions($oublog, $context, $cm);
 if ($oublog->global) {
     // Check this user is allowed to view the user's blog
     if ($oublog->maxvisibility != OUBLOG_VISIBILITY_PUBLIC && isset($oubloguser)) {
-        $usercontext = get_context_instance(CONTEXT_USER, $oubloguser->id);
+        $usercontext = context_user::instance($oubloguser->id);
         require_capability('mod/oublog:view', $usercontext);
     }
     $returnurl = $CFG->wwwroot . '/mod/oublog/view.php?user='.$user;

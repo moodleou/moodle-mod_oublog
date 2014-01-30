@@ -294,7 +294,7 @@ class oublog_locallib_test extends UnitTestCaseUsingDatabase {
         }
 
         // get a list of the posts
-        $context      = get_context_instance(CONTEXT_MODULE, $cm->instance);
+        $context      = context_module::instance($cm->instance);
         $currentgroup = oublog_get_activity_group($cm, true);
 
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, 0, $cm, $currentgroup);

@@ -121,7 +121,7 @@ class oublog_capabilities_test extends UnitTestCaseUsingDatabase {
         $oublog = $this->get_new_oublog_whole_course($course->id);
         $this->load_course_module($course, $oublog);
         $cm = get_coursemodule_from_instance('oublog', $oublog->id, $course->id);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
 
         // And some role assignments.
         $ras = $this->load_test_data('role_assignments',

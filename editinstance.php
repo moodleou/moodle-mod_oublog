@@ -53,7 +53,7 @@ if (!$oublog->global) {
 $url = new moodle_url('/mod/oublog/editinstance.php', array('instance'=>$bloginstancesid, 'post'=>$postid));
 $PAGE->set_url($url);
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 $oubloguser = $DB->get_record('user', array('id'=>$oubloginstance->userid));
 $viewurl = 'view.php?user='.$oubloginstance->userid;
