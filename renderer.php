@@ -110,6 +110,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $postuser->email = $post->email;
             $postuser->imagealt = $post->imagealt;
             $postuser->picture = $post->picture;
+            $postuser->firstnamephonetic = $post->firstnamephonetic;
+            $postuser->lastnamephonetic = $post->lastnamephonetic;
+            $postuser->middlename = $post->middlename;
+            $postuser->alternatename = $post->alternatename;
             $output .= $this->output->user_picture($postuser,
                     array('courseid' => $oublog->course, 'size' => 70));
             $output .= html_writer::end_tag('div');
@@ -127,8 +131,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
         if ($post->deletedby) {
             $deluser = new stdClass();
-            $deluser->firstname = $post->delfirstname;
-            $deluser->lastname = $post->dellastname;
+        // Get user name fields.
+            $delusernamefields = get_all_user_name_fields(false, null, 'del');
+            foreach ($delusernamefields as $namefield => $retnamefield) {
+                $deluser->$namefield = $post->$retnamefield;
+            }
 
             $a = new stdClass();
 
@@ -190,8 +197,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $output .= html_writer::end_tag('div');
         } else if ($post->lasteditedby) {
             $edit = new StdClass;
-            $edit->firstname = $post->edfirstname;
-            $edit->lastname = $post->edlastname;
+            // Get user name fields.
+            $editusernamefields = get_all_user_name_fields(false, null, 'ed');
+            foreach ($editusernamefields as $namefield => $retnamefield) {
+                $edit->$namefield = $post->$retnamefield;
+            }
 
             $a = new stdClass();
             $a->editby = fullname($edit);
@@ -618,8 +628,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
                     $author = new StdClass;
                     $author->id = $comment->authorid;
-                    $author->firstname = $comment->firstname;
-                    $author->lastname = $comment->lastname;
+                    $userfields = get_all_user_name_fields();
+                    foreach ($userfields as $field) {
+                        $author->$field = $comment->$field;
+                    }
                     $authorurl = new moodle_url('/user/view.php', array('id' => $author->id));
                     $authorlink = html_writer::link($authorurl, fullname($author, $viewfullnames));
                     if (isset($comment->posttitle) && !empty($comment->posttitle)) {
@@ -811,8 +823,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
             }
             if ($comment->deletedby) {
                 $deluser = new stdClass();
-                $deluser->firstname = $comment->delfirstname;
-                $deluser->lastname  = $comment->dellastname;
+                $fields = get_all_user_name_fields(false, null, 'del');
+                foreach ($fields as $field => $dfield) {
+                    $deluser->$field = $comment->$dfield;
+                }
 
                 $a = new stdClass();
                 $a->fullname = '<a href="../../user/view.php?id=' . $comment->deletedby . '">' .
@@ -825,12 +839,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
             if ($comment->userid && !$forexport) {
                 $output .= html_writer::start_tag('div', array('class' => 'oublog-userpic'));
                 $commentuser = new object();
-                $commentuser->id        = $comment->userid;
-                $commentuser->firstname = $comment->firstname;
-                $commentuser->lastname  = $comment->lastname;
-                $commentuser->email  = $comment->email;
-                $commentuser->imagealt  = $comment->imagealt;
-                $commentuser->picture   = $comment->picture;
+                $fields = explode(',', user_picture::fields());
+                foreach($fields as $field) {
+                    if ($field != 'id') {
+                        $commentuser->$field = $comment->$field;
+                    }
+                }
+                $commentuser->id = $comment->userid;
+
                 $output .= $OUTPUT->user_picture($commentuser,
                         array('courseid' => $oublog->course, 'size' => 70));
                 $output .= html_writer::end_tag('div');

@@ -265,14 +265,14 @@ if (!$hideunusedblog) {
     $bc->attributes['class'] = 'oublog-sideblock block';
     $bc->attributes['id'] = 'oublog_info_block';
     $bc->title = format_string($title);
-    $bc->content = format_text($summary, $format) . $links;
     if ($oublog->global) {
-        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'mod/oublog/pluginfile.php',
+        $bc->content = file_rewrite_pluginfile_urls($summary, 'mod/oublog/pluginfile.php',
                 $context->id, 'mod_oublog', 'summary', $oubloginstance->id);
     } else {
-        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php',
+        $bc->content = file_rewrite_pluginfile_urls($summary, 'pluginfile.php',
                 $context->id, 'mod_oublog', 'intro', null);
     }
+    $bc->content = format_text($bc->content, $format) . $links;
     $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 
     // Tag Cloud.

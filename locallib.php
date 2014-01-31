@@ -266,38 +266,22 @@ function oublog_can_comment($cm, $oublog, $post) {
 }
 
 /**
- * Wrapper around oublog_get_activity_group for increased performance.
+ * Wrapper around groups_get_activity_group.
  * @param object $cm Moodle course-module (possibly with extra cache fields)
  * @param boolean $update True to update from URL (must be first call on page)
  */
 function oublog_get_activity_group($cm, $update=false) {
-    if (!isset($cm->activitygroup) || $update) {
-        if (isset($cm->activitygroup)) {
-            debugging('Update parameter should be used only in first call to ' .
-                    'oublog_get_activity_group; please fix this to improve ' .
-                    'performance slightly', DEBUG_DEVELOPER);
-        }
-        $cm->activitygroup = groups_get_activity_group($cm, $update);
-    }
-    return $cm->activitygroup;
+    return groups_get_activity_group($cm, $update);
 }
 
 /**
- * Wrapper around oublog_get_activity_groupmode for increased performance.
+ * Wrapper around groups_get_activity_groupmode.
  * @param object $cm Moodle course-module (possibly with extra cache fields)
  * @param object $course Optional course parameter; should be included in
  *   first call in page
  */
 function oublog_get_activity_groupmode($cm, $course=null) {
-    if (!isset($cm->activitygroupmode)) {
-        if (!$course) {
-            debugging('Course parameter should be provided in first call to ' .
-                    'oublog_get_activity_groupmode; please fix this to improve ' .
-                    'performance slightly', DEBUG_DEVELOPER);
-        }
-        $cm->activitygroupmode = groups_get_activity_groupmode($cm, $course);
-    }
-    return $cm->activitygroupmode;
+    return groups_get_activity_groupmode($cm, $course);
 }
 
 /**
@@ -308,6 +292,13 @@ function oublog_get_activity_groupmode($cm, $course=null) {
  * @param object $cm Moodle course-module
  */
 function oublog_is_writable_group($cm) {
+    static $writablecm;
+    if (!isset($writablecm)) {
+        $writablecm = array();
+    }
+    if (!isset($writablecm[$cm->id])) {
+        $writablecm[$cm->id] = array();
+    }
     $groupmode = oublog_get_activity_groupmode($cm, $cm->course);
     if ($groupmode != VISIBLEGROUPS) {
         // If no groups, then they must be allowed to access this;
@@ -317,16 +308,13 @@ function oublog_is_writable_group($cm) {
         return true;
     }
     $groupid = oublog_get_activity_group($cm);
-    if (!isset($cm->writablegroups)) {
-        $cm->writablegroups = array();
+    if (isset($writablecm[$cm->id][$groupid])) {
+        return $writablecm[$cm->id][$groupid];
     }
-    if (isset($cm->writablegroups[$groupid])) {
-        return $cm->writablegroups[$groupid];
-    }
-    $cm->writablegroups[$groupid] = groups_is_member($groupid) ||
+    $writablecm[$cm->id][$groupid] = groups_is_member($groupid) ||
         has_capability('moodle/site:accessallgroups',
             context_module::instance($cm->id));
-    return $cm->writablegroups[$groupid];
+    return $writablecm[$cm->id][$groupid];
 }
 
 /**
@@ -590,11 +578,14 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
             }
         }
     }
+    $usernamefields = get_all_user_name_fields(true, 'u');
+    $delusernamefields = get_all_user_name_fields(true, 'ud', null, 'del');
+    $editusernamefields = get_all_user_name_fields(true, 'ue', null, 'ed');
 
     // Get posts
-    $fieldlist = "p.*, bi.oublogid, u.firstname, u.lastname, bi.userid, u.idnumber, u.picture, u.imagealt, u.email, u.username,
-                ud.firstname AS delfirstname, ud.lastname AS dellastname,
-                ue.firstname AS edfirstname, ue.lastname AS edlastname";
+    $fieldlist = "p.*, bi.oublogid, $usernamefields, bi.userid, u.idnumber, u.picture, u.imagealt, u.email, u.username,
+                $delusernamefields,
+                $editusernamefields";
     $from = "FROM {oublog_posts} p
                 INNER JOIN {oublog_instances} bi ON p.oubloginstancesid = bi.id
                 INNER JOIN {user} u ON bi.userid = u.id
@@ -655,7 +646,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $rs->close();
 
     // Get comments for post on the page
-    $sql = "SELECT c.id, c.postid, c.timeposted, c.authorname, c.authorip, c.timeapproved, c.userid, u.firstname, u.lastname, u.picture, u.imagealt, u.email, u.idnumber
+    $sql = "SELECT c.id, c.postid, c.timeposted, c.authorname, c.authorip, c.timeapproved, c.userid, $usernamefields, u.picture, u.imagealt, u.email, u.idnumber
             FROM {oublog_comments} c
             LEFT JOIN {user} u ON c.userid = u.id
             WHERE c.postid IN (".implode(",", $postids).") AND c.deletedby IS NULL
@@ -706,11 +697,14 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
  */
 function oublog_get_post($postid, $canaudit=false) {
     global $DB;
+    $usernamefields = get_all_user_name_fields(true, 'u');
+    $delusernamefields = get_all_user_name_fields(true, 'ud', null, 'del');
+    $editusernamefields = get_all_user_name_fields(true, 'ue', null, 'ed');
 
     // Get post
-    $sql = "SELECT p.*, bi.oublogid, u.firstname, u.lastname, u.picture, u.imagealt, bi.userid, u.idnumber, u.email, u.username,
-                    ud.firstname AS delfirstname, ud.lastname AS dellastname,
-                    ue.firstname AS edfirstname, ue.lastname AS edlastname
+    $sql = "SELECT p.*, bi.oublogid, $usernamefields, u.picture, u.imagealt, bi.userid, u.idnumber, u.email, u.username,
+                    $delusernamefields,
+                    $editusernamefields
             FROM {oublog_posts} p
                 INNER JOIN {oublog_instances} bi ON p.oubloginstancesid = bi.id
                 INNER JOIN {user} u ON bi.userid = u.id
@@ -738,8 +732,8 @@ function oublog_get_post($postid, $canaudit=false) {
 
     // Get comments for post on the page
     if ($post->allowcomments) {
-        $sql = "SELECT c.*, u.firstname, u.lastname, u.picture, u.imagealt, u.email, u.idnumber,
-                    ud.firstname AS delfirstname, ud.lastname AS dellastname
+        $sql = "SELECT c.*, $usernamefields, u.picture, u.imagealt, u.email, u.idnumber,
+                    $delusernamefields
                 FROM {oublog_comments} c
                 LEFT JOIN {user} u ON c.userid = u.id
                 LEFT JOIN {user} ud ON c.deletedby = ud.id
@@ -759,7 +753,7 @@ function oublog_get_post($postid, $canaudit=false) {
     }
 
     // Get edits for this post
-    $sql = "SELECT e.id, e.timeupdated, e.oldtitle, e.userid, u.firstname, u.lastname, u.picture, u.imagealt, u.email, u.idnumber
+    $sql = "SELECT e.id, e.timeupdated, e.oldtitle, e.userid, $usernamefields, u.picture, u.imagealt, u.email, u.idnumber
             FROM {oublog_edits} e
             INNER JOIN {user} u ON e.userid = u.id
             WHERE e.postid = ?
@@ -1402,10 +1396,11 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
             $sqlwhere .= $grpssql;
         }
     }
+    $usernamefields = get_all_user_name_fields(true, 'u');
 
     $sql = "SELECT p.title AS posttitle, p.message AS postmessage, c.id, c.postid, c.title,
                     c.message AS description, c.timeposted AS pubdate, c.authorname, c.authorip,
-                    c.timeapproved, i.userid, u.firstname, u.lastname, u.picture, u.imagealt,
+                    c.timeapproved, i.userid, $usernamefields, u.picture, u.imagealt,
                     u.email, u.idnumber
             FROM {oublog_comments} c
             INNER JOIN {oublog_posts} p ON c.postid = p.id
@@ -1513,9 +1508,10 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
         }
         $scheme .= '&tag=';
     }
+    $usernamefields = get_all_user_name_fields(true, 'u');
 
     // Get posts
-    $sql = "SELECT p.id, p.title, p.message AS description, p.timeposted AS pubdate, i.userid, u.firstname, u.lastname, u.email, u.picture, u.imagealt, u.idnumber
+    $sql = "SELECT p.id, p.title, p.message AS description, p.timeposted AS pubdate, i.userid, $usernamefields, u.email, u.picture, u.imagealt, u.idnumber
             FROM {oublog_posts} p
             INNER JOIN {oublog_instances} i ON p.oubloginstancesid = i.id
             INNER JOIN {user} u ON i.userid = u.id
@@ -3069,8 +3065,9 @@ function oublog_get_user_participation($oublog, $context,
     if ($end) {
         $cperiod .= 'AND c.timeposted < :timeend ';
     }
+    $authornamefields = get_all_user_name_fields(true, 'a');
     $commentssql = 'SELECT c.id, c.postid, c.title, c.message, c.timeposted,
-        a.id AS authorid, a.firstname, a.lastname,
+        a.id AS authorid, ' . $authornamefields . ',
         p.title AS posttitle, p.timeposted AS postdate
         FROM {user} a, {oublog_comments} c
             INNER JOIN {oublog_posts} p ON (c.postid = p.id)
@@ -4408,7 +4405,7 @@ function oublog_import_getblogs($userid = 0, $curcmid = null) {
         $userid = $USER->id;
     }
     $retarray = array();
-    $courses = enrol_get_users_courses($userid, true, array('modinfo', 'sectioncache'));
+    $courses = enrol_get_users_courses($userid, true);
     array_unshift($courses, get_site());
     $courses[$SITE->id]->site = true;// Mark the global site.
     foreach ($courses as $course) {

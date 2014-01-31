@@ -156,7 +156,7 @@ echo $OUTPUT->header();
 // Start main column.
 print '<div id="middle-column" class="has-right-column">';
 
-print skip_main_destination();
+print $OUTPUT->skip_link_target();
 
 // Renderer hook so extra info can be added to global blog pages in theme.
 echo $oublogoutput->render_viewpage_prepost();
