@@ -181,7 +181,7 @@ if ($groupmode == SEPARATEGROUPS) {
 // Get data for feed in a standard form.
 if ($comments) {
     $feeddata = oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user,
-            $allowedvisibility, $groupid, $cm);
+            $allowedvisibility, $groupid, $cm, $blog, $individualid);
     $feedname = strip_tags($blog->name) . ': ' . get_string('commentsfeed', 'oublog');
     $feedsummary='';
 } else {

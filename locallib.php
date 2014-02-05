@@ -1383,9 +1383,12 @@ function oublog_feed_last_changed($blogid, $bloginstancesid, $postid, $comments)
  * @param int $allowedvisibility
  * @param int $groupid
  * @param object $cm
+ * @param object $oublog
+ * @param int $individualid
  * @return array
  */
-function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $allowedvisibility, $groupid, $cm) {
+function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $allowedvisibility,
+        $groupid, $cm, $oublog, $individualid = -1) {
     global $CFG, $DB;
     $params = array();
     $items = array();
@@ -1400,18 +1403,21 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
         $sqlwhere = "AND i.oublogid = ? ";
         $params[] = $blogid;
     }
-
-    if (isset($groupid) && $groupid) {
-        $sqlwhere .= " AND p.groupid = ? ";
-        $params[] = $groupid;
-    }
-    if (!empty($cm->groupingid)) {
-        if ($groups = $DB->get_records('groupings_groups',
-                array('groupingid'=>$cm->groupingid), null, 'groupid')) {
-            $sqlwhere .= " AND p.groupid ";
-            list ($grpssql, $grpsparams) = $DB->get_in_or_equal(array_keys($groups));
-            $params = array_merge($params, $grpsparams);
-            $sqlwhere .= $grpssql;
+    if ($individualid > 0 || $oublog->individual > OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid, $user->id);
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'i.userid', $oublog->id, $groupid, $individualid, $capable);
+    } else {
+        if (isset($groupid) && $groupid) {
+            $sqlwhere .= " AND p.groupid = ? ";
+            $params[] = $groupid;
+        } else if (!empty($cm->groupingid)) {
+            if ($groups = $DB->get_records('groupings_groups',
+                    array('groupingid' => $cm->groupingid), null, 'groupid')) {
+                $sqlwhere .= " AND p.groupid ";
+                list ($grpssql, $grpsparams) = $DB->get_in_or_equal(array_keys($groups));
+                $params = array_merge($params, $grpsparams);
+                $sqlwhere .= $grpssql;
+            }
         }
     }
 
@@ -1496,16 +1502,15 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
         $params[] = $blogid;
     }
     // If individual blog.
-    if ($individualid > -1) {
-        $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
+    if ($individualid > 0 || $oublog->individual > OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid, $user->id);
         oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'i.userid', $oublog->id, $groupid, $individualid, $capable);
     } else {// No individual blog.
         if ($groupid) {
             $sqlwhere .= " AND p.groupid = ? ";
             $params[] = $groupid;
-        }
-        if (!empty($cm->groupingid)) {
-            if ($groups = $DB->get_records('groupings_groups', array('groupingid'=>$cm->groupingid), null, 'groupid')) {
+        } else if (!empty($cm->groupingid)) {
+            if ($groups = $DB->get_records('groupings_groups', array('groupingid' => $cm->groupingid), null, 'groupid')) {
                 $sqlwhere .= "AND p.groupid IN (".implode(',', array_keys($groups)).") ";
             }
         }
