@@ -139,7 +139,7 @@ if ($email) {
                 $fakeuser = (object)array(
                         'email' => $email,
                         'mailformat' => 1,
-                        'id' => 0
+                        'id' => -1
                 );
                 if (!email_to_user($fakeuser, $from, $subject, '', $messagehtml)) {
                     print_error(get_string('emailerror', 'oublog'));
