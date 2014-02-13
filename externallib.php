@@ -45,7 +45,7 @@ class mod_oublog_external extends external_api {
                 array('username' => $username));
         $user = $DB->get_field('user', 'id', array('username' => $username['username']), IGNORE_MISSING);
         if (!$user) {
-            return;
+            return array();
         }
         $result = oublog_import_getblogs($user);
         // Add remote property to each blog to identify that it came from web service.
@@ -84,7 +84,7 @@ class mod_oublog_external extends external_api {
                 array('cmid' => $cmid, 'username' => $username));
         $user = $DB->get_field('user', 'id', array('username' => $params['username']), IGNORE_MISSING);
         if (!$user) {
-            return;
+            return array();
         }
         $result = oublog_import_getbloginfo($params['cmid'], $user);
         return array(
@@ -135,7 +135,7 @@ class mod_oublog_external extends external_api {
                         'page' => $page, 'tags' => $tags));
         $user = $DB->get_field('user', 'id', array('username' => $params['username']), IGNORE_MISSING);
         if (!$user) {
-            return;
+            return array();
         }
         $result = oublog_import_getallposts($params['blogid'], $params['sort'], $user,
                 $params['page'], $params['tags']);
@@ -203,7 +203,7 @@ class mod_oublog_external extends external_api {
                         'inccomments' => $inccomments, 'username' => $username));
         $user = $DB->get_field('user', 'id', array('username' => $username), IGNORE_MISSING);
         if (!$user) {
-            return;
+            return array();
         }
         $selected = explode(',', $params['selected']);
         $return = oublog_import_getposts($params['blogid'], $params['bcontextid'],
