@@ -97,7 +97,7 @@ M.mod_oublog.init_deleteandemail = function(Y, cmid, postid) {
             width: 400,
             centered: true,
             render: true,
-            zIndex: 5000,
+            zIndex: 50,
             lightbox : true,
             buttons: {},
             plugins: [Y.Plugin.Drag],
