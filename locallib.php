@@ -4412,7 +4412,7 @@ function oublog_import_getblogs($userid = 0, $curcmid = null) {
     $retarray = array();
     $courses = enrol_get_users_courses($userid, true);
     array_unshift($courses, get_site());
-    $courses[$SITE->id]->site = true;// Mark the global site.
+    $courses[0]->site = true;// Mark the global site.
     foreach ($courses as $course) {
         $crsmodinfo = get_fast_modinfo($course, $userid);
         $blogs = $crsmodinfo->get_instances_of('oublog');
