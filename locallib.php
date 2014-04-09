@@ -27,12 +27,6 @@
  * @package oublog
  */
 
-// OU shared APIs which (for OU system) are present in local, elsewhere
-// are incorporated in module
-@include_once(dirname(__FILE__).'/../../local/transaction_wrapper.php');
-if (!class_exists('transaction_wrapper')) {
-    require_once(dirname(__FILE__).'/null_transaction_wrapper.php');
-}
 require_once($CFG->libdir . '/portfolio/caller.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/filelib.php');
@@ -314,7 +308,7 @@ function oublog_get_activity_groupmode($cm, $course=null) {
  * @param object $cm Moodle course-module
  */
 function oublog_is_writable_group($cm) {
-    $groupmode = oublog_get_activity_groupmode($cm);
+    $groupmode = oublog_get_activity_groupmode($cm, $cm->course);
     if ($groupmode != VISIBLEGROUPS) {
         // If no groups, then they must be allowed to access this;
         // if separate groups, then because this is defined to only work
@@ -346,7 +340,7 @@ function oublog_is_writable_group($cm) {
  * @return bool
  */
 function oublog_can_view_post($post, $user, $context, $personalblog) {
-    if ($personalblog && empty($post->userid)) {
+    if (empty($post->userid)) {
         // Not sent userid from pluginfile etc so get it.
         global $DB;
         if ($instance = $DB->get_record('oublog_instances',
@@ -354,15 +348,14 @@ function oublog_can_view_post($post, $user, $context, $personalblog) {
             $post->userid = $instance->userid;
         }
     }
+    // If you dont have capabilities and its not yours, you cant see it.
+    if ($post->deletedby && !has_capability('mod/oublog:manageposts', $context, $user->id) &&
+                ($post->userid !== $user->id)) {
+        return false;
+    }
     // Public visibility means everyone
     if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
-        if (!$post->deletedby || ($post->userid == $user->id ||
-                has_capability('mod/oublog:manageposts', $context, $user->id))) {
-            // If not deleted, or is and author or has manage cap then show.
-            return true;
-        } else {
-            return false;
-        }
+        return true;
     }
     // Logged-in user visibility means everyone logged in, but no guests
     if ($post->visibility==OUBLOG_VISIBILITY_LOGGEDINUSER &&
@@ -420,10 +413,9 @@ function oublog_add_post($post, $cm, $oublog, $course) {
     }
 
     // Begin transaction
-    $tw=new transaction_wrapper();
+    $tw = $DB->start_delegated_transaction();
 
     if (!$postid = $DB->insert_record('oublog_posts', $post)) {
-        $tw->rollback();
         return(false);
     }
     // Now do filestuff.
@@ -439,7 +431,6 @@ function oublog_add_post($post, $cm, $oublog, $course) {
 
     $post->id=$postid; // Needed by the below
     if (!oublog_search_update($post, $cm)) {
-        $tw->rollback();
         return(false);
     }
 
@@ -449,7 +440,7 @@ function oublog_add_post($post, $cm, $oublog, $course) {
         $completion->update_state($cm, COMPLETION_COMPLETE);
     }
 
-    $tw->commit();
+    $tw->allow_commit();
 
     return($postid);
 }
@@ -477,7 +468,7 @@ function oublog_edit_post($post, $cm) {
     }
 
     // Begin transaction
-    $tw=new transaction_wrapper();
+    $tw = $DB->start_delegated_transaction();
 
     // insert edit history
     $edit = new stdClass();
@@ -488,7 +479,6 @@ function oublog_edit_post($post, $cm) {
     $edit->oldmessage   = $oldpost->message;
 
     if (!$editid = $DB->insert_record('oublog_edits', $edit)) {
-        $tw->rollback();
         return(false);
     }
     // Get list of files attached to this post and attach them to the edit.
@@ -507,7 +497,6 @@ function oublog_edit_post($post, $cm) {
 
     // Update tags
     if (!oublog_update_item_tags($post->oubloginstancesid, $post->id, $post->tags, $post->visibility)) {
-        $tw->rollback();
         return(false);
     }
 
@@ -520,16 +509,14 @@ function oublog_edit_post($post, $cm) {
     }
 
     if (!$DB->update_record('oublog_posts', $post)) {
-        $tw->rollback();
         return(false);
     }
 
     if (!oublog_search_update($post, $cm)) {
-        $tw->rollback();
         return(false);
     }
 
-    $tw->commit();
+    $tw->allow_commit();
 
     return(true);
 }
@@ -570,7 +557,8 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
         }
     }
     if (!$canaudit) {
-        $sqlwhere .= " AND p.deletedby IS NULL ";
+        $sqlwhere .= " AND (p.deletedby IS NULL or bi.userid = ?)";
+        $params[] = $USER->id;
     }
     if ($tag) {
         $sqlwhere .= " AND t.tag = ? ";
@@ -1073,7 +1061,7 @@ function oublog_add_comment($course, $cm, $oublog, $comment) {
         $comment->timeposted = time();
     }
     // Begin transaction.
-    $tw = new transaction_wrapper();
+    $tw = $DB->start_delegated_transaction();
     // Prepare comment id for draft area.
     $comment->message = '';
     $id = $DB->insert_record('oublog_comments', $comment);
@@ -1093,7 +1081,7 @@ function oublog_add_comment($course, $cm, $oublog, $comment) {
         }
     }
     // Commit transaction and return id.
-    $tw->commit();
+    $tw->allow_commit();
     return $id;
 }
 
@@ -2574,7 +2562,7 @@ function oublog_approve_comment($mcomment, $approve) {
     global $DB;
     // Get current time and start transaction
     $now = time();
-    $tw=new transaction_wrapper();
+    $tw = $DB->start_delegated_transaction();;
 
     // Update the moderated comment record
     $update = (object)array(
@@ -2605,7 +2593,7 @@ function oublog_approve_comment($mcomment, $approve) {
     }
 
     // Commit transaction and return id
-    $tw->commit();
+    $tw->allow_commit();
     return $id;
 }
 
@@ -3050,15 +3038,25 @@ function oublog_get_participation($oublog, $context, $groupid=0, $cm,
  * @param int $groupid optional group id term
  * @param object $cm course-module object
  * @param object $course current course object
+ * @param int $start optional start date
+ * @param int $end optional end date
  * @return array user participation
  */
-function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $cm, $course) {
+function oublog_get_user_participation($oublog, $context,
+        $userid, $groupid=0, $cm, $course, $start = null, $end = null) {
     global $DB;
     $testgroupid = $groupid;
     if ($oublog->individual > 0) {
         $testgroupid = 0;
     }
     $groupcheck = $testgroupid ? 'AND groupid = :groupid' : '';
+    $period = $cperiod = '';
+    if ($start) {
+        $period = 'AND timeposted > :timestart ';
+    }
+    if ($end) {
+        $period .= 'AND timeposted < :timeend ';
+    }
 
     $postssql = 'SELECT id, title, message, timeposted
         FROM {oublog_posts}
@@ -3067,9 +3065,15 @@ function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $
             FROM {oublog_instances}
             WHERE oublogid = :oublogid AND userid = :userid
         )
-        AND timedeleted IS NULL ' . $groupcheck . '
-        ORDER BY timeposted ASC';
+        AND timedeleted IS NULL ' . $groupcheck . $period . '
+        ORDER BY timeposted DESC';
 
+    if ($start) {
+        $cperiod = 'AND c.timeposted > :timestart ';
+    }
+    if ($end) {
+        $cperiod .= 'AND c.timeposted < :timeend ';
+    }
     $commentssql = 'SELECT c.id, c.postid, c.title, c.message, c.timeposted,
         a.id AS authorid, a.firstname, a.lastname,
         p.title AS posttitle, p.timeposted AS postdate
@@ -3077,20 +3081,21 @@ function oublog_get_user_participation($oublog, $context, $userid, $groupid=0, $
             INNER JOIN {oublog_posts} p ON (c.postid = p.id)
             INNER JOIN {oublog_instances} bi ON (bi.id = p.oubloginstancesid)
         WHERE bi.oublogid = :oublogid AND a.id = bi.userid
-        AND p.timedeleted IS NULL ' . $groupcheck . '
+        AND p.timedeleted IS NULL ' . $groupcheck . $cperiod . '
         AND c.userid = :userid AND c.timedeleted IS NULL
-            ORDER BY c.timeposted ASC';
+            ORDER BY c.timeposted DESC';
 
     $params = array(
         'oublogid' => $oublog->id,
         'userid' => $userid,
-        'groupid' => $testgroupid
+        'groupid' => $testgroupid,
+        'timestart' => $start,
+        'timeend' => $end
     );
 
     $fields = user_picture::fields();
     $fields .= ',username,idnumber';
     $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
-
     $participation = new StdClass;
     $participation->user = $user;
     $participation->posts = $DB->get_records_sql($postssql, $params);
@@ -3191,8 +3196,20 @@ function oublog_stats_output_visitstats($oublog, $cm, $renderer = null, $ajax = 
 
     if ($filtertime == 0) {
         // No time filter - just get instances from table.
-        $blogs = $DB->get_records_select('oublog_instances', 'oublogid =? AND views >0',
-                array($oublog->id), 'views DESC, name ASC', '*', 0, 5);
+        if ($oublog->global && $excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+            // There are user ids to exclude in the global blog stats.
+            $sql = 'SELECT * from {oublog_instances} WHERE oublogid =? AND views >0';
+            $params = array($oublog->id);
+            list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                    SQL_PARAMS_QM, 'param', false);
+            $sql .= " AND userid $insql";
+            $params = array_merge($params, $inparams);
+            $sql .= ' order by views DESC, name ASC';
+            $blogs = $DB->get_records_sql($sql, $params, 0, 5);
+        } else {
+            $blogs = $DB->get_records_select('oublog_instances', 'oublogid =? AND views >0',
+                    array($oublog->id), 'views DESC, name ASC', '*', 0, 5);
+        }
     } else {
         // Time filter - get instances from sub-query based on matching post criteria.
         $sql = 'SELECT bi.* FROM {oublog_instances} bi
@@ -3211,6 +3228,15 @@ function oublog_stats_output_visitstats($oublog, $cm, $renderer = null, $ajax = 
                 $params[] = OUBLOG_VISIBILITY_PUBLIC;
             } else {
                 $params[] = OUBLOG_VISIBILITY_LOGGEDINUSER;
+            }
+        }
+        if ($oublog->global) {
+            if ($excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+                // There are user ids to exclude in the global blog stats.
+                list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                        SQL_PARAMS_QM, 'param', false);
+                $sql .= " AND bi2.userid $insql";
+                $params = array_merge($params, $inparams);
             }
         }
         $sql .= ' GROUP BY bi2.id)) ORDER BY bi.views DESC, bi.name ASC';
@@ -3284,7 +3310,8 @@ function oublog_stats_output_poststats($oublog, $cm, $renderer = null, $ajax = f
 
     // Create time filter options form.
     $customdata = array(
-            'options' => array(OUBLOG_STATS_TIMEFILTER_ALL => get_string('timefilter_alltime', 'oublog'),
+            'options' => array(
+                    OUBLOG_STATS_TIMEFILTER_ALL => get_string('timefilter_alltime', 'oublog'),
                     OUBLOG_STATS_TIMEFILTER_YEAR => get_string('timefilter_thisyear', 'oublog'),
                     OUBLOG_STATS_TIMEFILTER_MONTH => get_string('timefilter_thismonth', 'oublog')),
             'default' => $default,
@@ -3347,6 +3374,15 @@ function oublog_stats_output_poststats($oublog, $cm, $renderer = null, $ajax = f
                 $subwhere .= " AND bi2.userid IS NULL";
             }
         } else {
+            if ($oublog->global) {
+                if ($excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+                    // There are user ids to exclude in the global blog stats.
+                    list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                            SQL_PARAMS_QM, 'param', false);
+                    $subwhere .= " AND bi2.userid $insql";
+                    $params = array_merge($params, $inparams);
+                }
+            }
             // Not getting specific user(s) so join user table to ensure they still exist in system.
             $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
         }
@@ -3522,6 +3558,15 @@ function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax 
                 $subwhere .= " AND bi2.userid IS NULL";
             }
         } else {
+            if ($oublog->global) {
+                if ($excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+                    // There are user ids to exclude in the global blog stats.
+                    list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                            SQL_PARAMS_QM, 'param', false);
+                    $subwhere .= " AND bi2.userid $insql";
+                    $params = array_merge($params, $inparams);
+                }
+            }
             // Not getting specific user(s) so join user table to ensure they still exist in system.
             $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
         }
@@ -3612,7 +3657,7 @@ function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax 
  * @param int $curindividual User ID for current individual blog instance
  */
 function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $ajax = false,
-        $allposts = false, $curindividual = -1) {
+        $allposts = false, $curindividual = -1, $globalindividual = null) {
     global $PAGE, $DB, $USER;
     if (!$renderer) {
         $renderer = $PAGE->get_renderer('mod_oublog');
@@ -3635,7 +3680,7 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
         // Work out current individual.
         $curindividual = optional_param('curindividual', $curindividual, PARAM_INT);
     } else if ($oublog->global && !$allposts) {
-        $curindividual = optional_param('curindividual', $curindividual, PARAM_INT);
+        $curindividual = optional_param('globalindividual', $globalindividual, PARAM_INT);
         if ($curindividual == -1) {
             // Get current user as not sent.
             $curindividual = optional_param('user', $USER->id, PARAM_INT);
@@ -3659,7 +3704,8 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
             'params' => array(
                     'allposts' => $allposts,
                     'curgroup' => $curgroup,
-                    'curindividual' => $curindividual
+                    'curindividual' => $curindividual,
+                    'globalindividual' => $globalindividual
                     )
     );
     if ($oublog->global && !$allposts && $curindividual != -1) {
@@ -3699,6 +3745,15 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
     } else {
         // Not getting specific user(s) so join user table to ensure they still exist in system.
         $extrajoin .= 'JOIN {user} u on u.id = bi2.userid';
+        if ($allposts) {
+            // Get any excluded user ids, add not in() against instance user id.
+            if ($excludedlist = get_config('mod_oublog', 'globalusageexclude')) {
+                 list($insql, $inparams) = $DB->get_in_or_equal(explode(',', $excludedlist),
+                         SQL_PARAMS_QM, 'param', false);
+                 $instwhere .= ' AND (bi2.userid ' . $insql . ')';
+                 $params = array_merge($params, $inparams);
+            }
+        }
     }
     $params[] = OUBLOG_COMMENTS_PREVENT;
     if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC && !isloggedin())) {
@@ -3815,6 +3870,111 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
 
     return $renderer->render_stats_view('commentpoststats', $maintitle, $content, $title, $info, $timefilter, $ajax);
 }
+/**
+ * Generates oublog user participation statistics output.
+ * @param object $oublog
+ * @param object $cm
+ * @param mod_oublog_renderer $renderer
+ * @param bool $ajax true to return data object rather than html
+ */
+function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $course, $currentindividual, $globalindividual = null) {
+    global $PAGE, $DB, $USER, $OUTPUT;
+    if (!isloggedin()) {// My participation is only visible to actual users.
+        return;
+    }
+    if (!$renderer) {
+        $renderer = $PAGE->get_renderer('mod_oublog');
+    }
+    // Setup My Participation capability check.
+    $curgroup = oublog_get_activity_group($cm);
+    $canview = oublog_can_view_participation($course, $oublog, $cm, $curgroup);
+    if ($oublog->global) {
+        $currentindividual = $globalindividual;
+    }
+    // Dont show the 'block' if user cant participate.
+    if (($oublog->global && $currentindividual != $USER->id) ||
+            ($oublog->individual > OUBLOG_NO_INDIVIDUAL_BLOGS && $currentindividual != $USER->id)) {
+        return;
+    }
+    if (!$oublog->global && $canview == OUBLOG_NO_PARTICIPATION) {
+        return;
+    }
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    // Get the participation object containing User, Posts and Comments.
+    $participation = oublog_get_user_participation($oublog, $context,
+            $USER->id, $curgroup, $cm, $course);
+    // Generate content data to send to renderer.
+    $maintitle = get_string('myparticipation', 'oublog');// The title of the block 'section'.
+    $content = '';
+    $postedcount = $commentedcount = $commenttotal = 0;
+    $postshow = 8;
+    $postscount = count($participation->posts);
+    if (count($participation->comments) <= 4) {
+        $commenttotal = count($participation->comments);
+    } else {
+        $commenttotal = 4;
+    }
+    if (!$participation->posts) {
+        $content .= html_writer::tag('p', get_string('nouserposts', 'oublog'));
+    } else {
+        $percent = $stat = null;
+        $content .= html_writer::tag('h3', get_string('numberposts', 'oublog', count($participation->posts)));
+        foreach ($participation->posts as $post) {
+            if ($postedcount >= ($postshow - $commenttotal)) {
+                break;
+            }
+            $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
+            $postname = !(empty($post->title)) ? $post->title : get_string('untitledpost', 'oublog');
+            $label = html_writer::div(html_writer::link($url, $postname), 'oublogstats_posts_posttitle');
+            $label .= html_writer::div(oublog_date($post->timeposted) , 'oublogstats_commentposts_blogname');
+            $statinfo = new oublog_statsinfo($participation->user, $percent, $stat, $url, $label);
+            $content .= $renderer->render($statinfo);
+            $postedcount++;
+        }
+    }
+    // Pre test the numbers of posts/comments for display upto max.
+    $postspluscount = count($participation->posts) - $postedcount;
+    if ($postspluscount >= 1) {
+        $content .= html_writer::tag('p', get_string('numberpostsmore', 'oublog', $postspluscount));
+    }
+    if (!$participation->comments) {
+        $content .= html_writer::tag('p', get_string('nousercomments', 'oublog'));
+    } else {
+        $percent = $stat = null;// Removing all stats div.
+        $content .= html_writer::tag('h3', get_string('numbercomments', 'oublog', count($participation->comments)));
+        foreach ($participation->comments as $comment) {
+            if (($commentedcount + $postedcount) >= $postshow ) {
+                break;
+            }
+            $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $comment->postid));
+            $lnkurl = $url->out() . '#cid' . $comment->id;
+            $commentname = !(empty($comment->title)) ? $comment->title : get_string('untitledcomment', 'oublog');
+            $label = html_writer::div(html_writer::link($lnkurl, $commentname), 'oublogstats_commentposts_posttitle');
+            $label .= html_writer::div(oublog_date($comment->timeposted) , 'oublogstats_commentposts_blogname');
+            $statinfo = new oublog_statsinfo($participation->user, $percent, $stat, $url, $label);
+            $content .= $renderer->render($statinfo);
+            $commentedcount++;
+        }
+    }
+    // If the number of comments is more than can be shown.
+    $commentspluscount = count($participation->comments) - $commentedcount;
+    if ($commentspluscount >= 1) {
+        $content .= html_writer::tag('p', get_string('numbercommentsmore', 'oublog', $commentspluscount));
+    }
+    $params = array(
+        'id' => $cm->id,
+        'group' => $curgroup,
+        'user' => $participation->user->id
+    );
+    $url = new moodle_url('/mod/oublog/userparticipation.php', $params);
+    $viewmyparticipation = html_writer::link($url, get_string('viewmyparticipation', 'oublog'));
+    $content .= html_writer::start_tag('div', array('class' => 'oublog-post-content'));
+    $content .= html_writer::tag('h3', $viewmyparticipation, array('class' => 'oublog-post-title'));
+    $content .= html_writer::end_tag('div');
+
+    return $renderer->render_stats_view('myparticipation', $maintitle,
+            $content, null, null , null, false);
+}
 
 require_once($CFG->libdir . '/formslib.php');
 class oublog_stats_timefilter_form extends moodleform {
@@ -3878,7 +4038,7 @@ class oublog_stats_timefilter_form extends moodleform {
         return parent::get_form_identifier() . '_' . $this->type;
     }
 
-    function add_action_buttons($cancel = true, $submitlabel=null){
+    public function add_action_buttons($cancel = true, $submitlabel = null) {
         // Override submit to ensure name unique.
         $mform =& $this->_form;
         $mform->addElement('submit', 'submitbutton' . '_' . $this->type, $submitlabel);
@@ -4161,4 +4321,407 @@ function oublog_oualerts_enabled() {
     }
 
     return false;
+}
+
+/**
+ * Calls a remote server externallib web services during import
+ * We use the Moodle curl cache to store responses (for 120 secs default)
+ * @param string $function
+ * @param array $params (name => value)
+ * @return array json decoded result or false if not configured
+ */
+function oublog_import_remote_call($function, $params = null) {
+    $settings = get_config('mod_oublog');
+    if (empty($settings->remoteserver) && empty($settings->remotetoken)) {
+        return false;
+    }
+    if (is_null($params)) {
+        $params = array();
+    }
+    $curl = new curl(array('cache' => true, 'module_cache' => 'oublog_import'));
+    $url = $settings->remoteserver . '/webservice/rest/server.php';
+    $params['moodlewsrestformat'] = 'json';
+    $params['wsfunction'] = $function;
+    $params['wstoken'] = $settings->remotetoken;
+    $options = array();
+    $options['RETURNTRANSFER'] = true;
+    $options['SSL_VERIFYPEER'] = false;
+    $result = $curl->get($url, $params, $options);
+    $json = json_decode($result);
+    if (empty($result) || $curl->get_errno() || !empty($json->exception)) {
+        $errinfo = !empty($json->exception) ? !empty($json->debuginfo) ? $json->debuginfo : $json->message : $curl->error;
+        throw new moodle_exception('Failed to contact ' . $settings->remoteserver . ' : ' . $errinfo);
+        return false;
+    }
+    return $json;
+}
+
+/**
+ * Class defined here to extend the curl class and call the multi() function with no options set.
+ */
+class oublog_public_curl_multi extends curl {
+    public function public_multi($requests, $options = array()) {
+        return $this->multi($requests, $options);
+    }
+}
+
+/**
+ * Downloads files from remote system and adds into local file table
+ * Uses webservice pluginfile so lib picks up is from this and allows access to files.
+ * @param array $files - array of file-like objects (returned from externallib get_posts)
+ * @param int $newcontid - context id to use for new files
+ * @param int $newitemid - item id to use for new files
+ */
+function oublog_import_remotefiles($files, $newcontid, $newitemid) {
+    $settings = get_config('mod_oublog');
+    if (empty($settings->remoteserver) && empty($settings->remotetoken) || empty($files)) {
+        return false;
+    }
+    $fs = get_file_storage();
+    $options = array('RETURNTRANSFER' => true);
+    $requests = array();
+    foreach ($files as $file) {
+        $requests[] = array('url' => $settings->remoteserver . '/webservice/pluginfile.php/' .
+                $file->contextid . '/mod_oublog/' . $file->filearea . '/' . $file->itemid . $file->filepath .
+                rawurlencode($file->filename) . '?token=' . $settings->remotetoken);
+    }
+    $curl = new oublog_public_curl_multi();
+    $responses = $curl->public_multi($requests, $options);
+    $count = count($files);
+    for ($i = 0; $i < $count; $i++) {
+        if (empty($files[$i])) {
+            continue;
+        }
+        $fileinfo = $files[$i];
+        $fileinfo->contextid = $newcontid;
+        $fileinfo->itemid = $newitemid;
+        $fileinfo->component = 'mod_oublog';
+        $fs->create_file_from_string($fileinfo, $responses[$i]);
+    }
+    return true;
+}
+
+/**
+ * Gets all blogs on the system (and on remote system if defined) that can be imported from
+ * @param int $userid
+ * @param int $curcmid Current blog cmid (excludes this from list returned)
+ * @return array of blog 'info objects' [cmid, name, coursename, numposts]
+ */
+function oublog_import_getblogs($userid = 0, $curcmid = null) {
+    global $DB, $USER, $SITE;
+    if ($userid == 0) {
+        $userid = $USER->id;
+    }
+    $retarray = array();
+    $courses = enrol_get_users_courses($userid, true, array('modinfo', 'sectioncache'));
+    array_unshift($courses, get_site());
+    $courses[0]->site = true;// Mark the global site.
+    foreach ($courses as $course) {
+        $crsmodinfo = get_fast_modinfo($course, $userid);
+        $blogs = $crsmodinfo->get_instances_of('oublog');
+        foreach ($blogs as $blogcm) {
+            if ($curcmid && $blogcm->id == $curcmid) {
+                continue;// Ignore current blog.
+            }
+            $blogcontext = context_module::instance($blogcm->id);
+            if ($blogoublog = $DB->get_record('oublog', array('id' => $blogcm->instance))) {
+                $canview = $blogcm->uservisible;
+                if ($canview) {
+                    $canview = has_capability('mod/oublog:view', $blogcontext, $userid);
+                }
+                if ($blogoublog->global) {
+                    // Ignore uservisible for global blog and only check cap.
+                    $canview = has_capability('mod/oublog:viewpersonal', context_system::instance(), $userid);
+                }
+                if ($canview) {
+                    if ($blogoublog->global) {
+                        // Global blog, only show if user instance available.
+                        if (!$blogoubloginst = $DB->get_record('oublog_instances',
+                                array('oublogid' => $blogoublog->id, 'userid' => $userid))) {
+                            continue;
+                        }
+                    } else if ($blogoublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+                        // Only allow individual blogs.
+                        continue;
+                    }
+                    $blogob = new stdClass();
+                    $blogob->cmid = $blogcm->id;
+                    $blogob->coursename = '';
+                    if (!$blogoublog->global) {
+                        $blogob->coursename = $blogcm->get_course()->shortname . ' ' .
+                                get_course_display_name_for_list($blogcm->get_course());
+                    }
+                    // Get number of posts (specific to user, doesn't work with group blogs).
+                    $sql = 'SELECT count(p.id) as total
+                        FROM {oublog_posts} p
+                        INNER JOIN {oublog_instances} bi on bi.id = p.oubloginstancesid
+                        WHERE bi.userid = ?
+                        AND bi.oublogid = ?
+                        AND p.deletedby IS NULL';
+                    $count = $DB->get_field_sql($sql, array($userid, $blogoublog->id));
+                    $blogob->numposts = $count ? $count : 0;
+                    $blogoublogname = $blogcm->get_formatted_name();
+                    if ($blogoublog->global) {
+                        $blogoublogname = $blogoubloginst->name;
+                    }
+                    $blogob->name = $blogoublogname;
+                    $retarray[] = $blogob;
+                }
+            }
+        }
+    }
+    return $retarray;
+}
+/**
+ * Returns blog info - cm, oublog
+ * Also checks is a valid blog for import
+ * (Throws exception on access error)
+ * @param int $cmid
+ * @param int $userid
+ * @return array (cm id, oublog id, context id, blog name, course shortname)
+ */
+function oublog_import_getbloginfo($cmid, $userid = 0) {
+    global $DB, $USER;
+    if ($userid == 0) {
+        $userid = $USER->id;
+    }
+    $bcourse = $DB->get_record_select('course',
+            'id = (SELECT course FROM {course_modules} WHERE id = ?)', array($cmid),
+            '*', MUST_EXIST);
+    $bmodinfo = get_fast_modinfo($bcourse, $userid);
+    $bcm = $bmodinfo->get_cm($cmid);
+    if ($bcm->modname !== 'oublog') {
+        throw new moodle_exception('invalidcoursemodule', 'error');
+    }
+    if (!$boublog = $DB->get_record('oublog', array('id' => $bcm->instance))) {
+        throw new moodle_exception('invalidcoursemodule', 'error');
+    }
+    $bcontext = get_context_instance(CONTEXT_MODULE, $bcm->id);
+    $canview = $bcm->uservisible;
+    if ($canview) {
+        $canview = has_capability('mod/oublog:view', $bcontext, $userid);
+    }
+    if ($boublog->global) {
+        // Ignore uservisible for global blog and only check cap.
+        $canview = has_capability('mod/oublog:viewpersonal', context_system::instance(), $userid);
+    }
+    if (!$canview ||
+            (!$boublog->global && $boublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS)) {
+        // Not allowed to get pages from selected blog.
+        throw new moodle_exception('import_notallowed', 'oublog', '', oublog_get_displayname($boublog));
+    }
+    if ($boublog->global) {
+        $boublogname = $DB->get_field('oublog_instances', 'name',
+                array('oublogid' => $boublog->id, 'userid' => $userid));
+        $shortname = '';
+    } else {
+        $boublogname = $bcm->get_course()->shortname . ' ' .
+                get_course_display_name_for_list($bcm->get_course()) .
+                ' : ' . $bcm->get_formatted_name();
+        $shortname = $bcm->get_course()->shortname;
+    }
+    return array($bcm->id, $boublog->id, $bcontext->id, $boublogname, $shortname);
+}
+
+/**
+ * Returns importable posts, total posts and selected tag info
+ * @param int $blogid - ID of blog
+ * @param string $sort - SQL sort for posts
+ * @param int $userid
+ * @param int $page - page number for pagination (100 per page)
+ * @param array $tags - comma separated sequence of selected tag ids to filter by
+ * @return array (posts, total in DB, selected tag info)
+ */
+function oublog_import_getallposts($blogid, $sort, $userid = 0, $page = 0, $tags = null) {
+    global $DB, $USER;
+    if ($userid == 0) {
+        $userid = $USER->id;
+    }
+    $perpage = 100;// Must match value in import.php.
+    $sqlparams = array($userid, $blogid);
+    $tagjoin = '';
+    $tagwhere = '';
+    $tagnames = '';
+    $total = 0;
+    if ($tags) {
+        $tagarr = array_unique(explode(',', $tags));
+        // Filter by joining tag instances.
+        list($taginwhere, $tagparams) = $DB->get_in_or_equal($tagarr);
+        $tagjoin = "INNER JOIN (
+        SELECT ti.postid, count(*) as tagcount FROM {oublog_taginstances} ti WHERE ti.tagid $taginwhere
+        group by ti.postid) as hastags on hastags.postid = p.id";
+        $tagwhere = 'AND hastags.tagcount = ?';
+        $sqlparams = array_merge($tagparams, $sqlparams, array(count($tagarr)));
+        // Get selected tag names.
+        $tagnames = $DB->get_records_select('oublog_tags', "id $taginwhere", $tagparams, 'tag ASC');
+    }
+    $sql = "SELECT p.id, p.timeposted, p.title
+        FROM {oublog_posts} p
+        INNER JOIN {oublog_instances} bi on bi.id = p.oubloginstancesid
+        $tagjoin
+        WHERE bi.userid = ?
+        AND bi.oublogid = ?
+        AND p.deletedby IS NULL
+        $tagwhere
+        ORDER BY p." . $sort;
+
+    $limitfrom = $page * $perpage;
+
+    if ($posts = $DB->get_records_sql($sql, $sqlparams, $limitfrom, $perpage)) {
+        // Add in post tags from single query.
+        list($inwhere, $inparams) = $DB->get_in_or_equal(array_keys($posts));
+        $tsql = 'SELECT t.*, ti.postid
+            FROM {oublog_taginstances} ti
+            INNER JOIN {oublog_tags} t ON ti.tagid = t.id
+            WHERE ti.postid ' . $inwhere . ' ORDER BY t.tag';
+        $rs = $DB->get_recordset_sql($tsql, $inparams);
+        foreach ($rs as $tag) {
+            $postid = $tag->postid;
+            if (!isset($posts[$postid]->tags)) {
+                $posts[$postid]->tags = array();
+            }
+            $posts[$postid]->tags[$tag->id] = $tag->tag;
+        }
+        $rs->close();
+        // Add total record count.
+        $total = $DB->get_field_sql('SELECT count(tot.id) FROM (' . $sql . ') as tot', $sqlparams);
+    }
+    return array($posts, $total, $tagnames);
+}
+
+/**
+ * Returns posts specified (inc tags and comments)
+ * @param int $blogid - oublog id
+ * @param int $bcontextid - oublog mod context id
+ * @param array $selected - array of selected post ids
+ * @param bool $inccomments - include comments?
+ * @param int $userid - user id (ensures user is post author)
+ * @return array posts
+ */
+function oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments = false, $userid = 0) {
+    global $DB, $USER;
+    if ($userid == 0) {
+        $userid = $USER->id;
+    }
+    list($inwhere, $sqlparams) = $DB->get_in_or_equal($selected);
+    $sql = "SELECT p.*
+        FROM {oublog_posts} p
+        INNER JOIN {oublog_instances} bi on bi.id = p.oubloginstancesid
+        WHERE bi.userid = ?
+        AND bi.oublogid = ?
+        AND p.deletedby IS NULL
+        AND p.id $inwhere
+        ORDER BY p.id ASC";
+
+    $sqlparams = array_merge(array($userid, $blogid), $sqlparams);
+    if (!$posts = $DB->get_records_sql($sql, $sqlparams)) {
+        return array();
+    }
+    $files = get_file_storage();
+    // Get post images and attachments.
+    foreach ($posts as &$post) {
+        $post->comments = array();// Add in a comment array for use later.
+        $post->images = $files->get_area_files($bcontextid, 'mod_oublog', 'message', $post->id, 'itemid', false);
+        $post->attachments = $files->get_area_files($bcontextid, 'mod_oublog', 'attachment', $post->id, 'itemid', false);
+        if (empty($post->images)) {
+            $post->images = array();
+        }
+        if (empty($post->attachments)) {
+            $post->attachments = array();
+        }
+    }
+    // Add in post tags from single query.
+    list($inwhere, $inparams) = $DB->get_in_or_equal(array_keys($posts));
+    $tsql = 'SELECT t.*, ti.postid
+        FROM {oublog_taginstances} ti
+        INNER JOIN {oublog_tags} t ON ti.tagid = t.id
+        WHERE ti.postid ' . $inwhere;
+    $rs = $DB->get_recordset_sql($tsql, $inparams);
+    foreach ($rs as $tag) {
+        $postid = $tag->postid;
+        if (!isset($posts[$postid]->tags)) {
+            $posts[$postid]->tags = array();
+        }
+        $posts[$postid]->tags[] = $tag;
+    }
+    $rs->close();
+    if ($inccomments) {
+        // Get comments for post on the page.
+        $sql = "SELECT c.*
+            FROM {oublog_comments} c
+            WHERE c.postid $inwhere AND c.deletedby IS NULL AND c.userid = ?
+            ORDER BY c.timeposted ASC";
+        $inparams[] = $userid;
+        $rs = $DB->get_recordset_sql($sql, $inparams);
+        foreach ($rs as $comment) {
+            $comment->images = $files->get_area_files($bcontextid, 'mod_oublog', 'messagecomment',
+                        $comment->id, 'itemid', false);
+            if (empty($comment->images)) {
+                $comment->images = array();
+            }
+            $posts[$comment->postid]->comments[$comment->id] = $comment;
+        }
+        $rs->close();
+    }
+    return $posts;
+}
+
+class oublog_participation_timefilter_form extends moodleform {
+
+    public function definition() {
+        global $CFG;
+
+        $mform =& $this->_form;
+        $cdata = $this->_customdata;
+        /*
+         * We Expect custom data to have following format:
+        * 'options' => array used for select drop down
+        * 'default' => default/selected option
+        * 'cmid' => blog course module id
+        * 'params' => key(name)/value array to make into hidden inputs (value must be integer)
+        */
+        if (!empty($cdata['params']) && is_array($cdata['params'])) {
+            foreach ($cdata['params'] as $param => $value) {
+                $mform->addElement('hidden', $param, $value);
+                $mform->setType($param, PARAM_INT);
+            }
+        }
+        // Data selectors, with optional enabling checkboxes.
+        $mform->addElement('date_selector', 'start',
+                get_string('start', 'oublog'), array('startyear' => 2000, 'stopyear' => gmdate("Y"),
+                        'optional' => true));
+        $mform->addHelpButton('start', 'displayperiod', 'oublog');
+
+        $mform->addElement('date_selector', 'end',
+                get_string('end', 'oublog'), array('startyear' => 2000, 'stopyear' => gmdate("Y"),
+                        'optional' => true));
+
+        if (isset($cdata['type'])) {
+            $mform->addElement('hidden', 'type', $cdata['type']);
+            $mform->setType('type', PARAM_ALPHA);
+        }
+        if (isset($cdata['cmid'])) {
+            $mform->addElement('hidden', 'id', $cdata['cmid']);
+            $mform->setType('id', PARAM_INT);
+        }
+        if (isset($cdata['user'])) {
+            $mform->addElement('hidden', 'user', $cdata['user']);
+            $mform->setType('user', PARAM_INT);
+        }
+        if (isset($cdata['group'])) {
+            $mform->addElement('hidden', 'group', $cdata['group']);
+            $mform->setType('group', PARAM_INT);
+        }
+        $this->add_action_buttons(false, get_string('timefilter_submit', 'oublog'));
+    }
+
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        if (!empty($data['start']) and !empty($data['end'])) {
+            if ($data['start'] > $data['end']) {
+                $errors['start'] = get_string('timestartenderror', 'oublog');
+            }
+        }
+        return $errors;
+    }
 }

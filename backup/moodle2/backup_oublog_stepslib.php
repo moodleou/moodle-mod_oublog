@@ -40,7 +40,7 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
                 'accesstoken', 'intro', 'introformat', 'allowcomments', 'individual',
                 'maxbytes', 'maxattachments', 'maxvisibility', 'global', 'views',
                 'completionposts', 'completioncomments', 'reportingemail', 'displayname',
-                'statblockon'));
+                'statblockon', 'allowimport'));
 
         $instances = new backup_nested_element('instances');
 

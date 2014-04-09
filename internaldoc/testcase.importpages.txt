@@ -1,0 +1,297 @@
+This script describes steps to test the OU Blog facility for importing posts from a user
+perspective. It is intended to cover most of the UI and features.
+
+NOTE: In this test case, the word 'blog' always refers to the OU blog.
+
+The test steps in this script follow on from each other and aren't independent.
+
+
+Initial setup
+=============
+
+This test case requires:
+
+- 2 users. S1 - a student user and an admin user (both system-wide, not 'view as' or course roles).
+- Two test courses, referred to as TC1 and TC2, that are visible to students.
+- User S1 should be enrolled on TC1 and TC2.
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+
+CRE Creating blog and data
+===========================
+
+CRE01 / admin.
+   Enter TC1.
+   Create a blog called WCB01 - a whole-course blog (blog together, no group mode).
+   Create a blog called IB01 - set to Separate individual blogs, enable comments from logged-in users.
+   Create a blog called IB02 - set to Separate individual blogs.
+   Create a blog called IB03 - set to Separate individual blogs - make this hidden from students.
+
+CRE02 / admin
+   Enter TC2.
+   Create a blog called IB04 - set to Separate individual blogs, enable comments from logged-in users.
+
+CRE03 / admin
+   Enter TC1 and enter blog IB01.
+   Create a new post, titled "CRE03 - admin", any message text, other options at default.
+
+CRE04 / S1 (change)
+   Enter TC1 and enter blog IB01.
+   Create a new post:
+   Leave title as blank
+   Add any text to message, upload any image into the text
+   Ensure comments are allowed
+   Add the same image as an attachment
+   Add tags "a,b,c"
+   Save
+ -- Verify new post is displayed in blog view page.
+
+CRE05 / S1
+   Repeat CRE04, using tags value "a,b".
+
+CRE06 / S1
+   Repeat CRE04, making title "CRE06" and tags value "a".
+
+CRE07 / S1
+   Against CRE06 post, add a new comment by selecting 'Add your comment'
+   Add any text to the comment message, include an uploaded image
+   Save comment
+ -- Verify comment text with image shows.
+
+CRE08 / admin (change)
+   Enter TC1 and enter blog IB01.
+   Against CRE06 post, add a new comment by selecting 'Add your comment'
+   Add any text to the comment message
+   Save comment
+ -- Verify comment text with image shows.
+
+AVL Import pages availability
+=============================
+
+AVL01 / admin
+   Enter TC2 and select blog IB04
+ -- Verify 'Import posts' button is not shown next to New blog post button.
+
+AVL02 / admin
+   Select Edit settings under OU blog administration (Administration block)
+   Check 'Enable post import' checkbox
+   Select Save and display
+ -- Verify 'Import posts' button is now shown next to 'New blog post' button.
+
+AVL03 / admin
+   Enter TC1 and select blog WCB01
+ -- Verify 'Import posts' button is not shown next to New blog post button.
+
+AVL04 / admin
+   Select Edit settings under OU blog administration (Administration block)
+   Check 'Enable post import' checkbox
+   Select Save and display
+ -- Verify warning is shown advising post import cannot be enabled and form is not saved.
+   Exit edit settings page.
+
+SEL Import page selection
+=========================
+
+SEL01 / S1 (change)
+   Enter TC2 and select blog IB04
+   Select the 'Import posts' button
+ -- Verify that the 'Import pages' screen is shown. This should only list the following:
+ -- TC1
+ -- IB01 (3 posts) [Where IB01 is a link]
+ -- IB02 (0 posts) [Where IB02 is not a link]
+ -- [Note that other courses/blogs not setup in this test may appear depending on system content]
+
+SEL02 / S1
+   Select the IB01 link
+ -- Verify page changes, and shows:
+ -- Import from: [TC1 shortname and full name] : IB01
+ -- A table with 'Title', 'Date posted', 'Tags' and 'Include in import' columns
+ -- Table should contain 3 rows:
+ -- CRE06, [Date post was created], a
+ -- Untitled post 1, [Date post was created], a,b
+ -- Untitled post 2, [Date post was created], a,b,c.
+
+SEL03 / S1
+   Select Date posted column heading link
+ -- Verify that posts re-order into reverse order, Date posted should now have an 'up' symbol
+   Select Title column heading link
+ -- Verify that post re-order alphabetically, Title should now have an 'up' symbol
+
+SEL04 / S1
+   Select link on any tag 'a' in the Tag column of the table
+ -- Verify page reloads - information should remain the same. A "[cross] a" link should appear in Tags column header
+   Select link on any tag 'b' in the Tag column of the table
+ -- Verify page reloads - only the two posts with tag b should now show in the table,
+ -- "[cross] a" and "[cross] b" links should appear in Tags column header
+   Select link on tag 'c' in the tag column of the table
+ -- Verify page reloads - only the post with tag c should now show in the table,
+ -- "[cross] a", "[cross] b" and "[cross] c" links should appear in Tags column header
+   Select the icon next to 'c' in Tags column header
+ -- Verify page reloads - the two posts with tag b should now show in the table,
+ -- "[cross] a" and "[cross] b" links should appear in Tags column header.
+
+SEL05 / S1 (JavaScript enabled only)
+   Select 'Select all' link in 'Include in import' column header
+ -- Verify all posts shown have 'Include in import' checked
+   Select 'Select none' link in 'Include in import' column header
+ -- Verify all posts shown have 'Include in import' not checked.
+
+SEL06 / S1
+   Ensure no posts have 'Include in import' checkbox checked
+   Select 'Import posts' button
+ -- Verify page changes and 'No posts selected for import' message displayed
+   Select 'Continue' button
+ -- Verify returned to post selection table.
+
+SEL07 / S1
+   Select 'Cancel' button
+ -- Verify return to blog selection screen.
+
+IMP Import blog pages
+=====================
+
+IMP01/ S1
+   Enter TC2 and select blog IB04, then select 'Import pages' button
+   Select link to IB01 (3 posts)
+   Select 'Include in import' checkbox for all three posts shown
+   Select 'Import posts'
+ -- Verify page changes and 'Importing posts:' is displayed along with a progress bar
+ -- Verify progress bar reaches 100% and message 'Imported 3 posts' is displayed.
+
+IMP02 / S1
+   Select the 'Continue' button
+ -- Verify IB04 main blog view page displayed
+ -- Verify 3 posts now display, check content, tags and attachments against original
+   Select 'Permalink' for post CRE06
+ -- Verify 1 comment is displayed (by user s1), check content.
+
+IMP03 / S1
+   Repeat IMP01
+ -- Verify 'Imported 0 posts' displayed
+ -- Verify message '3 posts to import were identified as conflicts with existing posts.' displayed
+   Select 'Cancel'
+ -- Verify IB04 main blog view page displayed, with 3 posts listed.
+
+IMP04 / S1
+   Repeat IMP01
+   Select 'Import conflicting posts' button
+ -- Verify page changes and 'Importing posts:' is displayed along with a progress bar
+ -- Verify progress bar reaches 100% and message 'Imported 3 posts' is displayed.
+   Repeat IMP02
+ -- Verify as per IMP02, but there are now exact duplicates of all three posts
+
+LPB Import using local Personal blog
+====================================
+
+LPB01 / S1
+   Enter TC2 and select blog IB04, then select 'Import pages' button
+ -- Verify user's personal blog is displayed in blog list according to following rules:
+ -- User has not visited their personal blog - Not displayed
+ -- User has no posts in their personal blog - Displayed, but with no link
+ -- User has posts in their personal blog - Displayed, with link
+   If no personal blog posts available visit the personal blog (/mod/oublog/view.php)
+   Add 1 new post (any content, private visibility) to the personal blog
+   Repeat this test step.
+
+LPB02 / S1
+   Select user S1's personal blog from the Import pages blog list
+   Select any post available to import and start the importing process
+ -- Verify the post imported process completed correctly
+   Select Continue button
+ -- Verify you are returned to user S1's personal blog.
+
+LPB03 / S1
+   Enter the personal blog for user S1 (/mod/oublog/view.php)
+ -- Verify 'Import posts' button is not available.
+
+LPB04 / admin (change)
+   Enter the personal blog for user admin (/mod/oublog/view.php)
+   Select Edit settings under OU blog administration (Administration block)
+   Check 'Enable post import' checkbox
+   Select Save and display
+ -- Verify 'Import posts' button is now shown next to 'New blog post' button.
+
+LPB05/ S1 (change)
+   Enter the personal blog for user S1 (/mod/oublog/view.php), then select 'Import pages' button
+   Select link to IB01
+   Select 'Include in import' checkbox for one post - CRE06
+   Select 'Import posts'
+ -- Verify page changes and 'Importing posts:' is displayed along with a progress bar
+ -- Verify progress bar reaches 100% and message 'Imported 1 posts' is displayed.
+
+LPB06 / S1
+   Select the 'Continue' button
+ -- Verify personal blog view page displayed for user S1
+ -- Verify CRE06 post now displays as a private post, check content, tags and attachments against original
+   Select 'Permalink' for post CRE06
+ -- Verify 1 comment is displayed (by user s1), check content.
+
+RPB Import using remote personal blog
+=====================================
+
+Note that this test requires a separate test server with personal blog enabled(referred to as remote in this test).
+Both servers will need to be configured to enable page importing between them prior to testing.
+The S1 test user must have identical usernames on both servers.
+
+RPB01 / admin
+   Access the remote server
+   Enter the personal blog for user admin (/mod/oublog/view.php)
+   Select Edit settings under OU blog administration (Administration block)
+   Check 'Enable post import' checkbox
+   Select Save and display
+ -- Verify 'Import posts' button is now shown next to 'New blog post' button.
+
+RPB02 / S1 (change)
+   Access the remote server
+   Enter the personal blog for user S1 (/mod/oublog/view.php)
+   Select the 'Blog options' link
+   Alter the blog name to identify that the blog is on the remote server, Save changes
+   Select 'Import posts' button
+ -- Verify a list of courses and blogs is displayed that correspond to the original test server
+ -- Verify course TC1, blog IB01 is displayed.
+
+RPB03 / S1
+   Select blog IB01 from the import posts page
+    -- Verify page changes, and shows:
+ -- Import from: [TC1 shortname and full name] : IB01
+ -- A table with 'Title', 'Date posted', 'Tags' and 'Include in import' columns
+ -- Table should contain 3 rows:
+ -- CRE06, [Date post was created], a
+ -- Untitled post 1, [Date post was created], a,b
+ -- Untitled post 2, [Date post was created], a,b,c.
+
+RPB04 / S1
+   Select 'Include in import' checkbox for all three posts shown
+   Select 'Import posts'
+ -- Verify page changes and 'Importing posts:' is displayed along with a progress bar
+ -- Verify progress bar reaches 100% and message 'Imported 3 posts' is displayed
+   Select the 'Continue' button
+ -- Verify S1 user personal blog view page displayed
+ -- Verify 3 posts now display, check content, tags and attachments against original
+   Select 'Permalink' for post CRE06
+ -- Verify 1 comment is displayed (by user s1), check content.
+
+RPB04 / S1
+   Access original server used in earlier tests
+   Enter TC2 and select blog IB04, then select 'Import pages' button
+ -- Very user S1's personal blog is displayed twice, one name should match name set in RPB02
+
+RPB05 / S1
+   Select link for personal blog on remote server from the import posts page
+ -- Verify a table of posts is displayed; this should include the 3 posts imported in RPB04
+   Select 'Include in import' checkbox for all three posts imported from IB01 in RPB04
+   Select 'Import posts'
+ -- Verify 'Imported 0 posts' displayed
+ -- Verify message '3 posts to import were identified as conflicts with existing posts.' displayed
+   Select 'Import conflicting posts' button
+ -- Verify page changes and 'Importing posts:' is displayed along with a progress bar
+ -- Verify progress bar reaches 100% and message 'Imported 3 posts' is displayed
+   Select the 'Continue' button
+ -- Verify IB04 blog view page displayed
+ -- Verify the 3 posts now display (these have highest post number when looking at permalink url),
+    check content, tags and attachments against original
+   Select 'Permalink' for post CRE06
+ -- Verify 1 comment is displayed (by user s1), check content.

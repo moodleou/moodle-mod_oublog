@@ -1,0 +1,321 @@
+This script describes steps to test the OU Blog facility for deleting and emailing a user
+notification. It is intended to cover most of the UI and features.
+
+NOTE: In this test case, the word 'blog' always refers to the OU blog.
+
+The test steps in this script follow on from each other and aren't independent.
+
+Initial setup
+=============
+
+This test case requires:
+
+- a course which has at least one blog.
+- two test student users (US1, and US2).
+- make use of the admin and (UET) a user with the teacher role.
+- a reporting email is provided in oublog administration settings, to enable the 'Report post' link.
+- access to each test users email account to read delete notification emails.
+- at least two web browsers, to enable distinctly different sessions,
+  with and without javascript enabled.
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+
+CRE Creating blog and data
+===========================
+
+CRE01 / Logged in as admin.
+   Create a blog called CRE01 which is a whole-course blog (no groups) and
+   visible to anyone in the world.
+
+CRE01-A /  Log out user Admin.
+CRE01-B /  Log in as US1.
+
+CRE01-UP1 / Logged in as US1.
+   Go to blog "CRE01".
+   Click to add a new post with title "CRE01-P1" and text "User one post one visible to participants
+   on this course. To be deleted without the possibility of email notification.".
+   Insert any image to the text area, give the image a description.
+   Insert the tag 'us1t1'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+--  Click 'Add post'.
+
+CRE01-UP2 / Logged in as US1.
+   Add a new post with title "CRE01-P2" and text "User one post two visible to participants on this course.
+   To be deleted with the possibility of email notification.".
+   Insert a new image to the text area, give the image a description.
+   Insert the tags 'us1t2, us1t1'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+-- Click the 'Add post' button.
+
+CRE01-UP3 / Logged in as US1.
+   Add a new post with title "CRE01-P3" and text "User one post three visible to participants on this course.
+   To be deleted with email notification.".
+   Insert a third image to the text area, give the image a description.
+   Insert the tags 'us1t3,us1t2, us1t1'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+-- Click the 'Add post' button to save the post.
+
+CRE01-UP4 / Logged in as US1.
+   Add a new post with title "CRE01-P4" and text "User one post four to remain visible to participants on this course.".
+   Insert an image to the text area, give the image a description.
+   Insert the tags 'us1t4,us1t3,us1t2,us1t1'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+-- Click the 'Add post' button to save the post.
+
+CRE01-C /  Log out user US1.
+CRE01-D /  Log in as US2.
+
+CRE02-UP1 / Logged in as US2.
+   Go to blog "CRE01".
+   Add a new post with title "CRE01-P5" and text "User two post one visible to participants on this course.
+   To be deleted without the possibility of email notification.".
+   Insert an image to the text area, give the image a description.
+   Insert the tag 'us2t4,us2t3,us2t2,us2t1'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+-- Click 'Add post' and save this post.
+
+CRE02-UP2 / Logged in as US2.
+   Add a new post with title "CRE01-P6" and text "User two post two visible to participants on this course.
+   To be deleted with email notification.".
+   Insert an image to the text area, give the image a description.
+   Insert the tag 'us2t3,us2t2,us2t1'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+-- Click 'Add post'.
+
+CRE02-UP3 / Logged in as US2.
+   Add a new post with title "CRE01-P7" and text "User two post three remaining visible to participants on this course.".
+   Insert an to the text area, give the image a description.
+   Insert the tag 'us2t1'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+-- Click 'Add post' again.
+
+CRE03-A /  Log out user US2.
+CRE03-B /  Log in as UET.
+
+CRE03-P1 / Logged in as UET.
+   Go to blog "CRE01".
+   Add a new post with title "CRE01-P8" and text "Teacher post one visible to participants on this course,
+   to be deleted.".
+   Insert an image to the text area, give the image a description.
+   Insert the tag 'uett1'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+-- Click 'Add post' again.
+
+CRE03-P2 / Logged in as UET.
+   Add a new post with title "CRE01-P9" and text "Teacher post two stays visible to participants on this course.".
+   Insert an image to the text area, give the image a description.
+   Insert the tag 'uett1, uett2'.
+   Leave 'Allow comments' at default setting.
+   Add the same image as an attachment to the post.
+-- Click 'Add post'.
+
+
+BSC Basic Delete usage  (JS not enabled in the browser)
+======================
+
+BSC01-NJ1 / Log in as UET
+   Go to blog "CRE01".
+   Tab to the 'Delete' link beneath "CRE01-P1".
+   Click this 'Delete' link..
+-- Confirm that the page refreshes and shows a boxed form, with the description
+   'Select to delete the post or delete and send a customisable email notification.'
+   and three buttons; 'Delete', 'Delete and email' and 'Cancel'.
+
+BSC01-NJ2 / as UET.
+   Tab to the 'Cancel' button and activate it.
+-- Verify that the page refreshes, when 'Cancel' is clicked, returning to the blog view page,
+   without making any changes.
+
+BSC01-NJ3 / as UET.
+   Click 'Delete' beneath "CRE01-P1" again.
+-- Confirming that the dialog page appears.
+
+BSC01-NJ4 / as UET.
+   Tab to the 'Delete' button.
+   Activate this 'Delete' button.
+-- Confirm that the page refreshes. (The page should automatically redirect. If nothing happens please use the continue link.)
+-- Verify that the page refreshes and that all "CRE01-P1" post content is now dimmed,
+   and that there is now an additional entry beneath the post title and attachments block;
+   'Deleted by' {uet username} 'the date', which has highlighting in red.
+
+BSC01-NJ5 / as UET.
+   Tab to the 'Delete' link beneath post "CRE01-P2".
+   Click this 'Delete' link.
+-- Confirm that a dialog page opens as before.
+   This time tab to the 'Delete and email' button and click it.
+-- Confirm that a new page 'Delete and email' opens, with a form showing a message box with a default message
+   notification showing that the post was deleted by {uet username} and a block of post detail showing
+   Subject, Blog and Module, followed by an html link 'View the deleted post'.
+-- Confirm that below this message box are;
+   'Send a copy to yourself' check box ,
+   'Email address of other recipients', text input box for list entry and
+   'Include post' check box.
+-- Confirm that the form ends with 'Send and delete' and 'Cancel' buttons.
+
+BSC01-NJ5a / as UET.
+   Tab to the 'Cancel' button and activate it.
+-- Verify that the page refreshes, when 'Cancel' is clicked, returning to the blog view page
+   and that the post has not been deleted.
+
+BSC01-NJ6 / as UET.
+   Again tab to the 'Delete' link beneath post "CRE01-P2".
+   Click this 'Delete' link.
+   Tab to the 'Delete and email' button and click it.
+   Leave all 'Delete and email' form settings at their defaults and click
+   'Send and delete'.
+-- Verify that the page refreshes and that all "CRE01-P2" content is now dimmed,
+   and that there is now an additional entry beneath the post title - 'Deleted by' {uet username} 'the date'
+   with highlighting in red.
+
+BSC01-NJ7a / as UET.
+-- Verify that an email notification has been received:
+   This is a notification to advise you that your Blog post with the
+   following details has been deleted by {uet username}:
+   Subject: CRE01-P2
+   Blog: CRE-01
+   Module: OUBlog delete and email functionality
+   View the deleted post (an html link)
+
+BSC01-NJ7b / as UET.
+   Click to open the 'View the deleted post' link in the email.
+   In the browser which opens from this link, login as student user US.1.
+   (It may be necessary to click the link in the email again)
+-- Confirm that the post "CRE01-P2" is opened in the 'Viewpost' page and that the post appears
+   the same as in the main page, ie dimmed and with the deleted notification.
+   Log out and close the browser.
+
+BSC01-NJ7c / as UET.
+   Click to open the 'View the deleted post' link in the email.
+   In the browser which opens from this link, login as student user US.2.
+   (It may be necessary to click the link in the email again)
+-- Confirm that the post "CRE01-P2" can not be seen by as student user US.2.
+   Log out and close the browser.
+
+Return to the blog main page, in the original browser session.
+
+BSC01-NJ8 / as UET.
+   Tab to the 'Delete' link beneath post "CRE01-P3".
+   Click this 'Delete' button.
+-- Confirm that a dialog page opens as before.
+   Tab to the 'Delete and email' button and click it.
+-- Confirm that a new page 'Delete and email' opens, with a form showing a message box with a default message
+   notification showing that the post was deleted by {uet username} and a block of post detail showing
+   Subject, Blog and Module, followed by a link 'View the deleted post'.
+-- Confirm that below this message box are;
+   'Send a copy to yourself' check box,
+   'Email address of other recipients', text input box for list entry and
+   'Include post' check box.
+
+BSC01-NJ9 / as UET.
+   Click both checkboxes, and enter the known checkable email address into the text input box.
+   Click the 'Send and delete' button.
+-- Verify that the page refreshes and that all "CRE01-P3" content is now dimmed,
+   and that there is now an additional entry beneath the post title -
+   'Deleted by' {uet username} 'the date'  with highlighting in red.
+
+BSC01-NJ10 / as UET.
+-- Confirm that email notifications have been recieved by each test user.
+-- Confirm that the notification is as above, and that the email also contains the content of the blog post
+   in plain html format, with no delete highlighting.
+
+Return to the blog main page.
+
+BSC Basic delete usage (JS enabled)
+======================
+   Return to the main blog page.
+
+BSC02-JE1 / Log in as UET.
+   Go to blog "CRE01".
+   Tab to the 'Delete' link beneath "CRE01-P5".
+   Click this 'Delete' link.
+-- Confirm that the current page is slightly dimmed and grey all over, highlighting the central popup box
+   with a close widget [X] and the description
+   'Select to delete the post or delete and send a customisable email notification.'
+   and three buttons; 'Delete', 'Delete and email' and 'Cancel'.
+
+BSC02-JE2 / as UET.
+   Tab to the close widget, and click it.
+-- Verify that the dialog disappears, when the close widget is clicked.
+   On post "CRE01-P5" click 'Delete' again, and tab to the 'Cancel' button.
+-- Verify that the dialog disappears, when the 'Cancel' button is clicked,
+   and that focus remains upon the "CRE01-P5" 'Delete' link.
+
+BSC02-JE3 / as UET.
+   Click this 'Delete' link again beneath "CRE01-P5" post content.
+-- Confirm that a dialog pops up as before.
+   Tab to the 'Delete' button and click it.
+-- Verify that the page refreshes.
+-- Confirm that all "CRE01-P5" post content is now dimmed,
+   and that there is an additional entry beneath the post title -
+   'Deleted by' {uet username} 'the date' with highlighting in red.
+
+BSC02-JE4 / as UET.
+   Tab to the 'Delete' link beneath "CRE01-P6".
+   Click this 'Delete' link.
+-- Confirm that the dialog pops up as before.
+   Tab to the 'Delete and email' button and click it.
+-- Confirm that a new page opens containing a 'Delete and email' form page.
+
+BSC02-JE5 / as UET.
+   Leave all form settings at their defaults and click 'Send and delete'.
+   (This page should automatically redirect. If nothing happens please use the continue link.)
+-- Verify that the page refreshes and that all "CRE01-P6" post content is now dimmed,
+   and that there is now an additional entry beneath the post title -
+   'Deleted by' {uet username} 'the date' with highlighting in red.
+
+BSC02-JE6 / as UET.
+-- Confirm that an email notification has been recieved :
+   This is a notification to advise you that your blog post with the
+   following details has been deleted by 'uetuser teacher':
+   Subject: CRE01-P6
+   Blog: CRE01
+   Course: OUBlog delete and email functionality
+   View the deleted post (an html link)
+
+Return to the blog main page.
+
+BSC02-JE7 / as UET.
+   Tab to the 'Delete' link beneath post "CRE01-P8" by user UET.
+   Click this 'Delete' link.
+-- Confirm that the page refreshes and shows a boxed form, with the description
+   'Are you sure you want to delete this post?'
+   and two buttons 'Delete' and 'Cancel'.
+
+BSC02-JE8 / as UET.
+   Click the 'Delete' button.
+   (This page should automatically redirect. If nothing happen please use the continue link.)
+-- Verify that the page refreshes and that all "CRE01-P8" content is now dimmed,
+   and that there is also an additional entry beneath the post title -
+   'Deleted by' {uet username} 'the date' with highlighting in red.
+-- Confirm that no email was sent following this deletion.
+
+
+Student user post visibility test.
+----------------------------------
+
+BSC03-U01 / Log in as US.1.
+   Go to blog main page for "CRE01".
+-- Confirm that only five posts are visible as US.1.
+   Posts CRE01-P9 by {uet username}.
+   Posts CRE01-P7 and CRE01-P4 by students two and one.
+   And deleted posts CRE01-P3, CRE01-P2 and CRE01-P1 by student user one
+
+BSC03-U02 / Log in as US.2.
+   Go to blog main page for "CRE01".
+-- Confirm that only five posts are visible as US.2.
+   Posts CRE01-P9 by {uet username}.
+   Post CRE01-P7 and CRE01-P4 by students two and one.
+   And deleted posts, CRE01-P6 and CRE01-P5 by student user two
+
+Test ends.

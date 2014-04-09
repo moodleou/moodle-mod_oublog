@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 $string['attachments'] = "Attachments";
 $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
@@ -61,6 +76,9 @@ Personal (global), Visible Individual and Visible Group blogs only.';
 $string['oublogallpostslogin'] = 'Force login on all posts page';
 $string['oublogallpostslogin_desc'] = 'Enable to force login to the personal blog site entries page.
 When enabled only logged-in users will see the link to this page.';
+
+$string['globalusageexclude'] = 'Exclude from global usage stats';
+$string['globalusageexclude_desc'] = 'Comma-separated list of user ids to exclude users from the top usage stats list for global blog';
 
 $string['displayname_default'] = 'blog';
 $string['displayname'] = 'Alternate activity name (blank uses default)';
@@ -184,7 +202,7 @@ $string['guestblog']='If you have an account on the system, please
 <a href=\'{$a}\'>log in for full access</a>.';
 $string['noposts']='There are no visible posts in this {$a}.';
 
-//Errors
+// Errors.
 $string['accessdenied']='Sorry: you do not have access to view this page.';
 $string['invalidpost'] = 'Invalid Post Id';
 $string['invalidcomment'] = 'Invalid Comment Id';
@@ -206,10 +224,6 @@ $string['globalblogmissing'] = 'Global blog is missing';
 $string['invalidvisibility'] = 'Invalid visbility level';
 $string['invalidvisbilitylevel'] = 'Invalid visibility level {$a}';
 $string['invalidblogdetails'] = 'Can\'t find details for blog post {$a}';
-
-
-
-
 
 $string['siteentries'] = 'View site entries';
 $string['overviewnumentrylog1'] = 'entry since last log in';
@@ -335,7 +349,7 @@ $string['displayversion'] = 'OU blog version: <strong>{$a}</strong>';
 
 $string['pluginadministration'] = 'OU Blog administration';
 $string['pluginname'] = 'OU Blog';
-//help strings
+// Help strings.
 $string['allowcomments_help'] = '&lsquo;Yes, from signed-on users&rsquo; allows comments from users who have access to the post.
 
 &lsquo;Yes, from everybody&rsquo; allows comments from users and from the general public. You will receive emails to approve or reject comments from users who are not signed in.
@@ -367,17 +381,17 @@ option is set on the whole blog, that becomes a maximum. For example, if
 the whole blog is set to the first level, you cannot change the
 level of an individual post at all.</p>';
 $string['tags_help'] = 'Tags are labels that help you find and categorise posts.';
-// Used at OU only
+// Used at OU only.
 $string['externaldashboardadd'] = 'Add blog to dashboard';
 $string['externaldashboardremove'] = 'Remove blog from dashboard';
 $string['viewblogdetails'] = 'View blog details';
 $string['viewblogposts'] = 'Return to blog';
 
-// User participation
+// User participation.
 $string['oublog:grade'] = 'Grade OU Blog user participation';
 $string['oublog:viewparticipation'] = 'View OU Blog user participation';
 $string['userparticipation'] = 'User participation';
-$string['myparticipation'] = 'My participation';
+$string['myparticipation'] = 'My participation summary';
 $string['savegrades'] = 'Save grades';
 $string['participation'] = 'Participation';
 $string['participationbyuser'] = 'Participation by user';
@@ -386,20 +400,20 @@ $string['foruser'] = ' for {$a}';
 $string['postsby'] = 'Posts by {$a}';
 $string['commentsby'] = 'Comments by {$a}';
 $string['commentonby'] = 'Comment on <u>{$a->title}</u> by <u>{$a->author}</u>';
-$string['nouserposts'] = 'This user made no posts in this blog.';
-$string['nousercomments'] = 'This user added no comments in this blog.';
+$string['nouserposts'] = 'No posts made.';
+$string['nousercomments'] = 'No comments made.';
 $string['savegrades'] = 'Save grades';
 $string['gradesupdated'] = 'Grades updated';
 $string['usergrade'] = 'User grade';
 
-// Participation download strings
+// Participation download strings.
 $string['downloadas'] = 'Download data as';
 $string['postauthor'] = 'Post author';
 $string['postdate'] = 'Post date';
 $string['posttime'] = 'Post time';
 $string['posttitle'] = 'Post title';
 
-// Export
+// Export.
 $string['exportedpost'] = 'Exported post';
 $string['exportpostscomments'] = ' all currently visible posts and their comments.';
 $string['exportuntitledpost'] = 'An untitled post ';
@@ -410,8 +424,14 @@ $string['configmaxbytes'] = 'Default maximum size for all blog attachments on th
 $string['maxattachmentsize'] = 'Maximum attachment size';
 $string['maxattachments'] = 'Maximum number of attachments';
 $string['maxattachments_help'] = 'This setting specifies the maximum number of files that can be attached to a blog post.';
-$string['maxattachmentsize_help'] = 'This setting specifies the largest size of file that can be attached to a blog post.';
+$string['maxattachmentsize_help'] = 'This setting specifies the largest size of image/file that can be used in a blog post.';
 $string['attachments_help'] = 'You can optionally attach one or more files to a blog post. If you attach an image, it will be displayed after the message.';
+
+$string['remoteserver'] = 'Import from remote server';
+$string['configremoteserver'] = 'Root address (wwwroot) of remote server to be used for post imports.
+Blogs on this server will be shown in addition to those on local site when importing posts.';
+$string['remotetoken'] = 'Import remote server token';
+$string['configremotetoken'] = 'Web service user token for oublog webservices on import remote server.';
 
 $string['reportingemail'] = 'Reporting email addresses';
 $string['reportingemail_help'] = 'This setting specifies the email addresses of those who will be informed
@@ -436,7 +456,7 @@ $string['visits'] = 'Most visited';
 $string['activeblogs'] = 'Active';
 $string['numberviews'] = '{$a} views';
 $string['visits_info_alltime'] = '{$a}s with the most number of visits';
-$string['visits_info_active'] = 'Active {$a} (contain a post in the past month) with the most number of visits';
+$string['visits_info_active'] = 'Active {$a}s (contain a post in the past month) with the most number of visits';
 $string['mostposts'] = 'Most posts';
 $string['numberposts'] = '{$a} posts';
 $string['posts_info_alltime'] = '{$a}s with the most number of posts';
@@ -451,3 +471,74 @@ $string['commentposts'] = 'Most commented posts';
 $string['commentposts_info_alltime'] = 'Posts with the most number of comments';
 $string['commentposts_info_thisyear'] = 'Posts with the most number of comments added in the past year';
 $string['commentposts_info_thismonth'] = 'Posts with the most number of comments added in the past month';
+
+// Delete and Email.
+$string['emailcontenthtml'] = 'This is a notification to advise you that your {$a->activityname} post with the
+following details has been deleted by \'{$a->firstname} {$a->lastname}\':<br />
+<br />
+Subject: {$a->subject}<br />
+{$a->activityname}: {$a->blog}<br />
+Course: {$a->course}<br />
+<br />
+<a href={$a->deleteurl} title="view deleted post">View the deleted post</a>';
+$string['deleteemailpostbutton'] = 'Delete and email';
+$string['deleteandemail'] = 'Delete and email';
+$string['emailmessage'] = 'Message';
+$string['cancel'] = 'Cancel';
+$string['deleteemailpostdescription'] = 'Select to delete the post or delete and send a customisable email notification.';
+$string['copytoself'] = 'Send a copy to yourself';
+$string['includepost'] = 'Include post';
+$string['deletedblogpost'] = 'Untitled post.';
+$string['emailerror'] = 'There was an error sending the email';
+$string['sendanddelete'] = 'Send and delete';
+$string['extra_emails'] = 'Email address of other recipients';
+$string['extra_emails_help'] = 'Enter one or more email address(es) separated by spaces or semicolons.';
+
+// Import pages.
+$string['allowimport'] = 'Enable post import';
+$string['allowimport_help'] = 'Allow any user to import pages from other blog activities they have access to.';
+$string['allowimport_invalid'] = 'Posts can only be imported when activity is set to individual mode.';
+$string['import'] = 'Import posts';
+$string['import_notallowed'] = 'Importing posts is disabled for this {$a}.';
+$string['import_step0_nonefound'] = 'You do not have access to any activities where posts can be imported from.';
+$string['import_step0_inst'] = 'Select an activity to import posts from:';
+$string['import_step0_numposts'] = '({$a} posts)';
+$string['import_step1_inst'] = 'Select posts to import:';
+$string['import_step1_from'] = 'Import from:';
+$string['import_step1_table_title'] = 'Title';
+$string['import_step1_table_posted'] = 'Date posted';
+$string['import_step1_table_tags'] = 'Tags';
+$string['import_step1_table_include'] = 'Include in import';
+$string['import_step1_addtag'] = 'Filter by tag - {$a}';
+$string['import_step1_removetag'] = 'Remove tag filter - {$a}';
+$string['import_step1_include_label'] = 'Import post - {$a}';
+$string['import_step1_submit'] = 'Import posts';
+$string['import_step1_all'] = 'Select all';
+$string['import_step1_none'] = 'Select none';
+$string['import_step2_inst'] = 'Importing posts:';
+$string['import_step2_none'] = 'No posts selected for import.';
+$string['import_step2_prog'] = 'Importing in progress';
+$string['import_step2_total'] = 'Imported {$a} posts.';
+$string['import_step2_conflicts'] = '{$a} posts to import were identified as conflicts with existing posts.';
+$string['import_step2_conflicts_submit'] = 'Import conflicting posts';
+
+// My Participation.
+$string['contribution'] = 'Contribution';
+$string['contribution_all'] = 'Contribution - All time';
+$string['contribution_from'] = 'Contribution - From {$a}';
+$string['contribution_to'] = 'Contribution - To {$a}';
+$string['contribution_fromto'] = 'Contribution - From {$a->start} To {$a->end}';
+$string['start'] = 'From';
+$string['end'] = 'To';
+$string['displayperiod'] = 'Contribution selector From date - To date.';
+$string['info'] = 'Participation within the selected period.';
+$string['displayperiod_help'] = '<p>The default selects all entries.</p>
+<p>You can select \'From\' a date until todays entries.</p>
+<p>You can select all entries between a \'From\' date and a \'To\' date.</p>
+<p>Or you can select from the first entry \'To\' a date</p>';
+$string['nouserpostsfound'] = 'No posts made during this period.';
+$string['nousercommentsfound'] = 'No comments made during this period.';
+$string['numberpostsmore'] = 'Plus {$a} more posts';
+$string['numbercommentsmore'] = 'Plus {$a} more comments';
+$string['viewmyparticipation'] = 'View my participation';
+$string['timestartenderror'] = 'Selection end date cannot be earlier than the start date';

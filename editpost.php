@@ -50,11 +50,12 @@ if ($postid) {
 
 $url = new moodle_url('/mod/oublog/editpost.php', array('blog'=>$blog, 'post'=>$postid));
 $PAGE->set_url($url);
-$PAGE->requires->js_init_call('M.mod_oublog.init', null, true);
 
 // Check security.
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
+
+$PAGE->requires->js_init_call('M.mod_oublog.init', null, true);
 
 if ($oublog->global) {
     $blogtype = 'personal';
@@ -111,7 +112,8 @@ $mform = new mod_oublog_post_form('editpost.php', array(
     'allowcomments' => $oublog->allowcomments,
     'edit' => !empty($postid),
     'personal' => $oublog->global,
-    'maxbytes' => $oublog->maxbytes));
+    'maxbytes' => $oublog->maxbytes,
+    'maxattachments' => $oublog->maxattachments));
 if ($mform->is_cancelled()) {
     redirect($viewurl);
     exit;

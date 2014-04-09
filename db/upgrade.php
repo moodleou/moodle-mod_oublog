@@ -183,5 +183,60 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013102801, 'oublog');
     }
 
+    if ($oldversion < 2013121100) {
+        // Numerous keys and indexes added.
+        // Define key oublog_posts_groupid_groups_fk (foreign) to be added to oublog_posts.
+        $table = new xmldb_table('oublog_posts');
+        $key = new xmldb_key('oublog_posts_groupid_groups_fk', XMLDB_KEY_FOREIGN, array('groupid'), 'groups', array('id'));
+
+        // Launch add key oublog_posts_groupid_groups_fk.
+        $dbman->add_key($table, $key);
+
+        // Define index allowcomments (not unique) to be added to oublog_posts.
+        $table = new xmldb_table('oublog_posts');
+        $index = new xmldb_index('allowcomments', XMLDB_INDEX_NOTUNIQUE, array('allowcomments'));
+
+        // Conditionally launch add index allowcomments.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index visibility (not unique) to be added to oublog_posts.
+        $table = new xmldb_table('oublog_posts');
+        $index = new xmldb_index('visibility', XMLDB_INDEX_NOTUNIQUE, array('visibility'));
+
+        // Conditionally launch add index visibility.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index timeposted (not unique) to be added to oublog_comments.
+        $table = new xmldb_table('oublog_comments');
+        $index = new xmldb_index('timeposted', XMLDB_INDEX_NOTUNIQUE, array('timeposted'));
+
+        // Conditionally launch add index timeposted.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2013121100, 'oublog');
+    }
+
+    if ($oldversion < 2014012702) {
+
+        // Define field allowimport to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('allowimport', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'statblockon');
+
+        // Conditionally launch add field allowimport.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2014012702, 'oublog');
+    }
+
     return true;
 }

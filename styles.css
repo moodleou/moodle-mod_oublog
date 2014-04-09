@@ -162,6 +162,13 @@
     color: #aaa;
 }
 
+div.oublog-deleted div.oublog-userpic,
+div.oublog-deleted .oublog-post-attachments a,
+div.oublog-deleted .oublog-post-content {
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
+
 .oublog-paging {
     border-top: 1px solid #F2F2F2;
     margin-top: .5em;
@@ -436,4 +443,47 @@ div.oublog-accordion-closed {
 .oublog-accordion li .oublog_statsview_title h2 {
     cursor: pointer;
     font-size: 1.15em;
+}
+/** Import Posts **/
+.oublog_importpostbutton {
+    margin-left: .5em;
+}
+.oublog_import_step UL {
+    list-style: none;
+}
+#page-mod-oublog-import .oublog_import_step h3 {
+    font-weight: bold;
+}
+.oublog_import_step1_from span {
+    font-weight: bold;
+}
+.oublog_import_step.oublog_import_step1 form div.no-overflow {
+    overflow: visible;
+}
+.oublog_import_step1 a.oublog_import_tag {
+    display: inline;
+    margin-left: .25em;
+}
+.oublog_import_step1 table.flexible {
+    width: 100%;
+}
+.oublog_import_step1 .flexible td label {
+    position: absolute;
+    top: -1000em;
+}
+.oublog_import_step1 .flexible .cell.c0 {
+    min-width: 10em;
+}
+.oublog_import_step1 .flexible .cell.c2 {
+    min-width: 8em;
+}
+.oublog_import_step1 .flexible .cell.c3,
+.oublog_import_step1 .flexible .header.c3 {
+    max-width: 8em;
+}
+.oublog_import_step1 form div input[type=submit] {
+    margin-right: .5em;
+}
+.oublog_import_step1 .flexible .header.c3 a {
+    font-size: .75em;
 }

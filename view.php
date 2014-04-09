@@ -298,13 +298,14 @@ if (!$hideunusedblog) {
 
     // 'Discovery' block.
     $stats = array();
+    $stats[] = oublog_stats_output_myparticipation($oublog, $cm, $oublogoutput, $course, $currentindividual, $oubloguser->id);
+    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual, $oubloguser->id);
     if ($oublog->statblockon) {
         // Add to 'Discovery' block when enabled only.
         $stats[] = oublog_stats_output_visitstats($oublog, $cm, $oublogoutput);
         $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);
         $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput);
     }
-    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual);
     $stats = array_filter($stats);
     if (!empty($stats)) {
         $stats = $oublogoutput->render_stats_container('view', $stats, count($stats));
@@ -369,23 +370,22 @@ if ($showpostbutton) {
     echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' =>
             $cm->instance)), $straddpost, 'get');
     echo '</div>';
+    if ($oublog->allowimport && ($oublog->global ||
+            $oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS)) {
+        echo '<div class="oublog_importpostbutton">';
+        echo $OUTPUT->single_button(new moodle_url('/mod/oublog/import.php', array('id' =>
+                $cm->id)), get_string('import', 'oublog'), 'get');
+        echo '</div>';
+    }
 }
 
 // View participation button.
 $canview = oublog_can_view_participation($course, $oublog, $cm, $currentgroup);
 if ($canview) {
-    if ($canview == OUBLOG_MY_PARTICIPATION) {
-        if (groups_is_member($currentgroup, $USER->id) || !$currentgroup) {
-            $strparticipation = get_string('myparticipation', 'oublog');
-            $participationurl = new moodle_url('userparticipation.php', array('id' => $cm->id,
-                    'group' => $currentgroup, 'user' => $USER->id));
-        }
-    } else {
+    if ($canview == OUBLOG_USER_PARTICIPATION) {
         $strparticipation = get_string('participationbyuser', 'oublog');
         $participationurl = new moodle_url('participation.php', array('id' => $cm->id,
                 'group' => $currentgroup));
-    }
-    if (isset($participationurl)) {
         echo '<div class="participationbutton">';
         echo $OUTPUT->single_button($participationurl, $strparticipation, 'get');
         echo '</div>';

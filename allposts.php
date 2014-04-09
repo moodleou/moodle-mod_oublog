@@ -128,10 +128,10 @@ if (isloggedin() and !isguestuser()) {
 if ($oublog->statblockon) {
     // 'Discovery' block.
     $stats = array();
+    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, true);
     $stats[] = oublog_stats_output_visitstats($oublog, $cm, $oublogoutput);
     $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);
     $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput);
-    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, true);
     $stats = $oublogoutput->render_stats_container('allposts', $stats);
     $bc = new block_contents();
     $bc->attributes['id'] = 'oublog-discover';
