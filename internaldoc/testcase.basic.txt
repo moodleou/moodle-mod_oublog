@@ -55,4 +55,34 @@ INT03 / admin
 -- Verify intro text and image added are NOT displayed at the top of the new post page.
    Return to test course home page.
 
+COM Testing adding comments
+(Requires CRE)
+===========================
+
+COM1 / admin
+   Enter blog "CRE01".
+   Select the 'New blog post' button.
+   Enter 'COM1' into the title field.
+   Enter some text and an uploaded image into the 'Message' field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify 'Add your comment' link is not shown against post COM1.
+
+COM02 / admin
+   Select 'Edit settings' link in the Administration block.
+   Set 'Allow comments' drop down to 'Yes, from everybody (even if not logged in)'.
+   Select 'Save and display' to save changes.
+   Select 'Edit' against post 'COM1'.
+   Set 'Allow comments' to 'Yes, from logged-in users'.
+   Select 'Save changes'.
+-- Verify 'Add your comment' link is shown against post COM1.
+
+COM03 / admin
+   Select 'Add your comment' link against post COM1.
+-- Verify 'New comment' screen is shown with 'Post' (collapsed) and 'New comment' (expanded) sections.
+   Select 'Post' section to expand.
+-- Verify COM1 post is shown correctly, checking display of image and user information.
+   Enter some text into the 'Add your comment' field.
+   Select 'Add comment' button.
+-- Verify returned to blog main view and post COM1 has a '1 comment' link.
+
 Test ends.

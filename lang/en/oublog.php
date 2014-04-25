@@ -161,6 +161,7 @@ $string['postedbymoderatedaudit'] = 'by {$a->commenter} [{$a->ip}] (approved by 
 $string['deletedby'] = 'Deleted by {$a->fullname}, {$a->timedeleted}';
 
 $string['newcomment'] = 'New comment';
+$string['postmessage'] = 'Post';
 
 $string['searchthisblog'] = 'Search this {$a}';
 $string['searchblogs'] = 'Search';

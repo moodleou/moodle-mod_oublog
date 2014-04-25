@@ -39,7 +39,7 @@ if (!$cm = get_coursemodule_from_instance('oublog', $blog)) {
 if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
     print_error('coursemisconf');
 }
-if (!$post = $DB->get_record('oublog_posts', array('id'=>$postid))) {
+if (!$post = oublog_get_post($postid)) {
     print_error('invalidpost', 'oublog');
 }
 if (!$oubloginstance = $DB->get_record('oublog_instances', array('id'=>$post->oubloginstancesid))) {
@@ -76,6 +76,8 @@ if ($oublog->global) {
     $blogtype = 'course';
 }
 
+$renderer = $PAGE->get_renderer('mod_oublog');
+
 // Get strings.
 $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
@@ -92,7 +94,8 @@ $mform = new mod_oublog_comment_form('editcomment.php', array(
         'postid' => $postid,
         'moderated' => $moderated,
         'confirmed' => $confirmed,
-        'maxbytes' => $oublog->maxbytes
+        'maxbytes' => $oublog->maxbytes,
+        'postrender' => $renderer->render_post($cm, $oublog, $post, $url, $blogtype, false, false, false, false, false, true),
         ));
 
 if ($mform->is_cancelled()) {
