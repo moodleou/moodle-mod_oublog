@@ -16,6 +16,7 @@
 
 /**
  * A script to serve files from OU Blog client ONLY
+ * Used so can apply restrictions on core pluginfile, but leave this open to world
  *
  * @package    mod
  * @subpackage oublog
@@ -42,12 +43,15 @@ if (count($args) == 0) { // Always at least user id.
 }
 $contextid = (int)array_shift($args);
 $component = array_shift($args);
-$filearea  = array_shift($args);
-$draftid   = (int)array_shift($args);
+$filearea = array_shift($args);
+$draftid = (int)array_shift($args);
 
 if ($component !== 'mod_oublog' && ($filearea !== 'message' || $filearea !== 'attachment'
         || $filearea !== 'messagecomment' || $filearea !== 'summary')) {
     send_file_not_found();
 }
+// Following code must match root pluginfile.php (can't include, so must duplicate).
+$forcedownload = optional_param('forcedownload', 0, PARAM_BOOL);
+$preview = optional_param('preview', null, PARAM_ALPHANUM);
 
-require_once('../../pluginfile.php');
+file_pluginfile($relativepath, $forcedownload, $preview);
