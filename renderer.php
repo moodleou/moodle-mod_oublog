@@ -950,8 +950,20 @@ class mod_oublog_renderer extends plugin_renderer_base {
         return;
     }
 
+    /**
+     * Output Blog intro if introonpost is set for this blog.
+     * @param object $oublog
+     * @param object $cm
+     */
     function render_pre_postform($oublog, $cm) {
-        // Render 'hook' before post edit form. Override in theme.
+        if (empty($oublog->introonpost) || $oublog->global) {
+            return '';
+        }
+        $context = context_module::instance($cm->id);
+        $content = file_rewrite_pluginfile_urls($oublog->intro, 'pluginfile.php',
+                $context->id, 'mod_oublog', 'intro', null);
+        $content = format_text($content, $oublog->introformat);
+        return html_writer::div($content, 'oublog_editpost_intro');
     }
 
     // Blog stats renderers.

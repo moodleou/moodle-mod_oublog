@@ -80,6 +80,8 @@ When enabled only logged-in users will see the link to this page.';
 $string['globalusageexclude'] = 'Exclude from global usage stats';
 $string['globalusageexclude_desc'] = 'Comma-separated list of user ids to exclude users from the top usage stats list for global blog';
 
+$string['introonpost'] = 'Show intro when posting';
+
 $string['displayname_default'] = 'blog';
 $string['displayname'] = 'Alternate activity name (blank uses default)';
 $string['displayname_help'] = 'Set an alternate activity type name within the interface.

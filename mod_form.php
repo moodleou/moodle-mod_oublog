@@ -76,6 +76,9 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->setType('maxvisibility', PARAM_INT);
             $mform->addHelpButton('maxvisibility', 'maxvisibility', 'oublog');
 
+            // Whether intro text shows on post form pages.
+            $mform->addElement('checkbox', 'introonpost', get_string('introonpost', 'oublog'), '', 0);
+
             // Max size of attachments.
             $modulesettings = get_config('mod_oublog');
             $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
@@ -198,6 +201,9 @@ class mod_oublog_mod_form extends moodleform_mod {
         }
         if (empty($data->allowimport)) {
             $data->allowimport = 0;
+        }
+        if (empty($data->introonpost)) {
+            $data->introonpost = 0;
         }
         return $data;
     }
