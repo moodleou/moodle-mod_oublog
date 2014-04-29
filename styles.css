@@ -444,6 +444,56 @@ div.oublog-accordion-closed {
     cursor: pointer;
     font-size: 1.15em;
 }
+/* Blog usage stats */
+.oublog_statsinfo {
+    margin-left: 10px;
+}
+.oublog_statsview_content p {
+    clear: left;
+    margin-left: 10px;
+}
+.oublog_statsinfo_bar {
+    font-size: .85em;
+}
+.oublog_statsinfo_bar span.oublogbar {
+    background: #0070a8;
+    color: #ffffff;
+}
+.oublog_statsview_content form {
+    margin-left: 10px;
+    margin-bottom: .5em;
+}
+.oublog_statsview_content form fieldset div {
+    margin: 0;
+}
+#page .oublog_statsview_content form .fitem .fitemtitle {
+    width: 5.5em;
+    text-align: left;
+}
+.oublog_statsview_content form .fitem .felement,
+.ie .oublog_statsview_content form .fitem .felement {
+    margin-left: 5.5em;
+}
+.oublog_statsview_content form .fitem .fsubmit {
+    margin-left: 5em;
+}
+ul.oublog-accordion li {
+    border: 1px solid #e3e3e3;
+    background-color: #ffffff;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+ul.oublog-accordion li h2 {
+    margin: .5em;
+}
+ul.oublog-accordion li.oublog-accordion-closed {
+    background-repeat: repeat-x;
+    background-position: left bottom;
+}
+ul.oublog-accordion li .oublog_statsview_content {
+    margin-right: 10px;
+}
 /** Import Posts **/
 .oublog_importpostbutton {
     margin-left: .5em;
@@ -486,4 +536,7 @@ div.oublog-accordion-closed {
 }
 .oublog_import_step1 .flexible .header.c3 a {
     font-size: .75em;
+}
+label[for=oublog_searchquery] {
+	display: inline;
 }
