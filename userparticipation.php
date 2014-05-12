@@ -91,7 +91,7 @@ if ($submitted = $timefilter->get_data()) {
     if ($submitted->end) {
         $end = strtotime('23:59:59', $submitted->end);
     }
-} else {
+} else if (!$timefilter->is_submitted()) {
     // Recieved via post back.
     if ($start = optional_param('start', null, PARAM_INT)) {
         $start = strtotime('00:00:00', $start);

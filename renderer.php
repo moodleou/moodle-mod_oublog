@@ -723,8 +723,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 foreach ($participation->comments as $comment) {
                     $author = new StdClass;
                     $author->id = $comment->authorid;
-                    $author->firstname = $comment->firstname;
-                    $author->lastname = $comment->lastname;
+                    $userfields = get_all_user_name_fields();
+                    foreach ($userfields as $field) {
+                        $author->$field = $comment->$field;
+                    }
                     $authorfullname = fullname($author, $viewfullnames);
 
                     $row = array();
@@ -741,6 +743,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $row[] = (isset($comment->posttitle)) ? $comment->posttitle : '';
                     $table->add_data($row);
                 }
+            }
+            if (!$participation->posts && !$participation->comments) {
+                $table->add_data(array(''));
             }
             $table->finish_output();
         }
