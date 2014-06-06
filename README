@@ -1,7 +1,7 @@
 OU blog
 =======
 
-Copyright 2012 The Open University
+Copyright 2014 The Open University
 
 
 This is an alternative blog that you can install into standard Moodle.
@@ -46,7 +46,7 @@ the MoodleDocs wiki.
 
 Bug reports:
 
-Please report bugs using the GitHub 'Issues' tab (experimental). Before
+Please report bugs using the GitHub 'Issues' tab. Before
 reporting a bug, please try the latest version to verify that the problem
 hasn't already been fixed. In each bug, please remember to give:
 
@@ -61,7 +61,7 @@ community for testing on other systems.
 
 Requires:
 
-Moodle 2.2+
+Moodle 2.6+
 Postgres / MySQL
 
 Install:
