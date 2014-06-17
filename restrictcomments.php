@@ -45,7 +45,7 @@ if (!$course = $DB->get_record("course", array("id"=>$cm->course))) {
 
 // Require login and access to blog
 require_login($course, $cm);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 // You must be able to post to blog (if blog = site blog, then your one)

@@ -50,11 +50,12 @@ if ($postid) {
 
 $url = new moodle_url('/mod/oublog/editpost.php', array('blog'=>$blog, 'post'=>$postid));
 $PAGE->set_url($url);
-$PAGE->requires->js_init_call('M.mod_oublog.init', null, true);
 
 // Check security.
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
+
+$PAGE->requires->js_init_call('M.mod_oublog.init', null, true);
 
 if ($oublog->global) {
     $blogtype = 'personal';
@@ -94,7 +95,7 @@ if (!(
 // Get strings.
 $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
-$straddpost  = get_string('newpost', 'oublog');
+$straddpost  = get_string('newpost', 'oublog', oublog_get_displayname($oublog));
 $streditpost = get_string('editpost', 'oublog');
 
 
@@ -111,7 +112,8 @@ $mform = new mod_oublog_post_form('editpost.php', array(
     'allowcomments' => $oublog->allowcomments,
     'edit' => !empty($postid),
     'personal' => $oublog->global,
-    'maxbytes' => $oublog->maxbytes));
+    'maxbytes' => $oublog->maxbytes,
+    'maxattachments' => $oublog->maxattachments));
 if ($mform->is_cancelled()) {
     redirect($viewurl);
     exit;
@@ -158,7 +160,8 @@ if (!$frmpost = $mform->get_data()) {
     $PAGE->set_title(format_string($oublog->name));
     $PAGE->set_heading(format_string($course->fullname));
     echo $OUTPUT->header();
-
+    $renderer = $PAGE->get_renderer('mod_oublog');
+    echo $renderer->render_pre_postform($oublog, $cm);
     $mform->display();
 
     echo $OUTPUT->footer();

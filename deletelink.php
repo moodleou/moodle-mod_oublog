@@ -45,7 +45,7 @@ $url = new moodle_url('/mod/oublog/deletelink.php', array('link'=>$linkid, 'conf
 $PAGE->set_url($url);
 
 // Check security.
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 $oubloginstance = $link->oubloginstancesid ? $DB->get_record('oublog_instances', array('id'=>$link->oubloginstancesid)) : null;

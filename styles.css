@@ -162,6 +162,13 @@
     color: #aaa;
 }
 
+div.oublog-deleted div.oublog-userpic,
+div.oublog-deleted .oublog-post-attachments a,
+div.oublog-deleted .oublog-post-content {
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
+
 .oublog-paging {
     border-top: 1px solid #F2F2F2;
     margin-top: .5em;
@@ -368,4 +375,168 @@ div.oublog-individualselector {
 }
 #addexportpostsbutton {
     clear:both;
+}
+
+/* Stats block. */
+#oublog-discover .oublog_statsinfo {
+    clear: both;
+    margin-bottom: .5em;
+}
+#oublog-discover .oublog_statsinfo_avatar {
+    float: left;
+}
+#oublog-discover .oublog_statsinfo_avatar .userpicture {
+    width: 35px;
+    height: 35px;
+    margin-right: 6px;
+}
+#oublog-discover .oublog_statsinfo_infocol {
+    margin-left: 41px;
+}
+.oublog_displaynone {
+    display: none;
+}
+.oublog_statsview_content h3 {
+    float: left;
+    margin-top: 0;
+}
+.oublog_statsview_content p {
+    clear: both;
+    margin-bottom: .5em;
+}
+.block_action_oublog {
+    float: right;
+    display: none;
+}
+.jsenabled .block_action_oublog {
+    display: block;
+}
+.oublog_statsinfo_bar span.oublogbar {
+    padding-top: .25em;
+    padding-bottom: .25em;
+    padding-left: 5px;
+    position: relative;
+    display: block;
+}
+#oublog-discover .oublog_statsview_content .felement.fsubmit input {
+    float: left;
+}
+#oublog-discover .ajaxworking {
+    position: relative;
+    float: left;
+    width: 20px;
+    height: 20px;
+    background: url([[pix:i/ajaxloader]]) no-repeat;
+    top: 4px;
+    left: 2px;
+}
+#oublog-discover .oublogstats_commentposts_blogname {
+    font-size: .85em;
+}
+ul.oublog-accordion {
+    list-style: none;
+    margin: 0;
+}
+div.oublog-accordion-closed {
+    display: none;
+}
+.oublog-accordion li .oublog_statsview_title h2 {
+    cursor: pointer;
+    font-size: 1.15em;
+}
+/* Blog usage stats */
+.oublog_statsinfo {
+    margin-left: 10px;
+}
+.oublog_statsview_content p {
+    clear: left;
+    margin-left: 10px;
+}
+.oublog_statsinfo_bar {
+    font-size: .85em;
+}
+.oublog_statsinfo_bar span.oublogbar {
+    background: #0070a8;
+    color: #ffffff;
+}
+.oublog_statsview_content form {
+    margin-left: 10px;
+    margin-bottom: .5em;
+}
+.oublog_statsview_content form fieldset div {
+    margin: 0;
+}
+#page .oublog_statsview_content form .fitem .fitemtitle {
+    width: 5.5em;
+    text-align: left;
+}
+.oublog_statsview_content form .fitem .felement,
+.ie .oublog_statsview_content form .fitem .felement {
+    margin-left: 5.5em;
+}
+.oublog_statsview_content form .fitem .fsubmit {
+    margin-left: 5em;
+}
+ul.oublog-accordion li {
+    border: 1px solid #e3e3e3;
+    background-color: #ffffff;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+ul.oublog-accordion li h2 {
+    margin: .5em;
+}
+ul.oublog-accordion li.oublog-accordion-closed {
+    background-repeat: repeat-x;
+    background-position: left bottom;
+}
+ul.oublog-accordion li .oublog_statsview_content {
+    margin-right: 10px;
+}
+/** Import Posts **/
+.oublog_importpostbutton {
+    margin-left: .5em;
+}
+.oublog_import_step UL {
+    list-style: none;
+}
+#page-mod-oublog-import .oublog_import_step h3 {
+    font-weight: bold;
+}
+.oublog_import_step1_from span {
+    font-weight: bold;
+}
+.oublog_import_step.oublog_import_step1 form div.no-overflow {
+    overflow: visible;
+}
+.oublog_import_step1 a.oublog_import_tag {
+    display: inline;
+    margin-left: .25em;
+}
+.oublog_import_step1 table.flexible {
+    width: 100%;
+}
+.oublog_import_step1 .flexible td label {
+    position: absolute;
+    top: -1000em;
+}
+.oublog_import_step1 .flexible .cell.c0 {
+    min-width: 10em;
+}
+.oublog_import_step1 .flexible .cell.c2 {
+    min-width: 8em;
+}
+.oublog_import_step1 .flexible .cell.c3,
+.oublog_import_step1 .flexible .header.c3 {
+    max-width: 8em;
+}
+.oublog_import_step1 form div input[type=submit] {
+    margin-right: .5em;
+}
+.oublog_import_step1 .flexible .header.c3 a {
+    font-size: .75em;
+}
+label[for=oublog_searchquery] {
+	display: inline;
 }

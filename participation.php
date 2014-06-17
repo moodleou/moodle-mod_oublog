@@ -46,7 +46,7 @@ $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST)
 $oublog = $DB->get_record('oublog', array('id' => $cm->instance), '*', MUST_EXIST);
 
 $PAGE->set_cm($cm);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 $PAGE->set_pagelayout('incourse');
 require_course_login($course, true, $cm);
 
@@ -74,7 +74,7 @@ if ($oublog->individual) {
 }
 
 // all enrolled users for table pagination
-$coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
+$coursecontext = context_course::instance($course->id);
 $participation = oublog_get_participation($oublog, $context, $groupid, $cm, $course);
 
 $PAGE->navbar->add(get_string('userparticipation', 'oublog'));

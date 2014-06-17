@@ -38,7 +38,7 @@ $individualid       = optional_param('individual', 0, PARAM_INT);
 $url = new moodle_url('/mod/oublog/feed.php', array('format'=>$format, 'blog'=>$blogid,
         'bloginstance'=>$bloginstancesid, 'post'=>$postid));
 $PAGE->set_url($url);
-$PAGE->set_context(get_system_context());
+$PAGE->set_context(context_system::instance());
 // Validate Parameters.
 $format = strtolower($format);
 
@@ -93,8 +93,8 @@ if ($blog->global) {
 }
 
 // Check browser compatibility.
-if (check_browser_version('MSIE', 0) || check_browser_version('Firefox', 0)) {
-    if (!check_browser_version('MSIE', '7') && !check_browser_version('Firefox', '2')) {
+if (core_useragent::check_browser_version('MSIE', 0) || core_useragent::check_browser_version('Firefox', 0)) {
+    if (!core_useragent::check_browser_version('MSIE', '7') && !core_useragent::check_browser_version('Firefox', '2')) {
         if ($blog->global) {
             $url='view.php?user='.$bloginstance->userid;
         } else {
@@ -174,14 +174,14 @@ if ($groupmode == SEPARATEGROUPS) {
     } else {
         // Must have access all groups
         require_capability('moodle/site:accessallgroups',
-                get_context_instance(CONTEXT_MODULE, $cm->id), $user->id);
+                context_module::instance($cm->id), $user->id);
     }
 }
 
 // Get data for feed in a standard form.
 if ($comments) {
     $feeddata = oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user,
-            $allowedvisibility, $groupid, $cm);
+            $allowedvisibility, $groupid, $cm, $blog, $individualid);
     $feedname = strip_tags($blog->name) . ': ' . get_string('commentsfeed', 'oublog');
     $feedsummary='';
 } else {

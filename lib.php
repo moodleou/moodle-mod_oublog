@@ -256,10 +256,10 @@ function oublog_print_recent_activity($course, $isteacher, $timestart) {
         if (!$cm->uservisible) {
             continue;
         }
-        if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/oublog:view', context_module::instance($cm->id))) {
             continue;
         }
-        if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_USER, $blog->userid))) {
+        if (!has_capability('mod/oublog:view', context_user::instance($blog->userid))) {
             continue;
         }
 
@@ -336,10 +336,10 @@ function oublog_get_recent_mod_activity(&$activities, &$index, $timestart, $cour
         if (!$cm->uservisible) {
             continue;
         }
-        if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/oublog:view', context_module::instance($cm->id))) {
             continue;
         }
-        if (!has_capability('mod/oublog:view', get_context_instance(CONTEXT_USER, $blog->userid))) {
+        if (!has_capability('mod/oublog:view', context_user::instance($blog->userid))) {
             continue;
         }
 
@@ -427,164 +427,19 @@ function oublog_print_recent_mod_activity($activity, $courseid, $detail, $modnam
 
 /**
  * Function to be run periodically according to the moodle cron
- * This function runs every 30-minutes.
+ * This function runs every 4 hours.
  *
  * @uses $CFG
  * @return boolean true on success, false on failure.
  **/
 function oublog_cron() {
-	
-	
-	
-    global $CFG, $COURSE, $DB;
-	require_once ('locallib.php');
-	
-	// Delete outdated (> 30 days) moderated comments
-	$outofdate = time () - 30 * 24 * 3600;
-	$DB->delete_records_select ( 'oublog_comments_moderated', "timeposted < ?", array (
-			$outofdate 
-	) );
-	
-	$timeNow = time ();
-	
-	$configurations = get_config ( 'mod_oublog' );
-	if (array_key_exists ( 'cron_last_run_time', $configurations ) === FALSE) {
-		$lastRunTime = 0;
-	} else {
-		$lastRunTime = $configurations->cron_last_run_time;
-	}
-	
-	
-	
-	// ##################################################
-	// ### SEND OUT EMAILS FOR SUBSCRIBED USERS #########
-	// ##################################################
-	
-	
-	
-	if (! $blogPostsSQLResult = $DB->get_recordset_sql ( "SELECT DISTINCT p.title, 
-  p.message, 
-  p.timeposted, 
-  p.timeupdated,
-  p.id AS postid,
-  array_to_string(array_agg(u.email), '_____') AS emails, 
-  array_to_string(array_agg(u.firstname), '_____') AS firstnames,
-  array_to_string(array_agg(u.id), '_____') AS uids	
-  FROM {oublog} o
-INNER JOIN {oublog_instances} i ON (o.id = i.oublogid)
-INNER JOIN {oublog_posts} p ON (i.id = p.oubloginstancesid)
-INNER JOIN {course_modules} cm ON (cm.instance = o.id)
-INNER JOIN {user_enrolments} ue ON (ue.modifierid = cm.course)
-INNER JOIN {user} u ON (ue.userid = u.id) 
-LEFT OUTER JOIN {oublog_subscriptions} s ON (s.oublogid = o.id)
-WHERE
-  (o.forcesubscribe = ? OR ( o.forcesubscribe <> ? AND (s.oublogid = o.id AND s.userid = u.id))) AND
-  p.deletedby IS NULL  AND 
-  p.timeposted >= 0
-  GROUP BY 
-  p.title,
-  p.id,
-  p.message, 
-  p.timeposted, 
-  p.timeupdated;
-    		", array (
-    				OUBLOG_FORCESUBSCRIBE, OUBLOG_DISALLOWSUBSCRIBE, $lastRunTime 
-	) )) {
-		return true;
-	}
-	
-	$emails = array ();
-	
-	foreach ( $blogPostsSQLResult as $blogPost ) {
-		// Produce email for that particular blog post:
-		$emailForPost = '<li><div class="head">' . '<div class="date">' . oublog_date ( $blogPost->timeposted, get_string ( 'strftimerecent' ) ) . '</div>' . '<div class="name">' . fullname ( $blogPost ) . '</div>' . '</div>' . '<div class="info">' . "<a href=\"{$CFG->wwwroot}/mod/oublog/viewpost.php?post={$blogPost->postid}\">" . break_up_long_words ( format_string ( empty ( $blogPost->title ) ? $blogPost->message : $blogPost->title ) ) . '</a>' . '</div>';
-		$blogPost->emails = explode('_____', $blogPost->emails);
-		$blogPost->firstnames = explode('_____', $blogPost->firstnames);
-		$blogPost->uids = explode('_____', $blogPost->uids);
-		$n = count($blogPost->emails);
-		for ($i = 0; $i < $n; $i++) {
-			if (isset($emails [$blogPost->uids[$i]]) == TRUE) {
-				$emails [$blogPost->uids[$i]]->posts .= $emailForPost;
-			} else {
-				$emails [$blogPost->uids[$i]]->posts = $emailForPost;
-				$emails [$blogPost->uids[$i]]->firstname = $blogPost->firstnames[$i];
-				$emails [$blogPost->uids[$i]]->email = $blogPost->emails[$i];
-			}
-		}
-	}
-	
+    global $DB;
 
-	
-	foreach ( $emails as $uid => $posts ) {
-		
-		// To send HTML mail, the Content-type header must be set
-		$headers  = 'MIME-Version: 1.0' . "\r\n";
-		$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-		
-		// Additional headers
-		$headers .= 'To: '.$posts->firstname.' <'.$posts->email.'>' . "\r\n";
-		$headers .= 'From: Moodle Bot <do-not-reply>' . "\r\n";
-		
-		
-		$outputEmail = "Dear " . $posts->firstname . ",\n here is a list of the latest updates from Moolde OUBlog: \n";
-		$outputEmail .= "<ul>" . $posts->posts . "</ul>";
-		$outputEmail .= "<br><br>Sincerely,<br><br><br>~The OUBlog Email Robot";
-		mail ( $posts->email, "OUBlog Updates", $outputEmail, $headers);
-	}        
-    
+    // Delete outdated (> 30 days) moderated comments
+    $outofdate = time() - 30 * 24 * 3600;
+    $DB->delete_records_select('oublog_comments_moderated', "timeposted < ?", array($outofdate));
 
-    set_config ( 'cron_last_run_time', $timeNow, 'mod_oublog');
     return true;
-}
-
-
-
-/**
- * Execute post-install custom actions for the module
- *
- * @return boolean true if success, false on error
- */
-function oublog_post_install() {
-    global $DB, $CFG;
-    require_once('locallib.php');
-
-    // Setup the global blog.
-    $oublog = new stdClass;
-    $oublog->course = SITEID;
-    $oublog->name = 'Personal Blogs';
-    $oublog->intro = '';
-    $oublog->introformat = FORMAT_HTML;
-    $oublog->accesstoken = md5(uniqid(rand(), true));
-    $oublog->maxvisibility = OUBLOG_VISIBILITY_PUBLIC;
-    $oublog->global = 1;
-    $oublog->allowcomments = OUBLOG_COMMENTS_ALLOWPUBLIC;
-    $oublog->forcesubscribe = OUBLOG_CHOOSESUBSCRIBE;
-
-    if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
-        return(false);
-    }
-
-    $mod = new stdClass;
-    $mod->course   = SITEID;
-    $mod->module   = $DB->get_field('modules', 'id', array('name'=>'oublog'));
-    $mod->instance = $oublog->id;
-    $mod->visible  = 1;
-    $mod->visibleold  = 0;
-    $mod->section = 1;
-
-    if (!$cm = add_course_module($mod)) {
-        return(true);
-    }
-    $mod->id = $cm;
-    $mod->coursemodule = $cm;
-
-    $mod->section = course_add_cm_to_section($mod->course, $mod->coursemodule, 1);
-
-    $DB->update_record('course_modules', $mod);
-
-    set_config('oublogsetup', true);
-
-    return(true);
 }
 
 /**
@@ -937,8 +792,9 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     }
 
     // Make sure we're allowed to see it...
-
-    if ($filearea != 'summary' && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+    // Check if coming from webservice - if so always allow.
+    $ajax = constant('AJAX_SCRIPT') ? true : false;
+    if ($filearea != 'summary' && !$ajax && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
         return false;
     }
     if ($filearea == 'attachment') {
@@ -1029,7 +885,7 @@ function oublog_cm_info_dynamic(cm_info $cm) {
     }
     if (!has_capability($capability,
             context_module::instance($cm->id))) {
-        $cm->uservisible = false;
+        $cm->set_user_visible(false);
         $cm->set_available(false);
     }
 }
@@ -1177,184 +1033,6 @@ function oublog_reset_userdata($data) {
     return $status;
 }
 
-function oublog_is_subscribed($userid, $oublog) {
-	global $DB;
-	if (is_numeric($oublog)) {
-		$oublog = $DB->get_record('oublog', array('id' => $oublog));
-	}
-	return $DB->record_exists("oublog_subscriptions", array("userid" => $userid, "oublogid" => $oublog->id));
-}
-
-
-/**
- * @global object
- * @param object $oublog
- * @return bool
- */
-function oublog_is_forcesubscribed($oublog) {
-	global $DB;
-	if (isset($oublog->forcesubscribe)) {    // then we use that
-		return ($oublog->forcesubscribe == OUBLOG_FORCESUBSCRIBE);
-	} else {   // Check the database
-		return ($DB->get_field('oublog', 'forcesubscribe', array('id' => $oublog)) == OUBLOG_FORCESUBSCRIBE);
-	}
-}
-
-function oublog_get_forcesubscribed($oublog) {
-	global $DB;
-	if (isset($oublog->forcesubscribe)) {    // then we use that
-		return $oublog->forcesubscribe;
-	} else {   // Check the database
-		return $DB->get_field('oublog', 'forcesubscribe', array('id' => $oublog));
-	}
-}
-
-
-/**
- * Adds module specific settings to the settings block
- *
- * @param settings_navigation $settings The settings navigation object
- * @param navigation_node $forumnode The node to add module settings to
- */
-function oublog_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $oublognode) {
-    global $USER, $PAGE, $CFG, $DB, $OUTPUT;
-
-    if (oublog_oualerts_enabled()) {
-        /**
-         * If OU alerts is enabled, and the blog has reporting email setup,
-         * if the user has the report/oualerts:managealerts capability for the context then
-         * the link to the alerts report should be added.
-         *
-         * @global object
-         * @global object
-         */
-        if (!$oublog = $DB->get_record("oublog", array("id" => $PAGE->cm->instance))) {
-            return;
-        }
-
-        include_once($CFG->dirroot.'/mod/oublog/locallib.php');
-
-
-        if (oublog_get_reportingemail($oublog)) {
-            if (has_capability('report/oualerts:managealerts',
-                        get_context_instance(CONTEXT_MODULE, $PAGE->cm->id))) {
-                $node->add(get_string('oublog_managealerts', 'oublog'),
-                        new moodle_url('/report/oualerts/manage.php', array('cmid' => $PAGE->cm->id,
-                                'coursename' => $PAGE->course->id, 'contextcourseid' => $PAGE->course->id)),
-                        settings_navigation::TYPE_CUSTOM);
-            }
-        } 
-    } else {
-        $oublogobject = $DB->get_record ( "oublog", array (
-                    "id" => $PAGE->cm->instance 
-                    ) );
-        if (empty ( $PAGE->cm->context )) {
-            $PAGE->cm->context = context_module::instance ( $PAGE->cm->instance );
-        }
-
-        // for some actions you need to be enrolled, being admin is not enough sometimes here
-        $enrolled = is_enrolled ( $PAGE->cm->context, $USER, '', false );
-        $activeenrolled = is_enrolled ( $PAGE->cm->context, $USER, '', true );
-
-        $subscriptionmode = oublog_get_forcesubscribed ( $oublogobject );
-        $cansubscribe = ($activeenrolled && $subscriptionmode != OUBLOG_FORCESUBSCRIBE && ($subscriptionmode != OUBLOG_DISALLOWSUBSCRIBE));
-
-        switch ($subscriptionmode) {
-            case OUBLOG_CHOOSESUBSCRIBE : // 0
-                $notenode = $oublognode->add ( get_string ( 'subscriptionoptional', 'oublog' ) );
-                break;
-            case OUBLOG_FORCESUBSCRIBE : // 1
-                $notenode = $oublognode->add ( get_string ( 'subscriptionforced', 'oublog' ) );
-                break;
-            case OUBLOG_INITIALSUBSCRIBE : // 2
-                $notenode = $oublognode->add ( get_string ( 'subscriptionauto', 'oublog' ) );
-                break;
-            case OUBLOG_DISALLOWSUBSCRIBE : // 3
-                $notenode = $oublognode->add ( get_string ( 'subscriptiondisabled', 'oublog' ) );
-                break;
-        }
-
-        if ($cansubscribe) {
-            if (oublog_is_subscribed ( $USER->id, $oublogobject )) {
-                $linktext = get_string('unsubscribe', 'oublog');
-            } else {
-                $linktext = get_string('subscribe', 'oublog');
-            }
-            $url = new moodle_url ( '/mod/oublog/subscribe.php', array (
-                        'id' => $oublogobject->id,
-                        'sesskey' => sesskey () 
-                        ) );
-            $oublognode->add ( $linktext, $url, navigation_node::TYPE_SETTING );
-        }
-
-    }
-}
-
-
-/**
- * Adds user to the subscriber list
- *
- * @global object
- * @param int $userid
- * @param int $oublogid
- */
-function oublog_subscribe($userid, $oublogid) {
-	global $DB;
-
-	if ($DB->record_exists("oublog_subscriptions", array("userid"=>$userid, "oublogid"=>$oublogid))) {
-		return true;
-	}
-
-	$sub = new stdClass();
-	$sub->userid  = $userid;
-	$sub->oublogid = $oublogid;
-
-	return $DB->insert_record("oublog_subscriptions", $sub);
-}
-
-/**
- * Removes user from the subscriber list
- *
- * @global object
- * @param int $userid
- * @param int $oublogid
- */
-function oublog_unsubscribe($userid, $oublogid) {
-	global $DB;
-	return $DB->delete_records("oublog_subscriptions", array("userid"=>$userid, "oublogid"=>$oublogid));
-}
-
-/**
- * This function gets run whenever user is assigned role in course
- *
- * @param stdClass $cp
- * @return void
- */
-function oublog_user_role_assigned($cp) {
-	require_once ('locallib.php');
-	global $DB;
-
-	$context = context::instance_by_id($cp->contextid, MUST_EXIST);
-
-	// If contextlevel is course then only subscribe user. Role assignment
-	// at course level means user is enroled in course and can subscribe to oublog.
-	if ($context->contextlevel != CONTEXT_COURSE) {
-		return;
-	}
-
-	$sql = "SELECT o.id, cm.id AS cmid
-              FROM {oublog} o
-              JOIN {course_modules} cm ON (cm.instance = o.id)
-              JOIN {modules} m ON (m.id = cm.module)
-             WHERE cm.course = ?
-               AND o.forcesubscribe = ?
-               AND m.name = 'oublog'";
-	$params = array($context->instanceid, 2/* Should be OUBLOG_INITIALSUBSCRIBE but for some reason this is not recognized! -- HELP!*/);
-
-	$oublogs = $DB->get_records_sql($sql, $params);
-	foreach ($oublogs as $oublog) {
-			oublog_subscribe($cp->userid, $oublog->id);
-	}
 /**
  * List of view style log actions
  * @return array
@@ -1424,4 +1102,29 @@ function oublog_oualerts_custom_info($item, $id) {
     return $itemtitle;
 }
 
+/**
+ * If OU alerts is enabled, and the blog has reporting email setup,
+ * if the user has the report/oualerts:managealerts capability for the context then
+ * the link to the alerts report should be added.
+ *
+ * @global object
+ * @global object
+ */
+function oublog_extend_settings_navigation(settings_navigation $settings, navigation_node $node) {
+    global $DB, $CFG, $PAGE;
+
+    if (!$oublog = $DB->get_record("oublog", array("id" => $PAGE->cm->instance))) {
+        return;
+    }
+
+    include_once($CFG->dirroot.'/mod/oublog/locallib.php');
+    if (oublog_oualerts_enabled() && oublog_get_reportingemail($oublog)) {
+        if (has_capability('report/oualerts:managealerts',
+                context_module::instance($PAGE->cm->id))) {
+            $node->add(get_string('oublog_managealerts', 'oublog'),
+                    new moodle_url('/report/oualerts/manage.php', array('cmid' => $PAGE->cm->id,
+                            'coursename' => $PAGE->course->id, 'contextcourseid' => $PAGE->course->id)),
+                            settings_navigation::TYPE_CUSTOM);
+        }
+    }
 }

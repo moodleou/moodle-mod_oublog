@@ -98,7 +98,7 @@ if ($oublog->maxvisibility != OUBLOG_VISIBILITY_PUBLIC && !isloggedin()) {
             substr($FULLME, strpos($FULLME, 'view.php')));
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
@@ -110,7 +110,7 @@ $canaudit       = has_capability('mod/oublog:audit', $context);
 // Get strings.
 $stroublogs     = get_string('modulenameplural', 'oublog');
 $stroublog      = get_string('modulename', 'oublog');
-$straddpost     = get_string('newpost', 'oublog');
+$straddpost = get_string('newpost', 'oublog', oublog_get_displayname($oublog));
 $strexportposts = get_string('oublog:exportposts', 'oublog');
 $strtags        = get_string('tags', 'oublog');
 $stredit        = get_string('edit', 'oublog');
@@ -118,10 +118,10 @@ $strdelete      = get_string('delete', 'oublog');
 $strnewposts    = get_string('newerposts', 'oublog');
 $strolderposts  = get_string('olderposts', 'oublog');
 $strcomment     = get_string('comment', 'oublog');
-$strviews       = get_string('views', 'oublog');
+$strviews = get_string('views', 'oublog', oublog_get_displayname($oublog));
 $strlinks       = get_string('links', 'oublog');
 $strfeeds       = get_string('feeds', 'oublog');
-$strblogsearch  = get_string('searchthisblog', 'oublog');
+$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($oublog));
 
 // Set-up groups.
 $groupmode = oublog_get_activity_groupmode($cm, $course);
@@ -246,11 +246,13 @@ if (!$hideunusedblog) {
             $links .= html_writer::link($editinstanceurl, $streditinstance);
             $links .= html_writer::end_tag('div');
         }
-        $allpostsurl = new moodle_url('/mod/oublog/allposts.php');
-        $strallposts = get_string('siteentries', 'oublog');
-        $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
-        $links .= html_writer::link($allpostsurl, $strallposts);
-        $links .= html_writer::end_tag('div');
+        if (empty($CFG->oublogallpostslogin) || isloggedin()) {
+            $allpostsurl = new moodle_url('/mod/oublog/allposts.php');
+            $strallposts = get_string('siteentries', 'oublog');
+            $links .= html_writer::start_tag('div', array('class' => 'oublog-links'));
+            $links .= html_writer::link($allpostsurl, $strallposts);
+            $links .= html_writer::end_tag('div');
+        }
         $format = FORMAT_HTML;
     } else {
         $summary = $oublog->intro;
@@ -261,15 +263,16 @@ if (!$hideunusedblog) {
     // Name, summary, related links.
     $bc = new block_contents();
     $bc->attributes['class'] = 'oublog-sideblock block';
+    $bc->attributes['id'] = 'oublog_info_block';
     $bc->title = format_string($title);
-    $bc->content = format_text($summary, $format) . $links;
     if ($oublog->global) {
-        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'mod/oublog/pluginfile.php',
+        $bc->content = file_rewrite_pluginfile_urls($summary, 'mod/oublog/pluginfile.php',
                 $context->id, 'mod_oublog', 'summary', $oubloginstance->id);
     } else {
-        $bc->content = file_rewrite_pluginfile_urls($bc->content, 'pluginfile.php',
+        $bc->content = file_rewrite_pluginfile_urls($summary, 'pluginfile.php',
                 $context->id, 'mod_oublog', 'intro', null);
     }
+    $bc->content = format_text($bc->content, $format) . $links;
     $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 
     // Tag Cloud.
@@ -290,6 +293,27 @@ if (!$hideunusedblog) {
         $bc->attributes['class'] = 'oublog-sideblock block';
         $bc->title = $strlinks;
         $bc->content = $links;
+        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
+    }
+
+    // 'Discovery' block.
+    $stats = array();
+    $stats[] = oublog_stats_output_myparticipation($oublog, $cm, $oublogoutput, $course, $currentindividual, $oubloguser->id);
+    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual, $oubloguser->id);
+    if ($oublog->statblockon) {
+        // Add to 'Discovery' block when enabled only.
+        $stats[] = oublog_stats_output_visitstats($oublog, $cm, $oublogoutput);
+        $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);
+        $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput);
+    }
+    $stats = array_filter($stats);
+    if (!empty($stats)) {
+        $stats = $oublogoutput->render_stats_container('view', $stats, count($stats));
+        $bc = new block_contents();
+        $bc->attributes['id'] = 'oublog-discover';
+        $bc->attributes['class'] = 'oublog-sideblock block';
+        $bc->title = get_string('discovery', 'oublog', oublog_get_displayname($oublog, true));
+        $bc->content = $stats;
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 
@@ -327,7 +351,10 @@ if ($oublog->individual) {
     }
 }
 echo '</div>';
-
+if (!$hideunusedblog && $oublog->global) {
+    // Renderer hook so extra info can be added to global blog pages in theme.
+    echo $oublogoutput->render_viewpage_prepost();
+}
 // Print the main part of the page.
 
 echo '<div id="oublogbuttons">';
@@ -343,23 +370,22 @@ if ($showpostbutton) {
     echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' =>
             $cm->instance)), $straddpost, 'get');
     echo '</div>';
+    if ($oublog->allowimport && ($oublog->global ||
+            $oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS)) {
+        echo '<div class="oublog_importpostbutton">';
+        echo $OUTPUT->single_button(new moodle_url('/mod/oublog/import.php', array('id' =>
+                $cm->id)), get_string('import', 'oublog'), 'get');
+        echo '</div>';
+    }
 }
 
 // View participation button.
 $canview = oublog_can_view_participation($course, $oublog, $cm, $currentgroup);
 if ($canview) {
-    if ($canview == OUBLOG_MY_PARTICIPATION) {
-        if (groups_is_member($currentgroup, $USER->id) || !$currentgroup) {
-            $strparticipation = get_string('myparticipation', 'oublog');
-            $participationurl = new moodle_url('userparticipation.php', array('id' => $cm->id,
-                    'group' => $currentgroup, 'user' => $USER->id));
-        }
-    } else {
+    if ($canview == OUBLOG_USER_PARTICIPATION) {
         $strparticipation = get_string('participationbyuser', 'oublog');
         $participationurl = new moodle_url('participation.php', array('id' => $cm->id,
                 'group' => $currentgroup));
-    }
-    if (isset($participationurl)) {
         echo '<div class="participationbutton">';
         echo $OUTPUT->single_button($participationurl, $strparticipation, 'get');
         echo '</div>';
@@ -440,10 +466,11 @@ if (isguestuser() && $USER->id==$user) {
 } else if (!isloggedin() || isguestuser()) {
     print '<p class="oublog_loginnote">'.
             get_string('maybehiddenposts', 'oublog',
-                    'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
+                    (object) array('link' => 'bloglogin.php?returnurl='.urlencode($returnurl),
+                            'name' => oublog_get_displayname($oublog))).'</p>';
 } else if (!$posts) {
     print '<p class="oublog_noposts">'.
-            get_string('noposts', 'oublog').'</p>';
+            get_string('noposts', 'oublog', oublog_get_displayname($oublog)).'</p>';
 }
 
 // Log visit and bump view count.

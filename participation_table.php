@@ -199,6 +199,8 @@ class oublog_user_participation_table extends flexible_table {
     public $userfullname;
     public $groupname;
     public $groupid;
+    public $start;
+    public $end;
 
     // Customised column and header info
     public $detailsheader;
@@ -208,7 +210,7 @@ class oublog_user_participation_table extends flexible_table {
     public $comments;
 
     public function __construct($cmid, $course, $oublog, $userid, $userfullname,
-        $groupname, $groupid) {
+        $groupname, $groupid, $start, $end) {
 
         $this->cmid = $cmid;
         $this->course = $course;
@@ -217,6 +219,8 @@ class oublog_user_participation_table extends flexible_table {
         $this->userfullname = $userfullname;
         $this->groupname = $groupname;
         $this->groupid = $groupid;
+        $this->start = $start;
+        $this->end = $end;
         parent::__construct('mod-oublog-user-participation');
     }
 
@@ -264,7 +268,8 @@ class oublog_user_participation_table extends flexible_table {
         $this->define_columns($columns);
         $this->define_headers($headers);
         $this->define_baseurl($CFG->wwwroot . '/mod/oublog/userparticipation.php?id=' .
-            $this->cmid . '&amp;user=' . $this->userid . '&amp;group=' . $this->groupid);
+            $this->cmid . '&amp;user=' . $this->userid . '&amp;group=' . $this->groupid .
+                '&amp;start=' . $this->start .'&amp;end=' . $this->end);
 
         $this->set_attribute('cellspacing', '0');
         $this->set_attribute('id', 'participation');

@@ -136,8 +136,10 @@ if ($action == 'DELETE') {
                 <option value="5000">5000</option>
                 </select><br />
                 <input name="ignore" type="checkbox">Re-process instances already added? (Really shouldn\'t select this)</input><br />
+                <input name="tagsonly" type="checkbox">Fix already imported posts tags (and nothing else)</input><br />
                 <input type="submit" value="Continue" />', $form);
         $form .= '<p>Select checkbox when images and urls in data set are pointing to learnacct not live server.</p>
+                 <p>Only select to fix tags when a version of the migration script where they were not imported correctly was used.</p>
                     <p>Once successfully added an instance will not be processed again and will be skipped.</p>';
         echo $form;
     }
@@ -200,6 +202,9 @@ function migrate_backup($dir) {
     }
     if ($kill = optional_param('kill', false, PARAM_BOOL)) {
         output('<b>Trial run</b>, will perform rollback on each instance.');
+    }
+    if ($tagsonly = optional_param('tagsonly', false, PARAM_BOOL)) {
+        output('<b>Tags only</b>, will only fix tags, not add posts.');
     }
     // Load in XML.
     $doc = new DOMDocument();
@@ -274,7 +279,12 @@ function migrate_backup($dir) {
     $xpath = null;// Xpath for current content xml file.
 
     foreach ($instances as &$instance) {
-        // transaction per instance.
+        // Transaction per instance (ensure any existing are cleared up).
+        if (isset($trans) && ($trans instanceof moodle_transaction)) {
+            // Commit what has been done (errors will have rolled back already).
+            $DB->commit_delegated_transaction($trans);
+            $trans = null;
+        }
         $trans = $DB->start_delegated_transaction();
         try {
             // Find/create user.
@@ -289,6 +299,10 @@ function migrate_backup($dir) {
                 $instance->newid = $bloginst->id;
                 $bloginst = null;
             } else {
+                if ($tagsonly) {
+                    output("<b>Error: Skipping create instance for {$instance->username} as in tag only mode</b>");
+                    continue;
+                }
                 // Create instance.
                 $newbloginst = new stdClass();
                 $newbloginst->oublogid = $blog->id;
@@ -339,6 +353,9 @@ function migrate_backup($dir) {
                     $linkob = null;
                 }
                 $linktags = null;
+                if ($tagsonly) {
+                    $alllinks = array();// Ignore any links in tag fix mode;
+                }
                 $allusers = array();
                 $usertags = $xmlcontent->getElementsByTagName('USER');
                 foreach ($usertags as $t) {
@@ -391,6 +408,9 @@ function migrate_backup($dir) {
                     $linkob = null;
                 }
                 $edittags = null;
+                if ($tagsonly) {
+                    $alledits = array();// Ignore any edits in tag fix mode;
+                }
                 $allcomments = array();
                 $commenttags = $xmlcontent->getElementsByTagName('COMMENT');
                 foreach ($commenttags as $l) {
@@ -405,6 +425,9 @@ function migrate_backup($dir) {
                     $linkob = null;
                 }
                 $commenttags = null;
+                if ($tagsonly) {
+                    $allcomments = array();// Ignore any comments in tag fix mode;
+                }
                 output('Loaded user data file ' . $xmlfilenum);
             }
             // Store posts info for this instance (used in link checks).
@@ -455,6 +478,7 @@ function migrate_backup($dir) {
             if (isset($allposts[$instance->id])) {
                 $posts = $allposts[$instance->id];
             }
+            output(count($posts) . ' posts to process');
             foreach ($posts as $newpost) {
                 // Sort out post object ready to save.
                 // $newpost = childnodes_to_object($post);
@@ -463,6 +487,9 @@ function migrate_backup($dir) {
                 $newpost->groupid = 0;// Just in case!
                 $newpost->oubloginstancesid = $instance->newid;
                 if (!is_null($newpost->deletedby)) {
+                    if ($tagsonly) {
+                        continue;// Don't update deleted post tags.
+                    }
                     if ($newpost->deletedby == $instance->userid) {
                         // Most of the time will be blog user.
                         $newpost->deletedby = $instance->newuserid;
@@ -481,35 +508,51 @@ function migrate_backup($dir) {
                         }
                     }
                 }
-                if (!is_null($newpost->lasteditedby)) {
-                    if ($newpost->lasteditedby == $instance->userid) {
-                        // Most of the time will be blog user.
-                        $newpost->lasteditedby = $instance->newuserid;
-                    } else {
-                        // Find mapped user id in this system.
-                        // $users = $xpath->query("/DATA/USERS/USER[@id=$newpost->lasteditedby]");
-                        $users = isset($allusers[$newpost->lasteditedby]) ? $allusers[$newpost->lasteditedby] : false;
-                        if (!$users) {
-                            $newpost->lasteditedby = false;
-                        } else {
-                            $newpost->lasteditedby = oublog_search_create_user($users);
-                        }
-                        if ($newpost->lasteditedby == false) {
-                            output("Error: Failed to get/make user id for edited by, old post id: $oldid");
+                if (!$tagsonly) {
+                    if (!is_null($newpost->lasteditedby)) {
+                        if ($newpost->lasteditedby == $instance->userid) {
+                            // Most of the time will be blog user.
                             $newpost->lasteditedby = $instance->newuserid;
+                        } else {
+                            // Find mapped user id in this system.
+                            // $users = $xpath->query("/DATA/USERS/USER[@id=$newpost->lasteditedby]");
+                            $users = isset($allusers[$newpost->lasteditedby]) ? $allusers[$newpost->lasteditedby] : false;
+                            if (!$users) {
+                                $newpost->lasteditedby = false;
+                            } else {
+                                $newpost->lasteditedby = oublog_search_create_user($users);
+                            }
+                            if ($newpost->lasteditedby == false) {
+                                output("Error: Failed to get/make user id for edited by, old post id: $oldid");
+                                $newpost->lasteditedby = $instance->newuserid;
+                            }
                         }
                     }
-                }
-                $newpost->message = oublog_decode_perbloglinks($newpost->message, $xpath, $postinfo, $instance->userid);
-                if (!$postid = $DB->insert_record('oublog_posts', $newpost)) {
-                    output("<b>Error: Failed to create post, old id = $oldid</b>");
-                    continue;
+                    $newpost->message = oublog_decode_perbloglinks($newpost->message, $xpath, $postinfo, $instance->userid);
+                    if (!$postid = $DB->insert_record('oublog_posts', $newpost)) {
+                        output("<b>Error: Failed to create post, old id = $oldid</b>");
+                        continue;
+                    }
+                } else {
+                    // Tag fix only mode. Search for post previously created to use as $postid.
+                    if (!$post = $DB->get_record_sql('select id, message from {oublog_posts} where oubloginstancesid
+                             = :oubloginstancesid and timeposted = :timeposted and title = :title and deletedby is null',
+                            array('oubloginstancesid' => $instance->newid, 'timeposted' => $newpost->timeposted,
+                                'title' => $newpost->title))) {
+                        output("<b>Error: Failed to find post (TAG FIX), old id = $oldid</b>");
+                        continue;
+                    }
+                    $postid = $post->id;
+                    $newpost->message = $post->message;// Ensure matches that on system.
+                    // Store existing tags so any extra added not removed.
+                    $tagnames = oublog_get_post_tags($post);
+                    $post = null;
                 }
                 $instance->postmapping[$oldid] = $postid;// Record old/new id mapping.
                 output('', true);// Output dots.
                 // Migrate any mystuff images in message.
-                if (strpos($newpost->message, '@@PLUGINFILE@@')
-                        || stripos($newpost->message, $SOURCESERVER . '/pix/smartpix.php/ou/s/')) {
+                if (!$tagsonly && (strpos($newpost->message, '@@PLUGINFILE@@')
+                        || stripos($newpost->message, $SOURCESERVER . '/pix/smartpix.php/ou/s/'))) {
                     $updaterec = new stdClass();
                     $updaterec->id = $postid;
                     $updaterec->message = oublog_add_files($newpost->message, $dir, $blogcontext->id,
@@ -520,15 +563,18 @@ function migrate_backup($dir) {
                 // Add post tags (also used in search to save DB query).
                 $newpost->tags = array();
                 // $tags = $xpath->query("/DATA/TAGS/TAG[POSTID=$oldid]");
-                $tagnames = array();
+                if (!$tagsonly || empty($tagnames)) {
+                    $tagnames = array();
+                }
                 $tags = array();
                 if (isset($alltags[$oldid])) {
                     $tags = $alltags[$oldid];
                 }
                 foreach ($tags as $tag) {
-                    $tagnames = $tag->tagname;
+                    $tagnames[] = $tag->tagname;
                 }
                 if (!empty($tagnames)) {
+                    $tagnames = array_unique(array_filter($tagnames));
                     oublog_update_item_tags($instance->newid, $postid, $tagnames);
                     $newpost->tags = $tagnames;
                     $tagnames = null;
@@ -674,17 +720,31 @@ function migrate_backup($dir) {
             } else {
                 // Commit and save that instance has been imported.
                 $trans->allow_commit();
+                $trans->dispose();
                 $donetag->appendChild($donedoc->createElement('instance', $instance->id));
                 if (!$donedoc->save($dir . '/imported.xml')) {
                     output('<b>Error saving xml record of instance, will be picked up next save</b>');
                 }
             }
         } catch (moodle_exception $e) {
+            output('<b>Code error:</b> ' . $e->debuginfo);
             try {
+                output('Rollback transation');
                 $trans->rollback($e);
+            } catch (moodle_exception $e) {
+                output('<b>Code error:</b> ' . $e->debuginfo);
+                $trans = null;
+                continue;
             } catch (Exception $e) {
+                output('<b>Code error:</b> ' . $e->debuginfo);
+                $trans = null;
                 continue;
             }
+        } catch (Exception $e) {
+            output('<b>Code error:</b> ' . $e->debuginfo);
+            $trans->rollback($e);
+            $trans = null;
+            continue;
         }
         $trans = null;
     }

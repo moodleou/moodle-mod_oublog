@@ -47,7 +47,7 @@ if (!$oublog = $DB->get_record("oublog", array("id"=>$cm->instance))) {
     print_error('invalidcoursemodule');
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 $url = new moodle_url('/mod/oublog/viewedit.php', array('edit'=>$editid));
@@ -103,6 +103,23 @@ echo '<div class="oublog-topofpage"></div>';
 <div id="middle-column">
     <div class="oublog-post">
         <h3><?php print format_string($edit->oldtitle) ?></h3>
+        <?php
+        $fs = get_file_storage();
+        if ($files = $fs->get_area_files($context->id, 'mod_oublog', 'edit', $edit->id, "timemodified", false)) {
+            echo '<div class="oublog-post-attachments">';
+            foreach ($files as $file) {
+                $filename = $file->get_filename();
+                $mimetype = $file->get_mimetype();
+                $iconimage = '<img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.
+                        $mimetype.'" />';
+                $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$context->id.'/mod_oublog/edit/'.
+                        $edit->id.'/'.$filename);
+                echo "<a href=\"$path\">$iconimage</a> ";
+                echo "<a href=\"$path\">".s($filename)."</a><br />";
+            }
+            echo '</div>';
+        }
+        ?>
         <div class="oublog-post-date">
             <?php print oublog_date($edit->timeupdated) ?>
         </div>
@@ -113,23 +130,6 @@ $text = file_rewrite_pluginfile_urls($edit->oldmessage, 'pluginfile.php', $conte
 print format_text($text, FORMAT_HTML);
 ?>
         </p>
-<?php
-echo '<div class="oublog-post-attachments">';
-$fs = get_file_storage();
-if ($files = $fs->get_area_files($context->id, 'mod_oublog', 'edit', $edit->id, "timemodified", false)) {
-    foreach ($files as $file) {
-        $filename = $file->get_filename();
-        $mimetype = $file->get_mimetype();
-        $iconimage = '<img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.
-                $mimetype.'" />';
-        $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$context->id.'/mod_oublog/edit/'.
-                $edit->id.'/'.$filename);
-        echo "<a href=\"$path\">$iconimage</a> ";
-        echo "<a href=\"$path\">".s($filename)."</a>";
-    }
-}
-echo '</div>';
-?>
     </div>
 </div>
 <?php

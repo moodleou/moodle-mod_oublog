@@ -29,10 +29,18 @@ class mod_oublog_comment_form extends moodleform {
         $blogid = $this->_customdata['blogid'];
         $postid = $this->_customdata['postid'];
         $maxbytes = $this->_customdata['maxbytes'];
+        $postrender = $this->_customdata['postrender'];
 
         $mform    =& $this->_form;
 
+        if (!$edit) {
+            $mform->addElement('header', 'posttext', get_string('postmessage', 'oublog'));
+            $mform->setExpanded('posttext', false);
+            $mform->addElement('html', $postrender);
+        }
+
         $mform->addElement('header', 'general', '');
+        $mform->setExpanded('general', true);
 
         if ($moderated) {
             $mform->addElement('static', '', '',

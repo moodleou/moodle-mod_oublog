@@ -138,6 +138,7 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013010801, 'oublog');
     }
 
+    // Add reporting email(s) for OU Alert plugin use.
     if ($oldversion < 2013101000) {
         // Define field maxbytes to be added to oublog.
         $table = new xmldb_table('oublog');
@@ -153,42 +154,104 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013101000, 'oublog');
     }
 
-    if ($oldversion < 2013101200) {
+    if ($oldversion < 2013102800) {
 
-        // Define field forcesubscribe to be added to oublog.
+        // Define field displayname to be added to oublog.
         $table = new xmldb_table('oublog');
-        $field = new xmldb_field('forcesubscribe', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'allowcomments');
+        $field = new xmldb_field('displayname', XMLDB_TYPE_CHAR, '255', null, null, null, null,
+                'reportingemail');
 
-        // Conditionally launch add field forcesubscribe.
+        // Conditionally launch add field displayname.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
-        // Define table oublog_subscriptions to be created.
-        $table = new xmldb_table('oublog_subscriptions');
-
-        // Adding fields to table oublog_subscriptions.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('oublogid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-
-        // Adding keys to table oublog_subscriptions.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('oublogid', XMLDB_KEY_FOREIGN, array('oublogid'), 'oublog', array('id'));
-
-        // Adding indexes to table oublog_subscriptions.
-        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
-
-        // Conditionally launch create table for oublog_subscriptions.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
-
         // Oublog savepoint reached.
-        upgrade_mod_savepoint(true, 2013101200, 'oublog');
+        upgrade_mod_savepoint(true, 2013102800, 'oublog');
     }
 
+    if ($oldversion < 2013102801) {
+
+        // Define field statblockon to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('statblockon', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'displayname');
+
+        // Conditionally launch add field statblockon.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_mod_savepoint(true, 2013102801, 'oublog');
+    }
+
+    if ($oldversion < 2013121100) {
+        // Numerous keys and indexes added.
+        // Define key oublog_posts_groupid_groups_fk (foreign) to be added to oublog_posts.
+        $table = new xmldb_table('oublog_posts');
+        $key = new xmldb_key('oublog_posts_groupid_groups_fk', XMLDB_KEY_FOREIGN, array('groupid'), 'groups', array('id'));
+
+        // Launch add key oublog_posts_groupid_groups_fk.
+        $dbman->add_key($table, $key);
+
+        // Define index allowcomments (not unique) to be added to oublog_posts.
+        $table = new xmldb_table('oublog_posts');
+        $index = new xmldb_index('allowcomments', XMLDB_INDEX_NOTUNIQUE, array('allowcomments'));
+
+        // Conditionally launch add index allowcomments.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index visibility (not unique) to be added to oublog_posts.
+        $table = new xmldb_table('oublog_posts');
+        $index = new xmldb_index('visibility', XMLDB_INDEX_NOTUNIQUE, array('visibility'));
+
+        // Conditionally launch add index visibility.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index timeposted (not unique) to be added to oublog_comments.
+        $table = new xmldb_table('oublog_comments');
+        $index = new xmldb_index('timeposted', XMLDB_INDEX_NOTUNIQUE, array('timeposted'));
+
+        // Conditionally launch add index timeposted.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2013121100, 'oublog');
+    }
+
+    if ($oldversion < 2014012702) {
+
+        // Define field allowimport to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('allowimport', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'statblockon');
+
+        // Conditionally launch add field allowimport.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2014012702, 'oublog');
+    }
+
+    if ($oldversion < 2014042400) {
+
+        // Define field introonpost to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('introonpost', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'allowimport');
+
+        // Conditionally launch add field introonpost.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2014042400, 'oublog');
+    }
 
     return true;
 }

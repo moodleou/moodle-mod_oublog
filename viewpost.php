@@ -65,7 +65,7 @@ if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
 $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $postid));
 $PAGE->set_url($url);
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
@@ -91,7 +91,6 @@ if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
 // Get strings.
 $stroublogs     = get_string('modulenameplural', 'oublog');
 $stroublog      = get_string('modulename', 'oublog');
-$straddpost     = get_string('newpost', 'oublog');
 $strdelete      = get_string('delete', 'oublog');
 $strtags        = get_string('tags', 'oublog');
 $strcomments    = get_string('comments', 'oublog');
