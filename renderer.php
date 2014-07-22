@@ -961,7 +961,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param object $cm
      */
     function render_pre_postform($oublog, $cm) {
-        if (empty($oublog->introonpost) || $oublog->global) {
+        if (empty($oublog->introonpost)) {
             return '';
         }
         $context = context_module::instance($cm->id);
