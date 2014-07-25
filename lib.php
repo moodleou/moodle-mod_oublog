@@ -944,7 +944,8 @@ function oublog_grade_item_delete($oublog) {
  */
 function oublog_get_extra_capabilities() {
     return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames',
-            'report/oualerts:managealerts');
+            'report/oualerts:managealerts', 'report/restrictuser:view',
+            'report/restrictuser:restrict', 'report/restrictuser:removerestrict');
 }
 
 /**
