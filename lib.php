@@ -39,13 +39,22 @@
  */
 function oublog_add_instance($oublog) {
     global $DB;
-    // Generate an accesstoken
+    // Generate an accesstoken.
     $oublog->accesstoken = md5(uniqid(rand(), true));
 
     if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
         return(false);
     }
-
+    if (!empty($oublog->tags)) {
+        $blogtags = oublog_clarify_tags($oublog->tags);
+        // For each tag added to the blog check if it exists in oublog_tags table,
+        // if it does not a tag record is created.
+        foreach ($blogtags as $tag) {
+            if (!$DB->get_record('oublog_tags', array('tag' => $tag))) {
+                $DB->insert_record('oublog_tags', (object) array('tag' => $tag));
+            }
+        }
+    }
     oublog_grade_item_update($oublog);
 
     return($oublog->id);
@@ -65,12 +74,21 @@ function oublog_update_instance($oublog) {
     global $DB;
     $oublog->id = $oublog->instance;
 
-    if (!$blog = $DB->get_record('oublog', array('id'=>$oublog->id))) {
+    if (!$DB->get_record('oublog', array('id' => $oublog->id))) {
         return(false);
     }
 
     if (!$DB->update_record('oublog', $oublog)) {
         return(false);
+    }
+
+    $blogtags = oublog_clarify_tags($oublog->tags);
+    // For each tag in the blog check if it already exists in oublog_tags table,
+    // if it does not a tag record is created.
+    foreach ($blogtags as $tag) {
+        if (!$DB->get_record('oublog_tags', array('tag' => $tag))) {
+            $DB->insert_record('oublog_tags', (object) array('tag' => $tag));
+        }
     }
 
     oublog_grade_item_update($oublog);

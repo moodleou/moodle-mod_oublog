@@ -118,6 +118,13 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->addElement('checkbox', 'allowimport', get_string('allowimport', 'oublog'), '', 0);
             $mform->addHelpButton('allowimport', 'allowimport', 'oublog');
 
+            $mform->addElement('text', 'tags', get_string('tags', 'oublog'),
+                            array('size'=>'48'));
+            $mform->addHelpButton('tags', 'predefinedtags', 'oublog');
+            $mform->setType('tags', PARAM_TAGLIST);
+            $mform->addRule('tags', get_string('maximumchars', '', 255),
+                            'maxlength', 255, 'client');
+
             $this->standard_grading_coursemodule_elements();
             $mform->setDefault('grade', 0);
 
@@ -205,6 +212,10 @@ class mod_oublog_mod_form extends moodleform_mod {
         if (empty($data->introonpost)) {
             $data->introonpost = 0;
         }
+        if (!empty($data->tags)) {
+            $data->tags = textlib::strtolower(trim($data->tags));
+        }
+
         return $data;
     }
 

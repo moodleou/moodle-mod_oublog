@@ -1018,7 +1018,33 @@ function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstancei
  * @return array of tag objects
  */
 function oublog_get_tag_list($oublog, $groupid, $cm, $oubloginstanceid = null, $individualid=-1) {
-    $tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid);
+    global $DB;
+
+    $tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, 'alpha');
+
+    $blogtags = oublog_clarify_tags($oublog->tags);
+
+    // For each tag added to the blog check if it is already in use
+    // in the post, if it is then the 'Offical' label is added to it.
+    $existingtagnames = array();
+    foreach ($tags as $idx => $tag) {
+        if (in_array($tags[$idx]->tag, $blogtags)) {
+            $tag->label = get_string('official', 'oublog');
+            // Flat array of existing in use 'Official' tags.
+            $existingtagnames[] = $tags[$idx]->tag;
+        }
+    }
+    // For each 'Official' tag added, if it is NOT already in use,
+    // then add it to the list of tags.
+    foreach ($blogtags as $blogtag) {
+        if (!in_array($blogtag, $existingtagnames)) {
+            $tagobject = (object) array('tag' => $blogtag);
+            $tagobject->label = get_string('official', 'oublog');
+            $tagobject->count = 0;
+            $tags[] = $tagobject;
+        }
+    }
+
     return $tags;
 }
 

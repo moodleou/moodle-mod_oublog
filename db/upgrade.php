@@ -253,5 +253,20 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2014042400, 'oublog');
     }
 
+    // Update oublog table, adding tags text field (can be null).
+    if ($oldversion < 2014072501) {
+
+        // Define field tags to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('tags', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'introonpost');
+        // Conditionally launch add field introonpost.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2014072501, 'oublog');
+    }
+
     return true;
 }

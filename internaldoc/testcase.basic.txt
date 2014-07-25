@@ -204,6 +204,77 @@ TAG12 / admin
 -- Confirm that the tag order is alphabetical 'atag1 (3) btag2 (4) ctag3 (1) tag1 (2)
    tag2 (1)' as before.
 
+BTAG Testing Blog level tags
+(Requires CRE + TAG)
+===========================
+
+BTAG01 / admin
+   Enter blog 'CRE01'.
+   Select 'Edit settings' link in the Administration block.
+   Scroll down to find the 'General' field entry, 'Tags' with help icon.
+   Enter the tags 'cre01tag01, cre01tag02'.
+-- Click 'Save and display'.
+
+BTAG02 / admin
+-- Click the 'Edit' button on post 'TAG1'.
+   Scroll to the Tags (separated by commas) entry field.
+   Click to, or otherwise, enter the Tags field.
+-- Confirm that the field dropdown is displayed, and contains the pre existing tag
+   'btag2' the two new blog tag entries 'cre01tag01 Official 0 posts' and
+   'cre01tag02 Official 0 posts'.
+
+BTAG03 / admin
+   Delete tag 'tag1,' from the Tags field.
+-- Verify that the drop down now contains the extra entry 'tag1 1 posts'.
+   Click the dropdown entry 'cre01tag02 Official 0 posts'.
+-- Verify that the Tags field now contains 'tag2, atag1, ctag3, cre01tag02, '
+   and that the dropdown now only displays the three entries
+   'btag2 2 posts', 'cre01tag01 Official 0 posts' and 'tag1 2 posts'.
+   Click 'Save changes'.
+
+Return to the course main page.
+
+BTAG04 / admin
+   Create a new blog, enter the blog name as 'CRE03'.
+   Enter any text as the Intro.
+   Leaving all other settings at their defaults, scroll down find to the
+   'Tags' entry field.
+   Click the help icon to display the tag cloud, order help text.
+-- Confirm help text is displayed in a popup.
+   Close the popup.
+   Enter the tags 'CRE03TAG01, CRE03TAG02'.
+   Click 'Save and display'.
+
+BTAG05 / admin
+   Create a new post, enter the blog name as 'BTAG07'.
+   Enter the message 'Testing the predefined Official Blog tags'.
+   Scroll to and enter the Tags (separated by commas) field.
+-- Confirm that 'cre03tag01 Official 0 posts' and 'cre03tag02 Official 0 posts'
+   are the only entries in the tag choice drop down, the two tags created on the blog.
+   Select the tag 'cre03tag01 Official 0 posts'.
+-- Confirm that the page refreshes and that the tag appears in the field but
+   not in the choice drop down.
+   Along side 'cre03tag01,' enter the tag 'btag07' in the Tags field.
+   Click 'Add post'.
+-- Confirm that the 'Tags' tag cloud contains the two tags 'cre03tag01,' and 'btag07'.
+   in the default 'Alphabetical' order.
+
+BTAG06 / admin
+   Create a new post, enter the blog name as 'TAG08'
+   Enter the message 'Testing the predefined Official Blog tags appear
+   along side user entered tags'.
+   Scroll to and enter the Tags (separated by commas) field.
+-- Confirm that 'cre03tag01 Official 1 posts', 'cre03tag02 Official 0 posts'
+   and 'btag07 1 posts'are the only entries in the drop down.
+   Slowly, enter the tag 'btag08,' into the Tags field.
+   Select the tag 'cre03tag02 Official 0 posts'.
+-- Confirm that 'btag07 1 posts' and 'cre03tag01 Official 1 posts' are the only
+   entries displayed in the choice drop down.
+   Click 'Add post'.
+
+BTAG07 / admin
+-- Confirm that the display of the Tag cloud matches those tags entered,
+   'btag07(1) btag08(1) cre03tag01(1) cre03tag02(1)'.
 
 PAG Testing blog display pagination.
 ===================================

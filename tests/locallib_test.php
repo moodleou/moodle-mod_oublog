@@ -669,6 +669,63 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertCount(8, $tags);
         $lasttag = end($tags);
         $this->assertEquals('toad', $lasttag->tag);// Last when Alphabetic order specified.
+
+        // Testing the create update of a blog instance with predefined tags.
+        // set and also testing oublog_get_tag_list().
+        // Whole course blog created with predefined tag set.
+        $oublog = $this->get_new_oublog($course->id, array('tags' => 'blogtag01'));
+        $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
+        // Check that the predefined tag is inserted to the oublog_tags table.
+        $blogtags = oublog_clarify_tags($oublog->tags);
+        foreach ($blogtags as $tag) {
+            $predefinedtags[] = $DB->get_record('oublog_tags', array('tag' => $tag));
+        }
+        // Confirm finding one predefined tag in the oublog_tags table.
+        $this->assertCount(1, $predefinedtags);
+        // Change the predefined tags on the blog.
+        $oublog->tags = 'blogtag01, blogtag02';
+        $oublog->instance = $oublog->id;
+        oublog_update_instance($oublog);
+        // Check that the changed tags are inserted to the oublog_tags table.
+        $blogtags = oublog_clarify_tags($oublog->tags);
+        foreach ($blogtags as $tag) {
+            $changedtags[] = $DB->get_record('oublog_tags', array('tag' => $tag));
+        }
+        // Confirm finding predefined tags in the oublog_tags table.
+        $this->assertCount(2, $changedtags);
+        // Create post with 1 pre-defined and 1 user tag.
+        $post = $this->get_post_stub($oublog->id);
+        $post->tags = array('antelope', 'blogtag01');
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
+        $this->assertEquals(19, strlen(oublog_get_tags_csv($postid)));
+        // Recover post tags in default order.
+        $tags = oublog_get_tags($oublog, 0, $cm, null, -1);
+        foreach ($tags as $tag) {
+            $this->assertEquals(1, $tag->count);
+            $this->assertContains($tag->tag, $post->tags);
+        }
+        $this->assertNotEquals('antelope', $tag->tag);
+        $this->assertEquals('blogtag01', $tag->tag);// Last in Alphabetical order.
+
+        // Recover combined list of tags.
+        $taglist = oublog_get_tag_list($oublog, 0, $cm, null, -1);
+        $this->assertCount(3, $taglist);
+        foreach ($taglist as $tag) {
+            if (isset($tag->label)) {
+                // It should be an 'Official' predefined blog tag.
+                $this->assertContains($tag->tag, $oublog->tags);
+                $this->assertNotEmpty($tag->label);
+                $this->assertGreaterThanOrEqual(0, $tag->count);
+            }
+            if (!isset($tag->label)) {
+                // It should be the user post tag.
+                $this->assertContains($tag->tag, $post->tags);
+                $this->assertEquals('antelope', $tag->tag);
+                $this->assertEquals(1, $tag->count);
+            }
+        }
+        $this->assertNotEquals('antelope', $tag->tag);
+        $this->assertEquals('blogtag02', $tag->tag);// Last in list.
     }
 
 }

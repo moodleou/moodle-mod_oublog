@@ -556,6 +556,11 @@ $string['order_help'] = 'You can choose to display the list of tags used ordered
 either in alphabetical order or by number of posts used in.
 Select the two links to switch between ordering methods,
 this choice is remembered and will be used on subsequent views.';
+$string['predefinedtags'] = 'Pre-defined tags';
+$string['predefinedtags_help'] = 'Give users tags to choose from when entering a tag on a post.
+Tags should be comma separated.';
+$string['official'] = 'Set';
+$string['invalidblogtags'] = 'Invalid blog tags';
 $string['nouserpostpartsfound'] = 'No posts made in this period.';
 $string['nousercommentpartsfound'] = 'No comments added in this period.';
 $string['participation_all'] = 'Participation - All time';
