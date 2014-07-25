@@ -527,7 +527,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param string groupname group name for display, default ''
      */
     public function render_user_participation_list($cm, $course, $oublog, $participation, $groupid,
-        $download, $page, $context, $viewfullnames, $groupname, $start, $end) {
+        $download, $page, $context, $viewfullnames, $groupname) {
         global $DB, $CFG;
 
         $user = $participation->user;
@@ -541,7 +541,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         }
         $filename .= '-'.format_string($fullname, true);
         $table = new oublog_user_participation_table($cm->id, $course, $oublog,
-            $user->id, $fullname, $groupname, $groupid, $start, $end);
+            $user->id, $fullname, $groupname, $groupid);
         $table->setup($download);
         $table->is_downloading($download, $filename, get_string('participation', 'oublog'));
 
@@ -549,10 +549,8 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $output = '';
         $modcontext = context_module::instance($cm->id);
         if (!$table->is_downloading()) {
-            $output .= html_writer::tag('h2', get_string('postsby', 'oublog', $fullname));
-            if (!$participation->posts) {
-                $output .= html_writer::tag('p', get_string('nouserposts', 'oublog'));
-            } else {
+            if ($participation->posts) {
+                $output .= html_writer::tag('h2', get_string('postsby', 'oublog', $fullname));
                 $counter = 0;
                 foreach ($participation->posts as $post) {
                     $row = ($counter % 2) ? 'oublog-odd' : 'oublog-even';
@@ -617,20 +615,18 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 }
             }
 
-            $output .= html_writer::tag('h2', get_string('commentsby', 'oublog', $fullname));
-            if (!$participation->comments) {
-                $output .= html_writer::tag('p', get_string('nousercomments', 'oublog'));
-            } else {
+            if ($participation->comments) {
+                $output .= html_writer::tag('h2', get_string('commentsby', 'oublog', $fullname));
                 $output .= html_writer::start_tag('div',
                         array('id' => 'oublogcomments', 'class' => 'oublog-post-comments oublogpartcomments'));
                 foreach ($participation->comments as $comment) {
                     $output .= html_writer::start_tag('div', array('class'=>'oublog-comment'));
 
-                    $author = new StdClass;
+                    $author = new stdClass();
                     $author->id = $comment->authorid;
-                    $userfields = get_all_user_name_fields();
-                    foreach ($userfields as $field) {
-                        $author->$field = $comment->$field;
+                    $userfields = get_all_user_name_fields(false, '', 'poster');
+                    foreach ($userfields as $field => $retfield) {
+                        $author->$field = $comment->$retfield;
                     }
                     $authorurl = new moodle_url('/user/view.php', array('id' => $author->id));
                     $authorlink = html_writer::link($authorurl, fullname($author, $viewfullnames));
@@ -638,7 +634,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                         $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
                             array('post' => $comment->postid));
                         $viewpostlink = html_writer::link($viewposturl, s($comment->posttitle));
-                        $strparams = array('title' => $viewpostlink, 'author' => $authorlink);
+                        $strparams = array('title' => $viewpostlink, 'author' => $authorlink, 'date' => oublog_date($comment->postdate));
                         $output .= html_writer::tag('h3', get_string('commentonby', 'oublog',
                             $strparams));
                     } else {
@@ -646,7 +642,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                             array('post' => $comment->postid));
                         $viewpostlink = html_writer::link($viewposturl,
                             oublog_date($comment->postdate));
-                        $strparams = array('title' => $viewpostlink, 'author' => $authorlink);
+                        $strparams = array('title' => $viewpostlink, 'author' => $authorlink, 'date' => '');
                         $output .= html_writer::tag('h3', get_string('commentonby', 'oublog',
                             $strparams));
                     }
@@ -675,8 +671,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 }
                 $output .= html_writer::end_tag('div');
             }
-            // Only printing the download buttons.
-            echo $table->download_buttons();
+            if (!empty($participation->posts) || !empty($participation->comments)) {
+                // Only printing the download buttons.
+                echo $table->download_buttons();
+            }
 
             // Print the actual output.
             echo $output;
@@ -721,7 +719,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $table->add_data($table->comments);
                 $table->add_data($table->commentsheader);
                 foreach ($participation->comments as $comment) {
-                    $author = new StdClass;
+                    $author = new stdClass();
                     $author->id = $comment->authorid;
                     $userfields = get_all_user_name_fields();
                     foreach ($userfields as $field) {

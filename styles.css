@@ -348,6 +348,12 @@ div.oublog-individualselector {
     margin-top: 1em;
 }
 
+#page-mod-oublog-userparticipation .oublog-comment-date {
+    font-size: 1em;
+}
+#page-mod-oublog-userparticipation .tabtree {
+    margin-top: 1.25em;
+}
 #oublogbuttons form,
 #oublogbuttons div {
     display: inline;

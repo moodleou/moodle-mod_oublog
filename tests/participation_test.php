@@ -285,6 +285,16 @@ class oublog_participation_test extends oublog_test_lib {
                 null, (time() + 3600));
         $this->assertCount(2, $userparticipation->posts);
         $this->assertCount(2, $userparticipation->comments);
+        // Test oublog_get_user_participation() filtering.
+        $userparticipation = oublog_get_user_participation($oublog, $context, $student1->id, 0, $cm, $course,
+                null, null, true, false, null, 1);
+        $this->assertCount(1, $userparticipation->posts);
+        $this->assertCount(0, $userparticipation->comments);
+        $userparticipation = oublog_get_user_participation($oublog, $context, $student1->id, 0, $cm, $course,
+                null, null, false, true);
+        $this->assertCount(0, $userparticipation->posts);
+        $this->assertCount(2, $userparticipation->comments);
+
         // Test deleted posts/comments don't show.
         $DB->update_record('oublog_posts', (object) array('id' => $post1, 'timedeleted' => time(), 'deletedby' => $USER->id));
         $DB->update_record('oublog_comments', (object) array('id' => $comment, 'timedeleted' => time(), 'deletedby' => $USER->id));
@@ -364,7 +374,8 @@ class oublog_participation_test extends oublog_test_lib {
         $this->assertNotEmpty($participation[$student1->id]->gradeobj);
         $this->assertEquals(55, $participation[$student1->id]->gradeobj->grade);
 
-        $userparticipation = oublog_get_user_participation($oublog, $context, $student1->id, 0, $cm, $course);
+        $userparticipation = oublog_get_user_participation($oublog, $context, $student1->id, 0, $cm, $course,
+                null, null, true, true, null, null, true);
         $this->assertTrue(isset($userparticipation->gradeobj));
         $this->assertNotEmpty($userparticipation->gradeobj);
         $this->assertEquals(55, $userparticipation->gradeobj->grade);

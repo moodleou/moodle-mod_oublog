@@ -351,7 +351,7 @@ if ($oublog->individual) {
     }
 }
 echo '</div>';
-if (!$hideunusedblog && $oublog->global) {
+if (!$hideunusedblog) {
     // Renderer hook so extra info can be added to global blog pages in theme.
     echo $oublogoutput->render_viewpage_prepost();
 }

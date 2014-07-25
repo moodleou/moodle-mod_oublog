@@ -402,12 +402,13 @@ $string['details'] = 'Details';
 $string['foruser'] = ' for {$a}';
 $string['postsby'] = 'Posts by {$a}';
 $string['commentsby'] = 'Comments by {$a}';
-$string['commentonby'] = 'Comment on <u>{$a->title}</u> by <u>{$a->author}</u>';
+$string['commentonby'] = 'Comment on post <u>{$a->title}</u> {$a->date} by <u>{$a->author}</u>';
 $string['nouserposts'] = 'No posts made.';
 $string['nousercomments'] = 'No comments made.';
 $string['savegrades'] = 'Save grades';
 $string['gradesupdated'] = 'Grades updated';
 $string['usergrade'] = 'User grade';
+$string['nousergrade'] = 'User grade not available.';
 
 // Participation download strings.
 $string['downloadas'] = 'Download data as';
@@ -526,14 +527,14 @@ $string['import_step2_conflicts'] = '{$a} posts to import were identified as con
 $string['import_step2_conflicts_submit'] = 'Import conflicting posts';
 
 // My Participation.
-$string['contribution'] = 'Contribution';
-$string['contribution_all'] = 'Contribution - All time';
-$string['contribution_from'] = 'Contribution - From {$a}';
-$string['contribution_to'] = 'Contribution - To {$a}';
-$string['contribution_fromto'] = 'Contribution - From {$a->start} To {$a->end}';
+$string['contribution'] = 'Participation';
+$string['contribution_all'] = 'Participation - All time';
+$string['contribution_from'] = 'Participation - From {$a}';
+$string['contribution_to'] = 'Participation - To {$a}';
+$string['contribution_fromto'] = 'Participation - From {$a->start} To {$a->end}';
 $string['start'] = 'From';
 $string['end'] = 'To';
-$string['displayperiod'] = 'Contribution selector From date - To date.';
+$string['displayperiod'] = 'Participation selector From date - To date.';
 $string['info'] = 'Participation within the selected period.';
 $string['displayperiod_help'] = '<p>The default selects all entries.</p>
 <p>You can select \'From\' a date until todays entries.</p>

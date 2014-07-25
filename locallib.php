@@ -3036,10 +3036,16 @@ function oublog_get_participation($oublog, $context, $groupid=0, $cm,
  * @param object $course current course object
  * @param int $start optional start date
  * @param int $end optional end date
+ * @param bool $getposts Return post data
+ * @param bool $getcomments Return comment data
+ * @param int $limitfrom limit posts/comments from
+ * @param int $limitnum number of posts/comments (data only) to limit to
+ * @param bool $getgrades return grade info
  * @return array user participation
  */
 function oublog_get_user_participation($oublog, $context,
-        $userid, $groupid=0, $cm, $course, $start = null, $end = null) {
+        $userid, $groupid = 0, $cm, $course, $start = null, $end = null,
+        $getposts = true, $getcomments = true, $limitfrom = null, $limitnum = null, $getgrades = false) {
     global $DB;
     $testgroupid = $groupid;
     if ($oublog->individual > 0) {
@@ -3071,12 +3077,14 @@ function oublog_get_user_participation($oublog, $context,
         $cperiod .= 'AND c.timeposted < :timeend ';
     }
     $authornamefields = get_all_user_name_fields(true, 'a');
+    $postauthornamefields = get_all_user_name_fields(true, 'pa', '', 'poster');
     $commentssql = 'SELECT c.id, c.postid, c.title, c.message, c.timeposted,
-        a.id AS authorid, ' . $authornamefields . ',
+        a.id AS authorid, ' . $authornamefields . ',' . $postauthornamefields . ',
         p.title AS posttitle, p.timeposted AS postdate
         FROM {user} a, {oublog_comments} c
             INNER JOIN {oublog_posts} p ON (c.postid = p.id)
             INNER JOIN {oublog_instances} bi ON (bi.id = p.oubloginstancesid)
+            INNER JOIN {user} pa on bi.userid = pa.id
         WHERE bi.oublogid = :oublogid AND a.id = bi.userid
         AND p.timedeleted IS NULL ' . $groupcheck . $cperiod . '
         AND c.userid = :userid AND c.timedeleted IS NULL
@@ -3093,11 +3101,21 @@ function oublog_get_user_participation($oublog, $context,
     $fields = user_picture::fields();
     $fields .= ',username,idnumber';
     $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
-    $participation = new StdClass;
+    $participation = new stdClass();
     $participation->user = $user;
-    $participation->posts = $DB->get_records_sql($postssql, $params);
-    $participation->comments = $DB->get_records_sql($commentssql, $params);
-    if (oublog_can_grade($course, $oublog, $cm, $groupid)) {
+    $participation->numposts = $DB->get_field_sql("SELECT COUNT(1) FROM ($postssql) as p", $params);
+    if ($getposts) {
+        $participation->posts = $DB->get_records_sql($postssql, $params, $limitfrom, $limitnum);
+    } else {
+        $participation->posts = array();
+    }
+    $participation->numcomments = $DB->get_field_sql("SELECT COUNT(1) FROM ($commentssql) as p", $params);
+    if ($getcomments) {
+        $participation->comments = $DB->get_records_sql($commentssql, $params, $limitfrom, $limitnum);
+    } else {
+        $participation->comments = array();
+    }
+    if ($getgrades && oublog_can_grade($course, $oublog, $cm, $groupid)) {
         $gradinginfo = grade_get_grades($course->id, 'mod',
             'oublog', $oublog->id, array($userid));
         $participation->gradeobj = $gradinginfo->items[0]->grades[$userid];
@@ -3899,15 +3917,15 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $co
     $context = context_module::instance($cm->id);
     // Get the participation object containing User, Posts and Comments.
     $participation = oublog_get_user_participation($oublog, $context,
-            $USER->id, $curgroup, $cm, $course);
+            $USER->id, $curgroup, $cm, $course, null, null, true, true, null, 8);
     // Generate content data to send to renderer.
     $maintitle = get_string('myparticipation', 'oublog');// The title of the block 'section'.
     $content = '';
     $postedcount = $commentedcount = $commenttotal = 0;
     $postshow = 8;
-    $postscount = count($participation->posts);
-    if (count($participation->comments) <= 4) {
-        $commenttotal = count($participation->comments);
+    $postscount = $participation->numposts;
+    if ($participation->numcomments <= 4) {
+        $commenttotal = $participation->numcomments;
     } else {
         $commenttotal = 4;
     }
@@ -3915,7 +3933,7 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $co
         $content .= html_writer::tag('p', get_string('nouserposts', 'oublog'));
     } else {
         $percent = $stat = null;
-        $content .= html_writer::tag('h3', get_string('numberposts', 'oublog', count($participation->posts)));
+        $content .= html_writer::tag('h3', get_string('numberposts', 'oublog', $participation->numposts));
         foreach ($participation->posts as $post) {
             if ($postedcount >= ($postshow - $commenttotal)) {
                 break;
@@ -3930,7 +3948,7 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $co
         }
     }
     // Pre test the numbers of posts/comments for display upto max.
-    $postspluscount = count($participation->posts) - $postedcount;
+    $postspluscount = $participation->numposts - $postedcount;
     if ($postspluscount >= 1) {
         $content .= html_writer::tag('p', get_string('numberpostsmore', 'oublog', $postspluscount));
     }
@@ -3938,7 +3956,7 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $co
         $content .= html_writer::tag('p', get_string('nousercomments', 'oublog'));
     } else {
         $percent = $stat = null;// Removing all stats div.
-        $content .= html_writer::tag('h3', get_string('numbercomments', 'oublog', count($participation->comments)));
+        $content .= html_writer::tag('h3', get_string('numbercomments', 'oublog', $participation->numcomments));
         foreach ($participation->comments as $comment) {
             if (($commentedcount + $postedcount) >= $postshow ) {
                 break;
@@ -3954,7 +3972,7 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $co
         }
     }
     // If the number of comments is more than can be shown.
-    $commentspluscount = count($participation->comments) - $commentedcount;
+    $commentspluscount = $participation->numcomments - $commentedcount;
     if ($commentspluscount >= 1) {
         $content .= html_writer::tag('p', get_string('numbercommentsmore', 'oublog', $commentspluscount));
     }
