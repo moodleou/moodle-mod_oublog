@@ -429,6 +429,49 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertEquals(0, $recordcount);
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, 0, $cm, 0, $stud2->id);
         $this->assertEquals(1, $recordcount);
+
+        // Test 4 - create multiple posts for pagination tests.
+        $this->setAdminUser();
+        // Number of posts/comments for tests.
+        $postcount = OUBLOG_POSTS_PER_PAGE;
+        // Create further post stubs for students, ie 3 pages.
+        // Create student 1s post stubs.
+        $posthashes = $postids = array();
+        for ($i = 1; $i <= $postcount; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->userid = $stud1->id;
+            $posthashes[$i]->visibility = OUBLOG_VISIBILITY_PUBLIC;// Any user.
+        }
+        // Create student 1s posts.
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $SITE);
+        }
+        // Create student 2s post stubs.
+        for ($i = 1; $i <= $postcount; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->userid = $stud2->id;
+            $posthashes[$i]->visibility = OUBLOG_VISIBILITY_PUBLIC;
+        }
+        // Create student 2s posts.
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $SITE);
+        }
+        // Setup pagination offset count for page 1.
+        $page = 0;
+        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0, -1, null, '', true, true);
+        $this->assertEquals(OUBLOG_POSTS_PER_PAGE * 2 + 2, $recordcount);// Includes count of lesser visibility posts.
+        $this->assertCount(OUBLOG_POSTS_PER_PAGE, $posts);// Includes only paged visibile posts.
+        // Setup pagination offset count for page 2.
+        $page = 1;
+        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0, -1, null, '', true, true);
+        $this->assertCount(OUBLOG_POSTS_PER_PAGE, $posts);// Includes only paged visibile posts.
+        // Setup pagination offset count for page 3.
+        $page = 2;
+        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0, -1, null, '', true, true);
+        $this->assertCount(2, $posts);// Includes only paged visibile posts.
     }
 
     /* test_oublog_get_last_modified */

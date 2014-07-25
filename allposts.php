@@ -24,8 +24,8 @@
 require_once('../../config.php');
 require_once('locallib.php');
 
-$offset = optional_param('offset', 0, PARAM_INT);   // Offset for paging.
 $tag    = optional_param('tag', null, PARAM_TAG);   // Tag to display.
+$page = optional_param('page', 0, PARAM_INT);
 
 if (!$oublog = $DB->get_record("oublog", array("global"=>1))) { // The personal blogs module.
     print_error('personalblognotsetup', 'oublog');
@@ -39,7 +39,10 @@ if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
     print_error('coursemisconf');
 }
 
-$url = new moodle_url('/mod/oublog/allposts.php', array('offset' => $offset, 'tag'=>$tag));
+$offset = $page * OUBLOG_POSTS_PER_PAGE;
+$url = new moodle_url('/mod/oublog/allposts.php', array(
+        'page' => $page,
+        'tag' => $tag));
 $PAGE->set_url($url);
 
 $context = context_module::instance($cm->id);
@@ -164,6 +167,9 @@ echo $oublogoutput->render_viewpage_prepost();
 
 // Print blog posts.
 if ($posts) {
+    echo "<div class='oublog-paging'>";
+    echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
+    echo '</div>';
     echo '<div id="oublog-posts">';
     $rowcounter = 1;
     foreach ($posts as $post) {
@@ -172,18 +178,8 @@ if ($posts) {
                 $canmanageposts, $canaudit, true, false);
         $rowcounter++;
     }
-    if ($offset > 0) {
-        if ($offset-OUBLOG_POSTS_PER_PAGE == 0) {
-            print "<div class='oublog-newerposts'><a href=\"$returnurl\">$strnewposts</a></div>";
-        } else {
-            print "<div class='oublog-newerposts'><a href=\"$returnurl&amp;offset=" .
-            ($offset-OUBLOG_POSTS_PER_PAGE) . "\">$strnewposts</a></div>";
-        }
-    }
-    if ($recordcount - $offset > OUBLOG_POSTS_PER_PAGE) {
-        echo "<a href=\"$returnurl&amp;offset=" . ($offset+OUBLOG_POSTS_PER_PAGE) .
-                "\">$strolderposts</a>";
-    }
+    echo "<div class='oublog-paging'>";
+    echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
     echo '</div>';
 }
 

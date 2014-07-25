@@ -117,4 +117,33 @@ PAG02 / admin
            <- Previous   1|2|3    Next ->
               --------   -   -   ----
 
+PAG Testing Personal blog display pagination.
+=============================================
+
+Note Tests the 'Personal blog' all posts page, which contains multiples of the number
+     of posts per page ie 20.
+     Please use the Admininistrator's Personal blog to access the allposts.php.
+
+PAG01 / admin
+   Enter Admin personal blog via /mod/oublog/view.php.
+   Click the 'View site entries' link.
+-- Confirm that the 'New blog post' and 'Import post' buttons are not displayed
+   at the top of the blog posts area.
+
+-- Verify that above the first post and below the last post is a moodle standard
+   pagination bar which resembles the following, depending upon the number of posts.
+
+           Page: 1|2|3|    Next ->
+                   - -     ----
+
+-- Confirm that there are 20 posts visible by various users.
+
+PAG02 / admin
+-- Verify that clicking any 'number' link or the 'Next->' link causes the page to be
+   refreshed and should now show a range of different posts, and that the standard
+   pagination bar now resembles the following, depending upon link clicked.
+
+           <- Previous   1|2|3|   Next ->
+              --------   -   -    ----
+
 Test ends.
