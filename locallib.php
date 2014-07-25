@@ -1007,7 +1007,19 @@ function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstancei
     return($cloud);
 }
 
-
+/**
+ * Gets tags available to choose from
+ * @param object $oublog
+ * @param int $groupid
+ * @param object $cm
+ * @param int $oubloginstanceid
+ * @param int $individualid
+ * @return array of tag objects
+ */
+function oublog_get_tag_list($oublog, $groupid, $cm, $oubloginstanceid = null, $individualid=-1) {
+    $tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid);
+    return $tags;
+}
 
 /**
  * Translate a visibility number into a language string

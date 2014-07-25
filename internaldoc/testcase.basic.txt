@@ -10,6 +10,7 @@ Initial setup
 This test case requires:
 
 - a user with administration rights
+- a user with student rights
 - a test course.
 
 The test server must have debugging set to DEVELOPER level and to display
@@ -23,6 +24,10 @@ CRE01 / admin.
    Enter test course and turn editing on.
    Create a blog called CRE01 which is a whole-course blog (no groups) and
    visible to anyone in the world.
+
+CRE02 / admin.
+   Enter test course and turn editing on.
+   Create a blog called CRE02 which should have individual mode set to 'Separate individual blogs'.
 
 INT Testing Intro display
 (Requires CRE)
@@ -85,6 +90,52 @@ COM03 / admin
    Select 'Add comment' button.
 -- Verify returned to blog main view and post COM1 has a '1 comment' link.
 
+
+TAG Testing post tags
+(Requires CRE)
+=====================
+
+TAG01 / admin
+   Enter blog 'CRE01'.
+   Select the 'New blog post' button.
+   Enter 'TAG1' into the title field.
+   Enter some text into message field and "tag1, tag2" into the tags field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify 'tag1 (1)' and 'tag2 (1)' are now shown in the 'tags' tag cloud.
+
+TAG02 / admin
+   Select 'edit' link for post TAG1 to edit the post just created.
+   Select the tags field.
+-- Verify no tag choices are shown on field focus.
+   Delete all text in the tags field.
+-- Verify tag choice 'tag1 [1 posts]' and 'tag2 [1 posts]' is shown.
+   Select 'tag1 [1posts]'
+-- Verify tags field now contains 'tag1, ' and tag choice is now showing as 'tag2 [1 posts]'.
+
+TAG03 / admin
+   Enter blog 'CRE02'.
+   Select the 'New blog post' button.
+   Enter 'ADMIN_TAG1' into the title field.
+   Enter some text into message field and "tag3, tag4" into the tags field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify 'tag3 (1)' and 'tag4 (1)' are now shown in the 'tags' tag cloud.
+   Select the 'New blog post' button.
+   Select the tags field.
+-- Verify tag choice 'tag3 [1 posts]' and 'tag4 [1 posts]' is shown.
+   Type 'ta' into tags field.
+-- Verify tag choice 'tag3 [1 posts]' and 'tag4 [1 posts]' is shown.
+   Type 'tag3' into tags field.
+-- Verify tag choice 'tag3 [1 posts]' is shown.
+   Select tag 'tag3'.
+-- Verify tags field contains 'tag3, ' and tag choice 'tag4 [1 posts]' is shown.
+   Select tag 'tag4'.
+-- Verify tags field contains 'tag3, tag4, ' and no tag choice is shown.
+
+TAG04 / student [change]
+   Enter blog 'CRE02'.
+   Select the 'New blog post' button.
+   Select the tags field.
+-- Verify no tag choices are shown on field focus.
 
 PAG Testing blog display pagination.
 ===================================

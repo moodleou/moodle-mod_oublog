@@ -126,6 +126,10 @@ if (!$frmpost = $mform->get_data()) {
         $post->post  = $post->id;
         $post->general = $streditpost;
         $post->tags = oublog_get_tags_csv($post->id);
+        // Add a trailing comma for autocompletion support.
+        if (!empty($post->tags)) {
+            $post->tags .= ', ';
+        }
     } else {
         $post = new stdClass;
         $post->general = $straddpost;
@@ -163,6 +167,19 @@ if (!$frmpost = $mform->get_data()) {
     $renderer = $PAGE->get_renderer('mod_oublog');
     echo $renderer->render_pre_postform($oublog, $cm);
     $mform->display();
+    // Add tagselector yui mod - autocomplete of tags.
+    $curindividual = -1;
+    $curgroup = false;
+    if ($oublog->individual) {
+        $curindividual = isset($oubloginstance->userid) ? $oubloginstance->userid : $USER->id;
+    } else {
+        $curgroup = isset($post->groupid) ? $post->groupid : $currentgroup;
+    }
+
+    $PAGE->requires->yui_module('moodle-mod_oublog-tagselector', 'M.mod_oublog.tagselector.init',
+            array('id_tags', oublog_get_tag_list($oublog, $curgroup, $cm,
+                    $oublog->global ? $oubloginstance->id : null, $curindividual)));
+    $PAGE->requires->string_for_js('numposts', 'oublog');
 
     echo $OUTPUT->footer();
 

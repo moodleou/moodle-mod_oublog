@@ -624,3 +624,30 @@ ul.oublog-accordion li .oublog_statsview_content {
 label[for=oublog_searchquery] {
 	display: inline;
 }
+/** Tag selector **/
+#page-mod-oublog-editpost .yui3-aclist-content {
+	height: 200px;
+    overflow-y: auto;
+}
+div.tagselector_result {
+	position: relative;
+}
+div.tagselector_result .tagselector_result_title {
+	display: inline;
+}
+div.tagselector_result .tagselector_result_info {
+	position: relative;
+	padding: 1px;
+	padding-left: 4px;
+	padding-right: 4px;
+	background-color: #f2f2f2;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    margin-left: .25em;
+    display: inline-block;
+    white-space: nowrap;
+}
+.yui3-aclist-item-active div.tagselector_result .tagselector_result_info {
+	color: black;
+}

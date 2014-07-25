@@ -1,0 +1,10 @@
+{
+    "name": "moodle-mod_oublog-tagselector",
+    "builds": {
+        "moodle-mod_oublog-tagselector": {
+            "jsfiles": [
+                "tagselector.js"
+            ]
+        }
+    }
+}

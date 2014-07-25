@@ -45,11 +45,11 @@ class oublog_locallib_test extends oublog_test_lib {
     * Adding comments
     * Getting a single post
     * Getting a list of posts
+    * Tags
 
     // TODO: Unit tests do NOT cover:
      * Personal blog auto creation on install has worked
      * Access permissions (oublog_check_view_permissions + oublog_can_view_post, oublog_can_post + oublog_can_comment)
-     * Tags
      * Post edits (+ history)
      * oublog_get_typical_approval_time() + oublog_too_many_comments_from_ip() [moderated comments]
      * Usage stats block functions
@@ -539,4 +539,49 @@ class oublog_locallib_test extends oublog_test_lib {
         // Number of posts returned that were expected?.
         $this->assertEquals($postcount - $offset, count($posts));
     }
+
+    public function test_oublog_tags() {
+        global $USER, $DB;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+
+        $course = $this->get_new_course();
+        $stud1 = $this->get_new_user('student', $course->id);
+        $group1 = $this->get_new_group($course->id);
+        $this->get_new_group_member($group1->id, $stud1->id);
+
+        // Whole course blog.
+        $oublog = $this->get_new_oublog($course->id);
+        $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
+
+        $post = $this->get_post_stub($oublog->id);
+        $post->tags = array('1', 'new', 'new', 'new2', 'a space');
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
+
+        $tags = oublog_get_tags($oublog, 0, $cm, null, -1);
+
+        foreach ($tags as $tag) {
+            $this->assertEquals(1, $tag->count);
+            $this->assertContains($tag->tag, $post->tags);
+        }
+
+        // Individual blog.
+        $oublog = $this->get_new_oublog($course->id, array('individual' => OUBLOG_VISIBLE_INDIVIDUAL_BLOGS));
+        $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
+
+        $post = $this->get_post_stub($oublog->id);
+        $post->tags = array('1', 'new', 'new', 'new2', 'a space');
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
+
+        $tags = oublog_get_tags($oublog, 0, $cm, null, $stud1->id);
+
+        $this->assertEmpty($tags);
+
+        // Group blog.
+        $oublog = $this->get_new_oublog($course->id, array('groupmode' => VISIBLEGROUPS));
+        $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
+
+    }
+
 }
