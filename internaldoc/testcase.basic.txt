@@ -24,6 +24,7 @@ CRE01 / admin.
    Enter test course and turn editing on.
    Create a blog called CRE01 which is a whole-course blog (no groups) and
    visible to anyone in the world.
+   Set 'Allow comments' to Comments not allowed.
 
 CRE02 / admin.
    Enter test course and turn editing on.
@@ -99,18 +100,19 @@ TAG01 / admin
    Enter blog 'CRE01'.
    Select the 'New blog post' button.
    Enter 'TAG1' into the title field.
-   Enter some text into message field and "tag1, tag2" into the tags field.
+   Enter some text into message field and "tag1, tag2, btag2" into the tags field.
    Select 'Add post' button to save the new post and return to main blog view.
--- Verify 'tag1 (1)' and 'tag2 (1)' are now shown in the 'tags' tag cloud.
+-- Verify 'btag2 (1)', 'tag1 (1)' and 'tag2 (1)' are now shown in the 'tags' tag cloud.
 
 TAG02 / admin
    Select 'edit' link for post TAG1 to edit the post just created.
    Select the tags field.
 -- Verify no tag choices are shown on field focus.
    Delete all text in the tags field.
--- Verify tag choice 'tag1 [1 posts]' and 'tag2 [1 posts]' is shown.
+-- Verify tag choice 'btag2 [1 posts]', 'tag1 [1 posts]' and 'tag2 [1 posts]' is shown.
    Select 'tag1 [1posts]'
--- Verify tags field now contains 'tag1, ' and tag choice is now showing as 'tag2 [1 posts]'.
+-- Verify tags field now contains 'tag1,' and tag choice is now showing as
+   'btag2 [1 posts]', 'tag2 [1 posts]'.
 
 TAG03 / admin
    Enter blog 'CRE02'.
@@ -136,6 +138,72 @@ TAG04 / student [change]
    Select the 'New blog post' button.
    Select the tags field.
 -- Verify no tag choices are shown on field focus.
+
+TAG Testing post tag order
+==========================
+
+TAG05 / admin
+   Enter blog 'CRE01'.
+-- Cofirm that the 'tags' tag cloud contains the label 'Order:' followed by a help icon and
+   that beneath this is a label 'Alphabetical', the default order, followed by a
+   verticle divider and link 'Use' above the existing tags 'btag2 (1)', 'tag1 (1)' and 'tag2 (1)'.
+
+TAG06 / admin
+   Click the help icon to display the tag cloud, order help text.
+-- Confirm it matches the following,
+   "You can choose to display the list of tags used ordered either in alphabetical order
+   or by number of posts used in. Select the two links to switch between ordering methods,
+   this choice is remembered and will be used on subsequent views."
+
+TAG07 / admin
+   Edit the first 'untitled post' and add the tags 'atag1, btag2'.
+   Select 'Save changes'.
+-- Verify 'atag1(1) btag2(2) tag1 (1) tag2 (1)' are now shown
+   in the 'tags' tag cloud, possibly with btags in larger emboldend text.
+
+TAG08 / admin
+   Edit the COM1 post and add the tags 'atag1, btag2'.
+   Select 'Save changes'.
+-- Verify 'atag1 (2) btag2 (3) tag1 (1) tag2 (1) ' are now shown in the 'tags' tag cloud,
+   with btag2 and atag1 in larger emboldend text.
+
+TAG09 / admin
+   Edit the TAG1 post and add the tags 'atag1, ctag3'.
+   Select 'Save changes'.
+-- Verify 'atag1 (3) btag2 (3) ctag3 (1) tag1 (1) tag2 (1)' are now shown in the 'tags' tag cloud,
+   with btag2 and atag1 in larger emboldend text.
+
+TAG10 / admin
+   Select the 'New blog post' button.
+   Enter 'TAG2' into the title field.
+   Enter some text into message field and "tag1, btag2" into the tags field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify that the tag order is alphabetical 'atag1 (3) btag2 (4) ctag3 (1) tag1 (2)
+   tag2 (1)' shown in the 'tags' tag cloud.
+
+TAG11 / admin
+   Click the link 'Use' to change the order to popular use order.
+-- Confirm that the 'Use' link becomes a label.
+-- Confirm that the 'Alphabetical' label becomes a link.
+-- Verify that 'btag2 (4) atag1 (3) tag1 (2) tag2 (1) ctag3 (1)' are now shown
+   in the 'tags' tag cloud, possibly with some tags in larger emboldend text.
+   Retrun to the course main page.
+   Re enter blog CRE01
+-- Confirm that the link is currently 'Alphabetical'.
+-- Confirm that the tag order is still popular use order 'btag2 (4) atag1 (3) tag1 (1)
+   tag2 (1) ctag3 (1)' as before.
+
+TAG12 / admin
+   Click the link 'Alphabetical' to change the current order to alphabetical order.
+-- Confirm that 'Use' becomes the link.
+-- Verify that tag cloud now shows 'atag1 (3) btag2 (4) ctag3 (1) tag1 (2) tag2 (1)'
+   possibly with some tags in larger emboldend text.
+   Return to the course main page.
+   Re enter blog CRE01
+-- Confirm that the link is currently 'USE'.
+-- Confirm that the tag order is alphabetical 'atag1 (3) btag2 (4) ctag3 (1) tag1 (2)
+   tag2 (1)' as before.
+
 
 PAG Testing blog display pagination.
 ===================================

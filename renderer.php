@@ -1316,6 +1316,31 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $PAGE->requires->js_init_call('M.mod_oublog.init_deleteandemail', array($cmid, $postid), true, $jsmodule);
     }
 
+     /**
+     * Renders the ordering label, help and links in tags block
+     * @param string $selected
+     * @return html
+     */
+    public function render_tag_order($selected) {
+        global $PAGE, $OUTPUT;
+
+        $output = '';
+        $strorder = get_string('order', 'oublog');
+        $stralpha = get_string('alpha', 'oublog');
+        $struse = get_string('use', 'oublog');
+        $output .= html_writer::start_tag('div', array('class' => 'oublog-tag-order'));
+        $output .= $strorder . $OUTPUT->help_icon('order', 'oublog');
+        if ($selected == 'use') {
+            $burl = new moodle_url($PAGE->url, array('tagorder' => 'alpha'));
+            $output .= "&nbsp;" . html_writer::link($burl, $stralpha) . " | " . $struse;
+        } else {
+            $burl = new moodle_url($PAGE->url, array('tagorder' => 'use'));
+            $output .= "&nbsp;" . $stralpha . " | " . html_writer::link($burl, $struse);
+        }
+        $output .= html_writer::end_tag('div');
+        return $output;
+    }
+
 }
 
 class oublog_statsinfo implements renderable {

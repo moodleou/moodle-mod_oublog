@@ -651,3 +651,7 @@ div.tagselector_result .tagselector_result_info {
 .yui3-aclist-item-active div.tagselector_result .tagselector_result_info {
 	color: black;
 }
+
+.oublog-tag-order {
+    margin-bottom: .5em;
+}

@@ -30,6 +30,7 @@ $user   = optional_param('user', 0, PARAM_INT);     // User ID.
 $username = optional_param('u', '', PARAM_USERNAME);// User login name.
 $tag    = optional_param('tag', null, PARAM_TAG);   // Tag to display.
 $page = optional_param('page', 0, PARAM_INT);
+$tagorder = optional_param('tagorder', '', PARAM_ALPHA);// Tag display order.
 
 // Set user value if u (username) set.
 if ($username != '') {
@@ -38,10 +39,23 @@ if ($username != '') {
     }
     $user = $oubloguser->id;
 }
+
+if (isloggedin()) {
+    // Determine tag order to use.
+    if ($tagorder != '') {
+        set_user_preference('oublog_tagorder', $tagorder);
+    } else {
+        $tagorder = get_user_preferences('oublog_tagorder', 'alpha');
+    }
+} else {
+    // Use 'alpha'
+    $tagorder = 'alpha';
+}
+
 $offset = $page * OUBLOG_POSTS_PER_PAGE;
-$url = new moodle_url('/mod/oublog/view.php', array('id'=>$id, 'user'=>$user,
-        'page' => $page,
-        'tag'=>$tag));
+$url = new moodle_url('/mod/oublog/view.php', array('id' => $id, 'user' => $user,
+        'page' => $page, 'tag' => $tag, 'tagorder' => $tagorder));
+
 $PAGE->set_url($url);
 
 if ($id) {
@@ -277,12 +291,14 @@ if (!$hideunusedblog) {
     $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 
     // Tag Cloud.
-    if ($tags = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm, $oubloginstanceid, $currentindividual)) {
+    if ($tags = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm,
+            $oubloginstanceid, $currentindividual, $tagorder)) {
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-tags';
         $bc->attributes['class'] = 'oublog-sideblock block';
         $bc->title = $strtags;
-        $bc->content = $tags;
+        $bc->content = $oublogoutput->render_tag_order($tagorder);
+        $bc->content .= $tags;
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 

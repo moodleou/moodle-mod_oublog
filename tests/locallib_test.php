@@ -541,14 +541,14 @@ class oublog_locallib_test extends oublog_test_lib {
     }
 
     public function test_oublog_tags() {
-        global $USER, $DB;
+        global $USER, $DB, $SITE;
         $this->resetAfterTest(true);
         $this->setAdminUser();
-
 
         $course = $this->get_new_course();
         $stud1 = $this->get_new_user('student', $course->id);
         $group1 = $this->get_new_group($course->id);
+        $group2 = $this->get_new_group($course->id);
         $this->get_new_group_member($group1->id, $stud1->id);
 
         // Whole course blog.
@@ -559,7 +559,10 @@ class oublog_locallib_test extends oublog_test_lib {
         $post->tags = array('1', 'new', 'new', 'new2', 'a space');
         $postid = oublog_add_post($post, $cm, $oublog, $course);
 
+        $this->assertEquals(21, strlen(oublog_get_tags_csv($postid)));
+
         $tags = oublog_get_tags($oublog, 0, $cm, null, -1);
+        $this->assertCount(4, $tags);
 
         foreach ($tags as $tag) {
             $this->assertEquals(1, $tag->count);
@@ -574,14 +577,98 @@ class oublog_locallib_test extends oublog_test_lib {
         $post->tags = array('1', 'new', 'new', 'new2', 'a space');
         $postid = oublog_add_post($post, $cm, $oublog, $course);
 
-        $tags = oublog_get_tags($oublog, 0, $cm, null, $stud1->id);
+        $tags = oublog_get_tags($oublog, 0, $cm, null, $USER->id);
+        $this->assertCount(4, $tags);
 
+        $tags = oublog_get_tags($oublog, 0, $cm, null, $stud1->id);
         $this->assertEmpty($tags);
 
         // Group blog.
         $oublog = $this->get_new_oublog($course->id, array('groupmode' => VISIBLEGROUPS));
         $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
 
+        $post = $this->get_post_stub($oublog->id);
+        $post->groupid = $group1->id;
+        $post->tags = array('1', 'new', 'new', 'new2', 'a space');
+        $postid = oublog_add_post($post, $cm, $oublog, $course);
+
+        $tags = oublog_get_tags($oublog, $group1->id, $cm);
+        $this->assertCount(4, $tags);
+
+        $tags = oublog_get_tags($oublog, $group2->id, $cm);
+        $this->assertEmpty($tags);
+
+        // Personal blog.
+        if (!$oublog = $DB->get_record('oublog', array('global' => 1))) {
+            $oublog = $this->get_new_oublog($SITE->id, array('global' => 1, 'maxvisibility' => OUBLOG_VISIBILITY_PUBLIC));
+        }
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+
+        list($oublog, $bloginstance) = oublog_get_personal_blog($stud1->id);
+
+        $post1stub = $this->get_post_stub($oublog->id);
+        $post1stub->userid = $stud1->id;
+        $post1stub->visibility = OUBLOG_VISIBILITY_COURSEUSER;// Private.
+        $post1stub->tags = array('private');
+        oublog_add_post($post1stub, $cm, $oublog, $SITE);
+        $post2stub = $this->get_post_stub($oublog->id);
+        $post2stub->userid = $stud1->id;
+        $post2stub->visibility = OUBLOG_VISIBILITY_LOGGEDINUSER;// User must be logged in.
+        $post2stub->tags = array('loggedin');
+        oublog_add_post($post2stub, $cm, $oublog, $SITE);
+        $post3stub = $this->get_post_stub($oublog->id);
+        $post3stub->userid = $stud1->id;
+        $post3stub->visibility = OUBLOG_VISIBILITY_PUBLIC;// Any user.
+        $post3stub->tags = array('public');
+        oublog_add_post($post3stub, $cm, $oublog, $SITE);
+
+        $tags = oublog_get_tags($oublog, 0, $cm, $bloginstance->id);
+        $this->assertCount(2, $tags);
+
+        $this->setUser($stud1);
+        $tags = oublog_get_tags($oublog, 0, $cm, $bloginstance->id);
+        $this->assertCount(3, $tags);
+
+        $this->setGuestUser();
+        $tags = oublog_get_tags($oublog, 0, $cm, $bloginstance->id);
+        $this->assertCount(1, $tags);
+
+        $this->setUser($stud1);
+        $post4stub = $this->get_post_stub($oublog->id);
+        $post4stub->userid = $stud1->id;
+        $post4stub->visibility = OUBLOG_VISIBILITY_PUBLIC;// Any user.
+        // Add unordered alphabetic tags.
+        $post4stub->tags = array('toad', 'newt', 'private', 'crock', 'loggedin', 'frog', 'public', 'dino');
+        $postid = oublog_add_post($post4stub, $cm, $oublog, $course);
+        $this->assertEquals(56, strlen(oublog_get_tags_csv($postid)));
+
+        $post5stub = $this->get_post_stub($oublog->id);
+        $post5stub->userid = $stud1->id;
+        $post5stub->visibility = OUBLOG_VISIBILITY_PUBLIC;// Any user.
+        // Add unordered alphabetic tags.
+        $post5stub->tags = array('toad', 'private', 'crock', 'loggedin', 'frog', 'public', 'dino');
+        $postid = oublog_add_post($post5stub, $cm, $oublog, $course);
+        $this->assertEquals(50, strlen(oublog_get_tags_csv($postid)));
+
+        // Recover tags with default ordering ie Alphabetic.
+        $tags = oublog_get_tags($oublog, 0, $cm, null, -1);
+        $this->assertCount(8, $tags);
+        foreach ($tags as $tag) {
+            $this->assertContains($tag->tag, $post4stub->tags);
+        }
+        $this->assertEquals('toad', $tag->tag);// Last in default, Alphabetical order.
+
+        // Recover tags in Use order.
+        $tags = oublog_get_tags($oublog, 0, $cm, null, -1, 'use');
+        $this->assertCount(8, $tags);
+        $lasttag = end($tags);
+        $this->assertEquals('newt', $lasttag->tag);// Last when Use order specified.
+
+        // Recover tags in Alphabetical order.
+        $tags = oublog_get_tags($oublog, 0, $cm, null, -1, 'alpha');
+        $this->assertCount(8, $tags);
+        $lasttag = end($tags);
+        $this->assertEquals('toad', $lasttag->tag);// Last when Alphabetic order specified.
     }
 
 }

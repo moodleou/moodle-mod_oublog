@@ -549,6 +549,13 @@ $string['numbercommentsmore'] = 'Plus {$a} more comments';
 $string['viewmyparticipation'] = 'View my participation';
 $string['viewallparticipation'] = 'View all participation';
 $string['timestartenderror'] = 'Selection end date cannot be earlier than the start date';
+$string['order'] = 'Order:';
+$string['alpha'] = 'Alphabetical';
+$string['use'] = 'Use';
+$string['order_help'] = 'You can choose to display the list of tags used ordered
+either in alphabetical order or by number of posts used in.
+Select the two links to switch between ordering methods,
+this choice is remembered and will be used on subsequent views.';
 $string['nouserpostpartsfound'] = 'No posts made in this period.';
 $string['nousercommentpartsfound'] = 'No comments added in this period.';
 $string['participation_all'] = 'Participation - All time';

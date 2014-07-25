@@ -900,7 +900,7 @@ function oublog_get_tags_csv($postid) {
  * @param int $oubloginstanceid
  * @return array Tag data
  */
-function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1) {
+function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder = 'alpha') {
     global $CFG, $DB, $USER;
     $tags = array();
     $params = array();
@@ -969,9 +969,11 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
         foreach ($tags as $idx => $tag) {
             $tags[$idx]->weight = round(($tag->count-$min)/$delta*4);
         }
-        uasort($tags, function($a, $b) {
-            return strcmp ($a->tag,  $b->tag);
-        });
+        if ($tagorder == 'alpha') {
+            uasort($tags, function($a, $b) {
+                return strcmp ($a->tag,  $b->tag);
+            });
+        }
     }
     return($tags);
 }
@@ -988,13 +990,12 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
  * @param int $oubloginstanceid
  * @return string Tag cloud HTML
  */
-function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1) {
+function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder) {
     $cloud = '';
     $urlparts= array();
 
     $baseurl = oublog_replace_url_param($baseurl, 'tag');
-
-    if (!$tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid)) {
+    if (!$tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, $tagorder)) {
         return($cloud);
     }
 
