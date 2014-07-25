@@ -166,7 +166,7 @@ if (!$start && $end) {
 if ($start && $end) {
     $a = new stdClass();
     $a->start = $startdate;
-    $a->end   = $enddate;
+    $a->end  = $enddate;
     $title = get_string('contribution', 'oublog');
     $info = get_string('contribution_fromto', 'oublog', $a);
 }

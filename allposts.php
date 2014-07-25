@@ -128,6 +128,7 @@ if (isloggedin() and !isguestuser()) {
 if ($oublog->statblockon) {
     // 'Discovery' block.
     $stats = array();
+    $stats[] = oublog_stats_output_participation($oublog, $cm, $oublogoutput, $course, true);
     $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, true);
     $stats[] = oublog_stats_output_visitstats($oublog, $cm, $oublogoutput);
     $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);

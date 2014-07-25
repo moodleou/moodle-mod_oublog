@@ -543,6 +543,84 @@ ul.oublog-accordion li .oublog_statsview_content {
 .oublog_import_step1 .flexible .header.c3 a {
     font-size: .75em;
 }
+
+/* For new table outputs */
+.oublog-postuser td {
+     overflow: hidden;
+}
+.oublog-postuser a,
+.oublog-postuser img {
+    margin-right:10px;
+}
+
+.oublog-postuser img td{
+    margin-right:12px;
+}
+.oublog-startedby-wrapper {
+    margin-left: 51px;
+    overflow: hidden;
+}
+
+.oublog-postuserimage {
+    display: inline;
+    margin-right: 10px;
+    overflow: hidden;
+}
+
+.oublog-postuser {
+    display: inline;
+    text-align: left;
+    overflow: hidden;
+}
+/* Comments tab Posts block. */
+.oublog_postsinfo_col {
+    margin-left: 41px;
+    margin-top: .5em;
+}
+.oublog_postsinfo_avatar {
+    overflow: hidden;
+
+}
+.oublog_postsinfo_avatar .userpicture {
+    width: 35px;
+    height: 35px;
+    margin-top: 5px;
+    margin-right: 6px;
+}
+.oublog_userinfo_col td {
+     vertical-align: top;
+     overflow: hidden;
+}
+.oublog_usersinfo_col a,
+.oublog_usersinfo_col img {
+    float: left;
+    vertical-align: top;
+    margin-right: 4px;
+}
+.oublog_postsinfo {
+    clear: both;
+    margin-bottom: .5em;
+}
+.oublog_postsinfo_col a,
+.oublog_postsinfo_col img {
+    float: left;
+    vertical-align: top;
+}
+.oublog_postscell {
+    margin-left: 40px;
+    margin-bottom: 2px;
+}
+.oublog_postscell_posttitle {
+    font-size: 1em;
+    font-color: green;
+}
+/* Normal Moodle tables modified locally. */
+.oublog.generaltable th,
+.oublog.generaltable td {
+    padding: 8px;
+    vertical-align: top;
+    text-align: left;
+}
 label[for=oublog_searchquery] {
 	display: inline;
 }

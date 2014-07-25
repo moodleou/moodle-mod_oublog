@@ -299,6 +299,7 @@ if (!$hideunusedblog) {
     // 'Discovery' block.
     $stats = array();
     $stats[] = oublog_stats_output_myparticipation($oublog, $cm, $oublogoutput, $course, $currentindividual, $oubloguser->id);
+    $stats[] = oublog_stats_output_participation($oublog, $cm, $oublogoutput, $course, false, $currentindividual, $oubloguser->id);
     $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual, $oubloguser->id);
     if ($oublog->statblockon) {
         // Add to 'Discovery' block when enabled only.

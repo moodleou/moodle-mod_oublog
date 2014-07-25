@@ -118,7 +118,7 @@ CRE08-CS / Logged in as US1.
 
 BSC Basic usage
 ===============
-   Copy the url of the blog CRE01 from the address bar.   https://at4737.vledev2.open.ac.uk/ou-moodle2/mod/oublog/view.php?id=2726
+   Copy the url of the blog CRE01 from the address bar.
 
    Either close the current browser so there are no currently open browser sessions,
    or open a different browser.
