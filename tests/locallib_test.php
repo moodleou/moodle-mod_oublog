@@ -450,4 +450,50 @@ class oublog_locallib_test extends oublog_test_lib {
         // TODO: More comprehensive checking with separate group/individual blogs.
     }
 
+    /* test_oublog_get_posts_pagination */
+    public function test_oublog_get_posts_pagination() {
+        global $SITE, $USER, $DB;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        $course = $this->get_new_course();
+        // Test posts using standard course blog.
+        $oublog = $this->get_new_oublog($course->id);
+        $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
+        // Number of posts for test, more than posts per page
+        $postcount = OUBLOG_POSTS_PER_PAGE + (OUBLOG_POSTS_PER_PAGE / 2);
+        $titlecheck = 'test_oublog_get_posts_pagination';
+
+        // First make sure we have some posts to use.
+        $posthashes = array();
+        for ($i = 1; $i <= $postcount; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title = $titlecheck . '_' . $i;
+        }
+
+        // Create the posts - assumes oublog_add_post is working.
+        $postids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+        }
+
+        $context = context_module::instance($cm->id);
+        // Build paging parameters for the first page .
+        $page = 0;
+        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        // Get a list of the pages posts.
+        list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0);
+        // Same number of records discovered that were created?
+        $this->assertEquals($postcount, $recordcount);
+        // Is the number of posts returned that were expected?.
+        $this->assertEquals(OUBLOG_POSTS_PER_PAGE, count($posts));
+
+        // Build paging parameters for the second page.
+        $page = 1;
+        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        // Get the list of the second pages posts.
+        list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0);
+        // Number of posts returned that were expected?.
+        $this->assertEquals($postcount - $offset, count($posts));
+    }
 }

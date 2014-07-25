@@ -28,8 +28,8 @@ require_once('locallib.php');
 $id     = optional_param('id', 0, PARAM_INT);       // Course Module ID.
 $user   = optional_param('user', 0, PARAM_INT);     // User ID.
 $username = optional_param('u', '', PARAM_USERNAME);// User login name.
-$offset = optional_param('offset', 0, PARAM_INT);   // Offset fo paging.
 $tag    = optional_param('tag', null, PARAM_TAG);   // Tag to display.
+$page = optional_param('page', 0, PARAM_INT);
 
 // Set user value if u (username) set.
 if ($username != '') {
@@ -38,8 +38,9 @@ if ($username != '') {
     }
     $user = $oubloguser->id;
 }
-
-$url = new moodle_url('/mod/oublog/view.php', array('id'=>$id, 'user'=>$user, 'offset'=>$offset,
+$offset = $page * OUBLOG_POSTS_PER_PAGE;
+$url = new moodle_url('/mod/oublog/view.php', array('id'=>$id, 'user'=>$user,
+        'page' => $page,
         'tag'=>$tag));
 $PAGE->set_url($url);
 
@@ -211,7 +212,7 @@ if (!$hideunusedblog) {
     // Generate extra navigation.
     $CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm);
     $PAGE->set_button($buttontext);
-    if ($offset) {
+    if ($offset > 0) {
         $a = new stdClass();
         $a->from = ($offset+1);
         $a->to   = (($recordcount - $offset) > OUBLOG_POSTS_PER_PAGE) ? $offset +
@@ -397,6 +398,9 @@ echo '</div>';
 
 // Print blog posts.
 if ($posts) {
+    echo "<div class='oublog-paging'>";
+    echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
+    echo '</div>';
     echo '<div id="oublog-posts">';
     $rowcounter = 1;
     foreach ($posts as $post) {
@@ -406,19 +410,7 @@ if ($posts) {
         $rowcounter++;
     }
     echo "<div class='oublog-paging'>";
-    if ($offset > 0) {
-        if ($offset-OUBLOG_POSTS_PER_PAGE == 0) {
-            print "<div class='oublog-newerposts'><a href=\"$returnurl\">$strnewposts</a></div>";
-        } else {
-            print "<div class='oublog-newerposts'><a href=\"$returnurl&amp;offset=" .
-                    ($offset-OUBLOG_POSTS_PER_PAGE) . "\">$strnewposts</a></div>";
-        }
-    }
-
-    if ($recordcount - $offset > OUBLOG_POSTS_PER_PAGE) {
-        print "<div class='oublog-olderposts'><a href=\"$returnurl&amp;offset=" .
-                ($offset+OUBLOG_POSTS_PER_PAGE) . "\">$strolderposts</a></div>";
-    }
+    echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
     echo '</div></div>';
     echo '<div id="addexportpostsbutton">';
     // Show portfolio export link.

@@ -85,4 +85,36 @@ COM03 / admin
    Select 'Add comment' button.
 -- Verify returned to blog main view and post COM1 has a '1 comment' link.
 
+
+PAG Testing blog display pagination.
+===================================
+
+Note Requires a blog, which contains multiples of the number of posts per page
+     ie 20. Please use the Admininistrator's Personal blog and/or Course Blogtest Blog B.WC.
+
+PAG01 / admin
+   Enter either blog "B.WC" or Admin personal blog (/mod/oublog/view.php).
+   For the course blog.
+-- Confirm that the 'New blog post' and 'Participation by user' buttons are displayed
+   at the top of the blog posts area.
+   For the Admin user's blog.
+-- Confirm that the 'New blog post' and 'Import post' (if feature enabled) buttons are displayed
+   at the top of the blog posts area.
+-- Verify that beneath these buttons, when more than 20 posts are available,
+   above the first post and below the last post is a moodle standard pagination bar
+   which resembles the following.
+
+           Page: 1|2|3   Next ->
+                   - -   ----
+
+-- Confirm that there are a maximum of 20 posts visible.
+
+PAG02 / admin
+-- Verify that clicking any 'number' link or the 'Next->' link causes the page to be
+   refreshed and should now show a range of different posts, and that the standard
+   pagination bar now resembles the following, depending upon link clicked.
+
+           <- Previous   1|2|3    Next ->
+              --------   -   -   ----
+
 Test ends.
