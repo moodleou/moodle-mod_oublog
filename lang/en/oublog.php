@@ -550,8 +550,8 @@ $string['viewmyparticipation'] = 'View my participation';
 $string['viewallparticipation'] = 'View all participation';
 $string['timestartenderror'] = 'Selection end date cannot be earlier than the start date';
 $string['order'] = 'Order:';
-$string['alpha'] = 'Alphabetical';
-$string['use'] = 'Use';
+$string['alpha'] = 'A to Z';
+$string['use'] = 'Most used';
 $string['order_help'] = 'You can choose to display the list of tags used ordered
 either in alphabetical order or by number of posts used in.
 Select the two links to switch between ordering methods,
