@@ -1,0 +1,10 @@
+{
+    "name": "moodle-mod_oublog-savecheck",
+    "builds": {
+        "moodle-mod_oublog-savecheck": {
+            "jsfiles": [
+                "savecheck.js"
+            ]
+        }
+    }
+}

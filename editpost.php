@@ -181,6 +181,10 @@ if (!$frmpost = $mform->get_data()) {
                     $oublog->global ? $oubloginstance->id : null, $curindividual)));
     $PAGE->requires->string_for_js('numposts', 'oublog');
 
+    // Check the network connection on exiting the update page.
+    $PAGE->requires->strings_for_js(array('savefailtitle', 'savefailnetwork'), 'oublog');
+    $PAGE->requires->yui_module('moodle-mod_oublog-savecheck', 'M.mod_oublog.savecheck.init');
+
     echo $OUTPUT->footer();
 
 } else {

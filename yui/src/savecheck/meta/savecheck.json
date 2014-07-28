@@ -1,0 +1,11 @@
+{
+    "moodle-mod_oublog-savecheck": {
+        "requires": [
+            "base",
+            "node",
+            "io",
+            "panel",
+            "moodle-core-notification-alert"
+        ]
+    }
+}

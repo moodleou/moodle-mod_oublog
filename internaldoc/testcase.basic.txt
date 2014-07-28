@@ -92,6 +92,57 @@ COM03 / admin
 -- Verify returned to blog main view and post COM1 has a '1 comment' link.
 
 
+SSP Session save post test.
+(Requires CRE)
+===========================
+
+Note; Tests pre-save check on saving a blog post. Checking that the user has a valid session
+and if not will stop the save from occurring and 'Alert' the user that it would fail.
+
+SSP01 / admin
+   Enter test course and open blog "CRE01" in a new tab.
+
+SSP02 / admin
+   Select 'Edit' and make some changes on the first blog post.
+
+SSP03 / admin
+   Open the course home page in a new browser tab
+
+SSP04 / admin
+   Select to 'Sign out' of SAMS from the OU top bar,
+   (For non-SAMS sites such as ttdev, access /login/logout.php and log out instead)
+   Close the new tab
+
+SSP05 / admin
+   Return to the tab with the blog 'Update post' page open.
+   Click 'Save changes' to save the blog post.
+-- Confirm that you are presented with a 'popup alert box' labled 'Post cannot be saved.',
+   containing the following warning;
+   'Unfortunately, your changes cannot be saved at this time.
+   This is due to a network error; the website is temporarily unavailable or you have been signed out. </p>
+   Saving has been disabled on this blog.
+   In order to retain any changes you must copy the edited blog content,
+   access the Edit page again and then paste in your changes.'
+   Click the 'Ok' button.
+-- Confirm that the 'Save changes' button is disabled.
+-- Confirm that the 'Cancel' button is not disabled.
+
+SSP06 / admin
+   Copy the blog post contents with changes.
+
+SSP07 / admin
+   Click the 'Cancel' button.
+-- Confirm that you are presented with the login page.
+
+SSP08 / admin
+   Login as admin user.
+-- Verify that you are returned to the 'Update post' page for the first blog post.
+   Paste in your changes.
+   Click 'Save changes' to save the blog post.
+-- Confirm that the page refreshes and the changes are apparent in the edited first post
+   on the main blog page.
+
+
 TAG Testing post tags
 (Requires CRE)
 =====================
