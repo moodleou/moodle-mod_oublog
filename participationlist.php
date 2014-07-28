@@ -143,7 +143,7 @@ if ($start && $end) {
     $info = get_string('participation_fromto', 'oublog', $a);
 }
 $participation = oublog_get_participation_details($oublog, $groupid, $curindividual,
-    $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum, $tab);
+    $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
 
 $url->params(array('individual' => $curindividual, 'start' => $start, 'end' => $end));
 echo html_writer::tag('h2', $info, array('class' => 'oublog-post-title'));

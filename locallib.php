@@ -4095,7 +4095,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
         $getcomments = false;
     }
     $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
-            $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum, $tab);
+            $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
     // Generate content data to send to renderer.
     $maintitle = get_string('participation', 'oublog');// The title of the block 'section'.
     $content = '';
@@ -4317,7 +4317,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
  */
 function oublog_get_participation_details($oublog, $groupid, $individual,
         $start = null, $end = null, $page = 0, $getposts = true,
-        $getcomments = true, $limitfrom = null, $limitnum = null, $tab) {
+        $getcomments = true, $limitfrom = null, $limitnum = null) {
     global $DB, $USER;
     $gmgroup = $gminner = $groupcheck = $postvisibility = $postallowcomments = '';
     $period = $cperiod = $limitcount = $thispostuser = $thiscommentuser = '';

@@ -493,6 +493,768 @@ class oublog_locallib_test extends oublog_test_lib {
         // TODO: More comprehensive checking with separate group/individual blogs.
     }
 
+    /*
+     * Add unit test to cover main oublog_get_participation_details(
+       * $oublog, $groupid, $individual, $start = null, $end = null,
+       * $page = 0, $getposts = true, $getcomments = true,
+       * $limitfrom = null, $limitnum = null) function.
+    */
+    public function test_oublog_get_participation_details() {
+        global $SITE, $USER, $DB;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $now = time();
+        // Whole course.
+        // Single course for all subsequent tests?
+        $course = $this->get_new_course();
+        $oublog = $this->get_new_oublog($course->id);
+        $oublog->allowcomments = OUBLOG_COMMENTS_ALLOW;
+        $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
+        $student1 = $this->get_new_user('student', $course->id);
+        $student2 = $this->get_new_user('student', $course->id);
+        // Number of posts and comments to create for whole course tests.
+        $postcountwc = 3;
+        $titlecheck = 'test_oublog_get_parts_wc';
+        // Prepare to make some posts using the posts stub.
+        $posthashes = array();
+        for ($i = 1; $i <= $postcountwc; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title = 'Test Post ' . $titlecheck;
+            // Add the posting student.
+            $posthashes[$i]->userid = $student1->id;
+        }
+        // Create the posts - assumes oublog_add_post is working,
+        // also add student comments to those posts.
+        $postids = $commentids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            // Add the commenting student.
+            $comment = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment->title .= " ".$titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment);
+        }
+        // Get the participation object with counts of posts and comments.
+        $curgroup = oublog_get_activity_group($cm);
+        $curindividual = 0;
+        $studentnamed = fullname($student1);
+        $limitnum = 4;
+        $start = $end = $page = $limitfrom = 0;
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test postscount && commentscount.
+        // The same number of records should be 'discovered' that were added.
+        $this->assertEquals($postcountwc, $participation->postscount);
+        $this->assertEquals($postcountwc, $participation->commentscount);
+        // This blog activity  allows comments.
+        $this->assertEquals(OUBLOG_COMMENTS_ALLOW, $oublog->allowcomments);
+        // The number of records should be 'returned' that were added.
+        $this->assertCount($postcountwc, $participation->posts);
+        $this->assertCount($postcountwc, $participation->comments);
+        // The posts returned should match the ones added.
+        foreach ($participation->posts as $post) {
+            // Do some basic checks - does it match our test post created above.
+            $this->assertInstanceOf('stdClass', $post);
+            $this->assertEquals('Test Post ' . $titlecheck, $post->title);
+            $this->assertEquals($student1->id, $post->userid);
+            $this->assertEquals(0, $post->groupid);
+            $postername = fullname($post);
+            $this->assertEquals($studentnamed, $postername);
+            $this->assertEquals($oublog->allowcomments, $post->allowcomments);
+        }
+        // Test comments object.
+        foreach ($participation->comments as $comment) {
+            // Same basic checks - does it match our test comment created above.
+            $this->assertInstanceOf('stdClass', $comment);
+            $this->assertEquals('Test Comment '. $titlecheck, $comment->title);
+            $this->assertEquals($oublog->id, $comment->oublogid);
+            $this->assertEquals($post->title, $comment->posttitle);
+            $this->assertEquals($post->userid, $comment->posterid);
+            $this->assertEquals($post->userid, $comment->postauthorid);
+            $this->assertEquals($post->groupid, $comment->groupid);
+            $this->assertEquals($post->visibility, $comment->visibility);
+            $this->assertEquals($studentnamed, $comment->posterfirstname ." ". $comment->posterlastname);
+        }
+
+        // Test for comments turned ON the blog.
+        // But turned OFF on ONE post.
+        $oublog->allowcomments = OUBLOG_COMMENTS_ALLOW;
+        $getposts = false;// Dont need to see posts.
+        $getcomments = true;// Do want to see comments.
+        // Create additional post.
+        $posttest = $this->get_post_stub($oublog->id);
+        $posttest->title = 'Test Post ' . $titlecheck;
+        // Add the posting student.
+        $posttest->userid = $student1->id;
+        // Add one post which doesnt allow comments
+        $posttest->allowcomments = OUBLOG_COMMENTS_PREVENT;
+        $postids[] = oublog_add_post($posttest, $cm, $oublog, $course);
+        // Attemt to add a student comment, though not allowed.
+        $comment3 = $this->get_comment_stub($posttest->id, $student2->id);
+        $comment3->title .= " NOT ALLOWED ".$titlecheck;
+        $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment3);
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // The number of posts that should be 'discovered' plus the new one.
+        $this->assertEquals($postcountwc + 1, $participation->postscount);
+        // The number of posts that should be 'returned'.
+        $this->assertCount(0, $participation->posts);
+        // This blog activity DOES allow comments.
+        $this->assertEquals(OUBLOG_COMMENTS_ALLOW, $oublog->allowcomments);
+        // The number of comments that should be 'discovered', does not not include the new one.
+        $this->assertEquals($postcountwc, $participation->commentscount);
+        // The number of comments to be 'returned' does not not include the new one.
+        $this->assertCount($postcountwc, $participation->comments);
+
+        // Separate groups.
+        $oublog = $this->get_new_oublog($course->id, array('groupmode' => SEPARATEGROUPS));
+        $group1 = $this->get_new_group($course->id);
+        $group2 = $this->get_new_group($course->id);
+        $this->get_new_group_member($group1->id, $student1->id);
+        $this->get_new_group_member($group2->id, $student2->id);
+        $postcountsg = 3;
+        $titlecheck = ' test_oublog_get_sg';
+        // Make some posts to use from post stub.
+        $posthashes = array();
+        for ($i = 1; $i <= $postcountsg; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title = $titlecheck;
+            // Add the posting student.
+            $posthashes[$i]->userid = $student1->id;
+            $posthashes[$i]->groupid = $group1->id;
+        }
+        // Create the posts assuming oublog_add_post is working.
+        $postids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            // Not adding comments for this test.
+        }
+
+        $curgroup = 0;// All groups.
+        $curindividual = 0;
+        $getposts = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // The number of posts that should be 'discovered' plus the new one.
+        $this->assertEquals($postcountsg, $participation->postscount);
+        // The number of posts that should be 'returned'.
+        $this->assertCount($postcountsg, $participation->posts);
+        // The number of comments should be 'discovered'.
+        $this->assertEquals(0, $participation->commentscount);
+        // The number of comments should be 'returned'.
+        $this->assertCount(0, $participation->comments);
+
+        // Test posts object. Only Group ONE
+        foreach ($participation->posts as $post) {
+            // Basic checks.
+            $this->assertInstanceOf('stdClass', $post);
+            $this->assertEquals($group1->id, $post->groupid);
+            $this->assertEquals($student1->id, $post->userid);
+            $postername = fullname($post);
+            $this->assertEquals($postername, $post->firstname ." ". $post->lastname);
+        }
+        // Prepare some more post stubs to use.
+        $posthashes = array();
+        for ($i = 1; $i <= $postcountsg; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title = $titlecheck;
+            // Add the posting student.
+            $posthashes[$i]->userid = $student2->id;
+            $posthashes[$i]->groupid = $group2->id;
+        }
+        // Creating the posts, and add comments.
+        $postids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            // Add the commenting student.
+            $comment = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment->title .= $titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment);
+        }
+
+        // Test posts object. ONLY Group TWO.
+        $curgroup = $group2->id;
+        $curindividual = 0;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        $this->assertEquals($postcountsg, $participation->postscount);
+        // No: of comments made same as posts.
+        $this->assertEquals($postcountsg, $participation->commentscount);
+        // Test posts object. ONLY Group TWO.
+        foreach ($participation->posts as $post) {
+            // Do some basic checks.
+            $this->assertInstanceOf('stdClass', $post);
+            $this->assertEquals($group2->id, $post->groupid);
+            $this->assertEquals($student2->id, $post->userid);
+        }
+        // Test comments object.
+        foreach ($participation->comments as $comment) {
+            // Do some basic checks - does it match our test post created above?.
+            $this->assertInstanceOf('stdClass', $comment);
+            $this->assertEquals('Test Comment' . $titlecheck, $comment->title);
+            $this->assertEquals($oublog->id, $comment->oublogid);
+            $this->assertEquals($post->title, $comment->posttitle);
+            $this->assertEquals($post->userid, $comment->posterid);
+        }
+
+        // Separate groups, separate individuals.
+        $oublog = $this->get_new_oublog($course->id, array(
+                'groupmode' => SEPARATEGROUPS,
+                'individual' => OUBLOG_SEPARATE_INDIVIDUAL_BLOGS));
+        $group5 = $this->get_new_group($course->id);
+        $group6 = $this->get_new_group($course->id);
+        $this->get_new_group_member($group5->id, $student1->id);
+        $this->get_new_group_member($group6->id, $student2->id);
+        // Number of posts/comments for these tests.
+        $postcountsgsi = 2;
+        $titlecheck = ' testing_oublog_sgsi_get_posts';
+        // Some post stubs to use in group 5.
+        $posthashes = array();
+        for ($i = 1; $i <= $postcountsgsi; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title = $titlecheck;
+            // Add the posting student.
+            $posthashes[$i]->userid = $student1->id;
+        }
+        // Create group 5's posts and comments.
+        $postids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            $comment = $this->get_comment_stub($posthash->id, $student1->id);
+            $comment->title .= $titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment);
+        }
+        // Make sure we have some post stubs to use in group 6.
+        $posthashes = array();
+        for ($i = 1; $i <= $postcountsgsi; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title = $titlecheck;
+            $posthashes[$i]->userid = $student2->id;
+
+        }
+        // Create group 6s posts and comments.
+        $postids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            $comment = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment->title .= $titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment);
+        }
+
+        // Test no groups.
+        $curgroup = 0;
+        $curindividual = 0;
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // The number of posts that should be 'discovered', from both groups.
+        $this->assertEquals($postcountsgsi * 2, $participation->postscount);
+        // The number of posts that should be 'returned'.
+        $this->assertCount($postcountsgsi * 2, $participation->posts);
+        // The number of comments should be 'discovered', from both groups.
+        $this->assertEquals($postcountsgsi * 2, $participation->commentscount);
+        // The number of comments should be 'returned'.
+        $this->assertCount($postcountsgsi * 2, $participation->comments);
+
+        // Test of student in group 6.
+        $curgroup = $group6->id;
+        $curindividual = $student2->id;
+        $getposts = false;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // The number of one students posts that should be 'discovered' from group.
+        $this->assertEquals($postcountsgsi, $participation->postscount);
+        // There are posts but should not be 'returned'.
+        $this->assertCount(0, $participation->posts);
+        // The number of comments that should be 'discovered', from both groups.
+        $this->assertEquals($postcountsgsi, $participation->commentscount);
+        // The number of comments that should be 'returned'.
+        $this->assertCount($postcountsgsi, $participation->comments);
+
+        // Test for student not in group 6.
+        $curgroup = $group6->id;
+        $curindividual = $student1->id;
+        $getposts = false;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Student not in the group could make no posts or comments
+        $this->assertEquals(0, $participation->postscount);
+        $this->assertCount(0, $participation->posts);
+        $this->assertEquals(0, $participation->commentscount);
+        $this->assertCount(0, $participation->comments);
+
+        // Separate individuals.
+        $oublog = $this->get_new_oublog($course->id, array(
+                'individual' => OUBLOG_SEPARATE_INDIVIDUAL_BLOGS));
+        // Number of posts/comments for these tests.
+        $postcountsi = 2;
+        $titlecheck = 'oublog_si_tests';
+        // Creating some post stubs for student 1 to use.
+        $posthashes = array();
+        for ($i = 1; $i <= $postcountsi; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title .= $titlecheck;
+            $posthashes[$i]->userid = $student1->id;
+        }
+        // Create student 1s posts and comments.
+        $postids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            $comment1 = $this->get_comment_stub($posthash->id, $student1->id);
+            $comment1->title .= $titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment1);
+            $comment2 = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment2->title .= $titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment2);
+        }
+        // Create student 2s posts and comments.
+        for ($i = 1; $i <= $postcountsi; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title = $titlecheck;
+            $posthashes[$i]->userid = $student2->id;
+        }
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            $comment1 = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment1->title .= $titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment1);
+            $comment2 = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment2->title .= $titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment2);
+        }
+
+        // Test All individuals.
+        $curgroup = 0;
+        $curindividual = 0;
+        $oublog->individual = OUBLOG_SEPARATE_INDIVIDUAL_BLOGS;
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test count of posts by both students.
+        $this->assertEquals($postcountsi * 2, $participation->postscount);
+        // The number of student posts should be 'returned' that were added.
+        $this->assertCount($postcountsi * 2, $participation->posts);
+        // Test count of all students comments.
+        $this->assertEquals($postcountsi * 4, $participation->commentscount);
+        // The number of comments which should be 'returned'.
+        $this->assertCount($postcountsi * 2, $participation->comments);
+
+        // Test an individual.
+        $curgroup = 0;
+        $curindividual = $student2->id;
+        $studentnamed = fullname($student2);
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test count of posts by both students.
+        $this->assertEquals($postcountsi, $participation->postscount);
+        // The number of student posts should be 'returned' that were added.
+        $this->assertCount($postcountsi, $participation->posts);
+        // Test count of all students comments.
+        $this->assertEquals($postcountsi * 2, $participation->commentscount);
+        // The number of comments which should be 'returned'.
+        $this->assertCount($postcountsi * 2, $participation->comments);
+
+        // The posts returned should match the ones added.
+        foreach ($participation->posts as $post) {
+            // Do some basic checks - does it match our test post created above.
+            $this->assertInstanceOf('stdClass', $post);
+            $this->assertEquals($titlecheck, $post->title);
+            $this->assertEquals($student2->id, $post->userid);
+            $this->assertEquals(0, $post->groupid);
+            $postername = fullname($post);
+            $this->assertEquals($studentnamed, $postername);
+        }
+
+        // Global blog = Personal blog.
+        if (!$oublog = $DB->get_record('oublog', array(
+                'course' => $SITE->id, 'global' => 1))) {
+            $oublog = $this->get_new_oublog($SITE->id, array(
+                    'global' => 1,
+                    'individual' => OUBLOG_NO_INDIVIDUAL_BLOGS,
+                    'allowcomments' => OUBLOG_COMMENTS_ALLOWPUBLIC,
+                    'maxvisibility' => OUBLOG_VISIBILITY_PUBLIC));
+        }
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+        // Number of posts and comments to create for Global course tests.
+        $postcountpb = 2;
+        $titlecheck = 'PERSBLOG_parts';
+        // Prepare to make some posts to use for test 1.
+        $posthashes1 = array();
+        for ($ai = 1; $ai <= $postcountpb; $ai++) {
+            $posthashes1[$ai] = $this->get_post_stub($oublog->id);
+            $posthashes1[$ai]->title = "TP " . $titlecheck;
+            $posthashes1[$ai]->userid = $student1->id;
+            $posthashes1[$ai]->visibility = OUBLOG_VISIBILITY_COURSEUSER;
+        }
+        // Create the posts - assumes oublog_add_post is working,
+        // also add student comments to those posts.
+        $postids = $commentids = array();
+        foreach ($posthashes1 as $posthasha) {
+            $postids[] = oublog_add_post($posthasha, $cm, $oublog, $SITE);
+            $comment1 = $this->get_comment_stub($posthasha->id, $student1->id);
+            $comment1->title = "TC " .$titlecheck;
+            $commentids[] = oublog_add_comment($SITE, $cm, $oublog, $comment1);
+            $comment2 = $this->get_comment_stub($posthasha->id, $student2->id);
+            $comment2->title = "TC " .$titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment2);
+        }
+
+        // Get the participation object with counts of posts and comments.
+        $curgroup = 0;
+        $curindividual = 0;
+        $limitnum = 8;
+        $start = $end = $page = 0;
+        $limitfrom = 0;
+        $getposts = false;// Dont need posts on global blog.
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test postscount && commentscount;
+        // When visibility is private course user only return none.
+        $this->assertEquals(0, $participation->postscount);
+        $this->assertEquals(0, $participation->commentscount);
+
+        // Prepare to make some posts to use for test two.
+        $posthashes1 = array();
+        for ($ai = 1; $ai <= $postcountpb; $ai++) {
+            $posthashes1[$ai] = $this->get_post_stub($oublog->id);
+            $posthashes1[$ai]->title = "TP " . $titlecheck;
+            $posthashes1[$ai]->userid = $student1->id;
+            $posthashes1[$ai]->visibility = OUBLOG_VISIBILITY_LOGGEDINUSER;
+        }
+        // Create the posts - assumes oublog_add_post is working,
+        // also add student comments to those posts.
+        $postids = $commentids = array();
+        foreach ($posthashes1 as $posthasha) {
+            $postids[] = oublog_add_post($posthasha, $cm, $oublog, $SITE);
+            $comment1 = $this->get_comment_stub($posthasha->id, $student1->id);
+            $comment1->title = "TC " .$titlecheck;
+            $commentids[] = oublog_add_comment($SITE, $cm, $oublog, $comment1);
+            $comment2 = $this->get_comment_stub($posthasha->id, $student2->id);
+            $comment2->title = "TC " .$titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment2);
+        }
+
+        // Get the participation object with counts of posts and comments.
+        $curgroup = 0;
+        $curindividual = 0;
+        $limitnum = 8;
+        $start = $end = $page = $limitfrom = 0;
+        $getposts = false;// Dont need posts on global blog.
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // For this test each post commented on twice.
+        $this->assertEquals($postcountpb, $participation->postscount);
+        $this->assertEquals($postcountpb * 2, $participation->commentscount);
+        // Test comments object.
+        foreach ($participation->comments as $comment) {
+            // Same basic checks - does it match our test comment created above.
+            $this->assertInstanceOf('stdClass', $comment);
+            $this->assertEquals("TC " . $titlecheck, $comment->title);
+            $this->assertEquals(OUBLOG_VISIBILITY_LOGGEDINUSER, $comment->visibility);
+        }
+        // Prepare to make some posts to use for test 3.
+        $posthashes1 = array();
+        for ($ai = 1; $ai <= $postcountpb; $ai++) {
+            $posthashes1[$ai] = $this->get_post_stub($oublog->id);
+            $posthashes1[$ai]->title = "TP " . $titlecheck;
+            $posthashes1[$ai]->userid = $student1->id;
+            $posthashes1[$ai]->visibility = OUBLOG_VISIBILITY_PUBLIC;
+        }
+        // Create the posts - assumes oublog_add_post is working,
+        // also add student comments to those posts.
+        $postids = $commentids = array();
+        foreach ($posthashes1 as $posthasha) {
+            $postids[] = oublog_add_post($posthasha, $cm, $oublog, $SITE);
+            $comment1 = $this->get_comment_stub($posthasha->id, $student1->id);
+            $comment1->title = "TC " .$titlecheck;
+            $commentids[] = oublog_add_comment($SITE, $cm, $oublog, $comment1);
+            $comment2 = $this->get_comment_stub($posthasha->id, $student2->id);
+            $comment2->title = "TC " .$titlecheck;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment2);
+        }
+
+        // Get the participation object with counts of posts and comments.
+        $curgroup = 0;
+        $curindividual = 0;
+        $limitnum = 8;
+        $start = $end = $page = $limitfrom = 0;
+        $getposts = false;// Dont need posts on global blog.
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test postscount && commentscount; the same number of records
+        // or multiples of $postcountpb, should be discovered.
+        $this->assertEquals($postcountpb * 2, $participation->postscount);
+        $this->assertEquals($postcountpb * 4, $participation->commentscount);
+        // But we should only return the limited amount of 8 comments.
+        $this->assertCount(0, $participation->posts);
+        $this->assertCount($limitnum, $participation->comments);
+        // Test comments object.
+        foreach ($participation->comments as $comment) {
+            // Same basic checks - does it match our test comment created above.
+            $this->assertInstanceOf('stdClass', $comment);
+            $this->assertEquals("TC " . $titlecheck, $comment->title);
+        }
+
+        // Set as guest user not logged in.
+        // Get the participation object with counts of posts and comments.
+        $curgroup = 0;
+        $this->setUser(0);
+        $curindividual = 0;
+        $limitnum = 8;
+        $start = $end = $page = $limitfrom = 0;
+        $getposts = false;// Dont need posts on global blog.
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test postscount && commentscount; the same number of records
+        // or multiples of $postcountpb, should be returned that were added.
+        $this->assertEquals($postcountpb, $participation->postscount);
+        $this->assertEquals($postcountpb * 2, $participation->commentscount);
+        // Test that we only return the limited amount of 8 commentss.
+        $this->assertCount(0, $participation->posts);
+        $this->assertLessThan($limitnum, count($participation->comments));
+        // Test comments object.
+        foreach ($participation->comments as $comment) {
+            // Same basic checks - does it match our test comment created above.
+            $this->assertInstanceOf('stdClass', $comment);
+            $this->assertEquals("TC " . $titlecheck, $comment->title);
+        }
+
+        // Separate individuals time checking.
+        // Reset the User previously set as guest user not logged in.
+        $this->setAdminUser();
+        $yesterday = time() - (24*60*60) - 60;
+        $beforeyesterday = time() - (2*24*60*60);
+        $sometimetoday = time();
+        $oublog = $this->get_new_oublog($course->id, array(
+                'individual' => OUBLOG_SEPARATE_INDIVIDUAL_BLOGS));
+        // Number of posts/comments for these tests.
+        $postcountsit = 4;
+        $titlecheck = ' oublog_sit_test_times';
+        // Creating some post stubs for student 1 to use
+        $posthashes = array();
+        for ($i = 1; $i <= $postcountsit; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title .= $titlecheck;
+            $posthashes[$i]->userid = $student1->id;
+            $posthashes[$i]->timeposted = $sometimetoday;
+        }
+        // Create student 1s posts with comments by S1 and S2.
+        $postids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            $comment1 = $this->get_comment_stub($posthash->id, $student1->id);
+            $comment1->title .=  $titlecheck;
+            $comment1->timeposted = $sometimetoday;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment1);
+            $comment2 = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment2->title .= $titlecheck;
+            $comment2->timeposted = $sometimetoday;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment2);
+        }
+        // Create student 2s yesterday posts and comments.
+        for ($i = 1; $i <= $postcountsit; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title .= $titlecheck;
+            $posthashes[$i]->userid = $student2->id;
+            $posthashes[$i]->timeposted = $yesterday;
+        }
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            $comment1 = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment1->title .= $titlecheck;
+            $comment1->timeposted = $yesterday;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment1);
+            $comment2 = $this->get_comment_stub($posthash->id, $student1->id);
+            $comment2->title .= $titlecheck;
+            $comment2->timeposted = $yesterday;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment2);
+        }
+        // Create more student 2 posts before yesterdays posts and comments.
+        // A limited set of these will be returned in a later test.
+        for ($i = 1; $i <= $postcountsit; $i++) {
+            $posthashes[$i] = $this->get_post_stub($oublog->id);
+            $posthashes[$i]->title = $titlecheck. $student2->id . $beforeyesterday . $i;
+            $posthashes[$i]->userid = $student2->id;
+            $posthashes[$i]->timeposted = $beforeyesterday;
+        }
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cm, $oublog, $course);
+            $comment1 = $this->get_comment_stub($posthash->id, $student1->id);
+            $comment1->title = $titlecheck . $student1->id . $beforeyesterday . $posthash->id;
+            $comment1->timeposted = $beforeyesterday;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment1);
+            $comment2 = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment2->title = $titlecheck . $student2->id . $beforeyesterday . $posthash->id;
+            $comment2->timeposted = $beforeyesterday;
+            $commentids[] = oublog_add_comment($course, $cm, $oublog, $comment2);
+            // Saving last entries for limited beforeyesterday assertions later.
+            $posttitlebeforeyesterday = $posthash->title;
+            $comment1titlebeforeyesterday = $comment1->title;
+            $comment2titlebeforeyesterday = $comment2->title;
+        }
+        // Test All time entries.
+        $curgroup = 0;
+        $curindividual = 0;
+        $oublog->individual = OUBLOG_SEPARATE_INDIVIDUAL_BLOGS;
+        $limitnum = 8;
+        $start = 0;
+        $end = 0;
+        $page = 0;
+        $limitfrom = 0;
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test count of posts.
+        $this->assertEquals($postcountsit * 3, $participation->postscount);
+        // The number of student posts should be 'returned' that were added.
+        $this->assertCount($postcountsit * 2, $participation->posts);
+        // Test count of all students comments.
+        $this->assertEquals($postcountsit * 6, $participation->commentscount);
+        // The number of comments should be 'returned'.
+        $this->assertCount($postcountsit * 2, $participation->comments);
+
+        // Test that the posts returned match the ones added.
+        foreach ($participation->posts as $post) {
+            // Do some basic checks - does it match our test post created above.
+            $this->assertInstanceOf('stdClass', $post);
+            $this->assertEquals("testpost" . $titlecheck, $post->title);
+            $postername = fullname($post);
+            $this->assertEquals($postername, $post->firstname ." ". $post->lastname);
+        }
+        // Test comments object.
+        foreach ($participation->comments as $comment) {
+            // Same basic checks - does it match our test comment created above.
+            $this->assertInstanceOf('stdClass', $comment);
+        }
+
+        // Test previous day timed entries.
+        $limitnum = 8;
+        $start = $yesterday - 60;
+        $end = $sometimetoday;
+        $page = $limitfrom = 0;
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test count of posts for period.
+        $this->assertEquals($postcountsit, $participation->postscount);
+        // The number of student posts for period which should be 'returned'
+        $this->assertCount($postcountsit, $participation->posts);
+        // Test count of all students comments for test period.
+        $this->assertEquals($postcountsit * 2, $participation->commentscount);
+        // The number of comments should be 'returned'.
+        $this->assertCount($postcountsit * 2, $participation->comments);
+
+        // Test a limited time period during previous day.
+        $curgroup = 0;
+        $curindividual = 0;
+        $limitnum = 8;
+        $start = $yesterday - (60*60);
+        $end = $yesterday + (60*60);
+        $page = $limitfrom = 0;
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test count of posts for period.
+        $this->assertEquals($postcountsit, $participation->postscount);
+        // The number of student posts for period which should be 'returned'
+        $this->assertCount($postcountsit, $participation->posts);
+        // Test count of all students comments for test period.
+        $this->assertEquals($postcountsit * 2, $participation->commentscount);
+        // The number of comments should be 'returned'.
+        $this->assertCount($postcountsit * 2, $participation->comments);
+
+        // Test extended daily time period
+        $curgroup = 0;
+        $curindividual = 0;
+        $limitnum = 8;
+        $start = $beforeyesterday - 60;
+        $end = $sometimetoday + 60;
+        $page = $limitfrom = 0;
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test count of posts to be 'discovered' for period.
+        $this->assertEquals($postcountsit * 3, $participation->postscount);
+        // The number of student posts for period which should be 'returned'
+        $this->assertCount($postcountsit * 2, $participation->posts);
+        // Test count of all students comments 'discovered' for test period.
+        $this->assertEquals($postcountsit * 6, $participation->commentscount);
+        // The number of comments which should be 'returned'.
+        $this->assertCount($postcountsit * 2, $participation->comments);
+        foreach ($participation->posts as $post) {
+            // Do some basic checks - does it match our test post created above.
+            $this->assertInstanceOf('stdClass', $post);
+            $this->assertEquals("testpost" . $titlecheck, $post->title);
+            $this->assertEquals(fullname($post), $post->firstname ." ". $post->lastname);
+        }
+        // Test comments object.
+        foreach ($participation->comments as $comment) {
+            // Same basic checks - does it match our test comment created above.
+            $this->assertInstanceOf('stdClass', $comment);
+            $this->assertEquals(OUBLOG_VISIBILITY_COURSEUSER, $comment->visibility);
+        }
+        // Test using extended daily time period with limited return of posts and comments,
+        // using saved last entries for beforeyesterday assertions.
+        $curgroup = 0;
+        $curindividual = 0;
+        $limitnum = $postcountsit * 2;// Any Number, above the $postcountsit
+        $start = $beforeyesterday - 1;
+        $end = $beforeyesterday + 1;
+        $page = 0;
+        $limitfrom = $postcountsit -2;// Any Number, less that $postcountsit.
+        $getposts = true;
+        $getcomments = true;
+        $participation = oublog_get_participation_details($oublog, $curgroup, $curindividual,
+                $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        // Test count of posts to be 'discovered' for period.
+        $this->assertEquals($postcountsit, $participation->postscount);
+        // The number of student posts for period which should be 'returned'
+        $this->assertCount($postcountsit - 2, $participation->posts);
+        // Test count of all students comments for test period.
+        $this->assertEquals($limitnum, $participation->commentscount);
+        // The number of comments should be 'returned'.
+        $this->assertCount($limitnum - $limitfrom, $participation->comments);
+        // Test posts object.
+        foreach ($participation->posts as $post) {
+            // Do some basic checks - does it match our test post created above.
+            $this->assertInstanceOf('stdClass', $post);
+            $this->assertEquals($student2->id, $post->userid);
+            $postername = fullname($post);
+            $this->assertEquals($postername, $post->firstname ." ". $post->lastname);
+            // Recognise last returned post correctly, but without id in title.
+            if ($post->title == $posttitlebeforeyesterday) {
+                $this->assertTrue(true);
+            }
+        }
+
+        foreach ($participation->comments as $comment) {
+            // Same basic checks - does it match our test comment created above.
+            $this->assertInstanceOf('stdClass', $comment);
+            $this->assertLessThanOrEqual(OUBLOG_VISIBILITY_COURSEUSER, $comment->visibility);
+            // Recognise last returned comments correctly, but with out ids in titles.
+            if ($comment->title == $comment1titlebeforeyesterday ||
+                    $comment->title == $comment2titlebeforeyesterday) {
+                $this->assertTrue(true);
+            }
+        }
+    }
+
+
     /* test_oublog_get_posts_pagination */
     public function test_oublog_get_posts_pagination() {
         global $SITE, $USER, $DB;
