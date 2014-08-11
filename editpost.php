@@ -52,6 +52,7 @@ $url = new moodle_url('/mod/oublog/editpost.php', array('blog'=>$blog, 'post'=>$
 $PAGE->set_url($url);
 
 // Check security.
+require_course_login($cm->course, true, $cm);
 $context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
