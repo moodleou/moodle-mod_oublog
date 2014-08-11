@@ -116,7 +116,7 @@ BSC02b-SG / U T
    page for the current user, the teacher user.
  - Confirm that the page contains:
       A 'Separate groups' selector, set at the second option 'G1'.
-      A time filter selection form 'Contribution - All time',
+      A time filter selection form 'Participation - All time',
       which defaults to todays date, and is disabled.
       Two tabs '0 Posts' and ' 1 Comments'.
  - Verify that the 'Posts' tab contains
@@ -218,7 +218,7 @@ BSC06-SG / U T
 
 BSC07-SG / U T
    Click the details link beside the teacher user.
- - Verify that the time filter form  defaults to "Contribution - All time".
+ - Verify that the time filter form  defaults to "Participation - All time".
  - Verify the there are tabs 'Posts' and 'Comments'.
  - Confirm that the comment box beneath the 'Posts' tab states
   'No posts made during this period'.
@@ -248,12 +248,12 @@ BSC09 / U T
 BSC10 / U T
    Click on the 'Details' link next to U S2.
 -  Verify that you are taken to a 'User participation' page for student user U S2.
--  Verify that the page has a default title 'Contribution - All time' with a date
+-  Verify that the page has a default title 'Participation - All time' with a date
    selector form showing date selectors, enabling check boxes and an update button.
    Beneath this form should be two tabs, 'Posts' and 'Comments'.
 -  The 'User participation' page should appear similar to the following:
 
-   Contribution - All time
+   Participation - All time
    -----------------------
         From [?] day month year [] Enable
              To  day month year [] Enable
