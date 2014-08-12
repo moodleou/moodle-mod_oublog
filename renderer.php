@@ -1311,7 +1311,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $jsmodule = array(
                 'name' => 'mod_oublog.init_deleteandemail',
                 'fullpath' => '/mod/oublog/module.js',
-                'requires' => array('base', 'event', 'node', 'panel', 'anim', 'moodle-core-notification', 'button'),
+                'requires' => array('base', 'event', 'node', 'panel', 'anim', 'moodle-core-notification-dialogue', 'button'),
                 'strings' => $stringlist);
         $PAGE->requires->js_init_call('M.mod_oublog.init_deleteandemail', array($cmid, $postid), true, $jsmodule);
     }

@@ -98,7 +98,6 @@ M.mod_oublog.init_deleteandemail = function(Y, cmid, postid) {
             centered: true,
             render: true,
             zIndex: 50,
-            lightbox : true,
             buttons: {},
             plugins: [Y.Plugin.Drag],
             modal: true});
@@ -139,6 +138,7 @@ M.mod_oublog.init_deleteandemail = function(Y, cmid, postid) {
                 });
         e.preventDefault();
         Y.one('a.oublog_deleteandemail_' + postid).focus();
+        panel.show();
     });
 
 };

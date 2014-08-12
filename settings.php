@@ -25,10 +25,10 @@ if (!isset($CFG->oublogsetup)) {
     set_config('oublogsetup', true);
 }
 
-$module = new stdClass();
+$plugin = new stdClass();
 require($CFG->dirroot . '/mod/oublog/version.php');
 $settings->add(new admin_setting_heading('oublog_version', '',
-    get_string('displayversion', 'oublog', $module->displayversion)));
+    get_string('displayversion', 'oublog', $plugin->release)));
 
 if (isset($CFG->maxbytes)) {
     // Default maximum size for attachments allowed per post per oublog.
