@@ -224,7 +224,16 @@ if (empty($download)) {
     echo $OUTPUT->footer();
 }
 
-// Log visit.
-$logurl = 'userparticipation.php?id=' . $id . '&user=' . $userid
-    . '&group=' . $groupid . '&download=' . $download . '&page=' . $page . '&tab=' . $tab;
-add_to_log($course->id, 'oublog', 'view', $logurl, $oublog->id, $cm->id);
+// Log visit list event.
+$params = array(
+    'context' => $context,
+    'objectid' => $oublog->id,
+    'other' => array(
+        'info' => 'user participation',
+        'relateduserid' => $userid,
+        'logurl' => 'userparticipation.php?id=' . $cm->id
+    )
+);
+$event = \mod_oublog\event\participation_viewed::create($params);
+$event->add_record_snapshot('course', $course);
+$event->trigger();

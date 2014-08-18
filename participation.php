@@ -113,6 +113,19 @@ $PAGE->navbar->add(get_string('userparticipation', 'oublog'));
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($oublog->name));
 
+// Log visit list event.
+$params = array(
+    'context' => $context,
+    'objectid' => $oublog->id,
+    'other' => array(
+        'info' => 'user participation',
+        'logurl' => 'participation.php?id=' . $cm->id
+    )
+);
+$event = \mod_oublog\event\participation_viewed::create($params);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
+
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
 if (empty($download)) {
@@ -168,7 +181,3 @@ $oublogoutput->render_participation_list($cm, $course, $oublog, $groupid,
 if (empty($download)) {
     echo $OUTPUT->footer();
 }
-
-// Log visit.
-$logurl = "participation.php?id={$id}&group={$groupid}&download={$download}&page={$page}";
-add_to_log($course->id, 'oublog', 'view', $logurl, $oublog->id, $cm->id);

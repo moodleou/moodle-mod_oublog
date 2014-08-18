@@ -134,6 +134,18 @@ if ($oublog->global) {
     $url = new moodle_url("$CFG->wwwroot/course/mod.php", array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
 }
 
+// Log view post event.
+$params = array(
+        'context' => $context,
+        'objectid' => $post->id,
+        'other' => array(
+            'oublogid' => $oublog->id
+   )
+);
+$event = \mod_oublog\event\post_viewed::create($params);
+$event->add_record_snapshot('oublog_posts', $post);
+$event->trigger();
+
 $CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm);
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($course->fullname));

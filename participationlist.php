@@ -185,7 +185,15 @@ echo $oublogoutput->render_all_users_participation_table($cm, $course, $oublog,
         $start, $end, $pagingurl);
 echo $OUTPUT->footer();
 
-// Log visit.
-$logurl = 'participationlist.php?id=' . $id . '&user=' . $USER->id .
-        '&group=' . $groupid . '&page=' . $page;
-add_to_log($course->id, 'oublog', 'view', $logurl, $oublog->id, $cm->id);
+// Log visit list event.
+$params = array(
+    'context' => $context,
+    'objectid' => $oublog->id,
+    'other' => array(
+        'info' => 'all participation',
+        'logurl' => 'participationlist.php?id=' . $cm->id
+    )
+);
+$event = \mod_oublog\event\participation_viewed::create($params);
+$event->add_record_snapshot('course', $course);
+$event->trigger();

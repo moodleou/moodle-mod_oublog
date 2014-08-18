@@ -482,8 +482,16 @@ if (isguestuser() && $USER->id==$user) {
             get_string('noposts', 'oublog', oublog_get_displayname($oublog)).'</p>';
 }
 
-// Log visit and bump view count.
-add_to_log($course->id, "oublog", "view", 'view.php?id='.$cm->id, $oublog->id, $cm->id);
+// Log oublog page view.
+$params = array(
+    'context' => $context,
+    'objectid' => $oublog->id,
+);
+$event = \mod_oublog\event\course_module_viewed::create($params);
+$event->add_record_snapshot('course_modules', $cm);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
+
 $views = oublog_update_views($oublog, $oubloginstance);
 
 // Finish the page.

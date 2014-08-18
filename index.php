@@ -37,18 +37,24 @@ if (file_exists($grabindex)) {
 
 require_course_login($course);
 
-add_to_log($course->id, "oublog", "view all", "index.php?id=$course->id", "");
-
+// Trigger instances list viewed event.
+$params = array(
+    'context' => context_course::instance($course->id)
+);
+$event = \mod_oublog\event\course_module_instance_list_viewed::create($params);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
 
 $strweek = get_string('week');
 $strtopic = get_string('topic');
 $strname = get_string('name');
 $strdata = get_string('modulename', 'oublog');
 $strdataplural  = get_string('modulenameplural', 'oublog');
-
-$PAGE->navbar->add($strdata, new moodle_url('/mod/oublog/index.php', array('id'=>$course->id)));
+$url = new moodle_url('/mod/oublog/index.php', array('id' => $course->id));
+$PAGE->navbar->add($strdata, $url);
 $PAGE->set_title($strdata);
 $PAGE->set_heading(format_string($course->fullname));
+$PAGE->set_url($url);
 echo $OUTPUT->header();
 
 // Print the list of blogs.

@@ -199,11 +199,23 @@ if (!$frmpost = $mform->get_data()) {
         $post->userid = $oubloginstance->userid;
 
         oublog_edit_post($post, $cm);
-        add_to_log($course->id, "oublog", "edit post", $viewurl, $oublog->id, $cm->id);
+
+        // Log post edited event.
+        $params = array(
+                'context' => $context,
+                'objectid' => $post->id,
+                'other' => array(
+                    'oublogid' => $oublog->id
+            )
+        );
+
+        $event = \mod_oublog\event\post_updated::create($params);
+        $event->trigger();
+
         redirect($viewurl);
 
     } else {
-        // insert the post
+        // Insert the post.
         unset($post->id);
         $post->oublogid = $oublog->id;
         $post->userid = $USER->id;
@@ -221,7 +233,18 @@ if (!$frmpost = $mform->get_data()) {
         if (!oublog_add_post($post, $cm, $oublog, $course)) {
             print_error('notaddpost', 'oublog');
         }
-        add_to_log($course->id, "oublog", "add post", $viewurl, $oublog->id, $cm->id);
+
+        // Log add post event.
+        $params = array(
+                'context' => $context,
+                'objectid' => $post->id,
+                'other' => array(
+                    'oublogid' => $oublog->id
+            )
+        );
+        $event = \mod_oublog\event\post_created::create($params);
+        $event->trigger();
+
         redirect($viewurl);
     }
 

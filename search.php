@@ -152,10 +152,6 @@ $searchurl = 'search.php?'.(empty($id) ? 'user='.$oubloguser->id : 'id='.$cm->id
 
 $foundsomething=$query->display_results($searchurl);
 
-if (!$foundsomething) {
-    add_to_log($COURSE->id, 'oublog', 'view searchfailure',
-        $searchurl.'&query='.urlencode($querytext));
-}
 echo $foundsomething;
 
 // Add link to search the rest of this website if service available.

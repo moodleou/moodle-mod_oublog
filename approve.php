@@ -88,7 +88,7 @@ if ($post->allowcomments < OUBLOG_COMMENTS_ALLOWPUBLIC ||
 }
 
 // OK they are actually allowed to approve / reject this
-if (!oublog_approve_comment($mcomment, $approve)) {
+if (!$approvedcomment = oublog_approve_comment($mcomment, $approve)) {
     print_error('error_unspecified', 'oublog', 'A5', $backlink);
 }
 
@@ -96,5 +96,20 @@ if (!oublog_approve_comment($mcomment, $approve)) {
 $target = 'viewpost.php?post=' . $post->id;
 if (!$email && $redirectlower) {
     $target .= '#awaiting';
+}
+
+if ($approvedcomment > 0 ) {
+    // Log approved comment event.
+    $params = array(
+            'context' => $context,
+            'objectid' => $approvedcomment,
+            'other' => array(
+                'postid' => $mcomment->postid,
+                'mcommentid' => $mcommentid,
+                'oublogid' => $oublog->id
+            )
+    );
+    $event = \mod_oublog\event\comment_approved::create($params);
+    $event->trigger();
 }
 redirect($target);

@@ -68,8 +68,18 @@ if ($tag) {
 $canmanageposts = has_capability('mod/oublog:manageposts', $context);
 $canaudit       = has_capability('mod/oublog:audit', $context);
 
-// Log visit.
-add_to_log($course->id, "oublog", "allposts", $returnurl, $oublog->id, $cm->id);
+// Log view all site entries event.
+$params = array(
+        'context' => $context,
+        'objectid' => $oublog->id,
+        'other' => array(
+            'pageid' => $page
+    )
+);
+$event = \mod_oublog\event\site_entries_viewed::create($params);
+$event->add_record_snapshot('course_modules', $cm);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
 
 // Get strings.
 $stroublog      = get_string('modulename', 'oublog');

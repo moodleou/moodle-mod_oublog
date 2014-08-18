@@ -458,6 +458,18 @@ if ($step == 0) {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
     }
+
+    // Log post imported event.
+    $params = array(
+        'context' => $context,
+        'objectid' => $oublog->id,
+        'other' => array(
+            'info' => count($posts),
+        )
+    );
+    $event = \mod_oublog\event\post_imported::create($params);
+    $event->trigger();
+
     echo html_writer::tag('p', get_string('import_step2_total', 'oublog',
             (count($posts) - count($conflicts))));
     $continueurl = '/mod/oublog/view.php?id=' . $cm->id;

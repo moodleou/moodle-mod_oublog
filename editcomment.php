@@ -164,7 +164,7 @@ if (!$comment = $mform->get_data()) {
                 ($approvaltime ? ' ' .
                     get_string('moderated_typicaltime', 'oublog', $approvaltime)
                 : ''), 'viewpost.php?post=' . $postid, $course);
-        // does not continue
+        // Does not continue.
     }
 
     $comment->userid = $USER->id;
@@ -172,6 +172,19 @@ if (!$comment = $mform->get_data()) {
     if (!oublog_add_comment($course, $cm, $oublog, $comment)) {
         print_error('couldnotaddcomment', 'oublog');
     }
-    add_to_log($course->id, "oublog", "add comment", $viewurl, $oublog->id, $cm->id);
+
+    // Log add comment event.
+    $params = array(
+            'context' => $context,
+            'objectid' => $comment->id,
+            'other' => array(
+                'oublogid' => $oublog->id,
+                'postid' => $comment->postid,
+        )
+    );
+
+    $event = \mod_oublog\event\comment_created::create($params);
+    $event->trigger();
+
     redirect($viewurl);
 }

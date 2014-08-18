@@ -198,6 +198,7 @@ if ($email) {
     } else {
         // Mark the post as deleted.
         oublog_do_delete($course, $cm, $oublog, $post);
+
         redirect($viewurl);
     }
 }
@@ -228,6 +229,17 @@ function oublog_do_delete($course, $cm, $oublog, $post) {
         $completion->update_state($cm, COMPLETION_INCOMPLETE, $post->userid);
     }
     $transaction->allow_commit();
+
+    // Log post deleted event.
+    $params = array(
+        'context' => $context,
+        'objectid' => $post->id,
+        'other' => array(
+            'oublogid' => $oublog->id
+        )
+    );
+    $event = \mod_oublog\event\post_deleted::create($params);
+    $event->trigger();
 }
 
 /**
