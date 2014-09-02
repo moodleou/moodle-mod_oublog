@@ -896,13 +896,19 @@ function oublog_get_file_info($browser, $areas, $course, $cm, $context, $fileare
  * @param cm_info $cm
  */
 function oublog_cm_info_dynamic(cm_info $cm) {
+    global $remoteuserid, $USER;
+    $userid = $USER;
+    if (isset($remoteuserid) && !empty($remoteuserid)) {
+        // Hack using dodgy global. The actual user id for specific user e.g. from webservice.
+        $userid = $remoteuserid;
+    }
     $capability = 'mod/oublog:view';
     if ($cm->course == SITEID && $cm->instance == 1) {
         // Is global blog (To save DB call we make suspect assumption it is instance 1)?
         $capability = 'mod/oublog:viewpersonal';
     }
     if (!has_capability($capability,
-            context_module::instance($cm->id))) {
+            context_module::instance($cm->id), $userid)) {
         $cm->set_user_visible(false);
         $cm->set_available(false);
     }

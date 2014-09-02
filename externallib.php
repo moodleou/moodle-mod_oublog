@@ -40,13 +40,14 @@ class mod_oublog_external extends external_api {
      * @param string $username
      */
     public static function get_user_blogs($username) {
-        global $DB;
+        global $DB, $remoteuserid;
         $username = self::validate_parameters(self::get_user_blogs_parameters(),
                 array('username' => $username));
         $user = $DB->get_field('user', 'id', array('username' => $username['username']), IGNORE_MISSING);
         if (!$user) {
             return array();
         }
+        $remoteuserid = $user;
         $result = oublog_import_getblogs($user);
         // Add remote property to each blog to identify that it came from web service.
         foreach ($result as &$blog) {
@@ -79,13 +80,14 @@ class mod_oublog_external extends external_api {
     }
 
     public static function get_blog_info($cmid, $username) {
-        global $DB;
+        global $DB, $remoteuserid;
         $params = self::validate_parameters(self::get_blog_info_parameters(),
                 array('cmid' => $cmid, 'username' => $username));
         $user = $DB->get_field('user', 'id', array('username' => $params['username']), IGNORE_MISSING);
         if (!$user) {
             return array();
         }
+        $remoteuserid = $user;
         $result = oublog_import_getbloginfo($params['cmid'], $user);
         return array(
                 'bcmid' => $result[0],
