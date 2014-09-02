@@ -231,6 +231,7 @@ function oublog_do_delete($course, $cm, $oublog, $post) {
     $transaction->allow_commit();
 
     // Log post deleted event.
+    $context = context_module::instance($cm->id);
     $params = array(
         'context' => $context,
         'objectid' => $post->id,
