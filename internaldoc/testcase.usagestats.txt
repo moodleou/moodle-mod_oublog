@@ -32,7 +32,7 @@ CRE Creating blog and data
 
 CRE01 / admin.
 
-    Create a new blog activity 'CRE01' with Intro text "Course-wide blog"
+    Create a new blog activity 'TU.CRE01-CW' with Intro text "Course-wide blog"
     Ensure 'Allow comments' set to 'Yes, from logged in users'
     Ensure Individual blogs set to 'No (blog together on in groups)'
     Enable 'Show blog usage extra statistics' checkbox
@@ -41,25 +41,25 @@ CRE01 / admin.
 
 CRE02 / admin.
 
-    Create a new blog activity 'CRE02' with Intro text "Group blog"
+    Create a new blog activity 'TU.CRE02-GB' with Intro text "Group blog"
     Ensure 'Allow comments' set to 'Yes, from logged in users'
     Ensure 'Individual blogs' set to 'No (blog together on in groups)'
     Tick 'Show blog usage extra statistics' checkbox
     Set group mode to 'Visible groups'
-    Save and return to course.
+    Save and return to website.
 
 CRE03 / admin.
 
-    Create a new blog activity 'CRE03' with Intro text "Individual blog"
+    Create a new blog activity 'TU.CRE03-VIB' with Intro text "Individual blog"
     Ensure 'Allow comments' set to 'Yes, from logged in users'
     Ensure 'Individual blogs' set to 'Visible individual blogs'
     Tick Show blog usage extra statistics checkbox
     Ensure group mode is 'No groups'
-    Save and return to course.
+    Save and return to website.
 
-CRE04 / admin
+CRE04 / admin.
 
-    Enter blog CRE01
+    Enter blog TU.CRE01-CW
     Select 'New blog post' and add a new blog post, setting title to 'Admin-Post01'
     Add any message text you like and set Allow comments to 'Yes, from logged in users'
     Repeat adding another post, this time leaving Title field empty
@@ -67,40 +67,40 @@ CRE04 / admin
 
 CRE05 / student [change]
 
-    Enter blog CRE01
-    Add a comment against Post01 (no title, any text)
+    Enter blog TU.CRE01-CW
+    Add a comment against Admin-Post01 (no title, any text)
     Repeat (so you have added two comments to Admin-Post01, there are now three in total)
     Select 'Add your comment' against the untitled post and add a new comment (no title, any text).
 
-CRE06 / admin
+CRE06 / admin [change]
 
-    Repeat steps in CRE04 using blog CRE02, ensuring G1 group is selected as the current blog.
+    Repeat steps in CRE04 using blog TU.CRE02-GB, ensuring G1 group is selected as the current blog.
 
 CRE07 / admin
 
-    In blog CRE02 switch to the G2 group blog
+    In blog TU.CRE02-GB switch to the G2 group blog
     Select 'New blog post' and add a new blog post, setting title to 'Admin-Post02'
     Add any message text you like and set Allow comments to 'No'.
 
 CRE08 / student [change]
 
-    Repeat steps in CRE05 using blog CRE02, ensuring G1 group is selected as the current blog.
+    Repeat steps in CRE05 using blog TU.CRE02-GB, ensuring G1 group is selected as the current blog.
 
 CRE09 / admin [change]
 
-    From course home page select CRE03 blog
+    From course home page select TU.CRE03-VIB blog
     Ensure current user is displayed as the Visible individual
     Repeat steps in CRE04 using this blog.
 
 CRE10 / student [change]
 
-    From course home page select CRE03 blog
+    From course home page select TU.CRE03-VIB blog
     Select the Admin user from the Visible individual drop-down
     Repeat steps in CRE05 using this blog.
 
-CRE10 / student
+CRE11 / student
 
-    In CRE03 blog select current user from the Visible individual drop-down
+    In TU.CRE03-VIB blog select current user from the Visible individual drop-down
     Select 'New blog post' and add a new blog post, setting title to 'Student-Post01'
     Add any message text you like and set Allow comments to 'No comments'.
 
@@ -108,37 +108,52 @@ CRE10 / student
 CRS Checking usage 'block' on course-wide blog
 ==============================================
 
-CRS01a  / admin [change]
+CRS01a / admin [change]
 
-    From the course home page access the CRE01 blog
- -- A 'Blog usage' 'block' should show to the right
- -- The 'block' should contain only the 'My participation summary' expanded block and 'Most commented posts'
-    as a collapsed button tab.
- -- There should be three entries in the 'My participation summary' block tab: 2 Posts and 1 Comment.
+    From the course home page access the TU.CRE01-CW blog.
+ -- A 'Blog usage' 'panel' should show to the right.
+ -- The 'panel' should contain only the 'My participation summary' expanded block,
+    with 'Participation' and 'Most commented posts' blocks, as collapsed button tabs.
+ -- There should be three entries in the 'My participation summary' block tab:
+    2 Posts and 1 Comment.
  -- (These should display latest first)
  -- The Untitled post should be at the top.
- -- Post01 should be after this.
+ -- Admin-Post01 should be after this.
  -- The Admin user avatar should be to the left of the three entries.
  -- The post time when created should be displayed below the post titles.
- -- The post title should link to the post or comment.
+ -- The titles should link to the post or comment.
 
 CRS01b  / admin
-    Click the block title 'Most commented posts'.
+    Click the block title 'Participation'.
     The 'My participation summary' block should collapse whilst this block expands.
+    The block contains a title and two areas, one showing recent posts the other recent comments.
+ -- Beneath this there should be a number of post entries: (Posts/Comments should display latest first)
+ -- The Untitled (Admin) post should be at the top.
+ -- Admin-Post01 should be after this.
+ -- The Untitled students comments should follow these.
+ -- Admin's Untitled comment should be last.
+ -- The user's avatars should be to the left of the entries.
+ -- The post time when created should be displayed below the post title.
+ -- Beneath the post time should be a link to the blog.
+ Note:(This link is context sensitive, and depends upon blog settings)
+ -- The titles should link to the post or comment.
+
+
+CRS01c  / admin
+    Click the block title 'Most commented posts'.
+    The 'Participation' block should collapse whilst this block expands.
     The block contains a collapseable time filter, with designated 'Time period' [+]
     When expanded this gives the option to select three time periods.
- -- Beneath this there should be two entries in this block tab:
- -- Post01 should be at the top, showing 2 comments (post creator comments are not counted).
- -- Untitled post should be after this, showing 1 comment.
+    Beneath this there should be two entries in this block tab:
+ -- Admin-Post01 should be visible, showing 2 comments (post creator comments are not counted).
  -- The Admin user's avatar should be to the left of the entries.
  -- The post time when created should be displayed below the post title.
- -- The post title should link to the post.
- -- The 'bar' for Post01 comments should take the full width available in the block.
- -- The 'bar' for the other post should be half the available width between label and edge of block.
+ -- The title should link to the post.
+ -- The 'bar' for Admin-Post01 comments should take the full width available in the block.
 
 CRS02 / admin
 
-    Still in CRE01 'Blog usage' 'block':
+    Still in TU.CRE01-CW 'Blog usage' 'block':
     Select [+] || [-] link by the current time period heading.
  -- This should expand/collapse the time filter form.
     Select Time period 'All time' from drop-down and select Update button
@@ -147,127 +162,158 @@ CRS02 / admin
  -- A 'spinner' should be shown beside the 'Update' button.
  -- The time period title should be updated (e.g. to 'All time').
  -- The description should be updated (e.g. to 'Posts with the most number of comments').
- -- The list of posts with comments should remain the same, with the small amount of data created.
+    (The list of posts with comments should remain the same, with the small amount of data created.)
     Revisit (refresh) the blog page.
- -- The previously selected Time period and expand/collapse state should be remembered.
+ -- The previously selected Time period and expand/collapse states should be remembered.
 
 GRP Checking usage 'block' on group blog
 ========================================
 
 GRP01 / admin
 
-    From the course home page access the CRE02 blog,
+    From the course home page access the TU.CRE02-GB blog,
     Select the Visible group G1.
- -- A 'Blog usage' 'block' should show to the right.
- -- The 'block' should contain 'My participation summary', 'Most commented posts' 'Most posts', and 'Most comments' tabs.
+ -- The 'Blog usage' 'block' should show to the right.
+ -- The 'block' should contain 'My participation summary', 'Participation', 'Most commented posts',
+    'Most posts', and 'Most comments' tabs.
  -- You should be able to expand/collapse each tab by selecting its heading (1 open at a time).
- -- There should be four entries in the 'My participation summary' tab,
- --   3 posts and 1 comment.
- --   Post 2 should be at the top followed by an Untitled post and then post1.
+ -- There should be three entries in the 'My participation summary' tab,
+ --   2 posts and 1 comment.
+ --   The Untitled (Admin) post should be at the top followed by Admin-Post01.
  --   There should be 1 untitled comment beneath these posts.
  --   The user avatar should be to the left of the entries post title and date time,
- --   each title being a link to the post or comment.
+      each title being a link to the post or comment.
  --   Beneath the comments should be a link 'View my participation' to the user participation page.
- -- There should be two entries in the 'Most commented posts' tab - Post01 (2 comments) Untitled post (1 comment).
+ -- There should be six entries in the 'Participation' tab,
+ --   2 posts and 4 comments, each displayed latest first.
+ --   The Untitled (Admin) post should be at the top followed by Admin-Post01.
+ --   There should be 4 untitled comments beneath these posts. Three by the student user and one by the admin.
+ --   The user avatar should be to the left of the entries post title and date time,
+      each title being a link to the post or comment.
+ --   Beneath the comments should be a link 'View my participation' to the user participation page.
+ -- There should be two entries in the 'Most commented posts' tab -
+      2 comments with the post title link Admin-Post01.
+      1 comment the the post title Untitled post.
+ -- The user avatar should be to the left of the entries post title and date time,
+      each title being a link to the post.
  -- There should be two entries in the 'Most posts' tab,
- --   One for each group, with 2 posts for G1's blog above 1 for G2's.
+ --   One for each group, with 2 posts for G1's blog above 1 for G2's blog.
  --   The default avatar should be to the left of the entries (unless a group picture is set).
  --   The blog 'name' should be a link to the group's blog within the activity.
  -- There should be one entry in the 'Most comments' tab - for G1's blog (3 comments).
- -- The admin avatar should show against the posts and the title link to the post.
+ -- The default avatar should be to the left of the title link to the blog (unless a group picture is set).
+
 
 GRP02 / admin
 
-    From the course home page access the CRE02 blog,
+    From the course home page access the TU.CRE02-GB blog,
     Select the Visible group 'All participants'.
+    'Participation' should now show a link to the group's blog below the date time.
     'Most commented posts' should now list posts with most comments across all group blogs.
+ -- Admin-Post01 and Untitled post should be listed as per GRP01, but with addition of link to G1's blog below.
     'Most posts' and 'Most comments' tabs should be as per GRP01.
- -- Post01 and Untitled post should be listed as per GRP01, but with addition of link to G1's blog below.
+
 
 IND Checking usage 'block' on individual blog
 =============================================
 
 IND01 / admin
 
-    From the course home page access the CRE03 blog,
+    From the course home page access the TU.CRE03-VIB blog,
     Select the Visible individual Admin user.
- -- A 'Blog usage' 'block' should show to the right.
- -- The 'block' should contain 'My participation summary', 'Most commented posts' 'Most posts', and 'Most comments' tabs.
+ -- The 'Blog usage' 'block' should be shown on the right.
+ -- The 'block' should contain 'My participation summary', 'Participation', 'Most commented posts',
+    'Most posts', and 'Most comments' tabs.
  -- You should be able to expand/collapse each tab by selecting it's heading (1 open at a time).
  -- There should be three entries in the 'My participation summary' tab,
  --   2 posts and 1 comment.
- --   An Untitled post should be at the top followed by Post01.
+ --   An Untitled post should be at the top followed by Admin-Post01.
  --   There should be 1 untitled comment beneath these posts.
  --   The user avatar should be to the left of the entries post title and date time,
- --   each title being a link to the post.
+      each title being a link to the post or comment on the post.
  --   Beneath the comments should be a link to the user participation page, 'View my participation'.
- -- There should be two entries in the 'Most commented posts' tab - Post01 (2 comments) Untitled post (1 comment).
+ -- In the 'Participation' panel there should be 4 untitled comments made on the Admins blog,
+ --   3 by Student user one,  and 1 by the Admin user
+ --   These should appear in reverse order, newest at the top, the first 3 being the Students, last the Admins.
+ -- There should be two entries in the 'Most commented posts' tab -
+      2 comments with the post title link Admin-Post01.
+      1 comment with the post title Untitled post.
+ -- The user avatar should be to the left of the entries post title and date time,
+      each title being a link to the post.
+ -- The 'bar' for Admin-Post01 comments should take the full width available in the block.
+ -- The 'bar' for the Untitled post should be half the available width between label and edge of block.
  -- There should be two entries in the 'Most posts' tab,
  --   One for each user, with 2 posts for Admin's blog above 1 for the Student's.
  --   The user's avatar should be to the left of the entries.
  --   The blog 'name' should be a link to the user's blog within the activity.
  -- There should be one entry in the 'Most comments' tab - for Admin's blog (3 comments).
-  --   The admin avatar should show against the posts and the title link to the post.
+ --   The admin avatar should show against the user name link to the blog.
 
 IND02 / admin
 
-    From the course home page access the CRE03 blog,
+    From the course home page access the TU.CRE03-VIB blog,
     Select the Visible individual 'View all users'.
-    'My participation summary', 'Most posts' and 'Most comments' tabs should be as per IND01.
+    'Most posts' and 'Most comments' tabs should be as per IND01.
+    In 'Participation', comments should be listed with addition of link to the user's blog below.
     'Most commented posts' should now list posts with most comments across all user blogs.
- -- Post01 and Untitled post should be listed as per IND01, but with addition of link to admin's blog below.
+ -- Admin-Post01 and Untitled post should be listed as per IND01, but with addition of link to admin's blog below.
 
 OFF Checking usage 'block' displays appropriately
 =================================================
 
 OFF01 / admin
 
-    From the course home page access blog CRE02,
+    From the course home page access blog TU.CRE02-GB,
     Select Edit settings from the Administration block.
-    Un-tick Show blog usage statistics block - Save and display the activity.
- -- Only 'My participation summary' and 'Most commented posts' should now be showing in the Blog usage block.
+    Un-tick 'Show blog usage statistics' checkbox - Save and display the activity.
+ -- Only 'My participation summary', 'Participation' and 'Most commented posts' should now be
+    showing in the Blog usage block.
     Select Edit settings from the Administration block again.
-    Tick Show blog usage extra statistics (turn back on).
+    Tick 'Show blog usage extra statistics' (turn back on).
     Update group mode from 'Visible groups' to 'Separate groups',
     Save and display.
- -- Only 'My participation summary' and 'Most commented posts' should now be showing in the Blog usage block.
+ -- Only 'My participation summary', 'Participation' and 'Most commented posts' should now be
+    showing in the Blog usage block.
 
 OFF02 / admin
 
-    From the course home page access blog CRE03,
+    From the course home page access blog TU.CRE03-VIB,
     Select Edit settings from the Administration block.
     Update Allow comments to 'Comments not allowed',
     Save and display.
- -- Only 'My participation summary' and 'Most posts' should now be showing in the Blog usage block,
+ -- Only 'Participation' and 'Most posts' should now be showing in the Blog usage block,
+    'Participation' displays only 'View all participation' link.
     Select Edit settings from the Administration block.
     Update 'Individual blogs' to 'Separate individual blogs',
     Save and display.
- -- Blog usage block should be showing only 'My participation summary'.
+ -- Blog usage block should be showing only 'Participation'.
+    'Participation' displays recent posts and 'View all participation' link.
 
 PER Checking personal blog usage
 =================================
 
 PER01 / admin
 
-    Access the user's personal blog via /mod/oublog/view.php
+    Access the Admin user's personal blog via /mod/oublog/view.php
     Select Edit settings from the Administration block
-    Tick Show blog usage extra statistics
-    Select 'New blog post' and add a new blog post, setting title to 'Post01'
+    Ensure 'Show blog usage extra statistics' is ticked.
+    Select 'New blog post' and add a new blog post, setting title to 'Admin-Post01'
     Set visibility to 'Visible to anyone in the world'
     Add any message text you like and set Allow comments to 'Yes, from logged in users'
     Repeat, adding an untitled post, set visibility to 'Visible to everyone logged in to the system'
-    Select 'Add your comment' against Post01 and add a new comment (no title, any text)
-    Copy the URL to admin student's blog page for use in next step.
+    Select 'Add your comment' against Admin-Post01 and add a new comment (no title, any text)
+    Copy the URL to the admin's blog page for use in next step.
 
 PER02 / student
 
     Access admin's personal blog via /mod/oublog/view.php?user=XXX.
-    Add a new comment against Post01 and add a new comment (no title, any text).
+    Select 'Add your comment' against Admin-Post01 and add a new comment (no title, any text).
     Select 'Add your comment' against the untitled post and add a new comment (no title, any text).
     Return to admin users personal blog main page.
     Within the Blog usage 'block' select 'Most commented posts'.
- -- Post01 should be displayed in the list with 1 comment.
  -- 'Untitled post' should be displayed in the list with 1 comment.
+ -- Admin-Post01 should be displayed in the list with 1 comment.
+
 Note: Depending upon recent use of this blog there may be many comments which would stop these test
 comments appearing, they should show up if the time period is reset to 'Past month'.
 
@@ -275,15 +321,18 @@ PER03 / guest
 
     In a different browser access admin's personal blog via /mod/oublog/view.php?user=XXX.
     Within the Blog usage 'block' select 'Most commented posts'.
- -- Post01 should be displayed in the list with 1 comment.
+ -- Admin-Post01 should be displayed in the list with 1 comment.
  -- Admin user's avatar should not be displayed (default should be shown).
 Note: This is controlled through server settings and works correctly on live systems.
+As above, it may be necessary to reset the time period to 'Past month'.
 
  PER04 / student
 
     Access admin's personal blog via /mod/oublog/view.php?user=XXX.
     Select the 'View site entries' link (right block).
  -- On the Personal blogs page the Blog usage block should be displayed.
- -- The 'block' should contain 'Most commented posts', 'Most visited', 'Most posts', and 'Most comments' tabs.
+ -- The 'block' should contain 'Participation', 'Most commented posts', 'Most visited', 'Most posts',
+    and 'Most comments' tabs.
  -- Ensure each tab expands correctly.
- -- Items in the 'Most commented posts' tab should have links to the user's blog page below.
+ -- Items in the 'Participation' and 'Most commented posts' tabs should have links to the user's
+    blog pages below.

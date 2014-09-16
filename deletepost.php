@@ -65,7 +65,7 @@ $oublogoutput = $PAGE->get_renderer('mod_oublog');
 if ($oublog->global) {
     $blogtype = 'personal';
     $oubloguser = $USER;
-    $viewurl = new moodle_url('/mod/oublog/view.php', array('user' => $USER->id));
+    $viewurl = new moodle_url('/mod/oublog/view.php', array('user' => $postauthor));
     // Print the header.
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php',
             array('id' => $oubloguser->id)));

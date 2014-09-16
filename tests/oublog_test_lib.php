@@ -143,4 +143,20 @@ class oublog_test_lib extends advanced_testcase {
         $post->attachments = '';
         return $post;
     }
+
+    /**
+     * Returns a basic comment record as if from a form.
+     * @param int $postid
+     * @param int $userid
+     * @return stdClass
+     */
+    public function get_comment_stub($postid, $userid) {
+        $comment = new stdClass();
+        $comment->title = 'Test Comment';
+        $comment->messagecomment = array();
+        $comment->messagecomment['text'] = 'Message for test comment';
+        $comment->postid = $postid;
+        $comment->userid = $userid;
+        return $comment;
+    }
 }

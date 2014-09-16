@@ -199,8 +199,6 @@ class oublog_user_participation_table extends flexible_table {
     public $userfullname;
     public $groupname;
     public $groupid;
-    public $start;
-    public $end;
 
     // Customised column and header info
     public $detailsheader;
@@ -210,7 +208,7 @@ class oublog_user_participation_table extends flexible_table {
     public $comments;
 
     public function __construct($cmid, $course, $oublog, $userid, $userfullname,
-        $groupname, $groupid, $start, $end) {
+        $groupname, $groupid) {
 
         $this->cmid = $cmid;
         $this->course = $course;
@@ -219,13 +217,11 @@ class oublog_user_participation_table extends flexible_table {
         $this->userfullname = $userfullname;
         $this->groupname = $groupname;
         $this->groupid = $groupid;
-        $this->start = $start;
-        $this->end = $end;
         parent::__construct('mod-oublog-user-participation');
     }
 
     public function setup($download = '') {
-        global $CFG;
+        global $CFG, $PAGE;
 
         // Extra headers
         $this->postsheader = array(
@@ -267,9 +263,7 @@ class oublog_user_participation_table extends flexible_table {
 
         $this->define_columns($columns);
         $this->define_headers($headers);
-        $this->define_baseurl($CFG->wwwroot . '/mod/oublog/userparticipation.php?id=' .
-            $this->cmid . '&amp;user=' . $this->userid . '&amp;group=' . $this->groupid .
-                '&amp;start=' . $this->start .'&amp;end=' . $this->end);
+        $this->define_baseurl($PAGE->url);
 
         $this->set_attribute('cellspacing', '0');
         $this->set_attribute('id', 'participation');
@@ -302,7 +296,7 @@ class oublog_user_participation_table extends flexible_table {
             $downloadoptions = $this->get_download_menu();
             $html = '<form action="'. $this->baseurl .'" method="post">';
             $html .= '<div class="mdl-align">';
-            $html .= '<input type="submit" value="'.get_string('downloadas', 'oublog').'"/>';
+            $html .= '<input type="submit" value="'.get_string('downloadas', 'oublog').'"/> ';
             $html .= html_writer::select($downloadoptions, 'download',
                 $this->defaultdownloadformat, false);
             $html .= '</div></form>';

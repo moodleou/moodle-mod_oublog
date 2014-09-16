@@ -28,18 +28,20 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot.'/mod/oublog/locallib.php');
 require_once($CFG->libdir.'/gradelib.php');
 
-$id         = required_param('id', PARAM_INT); // Course Module ID
-$userid     = required_param('user', PARAM_INT);
-$groupid    = optional_param('group', 0, PARAM_INT);
-$download   = optional_param('download', '', PARAM_TEXT);
-$page       = optional_param('page', 0, PARAM_INT); // flexible_table page
+$id = required_param('id', PARAM_INT);// Course Module ID.
+$userid = required_param('user', PARAM_INT);
+$groupid = optional_param('group', 0, PARAM_INT);
+$download = optional_param('download', '', PARAM_TEXT);
+$page = optional_param('page', 0, PARAM_INT);// Page.
+$tab = optional_param('tab', 0, PARAM_INT);// Current tab, 0:Posts,1:Comments,2:Grade.
 
 $params = array(
-    'id'        => $id,
-    'user'      => $userid,
-    'group'     => $groupid,
-    'download'  => $download,
-    'page'      => $page,
+        'id' => $id,
+        'user' => $userid,
+        'group' => $groupid,
+        'download' => $download,
+        'page' => $page,
+        'tab' => $tab
 );
 $url = new moodle_url('/mod/oublog/userparticipation.php', $params);
 $PAGE->set_url($url);
@@ -69,17 +71,15 @@ $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
 $coursecontext = context_course::instance($course->id);
 
 // Create time filter options form.
-$default = get_user_preferences('mod_oublog_postformfilter', OUBLOG_STATS_TIMEFILTER_ALL);
-    // Create time filter options form.
-    $customdata = array(
-            'options' => array(),
-            'cmid' => $cm->id,
-            'user'      => $userid,
-            'group'     => $groupid,
-            'download'  => $download,
-            'startyear' => $course->startdate,
-            'params' => array()
-    );
+$customdata = array(
+        'options' => array(),
+        'cmid' => $cm->id,
+        'user' => $userid,
+        'group' => $groupid,
+        'download' => $download,
+        'startyear' => $course->startdate,
+        'params' => array('tab' => $tab)
+);
 $timefilter = new oublog_participation_timefilter_form(null, $customdata);
 
 $start = $end = 0;
@@ -94,15 +94,39 @@ if ($submitted = $timefilter->get_data()) {
 } else if (!$timefilter->is_submitted()) {
     // Recieved via post back.
     if ($start = optional_param('start', null, PARAM_INT)) {
+        $timefilter->set_data(array('start' => $start));
         $start = strtotime('00:00:00', $start);
     }
     if ($end = optional_param('end', null, PARAM_INT)) {
+        $timefilter->set_data(array('end' => $end));
         $end = strtotime('23:59:59', $end);
     }
 }
-
+$url->params(array('start' => $start, 'end' => $end));
+$PAGE->set_url($url);
+$getposts = true;
+$getcomments = false;
+$getgrades = false;
+$limitnum = OUBLOG_POSTS_PER_PAGE;
+$limitfrom = empty($page) ? null : $page * $limitnum;
+if (!empty($download)) {
+    $limitnum = null;
+    $limitfrom = null;
+}
+// Customise data sought based on current tab.
+switch($tab) {
+    case 1:
+        $getposts = false;
+        $getcomments = true;
+    break;
+    case 2:
+        $getposts = false;
+        $getgrades = true;
+    break;
+}
 $participation = oublog_get_user_participation($oublog, $context,
-        $userid, $groupid, $cm, $course, $start, $end);
+        $userid, $groupid, $cm, $course, $start, $end, $getposts, $getcomments, $limitfrom,
+        $limitnum, $getgrades);
 // Add extra navigation link for users who can see all participation.
 $canviewall = oublog_can_view_participation($course, $oublog, $cm, $groupid);
 if ($canviewall == OUBLOG_USER_PARTICIPATION) {
@@ -116,7 +140,7 @@ $PAGE->set_heading(format_string($oublog->name));
 
 $groupname = '';
 if ($groupid) {
-    $groupname = $DB->get_field('groups', 'name', array('id' => $groupid));
+    $groupname = groups_get_group_name($groupid);
 }
 
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
@@ -142,41 +166,65 @@ if (!$start && $end) {
 if ($start && $end) {
     $a = new stdClass();
     $a->start = $startdate;
-    $a->end   = $enddate;
+    $a->end  = $enddate;
     $title = get_string('contribution', 'oublog');
     $info = get_string('contribution_fromto', 'oublog', $a);
 }
 if (empty($download)) {
-    echo html_writer::tag('h2', $info,
-            array('class' => 'oublog-post-title'));
+    if ($oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+        $groupurl = clone $url;
+        $groupurl->remove_params(array('page', 'tab', 'download'));
+        groups_print_activity_menu($cm, $groupurl);
+    }
+    echo html_writer::tag('h2', $info, array('class' => 'oublog-post-title'));
     $timefilter->display();
-}
-if (!count($participation->posts)) {
-    $postsmessage = get_string('posts', 'oublog') . ': ' . get_string('nouserpostsfound', 'oublog');
-} else {
-    $postsmessage = get_string('posts', 'oublog') . ': ' . count($participation->posts);
-}
-if (!count($participation->comments)) {
-    $commentsmessage = get_string('comments', 'oublog') . ': ' . get_string('nousercommentsfound', 'oublog');
-} else {
-    $commentsmessage = get_string('comments', 'oublog') . ': ' . count($participation->comments);
-}
+    $taburl = clone $url;
+    $taburl->remove_params(array('page', 'tab'));
+    $tabs = array(
+            new tabobject('tab0', $taburl, $participation->numposts . ' ' . get_string('posts', 'oublog')),
+            new tabobject('tab1', $taburl->out() . '&amp;tab=1', $participation->numcomments . ' ' .
+                    get_string('comments', 'oublog')),
+    );
+    if (oublog_can_grade($course, $oublog, $cm, $groupid)) {
+        $tabs[] = new tabobject('tab2', $taburl->out() . '&amp;tab=2', get_string('usergrade', 'oublog'));
+    }
+    echo $OUTPUT->tabtree($tabs, "tab$tab");
 
-$output = $OUTPUT->box_start('generalbox', 'notice');
-$output .= html_writer::tag('p', $postsmessage .'<br>'.$commentsmessage.'<br>');
-$output .= $OUTPUT->box_end();
-if (empty($download)) {
-    echo $output;
+    // Output message when no content for tab.
+    $warning = '';
+    if ($tab == 0 & !$participation->numposts) {
+        $warning = get_string('nouserpostsfound', 'oublog');
+    } else if ($tab == 1 && !$participation->numcomments) {
+        $warning = get_string('nousercommentsfound', 'oublog');
+    } else if ($tab == 2 && !isset($participation->gradeobj)) {
+        $warning = get_string('nousergrade', 'oublog');
+    }
+
+    if (!empty($warning)) {
+        $output = $OUTPUT->box_start('generalbox', 'notice');
+        $output .= html_writer::tag('p', $warning);
+        $output .= $OUTPUT->box_end();
+        echo $output;
+    }
+    // Pagination.
+    $pag = '';
+    if (!empty($participation->posts) && $participation->numposts > $limitnum) {
+        $pag = $OUTPUT->paging_bar($participation->numposts, $page, $limitnum, $url);
+    } else if (!empty($participation->comments) && $participation->numcomments > $limitnum) {
+        $pag = $OUTPUT->paging_bar($participation->numcomments, $page, $limitnum, $url);
+    }
+    echo $pag;
 }
 
 $oublogoutput->render_user_participation_list($cm, $course, $oublog, $participation,
         $groupid, $download, $page, $coursecontext, $viewfullnames, $groupname, $start, $end);
 
 if (empty($download)) {
+    echo $pag;
     echo $OUTPUT->footer();
 }
 
 // Log visit.
 $logurl = 'userparticipation.php?id=' . $id . '&user=' . $userid
-    . '&group=' . $groupid . '&download=' . $download . '&page=' . $page;
+    . '&group=' . $groupid . '&download=' . $download . '&page=' . $page . '&tab=' . $tab;
 add_to_log($course->id, 'oublog', 'view', $logurl, $oublog->id, $cm->id);

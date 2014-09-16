@@ -348,6 +348,12 @@ div.oublog-individualselector {
     margin-top: 1em;
 }
 
+#page-mod-oublog-userparticipation .oublog-comment-date {
+    font-size: 1em;
+}
+#page-mod-oublog-userparticipation .tabtree {
+    margin-top: 1.25em;
+}
 #oublogbuttons form,
 #oublogbuttons div {
     display: inline;
@@ -537,6 +543,115 @@ ul.oublog-accordion li .oublog_statsview_content {
 .oublog_import_step1 .flexible .header.c3 a {
     font-size: .75em;
 }
+
+/* For new table outputs */
+.oublog-postuser td {
+     overflow: hidden;
+}
+.oublog-postuser a,
+.oublog-postuser img {
+    margin-right:10px;
+}
+
+.oublog-postuser img td{
+    margin-right:12px;
+}
+.oublog-startedby-wrapper {
+    margin-left: 51px;
+    overflow: hidden;
+}
+
+.oublog-postuserimage {
+    display: inline;
+    margin-right: 10px;
+    overflow: hidden;
+}
+
+.oublog-postuser {
+    display: inline;
+    text-align: left;
+    overflow: hidden;
+}
+/* Comments tab Posts block. */
+.oublog_postsinfo_col {
+    margin-left: 41px;
+    margin-top: .5em;
+}
+.oublog_postsinfo_avatar {
+    overflow: hidden;
+
+}
+.oublog_postsinfo_avatar .userpicture {
+    width: 35px;
+    height: 35px;
+    margin-top: 5px;
+    margin-right: 6px;
+}
+.oublog_userinfo_col td {
+     vertical-align: top;
+     overflow: hidden;
+}
+.oublog_usersinfo_col a,
+.oublog_usersinfo_col img {
+    float: left;
+    vertical-align: top;
+    margin-right: 4px;
+}
+.oublog_postsinfo {
+    clear: both;
+    margin-bottom: .5em;
+}
+.oublog_postsinfo_col a,
+.oublog_postsinfo_col img {
+    float: left;
+    vertical-align: top;
+}
+.oublog_postscell {
+    margin-left: 40px;
+    margin-bottom: 2px;
+}
+.oublog_postscell_posttitle {
+    font-size: 1em;
+    font-color: green;
+}
+/* Normal Moodle tables modified locally. */
+.oublog.generaltable th,
+.oublog.generaltable td {
+    padding: 8px;
+    vertical-align: top;
+    text-align: left;
+}
 label[for=oublog_searchquery] {
 	display: inline;
+}
+/** Tag selector **/
+#page-mod-oublog-editpost .yui3-aclist-content {
+	height: 200px;
+    overflow-y: auto;
+}
+div.tagselector_result {
+	position: relative;
+}
+div.tagselector_result .tagselector_result_title {
+	display: inline;
+}
+div.tagselector_result .tagselector_result_info {
+	position: relative;
+	padding: 1px;
+	padding-left: 4px;
+	padding-right: 4px;
+	background-color: #f2f2f2;
+	-webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    margin-left: .25em;
+    display: inline-block;
+    white-space: nowrap;
+}
+.yui3-aclist-item-active div.tagselector_result .tagselector_result_info {
+	color: black;
+}
+
+.oublog-tag-order {
+    margin-bottom: .5em;
 }

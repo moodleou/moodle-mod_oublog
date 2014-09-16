@@ -39,13 +39,22 @@
  */
 function oublog_add_instance($oublog) {
     global $DB;
-    // Generate an accesstoken
+    // Generate an accesstoken.
     $oublog->accesstoken = md5(uniqid(rand(), true));
 
     if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
         return(false);
     }
-
+    if (!empty($oublog->tags)) {
+        $blogtags = oublog_clarify_tags($oublog->tags);
+        // For each tag added to the blog check if it exists in oublog_tags table,
+        // if it does not a tag record is created.
+        foreach ($blogtags as $tag) {
+            if (!$DB->get_record('oublog_tags', array('tag' => $tag))) {
+                $DB->insert_record('oublog_tags', (object) array('tag' => $tag));
+            }
+        }
+    }
     oublog_grade_item_update($oublog);
 
     return($oublog->id);
@@ -65,12 +74,21 @@ function oublog_update_instance($oublog) {
     global $DB;
     $oublog->id = $oublog->instance;
 
-    if (!$blog = $DB->get_record('oublog', array('id'=>$oublog->id))) {
+    if (!$DB->get_record('oublog', array('id' => $oublog->id))) {
         return(false);
     }
 
     if (!$DB->update_record('oublog', $oublog)) {
         return(false);
+    }
+
+    $blogtags = oublog_clarify_tags($oublog->tags);
+    // For each tag in the blog check if it already exists in oublog_tags table,
+    // if it does not a tag record is created.
+    foreach ($blogtags as $tag) {
+        if (!$DB->get_record('oublog_tags', array('tag' => $tag))) {
+            $DB->insert_record('oublog_tags', (object) array('tag' => $tag));
+        }
     }
 
     oublog_grade_item_update($oublog);
@@ -878,13 +896,19 @@ function oublog_get_file_info($browser, $areas, $course, $cm, $context, $fileare
  * @param cm_info $cm
  */
 function oublog_cm_info_dynamic(cm_info $cm) {
+    global $remoteuserid, $USER;
+    $userid = $USER;
+    if (isset($remoteuserid) && !empty($remoteuserid)) {
+        // Hack using dodgy global. The actual user id for specific user e.g. from webservice.
+        $userid = $remoteuserid;
+    }
     $capability = 'mod/oublog:view';
     if ($cm->course == SITEID && $cm->instance == 1) {
         // Is global blog (To save DB call we make suspect assumption it is instance 1)?
         $capability = 'mod/oublog:viewpersonal';
     }
     if (!has_capability($capability,
-            context_module::instance($cm->id))) {
+            context_module::instance($cm->id), $userid)) {
         $cm->set_user_visible(false);
         $cm->set_available(false);
     }
@@ -944,7 +968,8 @@ function oublog_grade_item_delete($oublog) {
  */
 function oublog_get_extra_capabilities() {
     return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames',
-            'report/oualerts:managealerts');
+            'report/oualerts:managealerts', 'report/restrictuser:view',
+            'report/restrictuser:restrict', 'report/restrictuser:removerestrict');
 }
 
 /**

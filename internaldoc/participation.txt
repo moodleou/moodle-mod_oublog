@@ -11,8 +11,9 @@ Participation is defined as:
 
 === Capability Requirements ===
 
-A user will be considered to be participating in the blog if the blog is a course blog (not a global blog), the
- blog is not a group blog or the user belongs to the current group and the user has access to post or comment on the blog.
+A user will be considered to be participating in the blog if the blog is a course blog (not a global blog),
+the blog is not a group blog or the user belongs to the current group and the user has access to post
+or comment on the blog.
 
 A user who has the capability '''mod/oublog:viewparticipation''' and has access to the current blog
 can view all user participation, subject to the groupmode settings and their membership of those groups.
@@ -21,21 +22,22 @@ personal membership).
 
 === Participation Page Display ===
 
-The button displayed to the user to access the participation screens will disply accordingly.
+The button displayed to the user to access the participation screens will display accordingly.
 A user with access to all users participation will see a button labelled '''Participation by user'''
-whereas a user with access to only their participation will see '''My participation'''.  These appear
-above the topmost blog post visible (below the group selector if applicable).
+This appears above the topmost blog post visible (below the group selector if applicable).
+A user with access to only their participation, will see in the Blog usage panel
+'''My participation summary'''.
 
-The different buttons will take the user to two different screens respectively - one showing all participants
-and an overview of their participation and one only showing a single users participation but with more detail for
-their actual participation.
 
-If a user has access to all users they can also view detailed information per user via a '''Detail''' link which appears
-next to the users full name in the table.
+These will allow the user two different views respectively - one showing all participants
+and an overview of their participation and one only showing a single users participation but with more detail
+for their actual participation.
+
+If a user has access to all users they can also view detailed information per user via a '''Detail'''
+link which appears next to the users full name in the user participation table.
 
 The participants to display is as follows:
 
-{| border="1" style="text-align: left;"
 !Groups
 !Is current group member
 !mod/oublog:viewparticipation

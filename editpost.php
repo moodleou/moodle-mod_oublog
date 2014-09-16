@@ -52,6 +52,7 @@ $url = new moodle_url('/mod/oublog/editpost.php', array('blog'=>$blog, 'post'=>$
 $PAGE->set_url($url);
 
 // Check security.
+require_course_login($cm->course, true, $cm);
 $context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
@@ -126,6 +127,10 @@ if (!$frmpost = $mform->get_data()) {
         $post->post  = $post->id;
         $post->general = $streditpost;
         $post->tags = oublog_get_tags_csv($post->id);
+        // Add a trailing comma for autocompletion support.
+        if (!empty($post->tags)) {
+            $post->tags .= ', ';
+        }
     } else {
         $post = new stdClass;
         $post->general = $straddpost;
@@ -163,6 +168,23 @@ if (!$frmpost = $mform->get_data()) {
     $renderer = $PAGE->get_renderer('mod_oublog');
     echo $renderer->render_pre_postform($oublog, $cm);
     $mform->display();
+    // Add tagselector yui mod - autocomplete of tags.
+    $curindividual = -1;
+    $curgroup = false;
+    if ($oublog->individual) {
+        $curindividual = isset($oubloginstance->userid) ? $oubloginstance->userid : $USER->id;
+    } else {
+        $curgroup = isset($post->groupid) ? $post->groupid : $currentgroup;
+    }
+
+    $PAGE->requires->yui_module('moodle-mod_oublog-tagselector', 'M.mod_oublog.tagselector.init',
+            array('id_tags', oublog_get_tag_list($oublog, $curgroup, $cm,
+                    $oublog->global ? $oubloginstance->id : null, $curindividual)));
+    $PAGE->requires->string_for_js('numposts', 'oublog');
+
+    // Check the network connection on exiting the update page.
+    $PAGE->requires->strings_for_js(array('savefailtitle', 'savefailnetwork'), 'oublog');
+    $PAGE->requires->yui_module('moodle-mod_oublog-savecheck', 'M.mod_oublog.savecheck.init');
 
     echo $OUTPUT->footer();
 

@@ -111,6 +111,7 @@ $string['extranavolderposts'] = 'Older posts: {$a->from}-{$a->to}';
 $string['extranavtag'] = 'Tag: {$a}';
 
 $string['comments'] = 'Comments';
+$string['recentcomments'] = 'Recent comments';
 $string['ncomments'] = '{$a} comments';
 $string['onecomment'] = '{$a} comment';
 $string['npending'] = '{$a} comments awaiting approval';
@@ -173,40 +174,40 @@ To exclude a word insert a hyphen immediately before the word.
 
 Example: the search term <tt>picasso -sculpture &quot;early works&quot;</tt> will return results for &lsquo;picasso&rsquo; or the phrase &lsquo;early works&rsquo; but will exclude items containing &lsquo;sculpture&rsquo;.';
 
-$string['url']='Full Web address';
+$string['url'] = 'Full Web address';
 
-$string['bloginfo']='blog information';
+$string['bloginfo'] = 'blog information';
 
-$string['feedhelp']='Feeds';
-$string['feedhelp_help']='If you use feeds you can add these Atom or RSS links in order to keep up to date with posts.
+$string['feedhelp'] = 'Feeds';
+$string['feedhelp_help'] = 'If you use feeds you can add these Atom or RSS links in order to keep up to date with posts.
 Most feed readers support Atom and RSS.
 
 If comments are enabled there are also feeds for &lsquo;Comments only&rsquo;.';
-$string['unsupportedbrowser']='<p>Your browser cannot display Atom or RSS feeds directly.</p>
+$string['unsupportedbrowser'] = '<p>Your browser cannot display Atom or RSS feeds directly.</p>
 <p>Feeds are most useful in separate computer programs or websites. If you want
 to use this feed in such a program, copy and paste the address from your browser\'s
 address bar.</p>';
 
-$string['completionpostsgroup']='Require posts';
-$string['completionpostsgroup_help']='If you enable this option, the blog will be marked as complete for a student once they have made the specified number of posts.';
-$string['completionposts']='User must make blog posts:';
-$string['completioncommentsgroup']='Require comments';
-$string['completioncommentsgroup_help']='If you enable this option, the blog will be marked as complete for a student once they have left the specified number of comments.';
-$string['completioncomments']='User must make comments on blog posts:';
+$string['completionpostsgroup'] = 'Require posts';
+$string['completionpostsgroup_help'] = 'If you enable this option, the blog will be marked as complete for a student once they have made the specified number of posts.';
+$string['completionposts'] = 'User must make blog posts:';
+$string['completioncommentsgroup'] = 'Require comments';
+$string['completioncommentsgroup_help'] = 'If you enable this option, the blog will be marked as complete for a student once they have left the specified number of comments.';
+$string['completioncomments'] = 'User must make comments on blog posts:';
 
-$string['computingguide']='Guide to OU blogs';
-$string['computingguideurl']='Computing guide URL';
-$string['computingguideurlexplained']='Enter the URL for the OU blogs omputing guide';
+$string['computingguide'] = 'Guide to OU blogs';
+$string['computingguideurl'] = 'Computing guide URL';
+$string['computingguideurlexplained'] = 'Enter the URL for the OU blogs omputing guide';
 
-$string['maybehiddenposts']='This {$a->name} might contain posts that are only
+$string['maybehiddenposts'] = 'This {$a->name} might contain posts that are only
 visible to logged-in users, or where only logged-in users can comment. If you
 have an account on the system, please <a href=\'{$a->link}\'>log in for full access</a>.';
-$string['guestblog']='If you have an account on the system, please
+$string['guestblog'] = 'If you have an account on the system, please
 <a href=\'{$a}\'>log in for full access</a>.';
-$string['noposts']='There are no visible posts in this {$a}.';
+$string['noposts'] = 'There are no visible posts in this {$a}.';
 
 // Errors.
-$string['accessdenied']='Sorry: you do not have access to view this page.';
+$string['accessdenied'] = 'Sorry: you do not have access to view this page.';
 $string['invalidpost'] = 'Invalid Post Id';
 $string['invalidcomment'] = 'Invalid Comment Id';
 $string['invalidblog'] = 'Invalid Blog Id';
@@ -244,7 +245,7 @@ $string['visibleindividual'] = 'Visible&nbsp;individuals';
 $string['viewallusers'] = 'View all users';
 $string['viewallusersingroup'] = 'View all users in group';
 
-$string['re']='Re: {$a}';
+$string['re'] = 'Re: {$a}';
 
 $string['moderated_info'] = 'Because you are not logged in, your comment will
 only appear after it has been approved. If you
@@ -394,6 +395,7 @@ $string['viewblogposts'] = 'Return to blog';
 $string['oublog:grade'] = 'Grade OU Blog user participation';
 $string['oublog:viewparticipation'] = 'View OU Blog user participation';
 $string['userparticipation'] = 'User participation';
+$string['usersparticipation'] = 'All users participation';
 $string['myparticipation'] = 'My participation summary';
 $string['savegrades'] = 'Save grades';
 $string['participation'] = 'Participation';
@@ -402,12 +404,13 @@ $string['details'] = 'Details';
 $string['foruser'] = ' for {$a}';
 $string['postsby'] = 'Posts by {$a}';
 $string['commentsby'] = 'Comments by {$a}';
-$string['commentonby'] = 'Comment on <u>{$a->title}</u> by <u>{$a->author}</u>';
+$string['commentonby'] = 'Comment on post <u>{$a->title}</u> {$a->date} by <u>{$a->author}</u>';
 $string['nouserposts'] = 'No posts made.';
 $string['nousercomments'] = 'No comments made.';
 $string['savegrades'] = 'Save grades';
 $string['gradesupdated'] = 'Grades updated';
 $string['usergrade'] = 'User grade';
+$string['nousergrade'] = 'User grade not available.';
 
 // Participation download strings.
 $string['downloadas'] = 'Download data as';
@@ -526,14 +529,14 @@ $string['import_step2_conflicts'] = '{$a} posts to import were identified as con
 $string['import_step2_conflicts_submit'] = 'Import conflicting posts';
 
 // My Participation.
-$string['contribution'] = 'Contribution';
-$string['contribution_all'] = 'Contribution - All time';
-$string['contribution_from'] = 'Contribution - From {$a}';
-$string['contribution_to'] = 'Contribution - To {$a}';
-$string['contribution_fromto'] = 'Contribution - From {$a->start} To {$a->end}';
+$string['contribution'] = 'Participation';
+$string['contribution_all'] = 'Participation - All time';
+$string['contribution_from'] = 'Participation - From {$a}';
+$string['contribution_to'] = 'Participation - To {$a}';
+$string['contribution_fromto'] = 'Participation - From {$a->start} To {$a->end}';
 $string['start'] = 'From';
 $string['end'] = 'To';
-$string['displayperiod'] = 'Contribution selector From date - To date.';
+$string['displayperiod'] = 'Participation selector From date - To date.';
 $string['info'] = 'Participation within the selected period.';
 $string['displayperiod_help'] = '<p>The default selects all entries.</p>
 <p>You can select \'From\' a date until todays entries.</p>
@@ -544,4 +547,37 @@ $string['nousercommentsfound'] = 'No comments made during this period.';
 $string['numberpostsmore'] = 'Plus {$a} more posts';
 $string['numbercommentsmore'] = 'Plus {$a} more comments';
 $string['viewmyparticipation'] = 'View my participation';
+$string['viewallparticipation'] = 'View all participation';
 $string['timestartenderror'] = 'Selection end date cannot be earlier than the start date';
+
+$string['savefailtitle']='Post cannot be saved';
+$string['savefailnetwork'] = '<p>Unfortunately, your changes cannot be saved at this time.
+This is due to a network error; the website is temporarily unavailable or you have been signed out. </p>
+<p>Saving has been disabled on this blog.
+In order to retain any changes you must copy the edited blog content,
+access the Edit page again and then paste in your changes.</p>';
+
+$string['order'] = 'Order:';
+$string['alpha'] = 'A to Z';
+$string['use'] = 'Most used';
+$string['order_help'] = 'You can choose to display the list of tags used ordered
+either in alphabetical order or by number of posts used in.
+Select the two links to switch between ordering methods,
+this choice is remembered and will be used on subsequent views.';
+$string['predefinedtags'] = 'Pre-defined tags';
+$string['predefinedtags_help'] = 'Give users tags to choose from when entering a tag on a post.
+Tags should be comma separated.';
+$string['official'] = 'Set';
+$string['invalidblogtags'] = 'Invalid blog tags';
+$string['nouserpostpartsfound'] = 'No posts made in this period.';
+$string['nousercommentpartsfound'] = 'No comments added in this period.';
+$string['participation_all'] = 'Participation - All time';
+$string['participation_from'] = 'Participation - From {$a}';
+$string['participation_to'] = 'Participation - To {$a}';
+$string['participation_fromto'] = 'Participation - From {$a->start} To {$a->end}';
+$string['recentposts'] = 'Recent posts';
+$string['commentonbyusers'] = 'Comment <u>{$a->commenttitle}</u> on post <u>{$a->posttitle}</u> <br> by <u>{$a->author}</u>';
+$string['commentdated'] = 'Dated';
+$string['postinfoblock'] = '<u>{$a->posttitle}</u> <br> <u>{$a->postdate}</u> <br> <u>{$a->sourcelink}</u>';
+$string['postdetail'] = 'Post detail';
+$string['group'] = 'Group ';
