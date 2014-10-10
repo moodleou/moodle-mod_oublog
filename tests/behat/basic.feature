@@ -140,10 +140,6 @@ Feature: Test Post and Comment on OUBlog entry
       | Full Web address | http://127.0.0.1/mod/oublog/view.php?user=3 |
     And I press "id_submitbutton"
     Then "Teachers Personal blog test" "link" should be visible
-    And I follow "Teachers Personal blog test"
-    And I should see "Personal Blogs"
-    And "New blog post" "button" should be visible
-    And I should see "There are no visible posts in this blog"
     And I log out
 
     # Student test comments disabled and related link
@@ -152,6 +148,6 @@ Feature: Test Post and Comment on OUBlog entry
     And I follow "Test oublog basics"
     And "Add your comment" "link" should not exist in the ".oublog-post" "css_element"
     And "Teachers Personal blog test" "link" should be visible
-    And I follow "Teachers Personal blog test"
-    And I should see "There are no visible posts in this blog"
+    When I follow "Teachers Personal blog test"
+    Then I should see "There are no visible posts in this blog"
     And I log out
