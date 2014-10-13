@@ -58,5 +58,8 @@ function xmldb_oublog_install() {
     }
     set_config('oublogsetup', null);
 
+    // For unit tests to work, it's necessary to create context now.
+    context_module::instance($cm);
+
     return true;
 }
