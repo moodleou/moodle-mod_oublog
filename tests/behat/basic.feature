@@ -145,9 +145,7 @@ Feature: Test Post and Comment on OUBlog entry
     # Student test comments disabled and related link
     Given I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test oublog basics"
-    And "Add your comment" "link" should not exist in the ".oublog-post" "css_element"
+    When I follow "Test oublog basics"
+    Then "Add your comment" "link" should not exist in the ".oublog-post" "css_element"
     And "Teachers Personal blog test" "link" should be visible
-    When I follow "Teachers Personal blog test"
-    Then I should see "There are no visible posts in this blog"
     And I log out
