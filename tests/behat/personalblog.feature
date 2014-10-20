@@ -3,6 +3,7 @@ Feature: Test Post and Comment on Personal OUBlog
   In order to engage with OUBblog personal posts and comments
   As an external user
   I need to be able to see OUBblog personal post entries
+  # Note this test will only pass on OU systems as using an OU custom step.
 
   Scenario: Admin edits the blog options
     Given I log in as "admin"
@@ -12,13 +13,13 @@ Feature: Test Post and Comment on Personal OUBlog
     Then I should see "Blog name"
     And I should see "Summary"
     And I set the following fields to these values:
-      | Blog name| Admin User's blog edited|
+      | Blog name| Admin User's blog edited |
       | Summary | SC01 edited the Admin User's summary block |
     And I press "Save changes"
     And I should see "Admin User's blog edited"
     And I should see "SC01 edited the Admin User's summary block"
 
-    # Admin adds a post
+    # Admin adds posts.
     Given I press "New blog post"
     And I should see "New blog post"
     And I set the following fields to these values:
@@ -27,8 +28,16 @@ Feature: Test Post and Comment on Personal OUBlog
     And I press "Add post"
     Then I should see "Personal OUBlog post01"
     And I should see "Admin Persblog post01 content"
+    And I should see "Visible only to the blog owner (private)"
+    Given I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post02 |
+      | Message | Admin Persblog post02 content |
+      | Who can read this | Visible to everyone who is logged in to the system |
+    When I press "Add post"
+    Then I should see "Visible to everyone who is logged in to the system"
 
-    # Admin adds multiple comments
+    # Admin adds multiple comments.
     Given I follow "Add your comment"
     When I set the field "Add your comment" to "$My own >nasty< \"string\"!"
     And I press "Add comment"
@@ -40,11 +49,26 @@ Feature: Test Post and Comment on Personal OUBlog
     Then "2 comments" "link" should exist
     And I log out
 
-    # User not logged in tests visibility of Admin Users personal post
-    And I type in the relative URL "mod/oublog/view.php?user=2"
+    # User not logged in tests visibility of Admin Users personal post.
+    Given I type in the relative URL "mod/oublog/view.php?u=admin"
     Then "You are not logged in" "text" should exist
+    And I should not see "Personal OUBlog post"
+    And I should not see "Admin User's blog"
 
-    # Admin changes post to world visibility
+    # Check logged-in visibility.
+    Given the following "users" exist:
+      | username | firstname | lastname | email |
+      | student1 | Student | 1 | student1@asd.com |
+
+    Given I log in as "student1"
+    When I type in the relative URL "mod/oublog/view.php?user=2"
+    Then I should see "Personal OUBlog post02"
+    When I type in the relative URL "mod/oublog/viewpost.php?post=2"
+    Then I should see "Personal OUBlog post02"
+    And I should see "Admin User's blog"
+    Given I log out
+
+    # Admin changes post to world visibility.
     Given I log in as "admin"
     And I follow "Personal Blogs"
     And I follow "Edit"
@@ -53,22 +77,193 @@ Feature: Test Post and Comment on Personal OUBlog
       | Message | Admin Persblog post01 content WorldVis |
       | Tags | edap01 |
       | Who can read this | Visible to anyone in the world |
+      | Allow comments | Yes, from everybody (even if not logged in) |
     And I press "Save changes"
     And I wait to be redirected
     Then I should see "Personal OUBlog post01 WorldVis"
     And I should see "Admin Persblog post01 content WorldVis"
     And I should see "edap01"
+    And I should see "Total visits to this blog: 3"
     And I log out
 
-    # User not logged in tests Admin Users post and comment visibility
+    # User not logged in tests Admin Users post and comments.
     And I wait to be redirected
     Then "You are not logged in" "text" should exist
     And I type in the relative URL "mod/oublog/view.php?user=2"
     Then I should see "Admin User's blog edited"
+    And I should see "log in for full access"
+    And I should see "Total visits to this blog: 4"
     Given I follow "2 comments"
-    And I should see "Personal OUBlog post01 WorldVis"
+    Then I should see "Personal OUBlog post01 WorldVis"
     And I should see "Admin Persblog post01 content WorldVis"
     And I should see "edap01"
     And I should see "Comments" in the ".oublog-commentstitle" "css_element"
     And I should see "$My own >nasty< \"string\"!"
     And I should see "Another $Nasty"
+    Given I follow "Add your comment"
+    And I set the following fields to these values:
+      | Your name | NoLog |
+      | Title | NoLogTitle |
+      | Add your comment | NoLogComent |
+      | Confirmation | yes |
+    When I press "Add comment"
+    Then I should see "Thank you for adding your comment"
+    Given I press "Continue"
+    Then I should see "Comments"
+
+    # Admin confirm moderated comment.
+    Given I log in as "admin"
+    And I follow "Personal Blogs"
+    And I follow "2 comments, 1 awaiting approval"
+    When I press "Approve this comment"
+    Then I should see "approved by Admin User"
+    And I should see "NoLogTitle"
+    And I should see "NoLogComent"
+
+    # Pagination on blog view + allposts.
+    Given I follow "Admin User's blog edited"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post02 |
+      | Message | Admin Persblog post02 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post03 |
+      | Message | Admin Persblog post03 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post04 |
+      | Message | Admin Persblog post04 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post05 |
+      | Message | Admin Persblog post05 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post06 |
+      | Message | Admin Persblog post06 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post07 |
+      | Message | Admin Persblog post07 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post08 |
+      | Message | Admin Persblog post08 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post09 |
+      | Message | Admin Persblog post09 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post10 |
+      | Message | Admin Persblog post10 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post11 |
+      | Message | Admin Persblog post11 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post12 |
+      | Message | Admin Persblog post12 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post13 |
+      | Message | Admin Persblog post13 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post14 |
+      | Message | Admin Persblog post14 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post15 |
+      | Message | Admin Persblog post15 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post16 |
+      | Message | Admin Persblog post16 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post17 |
+      | Message | Admin Persblog post17 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post18 |
+      | Message | Admin Persblog post18 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post19 |
+      | Message | Admin Persblog post19 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    Then ".oublog-paging .current-page" "css_element" should not exist
+    Given I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post20 |
+      | Message | Admin Persblog post20 content |
+    When I press "Add post"
+    Then ".oublog-paging .current-page" "css_element" should exist
+    And ".oublog-paging .next" "css_element" should exist
+    And ".oublog-paging .previous" "css_element" should not exist
+    Given I follow "2"
+    Then I should see "Personal OUBlog post01"
+    Given I follow "View site entries"
+    Then I should not see "Personal OUBlog post20"
+    And I should see "Personal OUBlog post19"
+    Given I follow "Admin User's blog edited"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post21 |
+      | Message | Admin Persblog post21 content |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post22 |
+      | Message | Admin Persblog post22 content |
+      | Who can read this | Visible to anyone in the world |
+      | Tags (separated by commas) | Taggy1 |
+    And I press "Add post"
+    And I follow "View site entries"
+    Then I should see "Personal OUBlog post22"
+    Then I should not see "Personal OUBlog post01 WorldVis"
+    And ".oublog-paging .next" "css_element" should exist
+    And ".oublog-paging .previous" "css_element" should not exist
+    Given I follow "taggy1"
+    Then I should see "Personal OUBlog post22"
+    And I should not see "Personal OUBlog post21"
+    And ".oublog-paging .next" "css_element" should not exist

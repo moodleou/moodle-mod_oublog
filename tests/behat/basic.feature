@@ -9,6 +9,7 @@ Feature: Test Post and Comment on OUBlog entry
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@asd.com |
       | student1 | Student | 1 | student1@asd.com |
+      | student2 | Student | 2 | student2@asd.com |
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1 | 0 |
@@ -16,31 +17,376 @@ Feature: Test Post and Comment on OUBlog entry
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
+      | student2 | C1 | student |
+    And the following "groups" exist:
+      | name | course | idnumber |
+      | G1 | C1 | G1 |
+      | G2 | C1 | G2 |
+    And the following "group members" exist:
+      | user | group |
+      | student1 | G1 |
+      | student2 | G2 |
     And the following "activities" exist:
       | activity | name | intro  | course | idnumber |
       | oublog | Test oublog basics | Test oublog basics intro text | C1 | oublog1 |
 
-  Scenario: Check teacher post student access
+  Scenario: Multiple blog type tests - basic access etc
     Given I log in as "teacher1"
     And I am on homepage
     And I follow "Course 1"
-    When I follow "Test oublog basics"
-    And I press "New blog post"
+    And I turn editing mode on
+    When I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.SG |
+      | Group mode | Separate groups |
+    And I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.VG |
+      | Group mode | Visible groups |
+    And I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.SI |
+      | Individual blogs | Separate individual blogs |
+    And I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.VI |
+      | Individual blogs | Visible individual blogs |
+    And I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.SISG |
+      | Individual blogs | Separate individual blogs |
+      | Group mode | Separate groups |
+    And I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.SIVG |
+      | Individual blogs | Separate individual blogs |
+      | Group mode | Visible groups |
+    And I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.VISG |
+      | Individual blogs | Visible individual blogs |
+      | Group mode | Separate groups |
+    And I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.VIVG |
+      | Individual blogs | Visible individual blogs |
+      | Group mode | Visible groups |
+    Then I should see "Test oublog basics"
+    # Editing teacher adds posts to all the blogs.
+    Given I follow "Test oublog basics"
+    When I press "New blog post"
     And I set the following fields to these values:
-      | Title | SC01 OUBlog post01 by teacher |
-      | Message | SC01 Teacher OUBlog post01 content |
-      | Tags | btagsc01 |
+      | Title | P0 |
+      | Message | P0 |
     And I press "Add post"
-    And I log out
-
-    # Check visibility as student
-    And I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test oublog basics"
-    Then I should see "SC01 OUBlog post01 by teacher"
-    And I should see "SC01 Teacher OUBlog post01 content"
-    And I should see "btagsc01"
-    And I log out
+    Given I follow "B.SG"
+    And I set the field "Separate groups" to "G1"
+    And I press "Go"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P2 |
+      | Message | P2 |
+    And I press "Add post"
+    Given I set the field "Separate groups" to "G2"
+    And I press "Go"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P3 |
+      | Message | P3 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.SI"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P10 |
+      | Message | P10 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VI"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P13 |
+      | Message | P13 |
+    And I press "Add post"
+    Then I log out
+    # Student 1 adds posts.
+    Given I log in as "student1"
+    And I am on homepage
+    And I follow "Course 1"
+    Given I follow "Test oublog basics"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P1 |
+      | Message | P1 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.SG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P4 |
+      | Message | P4 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P6 |
+      | Message | P6 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.SI"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P8 |
+      | Message | P8 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VI"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P11 |
+      | Message | P11 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.SISG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P15 |
+      | Message | P15 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.SIVG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P16 |
+      | Message | P16 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VISG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P17 |
+      | Message | P17 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VIVG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P18 |
+      | Message | P18 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Then I log out
+    # Student 2 adds posts.
+    Given I log in as "student2"
+    And I am on homepage
+    And I follow "Course 1"
+    Given I follow "B.SG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P5 |
+      | Message | P5 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P7 |
+      | Message | P7 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.SI"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P9 |
+      | Message | P9 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VI"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P12 |
+      | Message | P12 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.SISG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P19 |
+      | Message | P19 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.SIVG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P20 |
+      | Message | P20 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VISG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P21 |
+      | Message | P21 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Given I follow "B.VIVG"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P22 |
+      | Message | P22 |
+    And I press "Add post"
+    And I follow "Course 1"
+    Then I log out
+    # Editing teacher - check view.
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I follow "Course 1"
+    When I follow "B.SG"
+    Then the "Separate groups" select box should contain "G1"
+    And the "Separate groups" select box should contain "G2"
+    And the field "Separate groups" matches value "All participants"
+    And I should see "P2" in the "#oublog-posts" "css_element"
+    And I should see "P3" in the "#oublog-posts" "css_element"
+    Given I set the field "Separate groups" to "G1"
+    When I press "Go"
+    Then I should see "P4" in the "#oublog-posts" "css_element"
+    And I should not see "P5" in the "#oublog-posts" "css_element"
+    Given I follow "Course 1"
+    When I follow "B.SI"
+    Then the "jump" select box should contain "Student 1"
+    And the field "jump" matches value "View all users"
+    And I should see "P10" in the "#oublog-posts" "css_element"
+    And I should see "P8" in the "#oublog-posts" "css_element"
+    And I should see "P9" in the "#oublog-posts" "css_element"
+    Given I set the field "jump" to "Teacher 1"
+    When I press "Go"
+    Then I should see "P10" in the "#oublog-posts" "css_element"
+    And I should not see "P9" in the "#oublog-posts" "css_element"
+    Given I follow "Course 1"
+    When I follow "B.SISG"
+    Then the "Separate groups" select box should contain "All participants"
+    And the "Separate groups" select box should contain "G2"
+    And the field "Separate groups" matches value "G1"
+    And I should see "P15" in the "#oublog-posts" "css_element"
+    And I should not see "P19" in the "#oublog-posts" "css_element"
+    Given I set the field "Separate groups" to "All participants"
+    When I press "Go"
+    Then the "jump" select box should contain "Student 1"
+    And the field "jump" matches value "Teacher 1"
+    And I should not see "P15" in the "#region-main" "css_element"
+    Given I set the field "jump" to "Student 2"
+    When I click on "#selectindividual input[type=submit]" "css_element"
+    Then I should see "P19" in the "#oublog-posts" "css_element"
+    And I should not see "P15" in the "#oublog-posts" "css_element"
+    Given I follow "Course 1"
+    When I follow "B.SIVG"
+    Then the "Visible groups" select box should contain "G1"
+    And the "Visible groups" select box should contain "G2"
+    And the field "Visible groups" matches value "All participants"
+    And the "jump" select box should contain "Student 2"
+    And I should see "P20" in the "#oublog-posts" "css_element"
+    And I should not see "P16" in the "#oublog-posts" "css_element"
+    Given I set the field "jump" to "View all users"
+    When I click on "#selectindividual input[type=submit]" "css_element"
+    Then I should see "P20" in the "#oublog-posts" "css_element"
+    And I should see "P16" in the "#oublog-posts" "css_element"
+    Given I set the field "Visible groups" to "G1"
+    When I press "Go"
+    Then I should see "P16" in the "#oublog-posts" "css_element"
+    And I should not see "P20" in the "#oublog-posts" "css_element"
+    Given I follow "Course 1"
+    When I follow "B.VISG"
+    Then the "Separate groups" select box should contain "All participants"
+    And the "Separate groups" select box should contain "G2"
+    And the field "Separate groups" matches value "G1"
+    And I should see "P17" in the "#oublog-posts" "css_element"
+    And I should not see "P21" in the "#oublog-posts" "css_element"
+    Given I set the field "Separate groups" to "All participants"
+    When I press "Go"
+    Then I should see "P21" in the "#oublog-posts" "css_element"
+    And I should see "P17" in the "#oublog-posts" "css_element"
+    Given I set the field "jump" to "Student 1"
+    When I click on "#selectindividual input[type=submit]" "css_element"
+    Then I should see "P17" in the "#oublog-posts" "css_element"
+    And I should not see "P21" in the "#oublog-posts" "css_element"
+    Given I follow "Course 1"
+    When I follow "B.VIVG"
+    Then the "Visible groups" select box should contain "G1"
+    And the "Visible groups" select box should contain "G2"
+    And the field "Visible groups" matches value "All participants"
+    And the "jump" select box should contain "View all users"
+    And I should see "P18" in the "#oublog-posts" "css_element"
+    Given I set the field "jump" to "View all users"
+    When I click on "#selectindividual input[type=submit]" "css_element"
+    Then I should see "P18" in the "#oublog-posts" "css_element"
+    And I should see "P22" in the "#oublog-posts" "css_element"
+    Given I set the field "Visible groups" to "G2"
+    When I press "Go"
+    Then I should see "P22" in the "#oublog-posts" "css_element"
+    And I should not see "P18" in the "#oublog-posts" "css_element"
+    Given I follow "Course 1"
+    When I log out
+    # Student 1 - check view.
+    Given I log in as "student1"
+    And I am on homepage
+    And I follow "Course 1"
+    When I follow "B.SG"
+    Then I should see "P4" in the "#oublog-posts" "css_element"
+    And I should see "P2" in the "#oublog-posts" "css_element"
+    And ".groupselector select" "css_element" should not exist
+    And I follow "Course 1"
+    When I follow "B.VG"
+    Then ".groupselector select" "css_element" should exist
+    And the field "Visible groups" matches value "G1"
+    And the "Visible groups" select box should contain "G2"
+    And the "Visible groups" select box should contain "All participants"
+    And I should see "P6" in the "#oublog-posts" "css_element"
+    And I should not see "P7" in the "#oublog-posts" "css_element"
+    Given I set the field "Visible groups" to "G2"
+    When I press "Go"
+    Then I should see "P7" in the "#oublog-posts" "css_element"
+    And I should not see "P6" in the "#oublog-posts" "css_element"
+    And I follow "Course 1"
+    When I follow "B.SI"
+    Then I should see "P8" in the "#oublog-posts" "css_element"
+    And ".oublog-individualselector select" "css_element" should not exist
+    And I follow "Course 1"
+    When I follow "B.VI"
+    Then I should see "P11" in the "#oublog-posts" "css_element"
+    And the field "jump" matches value "View all users"
+    And the "jump" select box should contain "Student 2"
+    Given I set the field "jump" to "Student 2"
+    When I press "Go"
+    Then I should see "P12" in the "#oublog-posts" "css_element"
+    And I should not see "P11" in the "#oublog-posts" "css_element"
+    Given I follow "Course 1"
+    When I follow "B.SISG"
+    Then I should see "P15" in the "#oublog-posts" "css_element"
+    And I should not see "P19" in the "#oublog-posts" "css_element"
+    And ".oublog-individualselector select" "css_element" should not exist
+    And ".groupselector select" "css_element" should not exist
+    Given I follow "Course 1"
+    When I follow "B.SIVG"
+    Then I should see "P16" in the "#oublog-posts" "css_element"
+    And I should not see "P20" in the "#oublog-posts" "css_element"
+    And ".oublog-individualselector select" "css_element" should not exist
+    Given I follow "Course 1"
+    When I follow "B.VISG"
+    Then I should see "P17" in the "#oublog-posts" "css_element"
+    And I should not see "P21" in the "#oublog-posts" "css_element"
+    And ".groupselector select" "css_element" should not exist
+    Given I follow "Course 1"
+    When I follow "B.VIVG"
+    Then I should see "P22" in the "#oublog-posts" "css_element"
+    And I should not see "P18" in the "#oublog-posts" "css_element"
+    Given I set the field "Visible groups" to "All participants"
+    When I press "Go"
+    Given I set the field "jump" to "View all users"
+    When I click on "#selectindividual input[type=submit]" "css_element"
+    Then I should see "P18" in the "#oublog-posts" "css_element"
+    Given I follow "Course 1"
+    When I log out
+    # Student2 - check view.
+    Given I log in as "student2"
+    And I am on homepage
+    And I follow "Course 1"
+    When I follow "Test oublog basics"
+    Then I should see "P0" in the ".oublog-post.oublog-even .oublog-post-content" "css_element"
+    And I should see "P1" in the ".oublog-post.oublog-odd .oublog-post-content" "css_element"
 
   @javascript
   Scenario: Check tag sorting and filter by tag as student
@@ -56,7 +402,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I press "Add post"
     And I log out
 
-    # Student tests
+    # Student tests.
     Given I log in as "student1"
     And I follow "Course 1"
     And I follow "Test oublog basics"
@@ -73,19 +419,19 @@ Feature: Test Post and Comment on OUBlog entry
       | Tags | atag1sc02, btag2sc02, ctag3sc02 |
     And I press "Add post"
 
-    # Should see tags in default Alphabetical order
+    # Should see tags in default Alphabetical order.
     Then I should see "atag1sc02(1) btag2sc02(2) ctag3sc02(3)"
     And I follow "Most used"
     And I should see "ctag3sc02(3) btag2sc02(2) atag1sc02(1)"
 
-    # Check filter by tag
+    # Check filter by tag.
     Given I follow "atag1sc02"
     And I should not see "OUBlog post from teacher1"
     And I should not see "Teacher OUBlog post01 content"
     And I should not see "OUBlog post from student1"
     And I should not see "Student OUBlog post01 content"
 
-    # Check post edit with attachment
+    # Check post edit with attachment.
     Given I follow "Edit"
     And I set the following fields to these values:
       | Title | SC02 OUBlog post02 from student edited post subject |
@@ -98,9 +444,14 @@ Feature: Test Post and Comment on OUBlog entry
     And I should see "SC02 Student OUBlog post02 content filtered by tag edited post body"
     And I should see "dtag3sc02"
     And I should see "empty.txt"
+    And I should see "Edited by Student 1"
+    Given I follow "Permalink"
+    And I click on ".oublog-post-editsummary a" "css_element"
+    Then I should not see "SC02 Student OUBlog post02 content filtered by tag edited post body"
 
-    # Delete student post01 the second post made
-    Given I click on "//a[contains(@href,'deletepost.php?blog=2&post=2&delete=1')]" "xpath_element"
+    # Delete student post01 the second post made.
+    Given I follow "Test oublog basics"
+    When I click on "//a[contains(@href,'deletepost.php?blog=2&post=2&delete=1')]" "xpath_element"
     And I wait to be redirected
     Then I should see "Are you sure you want to delete this post?"
     And I press "Delete"
@@ -112,7 +463,7 @@ Feature: Test Post and Comment on OUBlog entry
     And "Delete" "link" should not exist in the ".oublog-deleted" "css_element"
     And "Add your comment" "link" should not exist in the ".oublog-deleted" "css_element"
 
-    # Check post comments with comments enabled
+    # Check post comments with comments enabled.
     Then I should see "SC02 OUBlog post02 from student edited post subject"
     And I should see "SC02 Student OUBlog post02 content filtered by tag edited post body"
     Given I follow "Add your comment"
@@ -123,29 +474,101 @@ Feature: Test Post and Comment on OUBlog entry
     And I should see "$My own >nasty< \"string\"!"
     And I log out
 
-    # Check post with comments disabled as Teacher
+    Scenario: Further standard regression/basic tests - non-js.
+    # Check post with comments disabled as Teacher.
     Given I log in as "teacher1"
     And I am on homepage
     And I follow "Course 1"
     When I follow "Test oublog basics"
     And I follow "Edit settings"
-    And I set the following fields to these values:
+    When I set the following fields to these values:
       | Allow comments | Comments not allowed |
     And I press "Save and display"
+    And I press "New blog post"
+    Then "#fitem_id_visibility" "css_element" should not exist
+    And I set the following fields to these values:
+      | Title | Post01 from teacher |
+      | Message | OUBlog post01 content |
+    And I press "Add post"
 
-    # Check related links 'block'
+    # Check related links 'block'.
     Given I follow "Add link"
     And I set the following fields to these values:
       | Title | Teachers Personal blog test |
       | Full Web address | http://127.0.0.1/mod/oublog/view.php?user=3 |
-    And I press "id_submitbutton"
-    Then "Teachers Personal blog test" "link" should be visible
+    When I press "id_submitbutton"
+    Then "Teachers Personal blog test" "link" should exist
+    And "#oublog-links form" "css_element" should not exist
+    Given I follow "Add link"
+    And I set the following fields to these values:
+      | Title | Teachers Personal blog link2 |
+      | Full Web address | http://www.open.ac.uk |
+    When I press "id_submitbutton"
+    Then "#oublog-links form" "css_element" should exist
+    And "Personal blog link2" "link" should exist
+    Given I click on "//div[@id='oublog-links']//li[2]//input[@type='image']" "xpath_element"
+    Then I should see "Teachers Personal blog link2" in the "//div[@id='oublog-links']//li[1]//a[1]" "xpath_element"
+    Given I click on "//div[@id='oublog-links']//li[1]//a[@title='Delete']" "xpath_element"
+    When I press "Continue"
+    Then I should not see "Teachers Personal blog link2"
+    And "#oublog-links form" "css_element" should not exist
     And I log out
 
-    # Student test comments disabled and related link
+    # Student test comments disabled and related link.
     Given I log in as "student1"
     And I follow "Course 1"
     When I follow "Test oublog basics"
     Then "Add your comment" "link" should not exist in the ".oublog-post" "css_element"
-    And "Teachers Personal blog test" "link" should be visible
+    And "Teachers Personal blog test" "link" should exist
+    Given I follow "Permalink"
+    Then "Add your comment" "link" should not exist in the ".oublog-post" "css_element"
+    And I log out
+    # Test commenting.
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I follow "Course 1"
+    When I follow "Test oublog basics"
+    And I press "New blog post"
+    And I follow "Edit settings"
+    When I set the following fields to these values:
+      | Allow comments | Yes, from logged-in users |
+    And I press "Save and display"
+    Then I should not see "Add your comment"
+    Given I follow "Edit"
+    And I set the field "Allow comments" to "Yes, from logged-in users"
+    And I press "Save changes"
+    When I follow "Add your comment"
+    And I set the field "Add your comment" to "Teacher comment"
+    And I press "Add comment"
+    Then I should see "Comments" in the ".oublog-commentstitle" "css_element"
+    And I should see "Teacher comment"
+    Given I follow "Add your comment"
+    And I set the field "Title" to "Title:Teacher comment 2"
+    And I set the field "Add your comment" to "Teacher comment 2"
+    And I press "Add comment"
+    Then I should see "Teacher comment 2"
+    And I should see "Title:Teacher comment 2"
+    Given I click on "#cid2 .oublog-post-links a" "css_element"
+    When I press "Continue"
+    Then "#cid2.oublog-deleted" "css_element" should exist
+    Given I follow "Test oublog basics"
+    Then I should see "1 comment"
+    And I log out
+    Given I log in as "student1"
+    And I follow "Course 1"
+    When I follow "Test oublog basics"
+    Given I follow "1 comment"
+    Then I should not see "Teacher comment 2"
+    When I follow "Add your comment"
+    And I set the field "Title" to "Title:Student comment"
+    And I set the field "Add your comment" to "Student comment"
+    And I press "Add comment"
+    Then I should see "Student comment"
+    And I should see "Title:Student comment"
+    And "#cid1.oublog-deleted" "css_element" should not exist
+    Given I click on "#cid3 .oublog-post-links a" "css_element"
+    When I press "Cancel"
+    Then I should see "Comments" in the ".oublog-commentstitle" "css_element"
+    When I follow "Test oublog basics"
+    Then I should see "2 comments"
     And I log out

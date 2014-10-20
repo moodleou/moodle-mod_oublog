@@ -77,6 +77,7 @@ class mod_oublog_comment_form extends moodleform {
             $mform->addElement('static', '', '',
                     get_string('moderated_confirminfo', 'oublog'));
             $mform->addElement('text', 'confirm', get_string('moderated_confirm', 'oublog'));
+            $mform->setType('confirm', PARAM_TEXT);
         }
 
         if ($edit) {

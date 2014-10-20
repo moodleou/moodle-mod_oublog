@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class oublog_test_lib extends advanced_testcase {
+abstract class oublog_test_lib extends advanced_testcase {
     /*
      These functions require us to create database entries and/or grab objects to make it possible to test the
     many permuations required for OU Blogs.
