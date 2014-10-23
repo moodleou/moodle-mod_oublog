@@ -368,7 +368,7 @@ class oublog_participation_test extends oublog_test_lib {
         $this->assertTrue(isset($participation[$student1->id]->gradeobj));
         $this->assertNotEmpty($participation[$student1->id]->gradeobj);
         $this->assertEmpty($participation[$student1->id]->gradeobj->grade);
-        oublog_update_grades(array($student1->id => 55), $participation, $cm, $oublog, $course);
+        oublog_update_manual_grades(array($student1->id => 55), $participation, $cm, $oublog, $course);
         $participation = oublog_get_participation($oublog, $context, 0, $cm, $course);
         $this->assertTrue(isset($participation[$student1->id]->gradeobj));
         $this->assertNotEmpty($participation[$student1->id]->gradeobj);

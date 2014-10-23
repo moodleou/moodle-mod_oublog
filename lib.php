@@ -42,6 +42,11 @@ function oublog_add_instance($oublog) {
     // Generate an accesstoken.
     $oublog->accesstoken = md5(uniqid(rand(), true));
 
+    if (empty($oublog->ratingtime) || empty($oublog->assessed)) {
+        $oublog->assesstimestart = 0;
+        $oublog->assesstimefinish = 0;
+    }
+
     if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
         return(false);
     }
@@ -76,6 +81,11 @@ function oublog_update_instance($oublog) {
 
     if (!$DB->get_record('oublog', array('id' => $oublog->id))) {
         return(false);
+    }
+
+    if (empty($oublog->ratingtime) || empty($oublog->assessed)) {
+        $oublog->assesstimestart = 0;
+        $oublog->assesstimefinish = 0;
     }
 
     if (!$DB->update_record('oublog', $oublog)) {
@@ -603,6 +613,7 @@ function oublog_supports($feature) {
         case FEATURE_GROUPS: return true;
         case FEATURE_GROUPMEMBERSONLY: return true;
         case FEATURE_GRADE_HAS_GRADE: return true;
+        case FEATURE_RATE: return true;
         default: return null;
     }
 }
@@ -924,23 +935,30 @@ function oublog_cm_info_dynamic(cm_info $cm) {
 function oublog_grade_item_update($oublog, $grades = null) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
+    require_once('locallib.php');
+    // Use 'grade' or 'scale' depends upon 'grading'.
+    if ($oublog->grading == OUBLOG_USE_RATING) {
+        $oublogscale = $oublog->scale;
+    } else {
+        $oublogscale = $oublog->grade;
+    }
 
     $params = array('itemname' => $oublog->name);
 
-    if ($oublog->grade > 0) {
+    if ($oublogscale > 0) {
         $params['gradetype'] = GRADE_TYPE_VALUE;
-        $params['grademax']  = $oublog->grade;
-        $params['grademin']  = 0;
+        $params['grademax'] = $oublogscale;
+        $params['grademin'] = 0;
 
-    } else if ($oublog->grade < 0) {
+    } else if ($oublogscale < 0) {
         $params['gradetype'] = GRADE_TYPE_SCALE;
-        $params['scaleid']   = -$oublog->grade;
+        $params['scaleid'] = -$oublogscale;
 
     } else {
         $params['gradetype'] = GRADE_TYPE_NONE;
     }
 
-    if ($grades  === 'reset') {
+    if ($grades === 'reset') {
         $params['reset'] = true;
         $grades = null;
     }
@@ -1000,41 +1018,40 @@ function oublog_reset_userdata($data) {
 
     if (!empty($data->reset_oublog)) {
         // Delete post-related data.
-        $postidsql = "
-            SELECT pst.id
-            FROM {oublog_posts} pst
-            JOIN {oublog_instances} ins ON (ins.id = pst.oubloginstancesid)
-            JOIN {oublog} obl ON (obl.id = ins.oublogid)
-            WHERE obl.course = ?
-        ";
+        $postidsql = "SELECT pst.id
+                        FROM {oublog_posts} pst
+                        JOIN {oublog_instances} ins ON (ins.id = pst.oubloginstancesid)
+                        JOIN {oublog} obl ON (obl.id = ins.oublogid)
+                       WHERE obl.course = ?";
         $params = array($data->courseid);
         $DB->delete_records_select('oublog_comments', "postid IN ($postidsql)", $params);
         $DB->delete_records_select('oublog_comments_moderated', "postid IN ($postidsql)", $params);
         $DB->delete_records_select('oublog_edits', "postid IN ($postidsql)", $params);
 
         // Delete instance-related data.
-        $insidsql = "
-            SELECT ins.id
-            FROM {oublog_instances} ins
-            JOIN {oublog} obl ON (obl.id = ins.oublogid)
-            WHERE obl.course = ?
-        ";
+        $insidsql = "SELECT ins.id
+                       FROM {oublog_instances} ins
+                       JOIN {oublog} obl ON (obl.id = ins.oublogid)
+                      WHERE obl.course = ?";
         $DB->delete_records_select('oublog_links', "oubloginstancesid IN ($insidsql)", $params);
         $DB->delete_records_select('oublog_taginstances', "oubloginstancesid IN ($insidsql)", $params);
         $DB->delete_records_select('oublog_posts', "oubloginstancesid IN ($insidsql)", $params);
 
-        $blogidsql = "
-            SELECT obl.id
-            FROM {oublog} obl
-            WHERE obl.course = ?
-        ";
+        $blogidsql = "SELECT obl.id
+                        FROM {oublog} obl
+                       WHERE obl.course = ?";
         // Delete instances:
         $DB->delete_records_select('oublog_instances', "oublogid IN ($blogidsql)", $params);
 
         // Reset views:
         $DB->execute("UPDATE {oublog} SET views = 0 WHERE course = ?", $params);
 
-        // Now get rid of all attachments.
+        $rm = new rating_manager();
+        $ratingdeloptions = new stdClass;
+        $ratingdeloptions->component = 'mod_oublog';
+        $ratingdeloptions->ratingarea = 'post';
+
+        // Now get rid of all attachments and ratings.
         $fs = get_file_storage();
         $oublogs = get_coursemodules_in_course('oublog', $data->courseid);
         if ($oublogs) {
@@ -1046,6 +1063,9 @@ function oublog_reset_userdata($data) {
                 $fs->delete_area_files($context->id, 'mod_oublog', 'attachment');
                 $fs->delete_area_files($context->id, 'mod_oublog', 'message');
                 $fs->delete_area_files($context->id, 'mod_oublog', 'messagecomment');
+
+                $ratingdeloptions->contextid = $context->id;
+                $rm->delete_ratings($ratingdeloptions);
             }
         }
 
@@ -1152,4 +1172,265 @@ function oublog_extend_settings_navigation(settings_navigation $settings, naviga
                             settings_navigation::TYPE_CUSTOM);
         }
     }
+}
+
+/**
+ * Return rating related permissions
+ *
+ * @param string $options the context id
+ * @return array an associative array of the user's rating permissions
+ */
+function oublog_rating_permissions($contextid, $component, $ratingarea) {
+    $context = context::instance_by_id($contextid, MUST_EXIST);
+    if ($component != 'mod_oublog' || $ratingarea != 'post') {
+        // We don't know about this component/ratingarea so just return null to get the
+        // default restrictive permissions.
+        return null;
+    }
+    return array(
+        'view' => has_capability('mod/oublog:viewrating', $context),
+        'viewany' => has_capability('mod/oublog:viewanyrating', $context),
+        'viewall' => has_capability('mod/oublog:viewallratings', $context),
+        'rate' => has_capability('mod/oublog:rate', $context)
+    );
+}
+
+/**
+ * Validates a submitted rating
+ * @param array $params submitted data
+ *            context => object the context in which the rated items exists [required]
+ *            component => The component for this module - should always be mod_oublog [required]
+ *            ratingarea => object the context in which the rated items exists [required]
+ *            itemid => int the ID of the object being rated [required]
+ *            scaleid => int the scale from which the user can select a rating. Used for bounds checking. [required]
+ *            rating => int the submitted rating
+ *            rateduserid => int the id of the user whose items have been rated. NOT the user who submitted the ratings. 0 to update all. [required]
+ *            aggregation => int the aggregation method to apply when calculating grades ie RATING_AGGREGATE_AVERAGE [optional]
+ * @return boolean true if the rating is valid. Will throw rating_exception if not
+ */
+function oublog_rating_validate($params) {
+    global $DB, $USER;
+
+    // Check the component is mod_oublog.
+    if ($params['component'] != 'mod_oublog') {
+        throw new rating_exception('invalidcomponent');
+    }
+
+    // Check the ratingarea is post (the only rating area in oublog).
+    if ($params['ratingarea'] != 'post') {
+        throw new rating_exception('invalidratingarea');
+    }
+
+    // Check the rateduserid is not the current user .. you can't rate your own posts.
+    if ($params['rateduserid'] == $USER->id) {
+        throw new rating_exception('nopermissiontorate');
+    }
+
+    $oublogsql = "SELECT p.id, o.id as oublogid, o.scale, o.course, p.timeposted,
+                          o.assessed, o.assesstimestart, o.assesstimefinish
+                    FROM {oublog} o
+                    JOIN {oublog_instances} i ON i.oublogid = o.id
+                    JOIN {oublog_posts} p ON p.oubloginstancesid = i.id
+                   WHERE p.id = :itemid";
+
+    $oublogparams = array('itemid' => $params['itemid']);
+    $info = $DB->get_record_sql($oublogsql, $oublogparams);
+    if (!$info) {
+        // Item doesn't exist.
+        throw new rating_exception('invaliditemid');
+    }
+
+    if ($info->scale != $params['scaleid']) {
+        // The scale being submitted doesnt match the one in the database.
+        throw new rating_exception('invalidscaleid');
+    }
+
+    // Check that the submitted rating is valid for the scale.
+
+    // Lower limit.
+    if ($params['rating'] < 0 && $params['rating'] != RATING_UNSET_RATING) {
+        throw new rating_exception('invalidnum');
+    }
+
+    // Upper limit.
+    if ($info->scale < 0) {
+        // Its a custom scale.
+        $scalerecord = $DB->get_record('scale', array('id' => -$info->scale));
+        if ($scalerecord) {
+            $scalearray = explode(',', $scalerecord->scale);
+            if ($params['rating'] > count($scalearray)) {
+                throw new rating_exception('invalidnum');
+            }
+        } else {
+            throw new rating_exception('invalidscaleid');
+        }
+    } else if ($params['rating'] > $info->scale) {
+        // If its numeric and submitted rating is above maximum.
+        throw new rating_exception('invalidnum');
+    }
+
+    if (!$info->assessed) {
+        // Item isnt approved.
+        throw new rating_exception('nopermissiontorate');
+    }
+
+    // Check the item we're rating was created in the assessable time window.
+    if (!empty($info->assesstimestart) && !empty($info->assesstimefinish)) {
+        if ($info->timeposted < $info->assesstimestart || $info->timeposted > $info->assesstimefinish) {
+            throw new rating_exception('notavailable');
+        }
+    }
+
+    $cm = get_coursemodule_from_instance('oublog', $info->oublogid, $info->course, false, MUST_EXIST);
+    $context = context_module::instance($cm->id, MUST_EXIST);
+
+    // If the supplied context doesnt match the item's context.
+    if ($context->id != $params['context']->id) {
+        throw new rating_exception('invalidcontext');
+    }
+
+    return true;
+}
+
+/**
+ * Update activity grades
+ *
+ * @global object
+ * @global object
+ * @param object $oublog
+ * @param int $userid specific user only, 0 means all
+ * @param bool $nullifnone
+ */
+function oublog_update_grades($oublog, $userid = 0, $nullifnone = true) {
+    global $CFG, $DB;
+    require_once($CFG->libdir . '/gradelib.php');
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+    if ($oublog->grading != OUBLOG_USE_RATING) {
+        return;
+    }
+    if (!$oublog->assessed) {
+        oublog_grade_item_update($oublog);
+    } else if ($grades = oublog_get_user_grades($oublog, $userid)) {
+        oublog_grade_item_update($oublog, $grades);
+    } else if ($userid && $nullifnone) {
+        $grade = new stdClass();
+        $grade->userid = $userid;
+        $grade->rawgrade = null;
+        oublog_grade_item_update($oublog, $grade);
+    } else {
+        oublog_grade_item_update($oublog);
+    }
+}
+
+/**
+ * Return grade for given user or all users.
+ *
+ * @global object
+ * @param object $dataplus
+ * @param int $userid optional user id, 0 means all users
+ * @return array array of grades, false if none
+ */
+function oublog_get_user_grades($oublog, $userid = 0) {
+    global $CFG, $DB;
+    require_once($CFG->dirroot . '/rating/lib.php');
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+
+    $options = new stdClass();
+    $options->component = 'mod_oublog';
+    $options->ratingarea = 'post';
+    $options->modulename = 'oublog';
+    $options->moduleid = $oublog->id;
+    $options->userid = $userid;
+    $options->aggregationmethod = $oublog->assessed;
+    $options->scaleid = $oublog->scale;
+    $options->cmid = $oublog->cmidnumber;
+
+    // There now follows a lift of get_user_grades() from rating lib
+    // but with the requirement for items modified.
+    $rm = new rating_manager();
+
+    if (!isset($options->component)) {
+        throw new coding_exception(
+                'The component option is now a required option when getting user grades from ratings.'
+        );
+    }
+    if (!isset($options->ratingarea)) {
+        throw new coding_exception(
+                'The ratingarea option is now a required option when getting user grades from ratings.'
+        );
+    }
+
+    // Going direct to the db for the context id seemed wrong.
+    $context = context_module::instance($options->cmid );
+
+    $params = array();
+    $params['contextid'] = $context->id;
+    $params['component'] = $options->component;
+    $params['ratingarea'] = $options->ratingarea;
+    $scaleid = $options->scaleid;
+    $aggregationstring = $rm->get_aggregation_method($options->aggregationmethod);
+    // If userid is not 0 we only want the grade for a single user.
+    $singleuserwhere = '';
+    if ($options->userid != 0) {
+        // Get the grades for the {posts} the user is responsible for.
+        $cm = get_coursemodule_from_id('oublog', $oublog->cmidnumber);
+        list($posts, $recordcount) = oublog_get_posts($oublog, $context, 0, $cm, 0, $options->userid);
+        foreach ($posts as $post) {
+            $postids[] = (int)$post->id;
+        }
+        $params['userid'] = $userid;
+        $singleuserwhere = " AND i.userid = :userid";
+    }
+
+    $sql = "SELECT u.id as id, u.id AS userid, $aggregationstring(r.rating) AS rawgrade
+              FROM {oublog} o
+              JOIN {oublog_instances} i ON i.oublogid = o.id
+              JOIN {oublog_posts} p ON p.oubloginstancesid = i.id
+              JOIN {rating} r ON r.itemid = p.id
+              JOIN {user} u ON i.userid = u.id
+             WHERE r.contextid = :contextid
+                   AND r.component = :component
+                   AND r.ratingarea = :ratingarea
+                   $singleuserwhere
+          GROUP BY u.id";
+
+    $results = $DB->get_records_sql($sql, $params);
+
+    if ($results) {
+        $scale = null;
+        $max = 0;
+        if ($options->scaleid >= 0) {
+            // Numeric.
+            $max = $options->scaleid;
+        } else {
+            // Custom scales.
+            $scale = $DB->get_record('scale', array('id' => -$options->scaleid));
+            if ($scale) {
+                $scale = explode(',', $scale->scale);
+                $max = count($scale);
+            } else {
+                debugging(
+                    'rating_manager::get_user_grades() received a scale ID that doesnt exist'
+                );
+            }
+        }
+
+        // It could throw off the grading if count and sum returned a rawgrade higher than scale
+        // so to prevent it we review the results and ensure that rawgrade does not exceed
+        // the scale, if it does we set rawgrade = scale (i.e. full credit).
+        foreach ($results as $rid => $result) {
+            if ($options->scaleid >= 0) {
+                // Numeric.
+                if ($result->rawgrade > $options->scaleid) {
+                    $results[$rid]->rawgrade = $options->scaleid;
+                }
+            } else {
+                // Scales.
+                if (!empty($scale) && $result->rawgrade > $max) {
+                    $results[$rid]->rawgrade = $max;
+                }
+            }
+        }
+    }
+    return $results;
 }

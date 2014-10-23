@@ -92,11 +92,11 @@
     margin-left: 80px;
 }
 
-.oublog-post-date, .oublog-post-visibility, .oublog-post-tags, .oublog-post-links, .oublog-post-editsummary, .oublog-links {
+.oublog-post-date, .oublog-post-visibility, .oublog-post-tags, .oublog-post-links, .oublog-post-editsummary, .oublog-links, .oublog-post-rating{
     font-size: 0.85em;
 }
 
-.oublog-post-tags {
+.oublog-post-tags, .oublog-post-rating {
     margin-bottom:0.7em;
 }
 

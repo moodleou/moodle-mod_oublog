@@ -80,6 +80,11 @@ define('OUBLOG_STATS_TIMEFILTER_ALL', 0);
 define('OUBLOG_STATS_TIMEFILTER_MONTH', 1);
 define('OUBLOG_STATS_TIMEFILTER_YEAR', 2);
 
+// Constants defining grading options.
+define('OUBLOG_NO_GRADING', 0);
+define('OUBLOG_TEACHER_GRADING', 1);
+define('OUBLOG_USE_RATING', 2);
+
 /**
  * Get a blog from a user id
  *
@@ -582,8 +587,10 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $delusernamefields = get_all_user_name_fields(true, 'ud', null, 'del');
     $editusernamefields = get_all_user_name_fields(true, 'ue', null, 'ed');
 
-    // Get posts
-    $fieldlist = "p.*, bi.oublogid, $usernamefields, bi.userid, u.idnumber, u.picture, u.imagealt, u.email, u.username,
+    // Get posts. The post has the field timeposted not timecreated,
+    // which is tested in rating::user_can_rate().
+    $fieldlist = "p.*, p.timeposted, p.timeposted AS timecreated,  bi.oublogid, $usernamefields,
+                  bi.userid, u.idnumber, u.picture, u.imagealt, u.email, u.username,
                 $delusernamefields,
                 $editusernamefields";
     $from = "FROM {oublog_posts} p
@@ -642,6 +649,24 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $rs = $DB->get_recordset_sql($sql);
     foreach ($rs as $tag) {
         $posts[$tag->postid]->tags[$tag->id] = $tag->tag;
+    }
+
+    // Load ratings.
+    require_once($CFG->dirroot.'/rating/lib.php');
+    if ($oublog->assessed != RATING_AGGREGATE_NONE) {
+        $ratingoptions = new stdClass();
+        $ratingoptions->context = $context;
+        $ratingoptions->component = 'mod_oublog';
+        $ratingoptions->ratingarea = 'post';
+        $ratingoptions->items = $posts;
+        $ratingoptions->aggregate = $oublog->assessed;// The aggregation method.
+        $ratingoptions->scaleid = $oublog->scale;
+        $ratingoptions->userid = $USER->id;
+        $ratingoptions->assesstimestart = $oublog->assesstimestart;
+        $ratingoptions->assesstimefinish = $oublog->assesstimefinish;
+
+        $rm = new rating_manager();
+        $posts = $rm->get_ratings($ratingoptions);
     }
     $rs->close();
 
@@ -3190,7 +3215,7 @@ function oublog_get_user_participation($oublog, $context,
  * @param object $oublog current oublog object
  * @param object $course current course object
  */
-function oublog_update_grades($newgrades, $oldgrades, $cm, $oublog, $course) {
+function oublog_update_manual_grades($newgrades, $oldgrades, $cm, $oublog, $course) {
     global $CFG, $SESSION;
 
     require_once($CFG->libdir.'/gradelib.php');
@@ -3217,7 +3242,7 @@ function oublog_update_grades($newgrades, $oldgrades, $cm, $oublog, $course) {
     }
     oublog_grade_item_update($oublog, $grades);
 
-    // add a message to display to the page
+    // Add a message to display to the page.
     if (!isset($SESSION->oubloggradesupdated)) {
         $SESSION->oubloggradesupdated = get_string('gradesupdated', 'oublog');
     }

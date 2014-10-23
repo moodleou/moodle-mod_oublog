@@ -268,5 +268,62 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2014072501, 'oublog');
     }
 
+    if ($oldversion < 2014102300) {
+        // Define field assessed to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('assessed', XMLDB_TYPE_INTEGER, '10',
+                        XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'tags');
+
+        // Conditionally launch add field assessed.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field assesstimestart to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('assesstimestart', XMLDB_TYPE_INTEGER, '10',
+                        XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'assessed');
+
+        // Conditionally launch add field assesstimestart.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field assesstimefinish to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('assesstimefinish', XMLDB_TYPE_INTEGER, '10',
+                        XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'assesstimestart');
+
+        // Conditionally launch add field assesstimefinish.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field scale to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('scale', XMLDB_TYPE_INTEGER, '10',
+                        XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'assesstimefinish');
+
+        // Conditionally launch add field scale.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field grading to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('grading', XMLDB_TYPE_INTEGER, '10',
+                        XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'scale');
+
+        // Conditionally launch add field grading.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Set the new grading field to 1 for everything that isn't a default grade.
+        $DB->set_field_select('oublog', 'grading', 1, 'grade != 0');
+
+        // OUblog savepoint reached.
+        upgrade_mod_savepoint(true, 2014102300, 'oublog');
+    }
+
     return true;
 }

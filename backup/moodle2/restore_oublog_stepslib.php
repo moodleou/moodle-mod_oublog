@@ -41,6 +41,7 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
             $paths[] = new restore_path_element('oublog_instance', '/activity/oublog/instances/instance');
             $paths[] = new restore_path_element('oublog_link', '/activity/oublog/links/link');
             $paths[] = new restore_path_element('oublog_post', '/activity/oublog/instances/instance/posts/post');
+            $paths[] = new restore_path_element('oublog_rating', '/activity/oublog/instances/instance/posts/post/ratings/rating');
             $paths[] = new restore_path_element('oublog_comment', '/activity/oublog/instances/instance/posts/post/comments/comment');
             $paths[] = new restore_path_element('oublog_edit', '/activity/oublog/instances/instance/posts/post/edits/edit');
             $paths[] = new restore_path_element('oublog_tag', '/activity/oublog/instances/instance/posts/post/tags/tag');
@@ -167,6 +168,33 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
         $newitemid = $DB->insert_record('oublog_taginstances', $taginstance);
 
         $this->set_mapping('oublog_tag', $oldid, $newitemid);
+    }
+
+    protected function process_oublog_rating($data) {
+        global $DB;
+
+        $data = (object)$data;
+
+        // Cannot use ratings API, cause, it's missing the ability to specify times (modified/created).
+        $data->contextid = $this->task->get_contextid();
+        $data->itemid = $this->get_new_parentid('oublog_post');
+        if ($data->scaleid < 0) { // Scale found, get mapping.
+            $data->scaleid = -($this->get_mappingid('scale', abs($data->scaleid)));
+        }
+        $data->rating = $data->value;
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->timecreated = $this->apply_date_offset($data->timecreated);
+        $data->timemodified = $this->apply_date_offset($data->timemodified);
+
+        // Make sure that we have both component and ratingarea set.
+        if (empty($data->component)) {
+            $data->component = 'mod_oublog';
+        }
+        if (empty($data->ratingarea)) {
+            $data->ratingarea = 'post';
+        }
+
+        $newitemid = $DB->insert_record('rating', $data);
     }
 
     protected function after_execute() {

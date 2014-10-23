@@ -40,7 +40,8 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
                 'accesstoken', 'intro', 'introformat', 'allowcomments', 'individual',
                 'maxbytes', 'maxattachments', 'maxvisibility', 'global', 'views',
                 'completionposts', 'completioncomments', 'reportingemail', 'displayname',
-                'statblockon', 'allowimport', 'introonpost', 'tags'));
+                'statblockon', 'allowimport', 'introonpost', 'tags', 'assessed',
+                'assesstimestart', 'assesstimefinish', 'scale', 'grading'));
         $instances = new backup_nested_element('instances');
 
         $instance = new backup_nested_element('instance', array('id'), array(
@@ -54,6 +55,11 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
                                                                              'message', 'timeposted', 'allowcomments',
                                                                              'timeupdated', 'lasteditedby', 'deletedby',
                                                                              'timedeleted', 'visibility'));
+
+        $ratings = new backup_nested_element('ratings');
+
+        $rating = new backup_nested_element('rating', array('id'), array(
+            'component', 'ratingarea', 'scaleid', 'value', 'userid', 'timecreated', 'timemodified'));
 
         $comments = new backup_nested_element('comments');
         $comment  = new backup_nested_element('comment', array('id'), array('userid', 'title', 'message',
@@ -76,6 +82,9 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
 
         $instance->add_child($posts);
         $posts->add_child($post);
+
+        $post->add_child($ratings);
+        $ratings->add_child($rating);
 
         $post->add_child($comments);
         $comments->add_child($comment);
@@ -101,6 +110,11 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
                                           JOIN {oublog_taginstances} ti
                                            ON t.id=ti.tagid
                                           WHERE ti.postid=?", array(backup::VAR_PARENTID));
+
+            $rating->set_source_table('rating', array('contextid' => backup::VAR_CONTEXTID,
+                            'component' => backup_helper::is_sqlparam('mod_oublog'),
+                            'ratingarea' => backup_helper::is_sqlparam('post')));
+            $rating->set_source_alias('rating', 'value');
         }
 
         // Define id annotations
@@ -111,6 +125,9 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
         $comment->annotate_ids('user', 'userid');
         $edit->annotate_ids('user', 'userid');
         $link->annotate_ids('oublog_instances', 'id');
+        $oublog->annotate_ids('scale', 'scale');
+        $rating->annotate_ids('scale', 'scaleid');
+        $rating->annotate_ids('user', 'userid');
 
         // Define file annotations
         $oublog->annotate_files('mod_oublog', 'intro', null); // This file area hasn't itemid

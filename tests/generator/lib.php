@@ -71,7 +71,12 @@ class mod_oublog_generator extends testing_module_generator {
         if (!isset($record->grade) && !isset($options['grade'])) {
             $record->grade = 0;
         }
-
+        if (!isset($record->scale) && !isset($options['scale'])) {
+            $record->scale = 0;
+        }
+        if (!isset($record->grading) && !isset($options['grading'])) {
+            $record->grading = 0;
+        }
         return parent::create_instance($record, (array)$options);
     }
 

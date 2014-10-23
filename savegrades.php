@@ -67,9 +67,9 @@ if (!empty($_POST['menu'])) {
     $oldgrades = array($userid => $user);
 }
 
-// update grades
+// Update grades.
 if (!empty($gradeinfo)) {
-    oublog_update_grades($gradeinfo, $oldgrades, $cm, $oublog, $course);
+    oublog_update_manual_grades($gradeinfo, $oldgrades, $cm, $oublog, $course);
 }
 
 // redirect

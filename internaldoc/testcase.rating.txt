@@ -1,0 +1,199 @@
+This script describes steps to test the participation facility from a user
+perspective. It is intended to cover most of the UI and features.
+
+NOTE: In this test case, the word 'blog' always refers to the OU blog.
+
+The test steps in this script follow on from each other and aren't independent.
+They may also be used in conjunction with testcase.usagestats, which should be ran second.
+
+
+Initial setup
+=============
+
+This test case requires:
+
+- one test user (US1) with the Student role.
+- one test user (U T) with the Teacher role.
+- (admin must have permissions to create/configure activities)
+- All users should have an avatar (user picture) set for their profile
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+
+CRE Creating blogs and data
+===========================
+
+
+CRE01-RP / admin
+   In your test course, create a blog called CRE01-RP.
+   Edit the blog settings and expand 'Grade' and 'Ratings'.
+   Set 'Grading' to 'Use ratings'.
+-- Confirm that for 'Grade', 'Type', 'Scale' and 'Maximum points' settings are disabled.
+-- Confirm that the 'Rating', 'Roles with permission to rate' states that;
+   'Capability check not available until activity is saved'.
+   Set 'Aggregate type' to 'Average of ratings'.
+   Set 'Scale' 'Type' to Point, and 'Maximum points' to 100.
+   Leave 'Restrict ratings to items with dates in this range' at the default, not ticked.
+   Click Save and display.
+
+CRE02-RP / admin
+   In blog CRE01-RP.
+   Add a new post with title "Admin test post ratings 001" and text
+   "A post for test rating purposes.".
+
+CRE03-RP / U T [change]
+   Go to blog CRE01-RP.
+-- Confirm that on the Admin post there is an 'Average of ratings' dropdown selector above the
+   Permalink, Edit, ect links.
+-- Confirm the default option is Rate, and that the point scale available is '0 - 100'.
+-- Verify that there is a link before the dropdown selector, to a new window 'All submitted ratings'
+
+CRE04-RP / U T
+   Add a new post with title "Teacher testing post ratings 002" and text
+   "Second post for test rating purposes.".
+-- Confirm that for UT post there is an 'Average of ratings' label above the
+   Permalink, Edit, ect links.
+-- Verify that there is only a link following the label.
+Note: The current user can not rate their own posts, but can see 'All ratings submitted' link.
+
+CRE05-RP / US1 [change]
+   Go to blog CRE01-RP.
+-- Confirm that as a student no post has an 'Average of ratings' label, link or dropdown shown.
+   Add a new post with title "Student testing post ratings 003" and text
+   "Third post for test rating purposes.".
+-- Confirm that an 'Average of ratings' label exists on this post, but no link.
+
+CRE06-RP / admin [change]
+   Go to blog CRE01-RP.
+-- Verify that the student and teacher posts each have an 'Average of ratings' label,
+   link and dropdown shown.
+-- Verify that the 'Rate' dropdowns provide a point scale from 0 - 100.
+-- Confirm that the Admins post does have the 'Average of ratings' label and link,
+   but that there is no dropdown available
+Note: The current user can not rate their own posts, but can see 'All ratings submitted' link.
+
+CRE07-RP / admin
+   On the student post, select 10 on the 'Rate' dropdown.
+-- Confirm that the link and dropdown refreshes, and that the link and dropdown now show
+   '10 (1) [10  ]'.
+
+CRE08-RP / admin
+   On the teacher post, select 10 on the 'Rate' dropdown.
+-- Confirm that the link and dropdown refresh, and that the link and dropdown also show
+   '10 (1) [10  ]'.
+
+CRE09-RP / U T [change]
+-- Confirm that on the student post the label link and dropdown show as
+   'Average of ratings: 10 (1) [Rate  ]'.
+-- Confirm that on the teacher post the label 'Average of ratings:' and link '10 (1)' show.
+-- Confirm that on the admin post the link and dropdown show as 'Average of ratings: _ [Rate  ]'.
+
+CRE010-RP / U T
+   On the admin post, select 30 on the 'Rate' dropdown.
+-- Confirm that the link and dropdown refresh, and that the link and dropdown now show
+   '30 (1) [30 ]'.
+
+CRE011-RP / U T
+-- Confirm that on the student post, there is a link '10 (1)' to 'All submitted ratings '.
+-- Confirm that on the admin post, there is a link '30 (1)' to 'All submitted ratings '.
+
+CRE012-RP / US1 [change]
+   Go to blog CRE01-RP.
+-- Confirm that the student post has an 'Average of ratings' label showing '10 (1)',
+   but that this is not a link.
+-- Verify that the neither the teacher nor admin posts show an 'Average of ratings' label.
+
+   Return to the course main page
+
+CRE013-RP / U T [change]
+   Select 'Grades' from the 'Administration' menu to open the 'Grader report'
+-- Confirm that the report resembles the following:
+Note: It may be necessary to click the 'Full view' button, to see Course total.
+
+[Grader report       ] (Selector)
+
+Grader report
+-------------
+
+All participants: 1/1
+                        First name :AllABCDEFGHIJKLMNOPQRSTUVWXYZ
+                        Surname :AllABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+                                                Test course name
+Surname  First name                     Email address    Blog CRE01-RP  Agg Course Total
+avatar   Userone  Usernameone   Grades  us1@open.ac.uk           10.00             10.00
+
+                                        Overall average          10.00             10.00
+
+
+Time restricted rating tests [wait at least 5 minutes for these steps]
+----------------------------
+
+CRE014-RP / admin [change]
+   In blog CRE01-RP.
+   Add a new post with title "Admin restricted ratings post 001" and text
+   "A post for test rating restrictions.".
+
+CRE015-RP / admin
+   In blog CRE01-RP.
+   Enter 'Edit settings'.
+   Tick the checkbox against 'Restrict ratings to items with dates in this range:'.
+   Select 'From' and 'To' time to bracket the just created post.
+
+CRE016-RP / U T [change]
+-- Verify that the admins restricted ratings post has an 'Average of ratings'
+   label and link, and that the dropdown is shown.
+-- Verify that the 'Rate' dropdown provides a point scale from 0 - 100.
+
+CRE017-RP / U T
+-- Confirm that the other posts outside the restricted time period have the 'Average of ratings'
+   label and link, but that there is no dropdown available to rate them now.
+
+CRE018-RP / U T
+   Edit the blog settings and expand 'Grade' and 'Ratings'.
+   Set 'Grading' to 'Teacher grades students'.
+   Set 'Grade' 'Type' to 'Point'.
+   Set 'Maximum points' to 100.
+-- Confirm that the 'Rating', 'Roles with permission to rate' states that;
+   'Manager, Teacher, Non-editing teacher'.
+-- Confirm that the 'Aggregate type' is set to 'Average of ratings'.
+-- Confirm that the 'Scale' 'Type' is set to Point, and that 'Maximum points' is set to 100.
+   Leave 'Restrict ratings to items with dates in this range' at the default, not ticked.
+   Click Save and display.
+
+CRE019-RP / admin [change]
+-- Confirm that the restricted admin post has an 'Average of ratings'
+   label and link, and that the dropdown is is not shown.
+   Click the 'Participation by user' button.
+-- Confirm that the 'User participation' page shows a 'Grades' dropdown against each user.
+   Select 10 for the student user and 30 for the teacher user.
+   Click 'Save grades' button
+-- Confirm that the page refreshes, and that the text 'Grades updated' appears beneath the
+   page title 'User participation'.
+-- Confirm that the grades entered for student user [and two are] is correct.
+
+   Return to the course main page
+
+CRE020-RP / U T [change]
+   Select 'Grades' from the 'Administration' menu to open the 'Grader report'
+-- Confirm that the report resembles the following:
+Note: It may be necessary to click the 'Full view' button, to see Course total.
+
+[Grader report       ] (Selector)
+
+Grader report
+-------------
+
+All participants: 1/1
+                        First name :AllABCDEFGHIJKLMNOPQRSTUVWXYZ
+                        Surname :AllABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+                                                Test course name
+Surname  First name                     Email address    Blog CRE01-RP  Agg Course Total
+avatar   Userone  Usernameone   Grades  us1@open.ac.uk           10.00             10.00
+
+                                        Overall average          10.00             10.00
+
+End test.

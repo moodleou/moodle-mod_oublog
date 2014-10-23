@@ -42,7 +42,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
     public function render_post($cm, $oublog, $post, $baseurl, $blogtype,
             $canmanageposts = false, $canaudit = false, $commentcount = true,
             $forexport = false, $format = false, $email = false) {
-        global $CFG, $USER;
+        global $CFG, $USER, $OUTPUT;
         $output = '';
         $modcontext = context_module::instance($cm->id);
         // Get rid of any existing tag from the URL as we only support one at a time.
@@ -257,7 +257,12 @@ class mod_oublog_renderer extends plugin_renderer_base {
             }
             $output .= html_writer::end_tag('div');
         }
-
+        if (!$forexport && !$email) {
+            // Output ratings.
+            if (!empty($post->rating)) {
+                $output .= html_writer::div($OUTPUT->render($post->rating), 'oublog-post-rating');
+            }
+        }
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-links'));
         if (!$forexport && !$email) {
             $output .= html_writer::tag('a', $strpermalink, array('href' => $CFG->wwwroot .

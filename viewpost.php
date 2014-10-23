@@ -24,6 +24,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
+require_once($CFG->dirroot . '/rating/lib.php');
 
 $postid = required_param('post', PARAM_INT);       // Post id.
 // Support redirects across systems - find post by username and time created.
@@ -157,6 +158,25 @@ echo '<div class="oublog-topofpage"></div>';
 // Print blog posts.
 echo '<div id="middle-column" >';
 echo '<div class="oublog-post-commented">';
+
+// Load ratings.
+if ($oublog->assessed != RATING_AGGREGATE_NONE) {
+    $ratingoptions = new stdClass();
+    $ratingoptions->context = $context;
+    $ratingoptions->component = 'mod_oublog';
+    $ratingoptions->ratingarea = 'post';
+    $ratingoptions->items = array('post' => $post);
+    $ratingoptions->aggregate = $oublog->assessed;// The aggregation method.
+    $ratingoptions->scaleid = $oublog->scale;
+    $ratingoptions->userid = $USER->id;
+    $ratingoptions->assesstimestart = $oublog->assesstimestart;
+    $ratingoptions->assesstimefinish = $oublog->assesstimefinish;
+
+    $rm = new rating_manager();
+    $postswithratings = $rm->get_ratings($ratingoptions);
+    $post = $postswithratings['post'];
+}
+
 echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype, $canmanageposts,
         $canaudit, false, false);
 

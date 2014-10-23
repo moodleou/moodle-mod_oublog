@@ -407,7 +407,6 @@ $string['commentsby'] = 'Comments by {$a}';
 $string['commentonby'] = 'Comment on post <u>{$a->title}</u> {$a->date} by <u>{$a->author}</u>';
 $string['nouserposts'] = 'No posts made.';
 $string['nousercomments'] = 'No comments made.';
-$string['savegrades'] = 'Save grades';
 $string['gradesupdated'] = 'Grades updated';
 $string['usergrade'] = 'User grade';
 $string['nousergrade'] = 'User grade not available.';
@@ -591,3 +590,15 @@ $string['event:commentapproved'] = 'Comment approved';
 $string['event:participationviewed'] = 'Participation viewed';
 $string['event:siteentriesviewed'] = 'Site entries viewed';
 $string['event:postimported'] = 'Post imported';
+$string['oublog:rate'] = 'Can rate posts.';
+$string['oublog:viewallratings'] = 'View all raw ratings given by individuals';
+$string['oublog:viewanyrating'] = 'View total ratings that anyone received';
+$string['oublog:viewrating'] = 'View the total rating you received';
+$string['grading'] = 'Grading';
+$string['grading_help'] = 'If you select this option, a grade for this blog will be added
+ to the course gradebook and calculated automatically.
+ Leave this off for a non-assessed blog, or one you plan to assess manually.';
+$string['grading_invalid'] = 'Posts can only be graded when either grade type or rating type are set.';
+$string['nograde'] = 'No grade (default)';
+$string['teachergrading'] = 'Teacher grades students';
+$string['userrating'] = 'Use ratings';

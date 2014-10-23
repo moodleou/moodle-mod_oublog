@@ -47,7 +47,7 @@ class mod_oublog_mod_form extends moodleform_mod {
         if (!defined('OUBLOG_EDIT_INSTANCE')) {
             $this->add_intro_editor(false, get_string('oublogintro', 'oublog'));
             // Adding the "allowcomments" field.
-            $options = array(OUBLOG_COMMENTS_ALLOW   => get_string('logincomments', 'oublog'),
+            $options = array(OUBLOG_COMMENTS_ALLOW => get_string('logincomments', 'oublog'),
                     OUBLOG_COMMENTS_ALLOWPUBLIC => get_string('publiccomments', 'oublog'),
                     OUBLOG_COMMENTS_PREVENT => get_string('nocomments', 'oublog'));
 
@@ -56,9 +56,9 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->addHelpButton('allowcomments', 'allowcomments', 'oublog');
 
             // Adding the "individual" field.
-            $options = array(OUBLOG_NO_INDIVIDUAL_BLOGS       => get_string('no_blogtogetheroringroups', 'oublog'),
-                             OUBLOG_SEPARATE_INDIVIDUAL_BLOGS => get_string('separateindividualblogs', 'oublog'),
-                             OUBLOG_VISIBLE_INDIVIDUAL_BLOGS  => get_string('visibleindividualblogs', 'oublog'));
+            $options = array(OUBLOG_NO_INDIVIDUAL_BLOGS => get_string('no_blogtogetheroringroups', 'oublog'),
+                    OUBLOG_SEPARATE_INDIVIDUAL_BLOGS => get_string('separateindividualblogs', 'oublog'),
+                    OUBLOG_VISIBLE_INDIVIDUAL_BLOGS => get_string('visibleindividualblogs', 'oublog'));
             $mform->addElement('select', 'individual', get_string('individualblogs', 'oublog'), $options);
             $mform->setType('individual', PARAM_INT);
             $mform->setDefault('individual', OUBLOG_NO_INDIVIDUAL_BLOGS);
@@ -68,9 +68,9 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->disabledIf('maxvisibility', 'individual', OUBLOG_NO_INDIVIDUAL_BLOGS, OUBLOG_NO_INDIVIDUAL_BLOGS);
 
             // Adding the "maxvisibility" field.
-            $options = array(OUBLOG_VISIBILITY_COURSEUSER   => get_string('visiblecourseusers', 'oublog'),
-                             OUBLOG_VISIBILITY_LOGGEDINUSER => get_string('visibleloggedinusers', 'oublog'),
-                             OUBLOG_VISIBILITY_PUBLIC       => get_string('visiblepublic', 'oublog'));
+            $options = array(OUBLOG_VISIBILITY_COURSEUSER => get_string('visiblecourseusers', 'oublog'),
+                    OUBLOG_VISIBILITY_LOGGEDINUSER => get_string('visibleloggedinusers', 'oublog'),
+                    OUBLOG_VISIBILITY_PUBLIC => get_string('visiblepublic', 'oublog'));
 
             $mform->addElement('select', 'maxvisibility', get_string('maxvisibility', 'oublog'), $options);
             $mform->setType('maxvisibility', PARAM_INT);
@@ -125,8 +125,19 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->addRule('tags', get_string('maximumchars', '', 255),
                             'maxlength', 255, 'client');
 
-            $this->standard_grading_coursemodule_elements();
-            $mform->setDefault('grade', 0);
+            $mform->addElement('header', 'modstandardgrade', get_string('grade'));
+            // Adding the "grading" field.
+            $options = array(OUBLOG_NO_GRADING => get_string('nograde', 'oublog'),
+                    OUBLOG_TEACHER_GRADING => get_string('teachergrading', 'oublog'),
+                    OUBLOG_USE_RATING => get_string('userrating', 'oublog'));
+            $mform->addElement('select', 'grading', get_string('grading', 'oublog'), $options);
+            $mform->setType('grading', PARAM_INT);
+            $mform->addHelpButton('grading', 'grading', 'oublog');
+
+            $mform->addElement('modgrade', 'grade', get_string('grade'));
+            $mform->addHelpButton('grade', 'modgrade', 'grades');
+            $mform->setDefault('grade', $CFG->gradepointdefault);
+            $mform->disabledIf('grade', 'grading', 'ne', OUBLOG_TEACHER_GRADING);
 
             // Add standard elements, common to all modules.
             $features = new stdClass;
@@ -258,6 +269,13 @@ class mod_oublog_mod_form extends moodleform_mod {
                 }
             } else {
                 $errors['allowimport'] = get_string('allowimport_invalid', 'oublog');
+            }
+        }
+        // If form is on blog edit page rather than the blog options edit instance page.
+        if (isset($data['grading'])) {
+           if (($data['grading'] == OUBLOG_TEACHER_GRADING && empty($data['grade'])) ||
+                    ($data['grading'] == OUBLOG_USE_RATING && empty($data['assessed']))) {
+                $errors['grading'] = get_string('grading_invalid', 'oublog');
             }
         }
         return $errors;
