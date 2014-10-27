@@ -168,6 +168,14 @@
     margin-right: .75em;
 }
 
+.fb_iframe_widget {
+    z-index: 4;
+}
+
+.fb-share-button {
+    padding-left: 5px;
+    vertical-align: top;
+}
 .oublog-post-content,
 .oublog-comment-content {
     margin:0.4em 0;

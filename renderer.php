@@ -118,11 +118,21 @@ class mod_oublog_renderer extends plugin_renderer_base {
                         'class' => 'twitter-share-button');
                 $turl = new moodle_url('https://twitter.com/share', $params);
                 $output .= html_writer::link($turl, $linktext, $params);
+
+                // Show facebook link.
+                $output .= html_writer::start_tag('div',
+                        array('class'=>'fb-share-button',
+                        'data-href' => $purl,
+                        'data-colorscheme' => 'dark'));
+                $output .= html_writer::end_tag('div');
+
                 $output .= html_writer::end_tag('div');
                 $output .= html_writer::end_tag('div');
                 // With JS enabled show twitters widget button.
                 self::render_twitter_js();
+                $output .= self::render_facebook_js();
             }
+
         }
         $output .= html_writer::end_tag('div');
 
@@ -1386,6 +1396,29 @@ class mod_oublog_renderer extends plugin_renderer_base {
         }
     }
 
+    /**
+     * Renders Facebook widget js code into the page.
+     */
+    public function render_facebook_js() {
+        global $PAGE;
+        static $loaded;
+        if ($loaded || $PAGE->devicetypeinuse == 'legacy') {
+            return;
+        } else {
+            $facebookjs = <<<EOF
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.0";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+EOF;
+            $loaded = true;
+            return $facebookjs;
+        }
+    }
 }
 
 class oublog_statsinfo implements renderable {

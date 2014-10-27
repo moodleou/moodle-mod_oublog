@@ -1743,7 +1743,7 @@ function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $i
  * @param object $context
  * @return string
  */
-function oublog_get_meta_tags($oublog, $bloginstance, $groupid, $cm) {
+function oublog_get_meta_tags($oublog, $bloginstance, $groupid, $cm, $post = null) {
     global $CFG;
 
     $meta = '';
@@ -1753,6 +1753,14 @@ function oublog_get_meta_tags($oublog, $bloginstance, $groupid, $cm) {
     if ($CFG->enablerssfeeds) {
         $meta .= '<link rel="alternate" type="application/atom+xml" title="'.get_string('atomfeed', 'oublog').'" href="'.$blogurlatom .'" />';
         $meta .= '<link rel="alternate" type="application/atom+xml" title="'.get_string('rssfeed', 'oublog').'" href="'.$blogurlrss .'" />';
+    }
+    if (isset($post)) {
+        $postname = !(empty($post->title)) ? $post->title : get_string('untitledpost', 'oublog');
+        $meta .= '<meta property = "og:type" content="website" />';
+        $meta .= '<meta property = "og:title" content="' . $postname . '" />';
+        $meta .= '<meta property ="og:description" content="' . $oublog->name . '" />';
+        $meta .= '<meta property ="og:url" content="' .$CFG->wwwroot .
+                '/mod/oublog/viewpost.php?post=' . $post->id. '" />';
     }
 
     return ($meta);

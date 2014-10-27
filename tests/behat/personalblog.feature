@@ -268,7 +268,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should not see "Personal OUBlog post21"
     And ".oublog-paging .next" "css_element" should not exist
 
-      # New scenario tests the tweet widget availability
+  # New scenario tests the Socialmedia widgets availability
   Scenario: Admin tests the blog tweet facility
     Given I log in as "admin"
     And I am on homepage
@@ -288,8 +288,9 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should see "sc02edap01"
     And I should not see "Share this post"
     And I should not see "Tweet"
+    And I should not see "Share"
 
-    # Admin adds a WorldVis post and Tweet is available
+    # Admin adds a WorldVis post and Socialmedia widgets are available
     Given I press "New blog post"
     And I should see "New blog post"
     And I set the following fields to these values:
@@ -303,8 +304,9 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should see "sc02edap02"
     And I should see "Share this post"
     And I should see "Tweet"
+    And I should see "Share"
 
-    # Admin opens viewpost page and Tweet is available
+    # Admin opens viewpost page and Socialmedia widgets are available
     And I click on "//a[contains(@href,'viewpost.php?post=2')]" "xpath_element"
     And I wait to be redirected
     Then I should see "SC02 Personal OUBlog post02"
@@ -312,5 +314,6 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should see "sc02edap02"
     And I should see "Share this post"
     And I should see "Tweet"
+    And I should see "Share"
     And I should not see "SC02 Personal OUBlog post01"
     And I should not see "SC02 Admin Persblog post01 content Private"

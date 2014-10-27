@@ -147,8 +147,8 @@ $event = \mod_oublog\event\post_viewed::create($params);
 $event->add_record_snapshot('oublog_posts', $post);
 $event->trigger();
 
-$CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm);
-$PAGE->set_title(format_string($oublog->name));
+$CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm, $post);
+$PAGE->set_title(format_string($post->title));
 $PAGE->set_heading(format_string($course->fullname));
 oublog_get_post_extranav($post, false);
 echo $OUTPUT->header();
