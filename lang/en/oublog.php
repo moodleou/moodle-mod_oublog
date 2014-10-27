@@ -602,3 +602,5 @@ $string['grading_invalid'] = 'Posts can only be graded when either grade type or
 $string['nograde'] = 'No grade (default)';
 $string['teachergrading'] = 'Teacher grades students';
 $string['userrating'] = 'Use ratings';
+$string['share'] = 'Share this post';
+$string['tweet'] = 'Tweet';

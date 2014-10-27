@@ -65,6 +65,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post'. $extraclasses));
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-top'));
+        $output .= html_writer::start_tag('div', array('class' => 'oublog-social-container'));
         $fs = get_file_storage();
         if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment', $post->id,
                 "timemodified", false)) {
@@ -100,6 +101,31 @@ class mod_oublog_renderer extends plugin_renderer_base {
             }
             $output .= html_writer::end_tag('div');
         }
+        // Only show widgets if blog is global ect.
+        if ($oublog->global && $oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC) {
+            if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC && !$forexport && !$email) {
+                list($oublog, $oubloginstance) = oublog_get_personal_blog($post->userid);
+                $oubloginstancename = $oubloginstance->name;
+                $linktext = get_string('tweet', 'oublog');
+                $purl = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
+                $postname = !(empty($post->title)) ? $post->title : get_string('untitledpost', 'oublog');
+                $output .= html_writer::start_tag('div', array('class' => 'oublog-post-socialshares'));
+                $output .= get_string('share', 'oublog');
+                $output .= html_writer::start_tag('div', array('class' => 'oublog-post-share'));
+                // Show tweet link.
+                $params = array('url' => $purl, 'dnt' => true, 'count' => 'none',
+                        'text' => $postname . " " . $oubloginstance->name,
+                        'class' => 'twitter-share-button');
+                $turl = new moodle_url('https://twitter.com/share', $params);
+                $output .= html_writer::link($turl, $linktext, $params);
+                $output .= html_writer::end_tag('div');
+                $output .= html_writer::end_tag('div');
+                // With JS enabled show twitters widget button.
+                self::render_twitter_js();
+            }
+        }
+        $output .= html_writer::end_tag('div');
+
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-top-content'));
         if (!$forexport) {
             $output .= html_writer::start_tag('div', array('class' => 'oublog-userpic'));
@@ -1344,6 +1370,20 @@ class mod_oublog_renderer extends plugin_renderer_base {
         }
         $output .= html_writer::end_tag('div');
         return $output;
+    }
+
+     /**
+     * Renders Twitter widget js code into the page.
+     */
+    public function render_twitter_js() {
+        global $PAGE;
+        static $loaded;
+        if ($loaded || $PAGE->devicetypeinuse == 'legacy') {
+            return;
+        } else {
+            $PAGE->requires->js_init_code("Y.Get.js('https://platform.twitter.com/widgets.js', {async:true})");
+            $loaded = true;
+        }
     }
 
 }

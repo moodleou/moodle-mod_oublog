@@ -267,3 +267,50 @@ Feature: Test Post and Comment on Personal OUBlog
     Then I should see "Personal OUBlog post22"
     And I should not see "Personal OUBlog post21"
     And ".oublog-paging .next" "css_element" should not exist
+
+      # New scenario tests the tweet widget availability
+  Scenario: Admin tests the blog tweet facility
+    Given I log in as "admin"
+    And I am on homepage
+    And I follow "Personal Blogs"
+
+    # Admin adds a Private post Tweet not available
+    Given I press "New blog post"
+    And I should see "New blog post"
+    And I set the following fields to these values:
+      | Title | SC02 Personal OUBlog post01 |
+      | Message | SC02 Admin Persblog post01 content Private |
+      | Tags | SC02edap01 |
+      | Who can read this | Visible only to the blog owner (private) |
+    And I press "Add post"
+    Then I should see "SC02 Personal OUBlog post01"
+    And I should see "SC02 Admin Persblog post01 content Private"
+    And I should see "sc02edap01"
+    And I should not see "Share this post"
+    And I should not see "Tweet"
+
+    # Admin adds a WorldVis post and Tweet is available
+    Given I press "New blog post"
+    And I should see "New blog post"
+    And I set the following fields to these values:
+      | Title | SC02 Personal OUBlog post02 |
+      | Message | SC02 Admin Persblog post02 content WorldVis |
+      | Tags | SC02edap02 |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    Then I should see "SC02 Personal OUBlog post02"
+    And I should see "SC02 Admin Persblog post02 content WorldVis"
+    And I should see "sc02edap02"
+    And I should see "Share this post"
+    And I should see "Tweet"
+
+    # Admin opens viewpost page and Tweet is available
+    And I click on "//a[contains(@href,'viewpost.php?post=2')]" "xpath_element"
+    And I wait to be redirected
+    Then I should see "SC02 Personal OUBlog post02"
+    And I should see "SC02 Admin Persblog post02 content WorldVis"
+    And I should see "sc02edap02"
+    And I should see "Share this post"
+    And I should see "Tweet"
+    And I should not see "SC02 Personal OUBlog post01"
+    And I should not see "SC02 Admin Persblog post01 content Private"

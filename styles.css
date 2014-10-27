@@ -136,11 +136,34 @@
     border-radius: 5px;
     background-color: #E7E7E7;
     width: 200px;
-    margin-bottom: 1em;
+    margin-bottom: 0.4em;
     font-size: 0.85em;
 }
+
+.oublog-post .oublog-social-container {
+    float: right;
+    width: 200px;
+}
+
+.oublog-post .oublog-post-socialshares {
+    float: right;
+    padding: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #6E6E6E;
+    width: 200px;
+    font-size: 0.85em;
+    color: white;
+    margin-bottom: .5em;
+}
+
 .oublog-post .oublog-post-attachment {
-    display: inline;
+    word-break: break-all;
+    margin-right: .75em;
+}
+.oublog-post .oublog-post-share {
+    margin-top: .2em;
     word-break: break-all;
     margin-right: .75em;
 }
