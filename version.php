@@ -23,7 +23,7 @@
  * @package oublog
  **/
 
-$plugin->version  = 2014102701;
+$plugin->version  = 2014102702;
 $plugin->requires = 2014051200;
 $plugin->cron     = 60*60*4; // 4 hours.
 $plugin->component = 'mod_oublog';// Full name of the plugin (used for diagnostics)

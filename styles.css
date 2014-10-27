@@ -152,13 +152,14 @@
     -webkit-border-radius: 5px;
     border-radius: 5px;
     background-color: #6E6E6E;
-    width: 200px;
+    width: 201px;
     font-size: 0.85em;
     color: white;
     margin-bottom: .5em;
 }
 
 .oublog-post .oublog-post-attachment {
+    display: inline;
     word-break: break-all;
     margin-right: .75em;
 }
@@ -170,6 +171,17 @@
 
 .fb_iframe_widget {
     z-index: 4;
+}
+
+.share-button {
+    display: inline;
+    padding-left: 5px;
+    vertical-align: top;
+}
+
+.twitter-share-button {
+    /* JS disabled text link */
+    color: white;
 }
 
 .fb-share-button {

@@ -113,24 +113,41 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $output .= get_string('share', 'oublog');
                 $output .= html_writer::start_tag('div', array('class' => 'oublog-post-share'));
                 // Show tweet link.
+                $output .= html_writer::start_tag('div',
+                        array('class' => 'share-button'));
                 $params = array('url' => $purl, 'dnt' => true, 'count' => 'none',
                         'text' => $postname . " " . $oubloginstance->name,
                         'class' => 'twitter-share-button');
                 $turl = new moodle_url('https://twitter.com/share', $params);
                 $output .= html_writer::link($turl, $linktext, $params);
-
+                $output .= html_writer::end_tag('div');
                 // Show facebook link.
                 $output .= html_writer::start_tag('div',
-                        array('class'=>'fb-share-button',
+                        array('class' => 'share-button'));
+                $output .= html_writer::start_tag('div',
+                        array('class' => 'fb-share-button',
                         'data-href' => $purl,
                         'data-colorscheme' => 'dark'));
                 $output .= html_writer::end_tag('div');
+                $output .= html_writer::end_tag('div');
+                // Show googleplus link.
+                $output .= html_writer::start_tag('div',
+                        array('class' => 'share-button'));
+                $output .= html_writer::start_tag('div',
+                        array('class'=>'g-plus',
+                        'data-href' => $purl,
+                        'data-action' => 'share',
+                        'data-height' => 20,
+                        'data-annotation' => 'none'));
+                $output .= html_writer::end_tag('div');
+                $output .= html_writer::end_tag('div');
 
                 $output .= html_writer::end_tag('div');
                 $output .= html_writer::end_tag('div');
-                // With JS enabled show twitters widget button.
+                // With JS enabled show social widget buttons.
                 self::render_twitter_js();
                 $output .= self::render_facebook_js();
+                $output .= self::render_googleplus_js();
             }
 
         }
@@ -1407,16 +1424,25 @@ class mod_oublog_renderer extends plugin_renderer_base {
         } else {
             $facebookjs = <<<EOF
 <div id="fb-root"></div>
-<script>(function(d, s, id) {
-  var js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) return;
-  js = d.createElement(s); js.id = id;
-  js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.0";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
 EOF;
+            $PAGE->requires->js_init_code("Y.Get.js('https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.0', {async:true})");
             $loaded = true;
             return $facebookjs;
+        }
+    }
+
+    /**
+     * Renders Google+ widget js code into the page.
+     */
+    public function render_googleplus_js() {
+        global $PAGE;
+        static $loaded;
+        if ($loaded || $PAGE->devicetypeinuse == 'legacy') {
+            return;
+        } else {
+            $PAGE->requires->js_init_code("Y.Get.js('https://apis.google.com/js/platform.js', {async:true})");
+            $loaded = true;
+            return;
         }
     }
 }
