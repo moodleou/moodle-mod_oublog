@@ -142,6 +142,9 @@ $query=new local_ousearch_search($querytext);
 $query->set_coursemodule($cm);
 if ($oublog->global && isset($oubloguser)) {
     $query->set_user_id($oubloguser->id);
+} else if ($oublog->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS &&
+        !has_capability('mod/oublog:viewindividual', $context)) {
+    $query->set_user_id($USER->id);
 }
 if ($groupmode && $currentgroup) {
     $query->set_group_id($currentgroup);
