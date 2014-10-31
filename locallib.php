@@ -727,7 +727,7 @@ function oublog_get_post($postid, $canaudit=false) {
     $editusernamefields = get_all_user_name_fields(true, 'ue', null, 'ed');
 
     // Get post
-    $sql = "SELECT p.*, bi.oublogid, $usernamefields, u.picture, u.imagealt, bi.userid, u.idnumber, u.email, u.username,
+    $sql = "SELECT p.*, bi.oublogid, $usernamefields, u.picture, u.imagealt, bi.userid, u.idnumber, u.email, u.username, u.mailformat,
                     $delusernamefields,
                     $editusernamefields
             FROM {oublog_posts} p

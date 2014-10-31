@@ -104,35 +104,40 @@ if ($email) {
         $includepost = (isset($submitted->includepost)) ? true : false;
         $from = $SITE->fullname;
 
-        // Always send HTML version.
+        // Use prefered format for author of the post.
         $user = (object)array(
                 'email' => $post->email,
-                'mailformat' => 1,
+                'mailformat' => $post->mailformat,
                 'id' => $post->userid
         );
 
         $messagehtml = text_to_html($messagetext);
 
-        // Include the copy of the post in the email to the author.
+        // Include the copy of the post in the email.
         if ($includepost) {
             $messagehtml .= $messagepost;
         }
         // Send an email to the author of the post.
-        if (!email_to_user($user, $from, $post->title, '', $messagehtml)) {
+        if (!email_to_user($user, $from, $post->title, html_to_text($messagehtml), $messagehtml)) {
             print_error(get_string('emailerror', 'oublog'));
         }
+
         // Prepare for copies.
-        $emails = $selfmail = array();
+        $emails = array();
         if ($copyself) {
-            $selfmail[] = $USER->email;
+            // Send an email copy to the current user, with prefered format.
+            $subject = strtoupper(get_string('copy')) . ' - '. $post->title;
+            if (!email_to_user($USER, $from, $subject, html_to_text($messagehtml), $messagehtml)) {
+                print_error(get_string('emailerror', 'oublog'));
+            }
         }
+
         // Addition of 'Email address of other recipients'.
         if (!empty($submitted->emailadd)) {
             $emails = preg_split('~[; ]+~', $submitted->emailadd);
         }
-        $emails = array_merge($emails, $selfmail);
 
-        // If there are any recipients listed send them a copy.
+        // If there are any recipients listed send them a HTML copy.
         if (!empty($emails[0])) {
             $subject = strtoupper(get_string('copy')) . ' - '. $post->title;
             foreach ($emails as $email) {
