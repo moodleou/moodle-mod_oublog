@@ -177,6 +177,7 @@
     display: inline;
     padding-left: 5px;
     vertical-align: top;
+    float: left;
 }
 
 .twitter-share-button {
