@@ -2018,7 +2018,6 @@ function oublog_individual_get_activity_details($cm, $urlroot, $oublog, $current
         $name = reset($menu);
         $output = $label.':&nbsp;'.$name;
     } else {
-        $active = '';
         foreach ($menu as $value => $item) {
             $url = $urlroot.'&amp;individual='.$value;
             $url = str_replace($CFG->wwwroot, '', $url);

@@ -604,4 +604,3 @@ $string['teachergrading'] = 'Teacher grades students';
 $string['userrating'] = 'Use ratings';
 $string['share'] = 'Share this post';
 $string['tweet'] = 'Tweet';
-$string['oublogcrontask'] = 'OU blog maintenance jobs';
