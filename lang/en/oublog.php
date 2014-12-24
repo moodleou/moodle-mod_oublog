@@ -605,3 +605,9 @@ $string['userrating'] = 'Use ratings';
 $string['share'] = 'Share this post';
 $string['tweet'] = 'Tweet';
 $string['oublogcrontask'] = 'OU blog maintenance jobs';
+
+$string['restricttags'] = 'Allow \'Set\' tags only';
+$string['restricttags_help'] = 'If you select this option, you can restrict
+tag entry to only those that are set at activity level.';
+$string['restricttagslist'] = 'You may only enter the \'Set\' tags: {$a}';
+$string['restricttagsvalidation'] = 'Only \'Set\' tags are allowed to be entered';

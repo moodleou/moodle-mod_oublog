@@ -125,6 +125,11 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->addRule('tags', get_string('maximumchars', '', 255),
                             'maxlength', 255, 'client');
 
+            $mform->addElement('checkbox', 'restricttags', get_string('restricttags', 'oublog'), '', 0);
+            $mform->addHelpButton('restricttags', 'restricttags', 'oublog');
+            // Must have tags for restriction.
+            $mform->disabledIf('restricttags', 'tags', 'eq', '');
+
             $mform->addElement('header', 'modstandardgrade', get_string('grade'));
             // Adding the "grading" field.
             $options = array(OUBLOG_NO_GRADING => get_string('nograde', 'oublog'),
@@ -226,7 +231,9 @@ class mod_oublog_mod_form extends moodleform_mod {
         if (!empty($data->tags)) {
             $data->tags = textlib::strtolower(trim($data->tags));
         }
-
+        if (empty($data->restricttags)) {
+            $data->restricttags = 0;
+        }
         return $data;
     }
 

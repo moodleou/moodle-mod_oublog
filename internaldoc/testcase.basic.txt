@@ -315,8 +315,8 @@ BTAG06 / admin
    Enter the message 'Testing the predefined Set Blog tags appear
    along side user entered tags'.
    Scroll to and enter the Tags (separated by commas) field.
--- Confirm that 'cre03tag01 Set 1 posts', 'cre03tag02 Set 0 posts'
-   and 'btag07 1 posts'are the only entries in the drop down.
+-- Confirm that 'btag07 1 posts', 'cre03tag01 Set 1 posts' and 'cre03tag02 Set 0 posts'
+   are the only entries in the drop down.
    Slowly, enter the tag 'btag08,' into the Tags field.
    Select the tag 'cre03tag02 Set 0 posts'.
 -- Confirm that 'btag07 1 posts' and 'cre03tag01 Set 1 posts' are the only
@@ -326,6 +326,61 @@ BTAG06 / admin
 BTAG07 / admin
 -- Confirm that the display of the Tag cloud matches those tags entered,
    'btag07(1) btag08(1) cre03tag01(1) cre03tag02(1)'.
+
+BTAG08 / admin
+   Select 'Edit settings' link in the Administration block.
+   Scroll down to find the 'General' field entry, 'Tags' with help icon.
+   Click the help icon beside 'Allow 'Set' tags only.
+-- Confirm it matches the following,
+   "If you select this option, you can restrict tag entry to only those that are set at activity level."
+   Over write the tags in the tag field with 'cre03settag01, cre03settag02'.
+   Click the 'Allow 'Set' tags only checkbox.
+-- Click 'Save and display'.
+
+BTAG09 / admin
+   Create a new post, enter the title as 'TAG09'
+   Enter the message 'Testing the predefined Set Blog tags appear
+   rather than user entered tags'.
+-- Confirm that beneath the 'Message' box there is a label
+   'You may only enter the 'Set' tags: cre03settag01,cre03settag02'.
+   Enter the Tags (separated by commas) field.
+-- Confirm that 'cre03settag01 Set 0 posts', 'cre03settag02 Set 0 posts'
+   are the only entries in the drop down.
+   Select the tag 'cre03settag02 Set 0 posts'.
+-- Confirm that 'cre03settag01 Set 0 posts' is now the only entry displayed
+   in the choice drop down selector.
+
+BTAG10 / admin
+   In the tag field enter the tag 'tag01' after the set tag 'cre03settag02'
+   Click 'Add post'.
+-- Confirm that the page refreshes with a warning above the tag entry field,
+   'Only 'Set' tags are allowed to be entered'.
+   In the tag field, delete the tag 'tag01' and select 'cre03settag01 Set 0 posts'
+   from the choice drop down selector.
+   Click 'Add post'.
+
+BTAG011/ admin
+-- Confirm that the display of the Tag cloud matches those tags entered,
+   'btag07(1) btag08(1) cre03settag01(1) cre03settag02(1) cre03tag01(1) cre03tag02(1)'.
+
+BTAG012/ admin
+   Edit the TAG08 post.
+-- Confirm that beneath the 'Message' box there is a label
+   'You may only enter the 'Set' tags: cre03settag01,cre03settag02'.
+-- Confirm the existing tags are 'btag08', 'cre03tag02',
+   Enter the Tags (separated by commas) field.
+-- Confirm that 'cre03settag01 Set 1 posts', 'cre03settag02 Set 1 posts'
+   are the only entries in the drop down.
+   Click the 'Save changes' button.
+-- Confirm that the page refreshes with a warning above the tag entry field,
+   'Only 'Set' tags are allowed to be entered'.
+   In the tag field, delete the tags 'btag08' and 'cre03tag02' then select
+   'cre03settag02 Set 1 post' from the choice drop down selector.
+   Click the 'Save changes' button.
+
+BTAG013/ admin
+-- Confirm that the display of the Tag cloud matches those tags entered,
+   'btag07(1) cre03settag01(1) cre03settag02(2) cre03tag01(1)'.
 
 PAG Testing blog display pagination.
 ===================================

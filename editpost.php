@@ -106,7 +106,17 @@ $groupmode = oublog_get_activity_groupmode($cm, $course);
 if ($groupmode==VISIBLEGROUPS && !groups_is_member($currentgroup) && !$oublog->individual) {
     require_capability('moodle/site:accessallgroups', $context);
 }
-
+// Setup tag list call.
+$curindividual = -1;
+$curgroup = false;
+if ($oublog->individual) {
+    $curindividual = isset($oubloginstance->userid) ? $oubloginstance->userid : $USER->id;
+} else {
+    $curgroup = isset($post->groupid) ? $post->groupid : $currentgroup;
+}
+// Moved call to oublog_get_tag_list() here.
+$tags = oublog_get_tag_list($oublog, $curgroup, $cm,
+        $oublog->global ? $oubloginstance->id : null, $curindividual);
 $mform = new mod_oublog_post_form('editpost.php', array(
     'individual' => $oublog->individual,
     'maxvisibility' => $oublog->maxvisibility,
@@ -114,7 +124,9 @@ $mform = new mod_oublog_post_form('editpost.php', array(
     'edit' => !empty($postid),
     'personal' => $oublog->global,
     'maxbytes' => $oublog->maxbytes,
-    'maxattachments' => $oublog->maxattachments));
+    'maxattachments' => $oublog->maxattachments,
+    'restricttags' => $oublog->restricttags,
+    'availtags' => $tags));
 if ($mform->is_cancelled()) {
     redirect($viewurl);
     exit;
@@ -169,17 +181,8 @@ if (!$frmpost = $mform->get_data()) {
     echo $renderer->render_pre_postform($oublog, $cm);
     $mform->display();
     // Add tagselector yui mod - autocomplete of tags.
-    $curindividual = -1;
-    $curgroup = false;
-    if ($oublog->individual) {
-        $curindividual = isset($oubloginstance->userid) ? $oubloginstance->userid : $USER->id;
-    } else {
-        $curgroup = isset($post->groupid) ? $post->groupid : $currentgroup;
-    }
-
     $PAGE->requires->yui_module('moodle-mod_oublog-tagselector', 'M.mod_oublog.tagselector.init',
-            array('id_tags', oublog_get_tag_list($oublog, $curgroup, $cm,
-                    $oublog->global ? $oubloginstance->id : null, $curindividual)));
+            array('id_tags', $tags));
     $PAGE->requires->string_for_js('numposts', 'oublog');
 
     // Check the network connection on exiting the update page.

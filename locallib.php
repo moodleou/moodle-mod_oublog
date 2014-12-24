@@ -1050,13 +1050,16 @@ function oublog_get_tag_list($oublog, $groupid, $cm, $oubloginstanceid = null, $
     $blogtags = oublog_clarify_tags($oublog->tags);
 
     // For each tag added to the blog check if it is already in use
-    // in the post, if it is then the 'Offical' label is added to it.
+    // in the post, if it is then the 'Official' label is added to it.
     $existingtagnames = array();
     foreach ($tags as $idx => $tag) {
         if (in_array($tags[$idx]->tag, $blogtags)) {
             $tag->label = get_string('official', 'oublog');
-            // Flat array of existing in use 'Official' tags.
+            // Flat array of existing in use 'Set' tags.
             $existingtagnames[] = $tags[$idx]->tag;
+        } else if ($oublog->restricttags) {
+            // If we are restricting, remove this non-offical tag.
+            unset($tags[$idx]);
         }
     }
     // For each 'Official' tag added, if it is NOT already in use,

@@ -1469,12 +1469,15 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertNotEquals('antelope', $tag->tag);
         $this->assertEquals('blogtag01', $tag->tag);// Last in Alphabetical order.
 
-        // Recover combined list of tags.
+        // Testing 'Set' tag only restrictions.
+        // No restriction, recover full list of blog 'Set' and post tags.
+        $oublog->restricttags = 0;
         $taglist = oublog_get_tag_list($oublog, 0, $cm, null, -1);
         $this->assertCount(3, $taglist);
         foreach ($taglist as $tag) {
+            $fulltaglist[] = $tag->tag;
             if (isset($tag->label)) {
-                // It should be an 'Official' predefined blog tag.
+                // It should be an 'Official' ie. 'Set' predefined blog tag.
                 $this->assertContains($tag->tag, $oublog->tags);
                 $this->assertNotEmpty($tag->label);
                 $this->assertGreaterThanOrEqual(0, $tag->count);
@@ -1486,8 +1489,31 @@ class oublog_locallib_test extends oublog_test_lib {
                 $this->assertEquals(1, $tag->count);
             }
         }
-        $this->assertNotEquals('antelope', $tag->tag);
-        $this->assertEquals('blogtag02', $tag->tag);// Last in list.
+        $this->assertContains('antelope', $fulltaglist);
+        $this->assertContains('blogtag01', $fulltaglist);
+        $this->assertContains('blogtag02', end($fulltaglist));// Last in full list.
+
+        // Restriction applied, get restricted list of blog 'Set' tags.
+        $oublog->restricttags = 1;
+        $taglist = oublog_get_tag_list($oublog, 0, $cm, null, -1);
+        $this->assertCount(2, $taglist);
+        foreach ($taglist as $tag) {
+            $restrictedtaglist[] = $tag->tag;
+            if (isset($tag->label)) {
+                // It should be an 'Official' ie. 'Set' predefined blog tag.
+                $this->assertContains($tag->tag, $oublog->tags);
+                $this->assertNotEmpty($tag->label);
+                $this->assertGreaterThanOrEqual(0, $tag->count);
+            }
+            if (!isset($tag->label)) {
+                $this->assertEmpty($tag->id);
+                $this->assertEmpty($tag->weight);
+                $this->assertEquals(0, $tag->count);
+            }
+        }
+        $this->assertNotContains('antelope', $restrictedtaglist);
+        $this->assertContains('blogtag01', $restrictedtaglist);
+        $this->assertContains('blogtag02', end($restrictedtaglist));// Last in restricted list.
     }
 
 }

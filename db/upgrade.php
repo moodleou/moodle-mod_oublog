@@ -325,5 +325,20 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2014102300, 'oublog');
     }
 
+    if ($oldversion < 2014122400) {
+        // Define field restricttags to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('restricttags', XMLDB_TYPE_INTEGER, '10',
+                        XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'grading');
+
+        // Conditionally launch add field restricttags.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // OUblog savepoint reached.
+        upgrade_mod_savepoint(true, 2014122400, 'oublog');
+    }
+
     return true;
 }
