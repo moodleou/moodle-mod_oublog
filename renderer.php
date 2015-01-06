@@ -1445,6 +1445,13 @@ EOF;
             return;
         }
     }
+
+    /**
+     * Render socialmedia widgets into the 'summary block'.
+     */
+    public function render_summary($summary, $oubloguser) {
+        return $summary;
+    }
 }
 
 class oublog_statsinfo implements renderable {

@@ -283,11 +283,14 @@ if (!$hideunusedblog) {
     if ($oublog->global) {
         $bc->content = file_rewrite_pluginfile_urls($summary, 'mod/oublog/pluginfile.php',
                 $context->id, 'mod_oublog', 'summary', $oubloginstance->id);
+        $bc->content = format_text($bc->content, $format);
+        $bc->content = $oublogoutput->render_summary($bc->content, $oubloguser);
     } else {
         $bc->content = file_rewrite_pluginfile_urls($summary, 'pluginfile.php',
                 $context->id, 'mod_oublog', 'intro', null);
+        $bc->content = format_text($bc->content, $format);
     }
-    $bc->content = format_text($bc->content, $format) . $links;
+    $bc->content = $bc->content . $links;
     $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
 
     // Tag Cloud.
