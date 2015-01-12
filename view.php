@@ -208,7 +208,6 @@ list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, $
         $currentindividual, $oubloguser->id, $tag, $canaudit);
 
 
-
 $hideunusedblog=!$posts && !$canpost && !$canaudit;
 
 if ($oublog->global && !$hideunusedblog) {
@@ -422,9 +421,11 @@ if ($posts) {
     echo '</div>';
     echo '<div id="oublog-posts">';
     $rowcounter = 1;
+    // Only add page onto returnurl within call to render post.
+    $retnurl = $returnurl . '&page=' . $page;
     foreach ($posts as $post) {
         $post->row = $rowcounter;
-        echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype,
+        echo $oublogoutput->render_post($cm, $oublog, $post, $retnurl, $blogtype,
                 $canmanageposts, $canaudit, true, false);
         $rowcounter++;
     }
@@ -481,8 +482,13 @@ if (isguestuser() && $USER->id==$user) {
                     (object) array('link' => 'bloglogin.php?returnurl='.urlencode($returnurl),
                             'name' => oublog_get_displayname($oublog))).'</p>';
 } else if (!$posts) {
-    print '<p class="oublog_noposts">'.
-            get_string('noposts', 'oublog', oublog_get_displayname($oublog)).'</p>';
+    if (!$tag) {
+        $errormessage = get_string('noposts', 'oublog', oublog_get_displayname($oublog));
+    } else {
+        $a = array('blog' => oublog_get_displayname($oublog), 'tag' => $tag);
+        $errormessage = get_string('nopostsnotags', 'oublog', $a);
+    }
+    print '<p class="oublog_noposts">' . $errormessage . ' </p>';
 }
 
 // Log oublog page view.

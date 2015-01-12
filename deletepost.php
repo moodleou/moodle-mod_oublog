@@ -28,6 +28,7 @@ $postid = required_param('post', PARAM_INT);       // Post ID for editing.
 $confirm = optional_param('confirm', 0, PARAM_INT);// Confirm that it is ok to delete post.
 $delete = optional_param('delete', 0, PARAM_INT);
 $email = optional_param('email', 0, PARAM_INT);    // Email author.
+$referurl = optional_param('referurl', 0, PARAM_LOCALURL);
 
 if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
     print_error('invalidblog', 'oublog');
@@ -66,6 +67,9 @@ if ($oublog->global) {
     $blogtype = 'personal';
     $oubloguser = $USER;
     $viewurl = new moodle_url('/mod/oublog/view.php', array('user' => $postauthor));
+    if (isset($referurl)) {
+        $viewurl = new moodle_url($referurl);
+    }
     // Print the header.
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php',
             array('id' => $oubloguser->id)));
@@ -73,13 +77,16 @@ if ($oublog->global) {
 } else {
     $blogtype = 'course';
     $viewurl = new moodle_url('/mod/oublog/view.php', array('id' => $cm->id));
+    if (isset($referurl)) {
+        $viewurl = new moodle_url($referurl);
+    }
 }
 
 if ($email) {
     // Then open and process the form.
     require_once($CFG->dirroot . '/mod/oublog/deletepost_form.php');
     $customdata = (object)array('blog' => $blog, 'post' => $postid,
-            'delete' => $delete, 'email' => $email, 'url' => $viewurl);
+            'delete' => $delete, 'email' => $email, 'referurl' => $viewurl);
     $mform = new mod_oublog_deletepost_form('deletepost.php', $customdata);
     if ($mform->is_cancelled()) {
         // Form is cancelled, redirect back to the blog.
@@ -185,7 +192,7 @@ if ($email) {
 
         $deletebutton = new single_button(new moodle_url('/mod/oublog/deletepost.php',
                 array('blog' => $blog, 'post' => $postid, 'delete' => '1',
-                        'confirm' => '1')), get_string('delete'), 'post');
+                        'confirm' => '1', 'referurl' => $viewurl)), get_string('delete'), 'post');
         $cancelbutton = new single_button($viewurl, get_string('cancel'), 'get');
 
         if ($USER->id == $post->userid) {
@@ -203,7 +210,6 @@ if ($email) {
     } else {
         // Mark the post as deleted.
         oublog_do_delete($course, $cm, $oublog, $post);
-
         redirect($viewurl);
     }
 }

@@ -32,6 +32,7 @@ class mod_oublog_post_form extends moodleform {
         $personal      = $this->_customdata['personal'];
         $maxbytes      = $this->_customdata['maxbytes'];
         $maxattachments = $this->_customdata['maxattachments'];
+        $referurl = $this->_customdata['referurl'];
         $this->restricttags = false;
 
         if ($this->_customdata['restricttags'] == true) {
@@ -130,6 +131,9 @@ class mod_oublog_post_form extends moodleform {
 
         $mform->addElement('hidden', 'post');
         $mform->setType('post', PARAM_INT);
+
+        $mform->addElement('hidden', 'referurl', $referurl);
+        $mform->setType('referurl', PARAM_LOCALURL);
 
     }
 

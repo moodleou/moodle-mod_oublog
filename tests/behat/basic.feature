@@ -440,7 +440,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I set the following fields to these values:
       | Title | SC02 OUBlog post02 from student edited post subject |
       | Message | SC02 Student OUBlog post02 content filtered by tag edited post body |
-      | Tags | dtag3sc02 |
+      | Tags | atag1sc02, btag2sc02, ctag3sc02, dtag3sc02 |
     And I upload "lib/tests/fixtures/empty.txt" file to "Attachments" filemanager
     And I press "Save changes"
     And I wait to be redirected
@@ -455,7 +455,7 @@ Feature: Test Post and Comment on OUBlog entry
 
     # Delete student post01 the second post made.
     Given I follow "Test oublog basics"
-    When I click on "//a[contains(@href,'deletepost.php?blog=2&post=2&delete=1')]" "xpath_element"
+    When I click on "Delete" "link" in the ".oublog-post:nth-child(2) .oublog-post-links" "css_element"
     And I wait to be redirected
     Then I should see "Are you sure you want to delete this post?"
     And I press "Delete"
@@ -507,7 +507,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I should see "SC02 OUBlog post02 teacher content"
 
     # Should see tags in default Alphabetical order.
-    Then I should see "ctag3sc02(1) dogtag(1) dtag3sc02(1)"
+    Then I should see "ctag3sc02(2) dogtag(1) dtag3sc02(1)"
     And I log out
 
     Scenario: Further standard regression/basic tests - non-js.

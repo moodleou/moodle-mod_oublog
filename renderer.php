@@ -45,6 +45,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         global $CFG, $USER, $OUTPUT;
         $output = '';
         $modcontext = context_module::instance($cm->id);
+        $referurl = $baseurl;
         // Get rid of any existing tag from the URL as we only support one at a time.
         $baseurl = preg_replace('~&amp;tag=[^&]*~', '', $baseurl);
 
@@ -295,13 +296,15 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $output .= html_writer::start_tag('div', array('class' => 'oublog-post-tags')) .
                     $strtags . ': ';
             $tagcounter = 1;
+            // Get rid of page from the URL we dont want it in tags.
+            $pagelessurl = preg_replace('/&page=[^&]*/', '', $baseurl);
             foreach ($post->tags as $taglink) {
                 $taglinktext = $taglink;
                 if ($tagcounter < count($post->tags)) {
                     $taglinktext .= ',';
                 }
                 if (!$forexport && !$email) {
-                    $output .= html_writer::tag('a', $taglinktext, array('href' => $baseurl .
+                    $output .= html_writer::tag('a', $taglinktext, array('href' => $pagelessurl .
                             '&tag=' . urlencode($taglink))) . ' ';
                 } else {
                     $output .= $taglinktext . ' ';
@@ -327,18 +330,18 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 if (!$forexport && !$email) {
                     $output .= html_writer::tag('a', $stredit, array('href' => $CFG->wwwroot .
                             '/mod/oublog/editpost.php?blog=' . $post->oublogid .
-                            '&post=' . $post->id)).' ';
+                            '&post=' . $post->id . '&referurl=' . urlencode($referurl))) . ' ';
                     if (($post->userid !== $USER->id)) {
                         // Add email and 'oublog_deleteandemail' to delete link.
                         $output .= html_writer::tag('a', $strdelete, array('href' => $CFG->wwwroot .
                                 '/mod/oublog/deletepost.php?blog=' . $post->oublogid .
-                                '&post=' . $post->id . '&delete=1',
+                                '&post=' . $post->id . '&delete=1' . '&referurl=' . urlencode($referurl),
                                 'class' => 'oublog_deleteandemail_' . $post->id));
                         self::render_oublog_print_delete_dialog($cm->id, $post->id);
                     } else {
                         $output .= html_writer::tag('a', $strdelete, array('href' => $CFG->wwwroot .
                                 '/mod/oublog/deletepost.php?blog=' . $post->oublogid .
-                                '&post=' . $post->id . '&delete=1'));
+                                '&post=' . $post->id . '&delete=1' . '&referurl=' . urlencode($referurl)));
                     }
                 }
             }

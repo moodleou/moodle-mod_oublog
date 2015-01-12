@@ -62,6 +62,9 @@ class mod_oublog_deletepost_form extends moodleform {
         $mform->addElement('hidden', 'delete', $this->_customdata->delete);
         $mform->setType('delete', PARAM_INT);
 
+        $mform->addElement('hidden', 'referurl', $this->_customdata->referurl);
+        $mform->setType('referurl', PARAM_LOCALURL);
+
         $mform->addElement('hidden', 'confirm', 1);
         $mform->setType('confirm', PARAM_INT);
 

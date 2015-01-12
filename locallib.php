@@ -607,11 +607,11 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $countsql = "SELECT count(p.id) $from WHERE $sqlwhere";
 
     $rs = $DB->get_recordset_sql($sql, $params, $offset, OUBLOG_POSTS_PER_PAGE);
-    if (!$rs->valid()) {
-        return(false);
-    }
     // Get paging info
     $recordcnt = $DB->count_records_sql($countsql, $params);
+    if (!$rs->valid()) {
+        return array(false, $recordcnt);
+    }
 
     $cnt        = 0;
     $posts      = array();
@@ -637,7 +637,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $rs->close();
 
     if (empty($posts)) {
-        return(true);
+        return array(true, $recordcnt);
     }
 
     // Get tags for all posts on page

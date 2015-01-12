@@ -27,6 +27,7 @@ require_once('post_form.php');
 
 $blog = required_param('blog', PARAM_INT);        // Blog ID
 $postid = optional_param('post', 0, PARAM_INT);   // Post ID for editing
+$referurl = optional_param('referurl', 0, PARAM_LOCALURL);
 
 if ($blog) {
     if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
@@ -71,12 +72,16 @@ if ($oublog->global) {
         $oubloguser = $DB->get_record('user', array('id'=>$oubloginstance->userid));
     }
     $viewurl = new moodle_url('/mod/oublog/view.php', array('user'=>$oubloguser->id));
-
+    if (isset($referurl) && $referurl != "" ) {
+        $viewurl = $referurl;
+    }
 } else {
     $blogtype = 'course';
     $viewurl = new moodle_url('/mod/oublog/view.php', array('id'=>$cm->id));
+    if (isset($referurl) && $referurl != "" ) {
+        $viewurl = $referurl;
+    }
 }
-
 // If editing a post, must be your post or you have manageposts
 $canmanage=has_capability('mod/oublog:manageposts', $context);
 if (isset($post) && $USER->id != $oubloginstance->userid && !$canmanage) {
@@ -126,7 +131,8 @@ $mform = new mod_oublog_post_form('editpost.php', array(
     'maxbytes' => $oublog->maxbytes,
     'maxattachments' => $oublog->maxattachments,
     'restricttags' => $oublog->restricttags,
-    'availtags' => $tags));
+    'availtags' => $tags,
+    'referurl' => $referurl));
 if ($mform->is_cancelled()) {
     redirect($viewurl);
     exit;
