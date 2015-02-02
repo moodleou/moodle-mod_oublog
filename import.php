@@ -374,7 +374,7 @@ if ($step == 0) {
         $newid = $DB->insert_record('oublog_posts', $newpost);
         // Add tags copied from original + new short code tag.
         if ($bcoursename) {
-            $tagname = textlib::strtolower($bcoursename);
+            $tagname = core_text::strtolower($bcoursename);
             if (!$bctag = $DB->get_field('oublog_tags', 'id',
                     array('tag' => $tagname))) {
                 $bctag = $DB->insert_record('oublog_tags',
