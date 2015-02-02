@@ -831,7 +831,7 @@ function oublog_clarify_tags($tags) {
     }
 
     foreach ($tags as $idx => $tag) {
-        $tag = textlib::strtolower(trim($tag));
+        $tag = core_text::strtolower(trim($tag));
         if (empty($tag)) {
             unset($tags[$idx]);
             continue;
