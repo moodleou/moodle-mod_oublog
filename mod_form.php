@@ -229,7 +229,7 @@ class mod_oublog_mod_form extends moodleform_mod {
             $data->introonpost = 0;
         }
         if (!empty($data->tags)) {
-            $data->tags = textlib::strtolower(trim($data->tags));
+            $data->tags = core_text::strtolower(trim($data->tags));
         }
         if (empty($data->restricttags)) {
             $data->restricttags = 0;
