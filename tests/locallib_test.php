@@ -211,14 +211,14 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertEquals($postcount, $recordcount);
 
         // First post returned should match the last one added.
-        $this->assertEquals($titlecheck . '_' . $postcount, $posts[$postcount]->title);
+        $this->assertEquals($titlecheck . '_' . $postcount, $posts[max($postids)]->title);
         // Check fullname details returned for post author.
-        $this->assertEquals(fullname($USER), fullname($posts[$postcount]));
+        $this->assertEquals(fullname($USER), fullname($posts[max($postids)]));
 
         // Check deleted posts not shown.
         $deleteinfo = new stdClass();
         $deleteinfo->deletedby = $USER->id;
-        $deleteinfo->id = $posts[$postcount]->id;
+        $deleteinfo->id = $posts[max($postids)]->id;
         $DB->update_record('oublog_posts', $deleteinfo);
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, 0, $cm, 0);
         $this->assertEquals($postcount, $recordcount);// User should see own deleted posts.
@@ -272,12 +272,12 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertEquals($postcount, $recordcount);
 
         // First post returned should match the last one added.
-        $this->assertEquals($titlecheck . '_' . $postcount, $posts[$postcount]->title);
+        $this->assertEquals($titlecheck . '_' . $postcount, $posts[max($postids)]->title);
 
         // Specific (last) group.
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, 0, $cm, $groups[count($groups)]);
         $this->assertEquals(1, $recordcount);
-        $this->assertEquals($titlecheck . '_' . $postcount, $posts[$postcount]->title);
+        $this->assertEquals($titlecheck . '_' . $postcount, $posts[max($postids)]->title);
     }
 
     public function test_oublog_get_posts_individual() {
