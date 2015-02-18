@@ -50,7 +50,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I log out
 
     # User not logged in tests visibility of Admin Users personal post.
-    Given I type in the relative URL "mod/oublog/view.php?u=admin"
+    Given I visit the personal blog for "admin"
     Then "You are not logged in" "text" should exist
     And I should not see "Personal OUBlog post"
     And I should not see "Admin User's blog"
@@ -61,9 +61,9 @@ Feature: Test Post and Comment on Personal OUBlog
       | student1 | Student | 1 | student1@asd.com |
 
     Given I log in as "student1"
-    When I type in the relative URL "mod/oublog/view.php?user=2"
+    And I visit the personal blog for "admin"
     Then I should see "Personal OUBlog post02"
-    When I type in the relative URL "mod/oublog/viewpost.php?post=2"
+    When I click on "Permalink" "link" in the ".oublog-post .oublog-post-links" "css_element"
     Then I should see "Personal OUBlog post02"
     And I should see "Admin User's blog"
     Given I log out
@@ -89,7 +89,7 @@ Feature: Test Post and Comment on Personal OUBlog
     # User not logged in tests Admin Users post and comments.
     And I wait to be redirected
     Then "You are not logged in" "text" should exist
-    And I type in the relative URL "mod/oublog/view.php?user=2"
+    And I visit the personal blog for "admin"
     Then I should see "Admin User's blog edited"
     And I should see "log in for full access"
     And I should see "Total visits to this blog: 4"

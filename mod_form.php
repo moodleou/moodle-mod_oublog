@@ -147,7 +147,6 @@ class mod_oublog_mod_form extends moodleform_mod {
             // Add standard elements, common to all modules.
             $features = new stdClass;
             $features->groupings = true;
-            $features->groupmembersonly = true;
             $this->standard_coursemodule_elements($features);
         } else {
             // Adding the "summary" field.

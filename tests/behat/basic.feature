@@ -584,9 +584,9 @@ Feature: Test Post and Comment on OUBlog entry
     And I press "Add comment"
     Then I should see "Teacher comment 2"
     And I should see "Title:Teacher comment 2"
-    Given I click on "#cid2 .oublog-post-links a" "css_element"
+    Given I click on ".oublog-post-comments .oublog-comment:nth-child(2) .oublog-post-links a" "css_element"
     When I press "Continue"
-    Then "#cid2.oublog-deleted" "css_element" should exist
+    Then ".oublog-comment-deletedby" "css_element" should exist
     Given I follow "Test oublog basics"
     Then I should see "1 comment"
     And I log out
@@ -602,7 +602,7 @@ Feature: Test Post and Comment on OUBlog entry
     Then I should see "Student comment"
     And I should see "Title:Student comment"
     And "#cid1.oublog-deleted" "css_element" should not exist
-    Given I click on "#cid3 .oublog-post-links a" "css_element"
+    Given I click on ".oublog-comment .oublog-post-links a" "css_element"
     When I press "Cancel"
     Then I should see "Comments" in the ".oublog-commentstitle" "css_element"
     When I follow "Test oublog basics"

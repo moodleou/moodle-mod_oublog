@@ -80,12 +80,12 @@ Feature: Test rate individual posts
     # Identify rating label & selector for student (wont see teachers selector)
     And ".rating-aggregate-label" "css_element" should exist
     And I should see "Average of ratings:"
-    And "#menurating2.select.postratingmenu.ratinginput" "css_element" should exist
+    And "//div[@class='oublog-post-rating']/form/div/input[@class='ratinginput']" "xpath_element" should exist
     And the "rating" select box should contain "0"
 
    # Teacher sets ratings for student
-   Given I set the field "menurating2" to "10"
-   And I click on "postratingsubmit2" "button"
+   Given I set the field "rating" to "10"
+   And I click on "Rate" "button"
    Then the "rating" select box should contain "10"
    And "span.rating-aggregate-label" "css_element" should exist
    And I should see "Average of ratings: 10 (1)"

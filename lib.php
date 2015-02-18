@@ -594,7 +594,6 @@ function oublog_supports($feature) {
         case FEATURE_MOD_INTRO: return true;
         case FEATURE_GROUPINGS: return true;
         case FEATURE_GROUPS: return true;
-        case FEATURE_GROUPMEMBERSONLY: return true;
         case FEATURE_GRADE_HAS_GRADE: return true;
         case FEATURE_RATE: return true;
         default: return null;
