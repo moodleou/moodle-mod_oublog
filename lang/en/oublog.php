@@ -560,7 +560,7 @@ access the Edit page again and then paste in your changes.</p>';
 $string['order'] = 'Order:';
 $string['alpha'] = 'A to Z';
 $string['use'] = 'Most used';
-$string['order_help'] = 'You can choose to display the list of tags used ordered
+$string['order_help'] = 'You can choose to order the display of the list of tags used,
 either in alphabetical order or by number of posts used in.
 Select the two links to switch between ordering methods,
 this choice is remembered and will be used on subsequent views.';
