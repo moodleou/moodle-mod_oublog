@@ -4344,7 +4344,7 @@ function oublog_get_participation_details($oublog, $groupid, $individual,
         $period .= 'AND timeposted < :timeend ';
     }
     if ($individual > 0 ) {
-        $thispostuser = 'AND U.id = :userid ';
+        $thispostuser = 'AND u.id = :userid ';
         $thiscommentuser = 'AND Ub.id = :userid ';
     }
     if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC
