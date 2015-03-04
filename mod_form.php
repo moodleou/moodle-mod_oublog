@@ -88,7 +88,7 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->setDefault('maxbytes', $modulesettings->maxbytes);
 
             // Max number of attachments.
-            $choices = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 50, 100);
+            $choices = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20 => 20, 50 => 50, 100 => 100);
             $mform->addElement('select', 'maxattachments',
                     get_string('maxattachments', 'oublog'), $choices);
             $mform->addHelpButton('maxattachments', 'maxattachments', 'oublog');
