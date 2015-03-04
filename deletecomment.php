@@ -63,8 +63,11 @@ if ($oublog->global) {
     $blogtype = 'personal';
     // Get blog user from the oublog_get_post result (to save making an
     // extra query); this is only used to display their name anyhow
-    $oubloguser = (object)array('id'=>$post->userid,
-        'firstname'=>$post->firstname, 'lastname'=>$post->lastname);
+    $oubloguser = new stdClass();
+    $oubloguser->id = $post->userid;
+    foreach (get_all_user_name_fields() as $field) {
+        $oubloguser->$field = $post->$field;
+    }
 } else {
     $blogtype = 'course';
 }
