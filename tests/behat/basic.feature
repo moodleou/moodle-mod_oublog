@@ -395,6 +395,8 @@ Feature: Test Post and Comment on OUBlog entry
     And I follow "Course 1"
     When I follow "Test oublog basics"
     And I press "New blog post"
+    # Before the 'Set' tags restriction
+    And I should not see "You may only enter the 'Set' tags:"
     And I set the following fields to these values:
       | Title | SC02 OUBlog post01 from teacher1 |
       | Message | SC02 Teacher OUBlog post01 content |
@@ -402,11 +404,13 @@ Feature: Test Post and Comment on OUBlog entry
     And I press "Add post"
     And I log out
 
-    # Student tests.
+    # Student tests without Set tags restrictions.
     Given I log in as "student1"
     And I follow "Course 1"
     And I follow "Test oublog basics"
     And I press "New blog post"
+    # Before the 'Set' tags restriction
+    And I should not see "You may only enter the 'Set' tags:"
     And I set the following fields to these values:
       | Title | SC02 OUBlog post01 from student |
       | Message | SC02 Student OUBlog post01 content |
@@ -436,7 +440,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I set the following fields to these values:
       | Title | SC02 OUBlog post02 from student edited post subject |
       | Message | SC02 Student OUBlog post02 content filtered by tag edited post body |
-      | Tags | dtag3sc02 |
+      | Tags | atag1sc02, btag2sc02, ctag3sc02, dtag3sc02 |
     And I upload "lib/tests/fixtures/empty.txt" file to "Attachments" filemanager
     And I press "Save changes"
     And I wait to be redirected
@@ -451,7 +455,7 @@ Feature: Test Post and Comment on OUBlog entry
 
     # Delete student post01 the second post made.
     Given I follow "Test oublog basics"
-    When I click on "//a[contains(@href,'deletepost.php?blog=2&post=2&delete=1')]" "xpath_element"
+    When I click on "Delete" "link" in the ".oublog-post:nth-child(2) .oublog-post-links" "css_element"
     And I wait to be redirected
     Then I should see "Are you sure you want to delete this post?"
     And I press "Delete"
@@ -472,6 +476,38 @@ Feature: Test Post and Comment on OUBlog entry
     And I press "Add comment"
     Then I should see "SC02 OUBlog post02 from student"
     And I should see "$My own >nasty< \"string\"!"
+    And I log out
+
+    # Check post with restrictions enabled as Teacher.
+    Given I log in as "teacher1"
+    And I follow "Course 1"
+    When I follow "Test oublog basics"
+    And I follow "Edit settings"
+    # Add the 'Set' tags restriction
+    When I set the following fields to these values:
+      | Tags | ctag4sc02, btag5sc02, dogtag |
+      | Allow 'Set' tags only | true |
+    And I press "Save and display"
+
+    # Test only the predefined tags are allowed.
+    And I press "New blog post"
+    Then I should see "You may only enter the 'Set' tags:"
+    And I set the following fields to these values:
+      | Title | SC02 OUBlog post02 from teacher1 |
+      | Message | SC02 OUBlog post02 teacher content |
+      | Tags | ctag4sc02, btag5sc02, catsndogs |
+    And I press "Add post"
+
+    # Warning tags are now restricted
+    Then I should see "Only 'Set' tags are allowed to be entered"
+    And I set the following fields to these values:
+      | Tags | dogtag |
+    And I press "Add post"
+    Then I should see "SC02 OUBlog post02 from teacher1"
+    And I should see "SC02 OUBlog post02 teacher content"
+
+    # Should see tags in default Alphabetical order.
+    Then I should see "ctag3sc02(2) dogtag(1) dtag3sc02(1)"
     And I log out
 
     Scenario: Further standard regression/basic tests - non-js.

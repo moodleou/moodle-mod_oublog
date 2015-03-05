@@ -205,6 +205,7 @@ have an account on the system, please <a href=\'{$a->link}\'>log in for full acc
 $string['guestblog'] = 'If you have an account on the system, please
 <a href=\'{$a}\'>log in for full access</a>.';
 $string['noposts'] = 'There are no visible posts in this {$a}.';
+$string['nopostsnotags'] = 'There are no visible posts in this {$a->blog}, for this tag {$a->tag}.';
 
 // Errors.
 $string['accessdenied'] = 'Sorry: you do not have access to view this page.';
@@ -604,3 +605,10 @@ $string['teachergrading'] = 'Teacher grades students';
 $string['userrating'] = 'Use ratings';
 $string['share'] = 'Share this post';
 $string['tweet'] = 'Tweet';
+$string['oublogcrontask'] = 'OU blog maintenance jobs';
+
+$string['restricttags'] = 'Allow \'Set\' tags only';
+$string['restricttags_help'] = 'If you select this option, you can restrict
+tag entry to only those that are set at activity level.';
+$string['restricttagslist'] = 'You may only enter the \'Set\' tags: {$a}';
+$string['restricttagsvalidation'] = 'Only \'Set\' tags are allowed to be entered';

@@ -454,23 +454,6 @@ function oublog_print_recent_mod_activity($activity, $courseid, $detail, $modnam
 
 
 /**
- * Function to be run periodically according to the moodle cron
- * This function runs every 4 hours.
- *
- * @uses $CFG
- * @return boolean true on success, false on failure.
- **/
-function oublog_cron() {
-    global $DB;
-
-    // Delete outdated (> 30 days) moderated comments
-    $outofdate = time() - 30 * 24 * 3600;
-    $DB->delete_records_select('oublog_comments_moderated', "timeposted < ?", array($outofdate));
-
-    return true;
-}
-
-/**
  * Obtains a search document given the ousearch parameters.
  * @param object $document Object containing fields from the ousearch documents table
  * @return mixed False if object can't be found, otherwise object containing the following

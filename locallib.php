@@ -607,11 +607,11 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $countsql = "SELECT count(p.id) $from WHERE $sqlwhere";
 
     $rs = $DB->get_recordset_sql($sql, $params, $offset, OUBLOG_POSTS_PER_PAGE);
-    if (!$rs->valid()) {
-        return(false);
-    }
     // Get paging info
     $recordcnt = $DB->count_records_sql($countsql, $params);
+    if (!$rs->valid()) {
+        return array(false, $recordcnt);
+    }
 
     $cnt        = 0;
     $posts      = array();
@@ -637,7 +637,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $rs->close();
 
     if (empty($posts)) {
-        return(true);
+        return array(true, $recordcnt);
     }
 
     // Get tags for all posts on page
@@ -1050,13 +1050,16 @@ function oublog_get_tag_list($oublog, $groupid, $cm, $oubloginstanceid = null, $
     $blogtags = oublog_clarify_tags($oublog->tags);
 
     // For each tag added to the blog check if it is already in use
-    // in the post, if it is then the 'Offical' label is added to it.
+    // in the post, if it is then the 'Official' label is added to it.
     $existingtagnames = array();
     foreach ($tags as $idx => $tag) {
         if (in_array($tags[$idx]->tag, $blogtags)) {
             $tag->label = get_string('official', 'oublog');
-            // Flat array of existing in use 'Official' tags.
+            // Flat array of existing in use 'Set' tags.
             $existingtagnames[] = $tags[$idx]->tag;
+        } else if ($oublog->restricttags) {
+            // If we are restricting, remove this non-offical tag.
+            unset($tags[$idx]);
         }
     }
     // For each 'Official' tag added, if it is NOT already in use,
@@ -2018,6 +2021,7 @@ function oublog_individual_get_activity_details($cm, $urlroot, $oublog, $current
         $name = reset($menu);
         $output = $label.':&nbsp;'.$name;
     } else {
+        $active = '';
         foreach ($menu as $value => $item) {
             $url = $urlroot.'&amp;individual='.$value;
             $url = str_replace($CFG->wwwroot, '', $url);

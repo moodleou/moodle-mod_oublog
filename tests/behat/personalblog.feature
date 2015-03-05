@@ -258,6 +258,44 @@ Feature: Test Post and Comment on Personal OUBlog
       | Who can read this | Visible to anyone in the world |
       | Tags (separated by commas) | Taggy1 |
     And I press "Add post"
+    And I follow "Next"
+    And ".oublog-paging .previous" "css_element" should exist
+    And ".oublog-paging .next" "css_element" should not exist
+    Then I should see "Personal OUBlog post02" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I should not see "Personal OUBlog post22" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+
+    # 'Edit' post01 ie 3rd post on the second page
+    And I click on "Edit" "link" in the ".oublog-post:nth-child(3) .oublog-post-links" "css_element"
+    And I wait to be redirected
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post01 edited |
+      | Message | Admin Persblog post01 content edited for return url test|
+    And I press "Save changes"
+    # Confirm return to correct page after edit
+    And ".oublog-paging .previous" "css_element" should exist
+    And ".oublog-paging .next" "css_element" should not exist
+    And I should see "Personal OUBlog post02" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I should not see "Personal OUBlog post22" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    # 'Delete' post01, 3rd post on second page
+    And I click on "Delete" "link" in the ".oublog-post:nth-child(3) .oublog-post-links" "css_element"
+    And I wait to be redirected
+    Then I should see "Are you sure you want to delete this post?"
+    Given I press "Cancel"
+    And I wait to be redirected
+    # Confirm return to correct page after cancel
+    And ".oublog-paging .previous" "css_element" should exist
+    And I should see "Personal OUBlog post02" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I should not see "Personal OUBlog post22" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I click on "Delete" "link" in the ".oublog-post:nth-child(3) .oublog-post-links" "css_element"
+    And I press "Delete"
+    And I wait to be redirected
+    # Confirm return to correct page after delete
+    And ".oublog-paging .previous" "css_element" should exist
+    And I should see "Personal OUBlog post02" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I should see "Personal OUBlog post01 edited" in the "div.oublog-post.oublog-deleted div.oublog-post-top-details h2.oublog-title" "css_element"
+    And ".oublog-deleted" "css_element" should exist
+    And ".oublog-post-deletedby" "css_element" should exist
+    And I should see "Deleted by"
     And I follow "View site entries"
     Then I should see "Personal OUBlog post22"
     Then I should not see "Personal OUBlog post01 WorldVis"
@@ -266,6 +304,17 @@ Feature: Test Post and Comment on Personal OUBlog
     Given I follow "taggy1"
     Then I should see "Personal OUBlog post22"
     And I should not see "Personal OUBlog post21"
+    And ".oublog-paging .next" "css_element" should not exist
+    # 'Edit' the "taggy" post22
+    And I click on "Edit" "link" in the ".oublog-post-links" "css_element"
+    And I wait to be redirected
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post22 edited|
+      | Message | Admin Persblog post22 content edited for return url test|
+    And I press "Save changes"
+    # Confirm return to correct page after "taggy" edit
+    Then I should see "Personal OUBlog post22 edited" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I should not see "Personal OUBlog post21" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
     And ".oublog-paging .next" "css_element" should not exist
 
   # New scenario tests the Socialmedia widgets availability
@@ -307,7 +356,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should see "Share"
 
     # Admin opens viewpost page and Socialmedia widgets are available
-    And I click on "//a[contains(@href,'viewpost.php?post=2')]" "xpath_element"
+    And I click on "Permalink" "link" in the ".oublog-post-links" "css_element"
     And I wait to be redirected
     Then I should see "SC02 Personal OUBlog post02"
     And I should see "SC02 Admin Persblog post02 content WorldVis"
