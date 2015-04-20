@@ -85,6 +85,11 @@ if (!$oubloginstance = $DB->get_record('oublog_instances',
     print_error('invalidblog', 'oublog');
 }
 
+if (!isloggedin() && $post->visibility != OUBLOG_VISIBILITY_PUBLIC) {
+    // User should be logged-in, so log them in automatically.
+    redirect('/mod/oublog/bloglogin.php?returnurl=' . urlencode($url->out()));
+}
+
 if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
     print_error('accessdenied', 'oublog');
 }
