@@ -589,6 +589,7 @@ $string['event:postupdated'] = 'Post updated';
 $string['event:postviewed'] = 'Post viewed';
 $string['event:commentapproved'] = 'Comment approved';
 $string['event:participationviewed'] = 'Participation viewed';
+$string['event:savefailed'] = 'Session fail on post save';
 $string['event:siteentriesviewed'] = 'Site entries viewed';
 $string['event:postimported'] = 'Post imported';
 $string['oublog:rate'] = 'Can rate posts.';
