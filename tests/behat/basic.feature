@@ -486,7 +486,7 @@ Feature: Test Post and Comment on OUBlog entry
     # Add the 'Set' tags restriction
     When I set the following fields to these values:
       | Tags | ctag4sc02, btag5sc02, dogtag |
-      | Allow 'Set' tags only | true |
+      | Tag options | 1 |
     And I press "Save and display"
 
     # Test only the predefined tags are allowed.

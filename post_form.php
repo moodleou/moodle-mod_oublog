@@ -19,6 +19,7 @@ require_once($CFG->libdir.'/formslib.php');
 class mod_oublog_post_form extends moodleform {
 
     private $restricttags = 0;
+    private $requiretags = 0;
     private $availtags = array();
 
     public function definition() {
@@ -34,9 +35,13 @@ class mod_oublog_post_form extends moodleform {
         $maxattachments = $this->_customdata['maxattachments'];
         $referurl = $this->_customdata['referurl'];
         $this->restricttags = false;
+        $this->requiretags = false;
 
-        if ($this->_customdata['restricttags'] == true) {
+        if ($this->_customdata['restricttags'] == 1 || $this->_customdata['restricttags'] == 3) {
             $this->restricttags = true;
+        }
+        if ($this->_customdata['restricttags'] == 2 || $this->_customdata['restricttags'] == 3) {
+            $this->requiretags = true;
         }
         $atags = array();
         // Get list of tags from 'availtags' customdata.
@@ -66,6 +71,9 @@ class mod_oublog_post_form extends moodleform {
         $mform->addElement('textarea', 'tags', get_string('tagsfield', 'oublog'), array('cols'=>48, 'rows'=>2));
         $mform->setType('tags', PARAM_TAGLIST);
         $mform->addHelpButton('tags', 'tags', 'oublog');
+        if ($this->requiretags) {
+            $mform->addRule('tags', get_string('required'), 'required', null, 'client');
+        }
 
         $options = array();
         if ($allowcomments) {

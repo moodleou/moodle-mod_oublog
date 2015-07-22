@@ -118,6 +118,8 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->addElement('checkbox', 'allowimport', get_string('allowimport', 'oublog'), '', 0);
             $mform->addHelpButton('allowimport', 'allowimport', 'oublog');
 
+            $mform->addElement('header', 'tagheading', get_string('tags', 'oublog'));
+
             $mform->addElement('text', 'tags', get_string('tags', 'oublog'),
                             array('size'=>'48'));
             $mform->addHelpButton('tags', 'predefinedtags', 'oublog');
@@ -125,10 +127,14 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->addRule('tags', get_string('maximumchars', '', 255),
                             'maxlength', 255, 'client');
 
-            $mform->addElement('checkbox', 'restricttags', get_string('restricttags', 'oublog'), '', 0);
+            $tagopts = array(
+                    '0' => get_string('none'),
+                    '1' => get_string('restricttags_set', 'oublog'),
+                    '2' => get_string('restricttags_req', 'oublog'),
+                    '3' => get_string('restricttags_req_set', 'oublog'),
+            );
+            $mform->addElement('select', 'restricttags', get_string('restricttags', 'oublog'), $tagopts);
             $mform->addHelpButton('restricttags', 'restricttags', 'oublog');
-            // Must have tags for restriction.
-            $mform->disabledIf('restricttags', 'tags', 'eq', '');
 
             $mform->addElement('header', 'modstandardgrade', get_string('grade'));
             // Adding the "grading" field.
@@ -283,6 +289,10 @@ class mod_oublog_mod_form extends moodleform_mod {
                     ($data['grading'] == OUBLOG_USE_RATING && empty($data['assessed']))) {
                 $errors['grading'] = get_string('grading_invalid', 'oublog');
             }
+        }
+        if (empty($data['tags']) && ($data['restricttags'] == 1 || $data['restricttags'] == 3)) {
+            // When forcing use of pre-defined tags must define some.
+            $errors['tags'] = get_string('required');
         }
         return $errors;
     }
