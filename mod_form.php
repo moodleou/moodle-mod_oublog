@@ -290,7 +290,8 @@ class mod_oublog_mod_form extends moodleform_mod {
                 $errors['grading'] = get_string('grading_invalid', 'oublog');
             }
         }
-        if (empty($data['tags']) && ($data['restricttags'] == 1 || $data['restricttags'] == 3)) {
+        if (isset($data['restricttags']) && empty($data['tags'])
+                && ($data['restricttags'] == 1 || $data['restricttags'] == 3)) {
             // When forcing use of pre-defined tags must define some.
             $errors['tags'] = get_string('required');
         }
