@@ -589,7 +589,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
 
     // Get posts. The post has the field timeposted not timecreated,
     // which is tested in rating::user_can_rate().
-    $fieldlist = "p.*, p.timeposted, p.timeposted AS timecreated,  bi.oublogid, $usernamefields,
+    $fieldlist = "p.*, p.timeposted AS timecreated,  bi.oublogid, $usernamefields,
                   bi.userid, u.idnumber, u.picture, u.imagealt, u.email, u.username,
                 $delusernamefields,
                 $editusernamefields";
