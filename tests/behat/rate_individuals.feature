@@ -22,7 +22,7 @@ Feature: Test rate individual posts
 
     # Admin changes settings
     And I log in as "admin"
-    And I am on homepage
+    And I am on site homepage
     And I follow "Course 1"
     And I follow "Testing rate individuals posts"
     And I follow "Edit settings"
