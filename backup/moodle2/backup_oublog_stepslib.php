@@ -41,7 +41,9 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
                 'maxbytes', 'maxattachments', 'maxvisibility', 'global', 'views',
                 'completionposts', 'completioncomments', 'reportingemail', 'displayname',
                 'statblockon', 'allowimport', 'introonpost', 'tags', 'assessed',
-                'assesstimestart', 'assesstimefinish', 'scale', 'grading', 'restricttags'));
+                'assesstimestart', 'assesstimefinish', 'scale', 'grading', 'restricttags',
+                'postfrom', 'postuntil', 'commentfrom', 'commentuntil'
+        ));
         $instances = new backup_nested_element('instances');
 
         $instance = new backup_nested_element('instance', array('id'), array(

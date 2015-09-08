@@ -186,6 +186,25 @@ function oublog_check_view_permissions($oublog, $context, $cm=null) {
 }
 
 /**
+ * Checks if user can post to the blog depending on time limits
+ * @param object $oublog
+ * @param context $context
+ * @return bool True if can post
+ */
+function oublog_can_post_now($oublog, $context) {
+    if (($oublog->postfrom == 0 || $oublog->postfrom <= time()) &&
+            ($oublog->postuntil == 0 || $oublog->postuntil > time())) {
+        // Within time limits.
+        return true;
+    }
+    if ($oublog->global && $context->contextlevel != CONTEXT_SYSTEM) {
+        // Global blog override and check at system context.
+        $context = context_system::instance();
+    }
+    return has_capability('mod/oublog:ignorepostperiod', $context);
+}
+
+/**
  * Determines whether the user can make a post to the given blog.
  * @param $oublog Blog object
  * @param $bloguserid Userid of person who owns blog (only needed for
@@ -217,10 +236,12 @@ function oublog_can_post($oublog, $bloguserid=0, $cm=null) {
  * @param $cm Course-module (null if personal blog)
  * @param $oublog Blog object
  * @param $post Post object
+ * @param bool $ignoretime True to ignore any comment time limits
  * @return bool True if user is allowed to make comments
  */
-function oublog_can_comment($cm, $oublog, $post) {
+function oublog_can_comment($cm, $oublog, $post, $ignoretime = false) {
     global $USER;
+
     if ($oublog->global) {
         // Just need the 'contributepersonal' permission at system level, OR
         // if you are not logged in but the blog allows public comments.
@@ -263,11 +284,22 @@ function oublog_can_comment($cm, $oublog, $post) {
         // make this make sense, or some other changes.
     }
 
+    // Test comment time period.
+    $timeok = (($oublog->commentfrom == 0 || $oublog->commentfrom <= time()) &&
+            ($oublog->commentuntil == 0 || $oublog->commentuntil > time()));
+    if ($ignoretime) {
+        $timeok = true;
+    }
+    if (!$timeok && has_capability('mod/oublog:ignorecommentperiod',
+            $oublog->global ? context_system::instance() : context_module::instance($cm->id))) {
+                $timeok = true;
+    }
+
     // If the blog allows comments, this post must allow comments and either
     // it allows public comments or you're logged in (and not guest)
     return $blogok && $post->allowcomments &&
             ($post->allowcomments >= OUBLOG_COMMENTS_ALLOWPUBLIC ||
-                (isloggedin() && !isguestuser()));
+                (isloggedin() && !isguestuser())) && $timeok;
 }
 
 /**

@@ -1,0 +1,132 @@
+This script describes steps to test the read-only facility from a user
+perspective. It is intended to cover most of the UI and features.
+
+NOTE: In this test case, the word 'blog' always refers to the OU blog.
+
+The test steps in this script follow on from each other and aren't independent.
+
+
+Initial setup
+=============
+
+This test case requires:
+
+- one test user (US1) with the Student role.
+- one test user (admin) with the admin or manager role.
+
+Test course (admin must have permissions to create/configure activities)
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+
+POS Posting time limiting
+=========================
+
+POS01 / admin
+  In your test course, create a blog called POS01-RO,
+  this should have the 'Posting only allowed from' option under 'Contribution time period'
+  set to a date in the past and enabled.
+  Select 'Save and display'.
+- Verify no messages displayed above 'New post' button.
+
+POS02 / admin
+  Select 'Edit settings' from 'OU Blog administration' 'Administration' block.
+  Change 'Posting only allowed from' to a date in the future.
+  Select 'Save and display'.
+- Verify message informing that students will not be able to post until the date,
+  (but you can) is shown above 'New post' button.
+- Verify date matches that entered in settings form (dd/mm/yy, hh:mm format).
+
+POS03 / student (change)
+  Enter the test course and select link to POS01-RO blog.
+- Verify message informing that creating post is not available until date entered previously is shown.
+- Verify 'New post button' is not shown.
+
+POS04 / admin (change)
+  Enter the test course and select link to POS01-RO blog.
+  Select 'Edit settings' from 'OU Blog administration' 'Administration' block.
+  Change 'Posting only allowed until' to enabled and make a date in future (after posting from date).
+  Select 'Save and display'.
+- Verify message informing that students will not be able to post until the date,
+  (but you can) is shown above 'New post' button.
+- Verify message informing that students will not be able to post after the second date,
+  (but you can) is shown above 'New post' button.
+- Verify dates match those entered in settings form (dd/mm/yy, hh:mm format).
+
+POS05 / student (change)
+  Enter the test course and select link to POS01-RO blog.
+- Verify message informing that creating post is not available until date entered previously is shown.
+- Verify message informing that creating post will only be available until date entered previously is shown.
+- Verify 'New post button' is not shown.
+
+POS06 / admin (change)
+  Enter the test course and select link to POS01-RO blog.
+  Select 'Edit settings' from 'OU Blog administration' 'Administration' block.
+  Disable 'Posting only allowed from'.
+  Change 'Posting only allowed until' to a date in the past.
+  Select 'Save and display'.
+- Verify message informing that students are no longer be able to post after date,
+  (but you can) is shown above 'New post' button.
+- Verify date matches that entered in settings form (dd/mm/yy, hh:mm format).
+
+POS07 / student (change)
+  Enter the test course and select link to POS01-RO blog.
+- Verify message informing that creating post is not available as after date entered previously is shown.
+- Verify 'New post button' is not shown.
+
+COM Comment time limiting
+=========================
+
+COM01 / admin
+  Enter the test course and select link to POS01-RO blog.
+  Select the 'New post' button and add a new post to the blog.
+  Select 'Edit settings' from 'OU Blog administration' 'Administration' block.
+  Disable 'Posting only allowed until'.
+  Enable 'Commenting only allowed from' and set to a date in the future.
+  Select 'Save and display'.
+- Verify message informing that students will not be able to comment on posts until the date,
+  (but you can) is shown above 'New post' button.
+- Verify 'Add your comment' link is shown against the new post.
+
+COM02 / student (change)
+  Enter the test course and select link to POS01-RO blog.
+- Verify message informing that you are not able to comment on posts until the date,
+  is shown above 'New post' button.
+- Verify 'Add your comment' link is not shown against the new post.
+
+COM03 / admin (change)
+  Enter the test course and select link to POS01-RO blog.
+  Select 'Edit settings' from 'OU Blog administration' 'Administration' block.
+  Disable 'Commenting only allowed from'.
+  Change 'Commenting only allowed until' to a date in the past.
+  Select 'Save and display'.
+- Verify message informing that students are no longer be able to comment on posts as past date,
+  (but you can) is shown above 'New post' button.
+- Verify date matches that entered in settings form (dd/mm/yy, hh:mm format).
+- Verify 'Add your comment' link is shown against the new post.
+
+COM04 / student (change)
+  Enter the test course and select link to POS01-RO blog.
+- Verify message informing that you are not able to comment on posts as past date,
+  is shown above 'New post' button.
+- Verify 'Add your comment' link is not shown against the new post.
+
+COM05 / admin (change)
+  Enter the test course and select link to POS01-RO blog.
+  Select 'Edit settings' from 'OU Blog administration' 'Administration' block.
+  Change 'Commenting only allowed until' to a date in the future.
+  Select 'Save and display'.
+- Verify message informing that students will not be able to comment on posts after date,
+  (but you can) is shown above 'New post' button.
+- Verify date matches that entered in settings form (dd/mm/yy, hh:mm format).
+- Verify 'Add your comment' link is shown against the new post.
+
+COM06 / student (change)
+  Enter the test course and select link to POS01-RO blog.
+- Verify message informing that you will not able to comment on posts after date,
+  is shown above 'New post' button.
+- Verify 'Add your comment' link is shown against the new post.
+
+End test.

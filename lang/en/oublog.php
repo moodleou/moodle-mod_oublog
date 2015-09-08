@@ -39,6 +39,34 @@ $string['oublog:viewindividual'] = 'View individual blogs';
 $string['oublog:exportownpost'] = 'Export own post';
 $string['oublog:exportpost'] = 'Export post';
 $string['oublog:exportposts'] = 'Export posts';
+$string['oublog:ignorepostperiod'] = 'Ignore post time period';
+$string['oublog:ignorecommentperiod'] = 'Ignore comment time period';
+
+$string['advancedoptions'] = 'Advanced options';
+$string['limits'] = 'Contribution time period';
+$string['postfrom'] = 'Posting only allowed from';
+$string['postuntil'] = 'Posting only allowed until';
+$string['commentfrom'] = 'Commenting only allowed from';
+$string['commentuntil'] = 'Commenting only allowed until';
+$string['beforestartpost'] = 'You cannot create posts at this time. Post creation is available from {$a}.';
+$string['beforestartpostcapable'] = 'Students cannot create their own posts until {$a}.
+<br/> You have access to create posts before this time.';
+$string['beforeendpost'] = 'You can only create posts until {$a}.';
+$string['beforeendpostcapable'] = 'Students are able to create their own posts until {$a}.
+<br/> You have access to create posts after this time.';
+$string['afterendpost'] = 'You cannot create posts at this time. Post creation ended on {$a}.';
+$string['afterendpostcapable'] = 'Students were able to create their own posts until {$a}.
+<br/> You have access to create posts after this time.';
+$string['beforestartcomment'] = 'You cannot comment on posts at this time. Commenting is available from {$a}.';
+$string['beforestartcommentcapable'] = 'Students cannot comment on posts until {$a}.
+<br/> You have access to comment before this time.';
+$string['beforeendcomment'] = 'You can only comment on posts until {$a}.';
+$string['beforeendcommentcapable'] = 'Students are able to comment on posts until {$a}.
+<br/> You have access to comment after this time.';
+$string['afterendcomment'] = 'You cannot comment on posts at this time. Commenting ended on {$a}.';
+$string['afterendcommentcapable'] = 'Students were able to comment on posts until {$a}.
+<br/> You have access to comment after this time.';
+
 $string['mustprovidepost'] = 'Must provide postid';
 $string['newpost'] = 'New {$a} post';
 $string['removeblogs'] = 'Remove all blog entries';

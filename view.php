@@ -377,15 +377,58 @@ if (!$hideunusedblog) {
 }
 // Print the main part of the page.
 
-echo '<div id="oublogbuttons">';
-
 // New post button - in group blog, you can only post if a group is selected.
 if ($oublog->individual && $individualdetails) {
     $showpostbutton = $canpost;
 } else {
     $showpostbutton = $canpost && ($currentgroup || !$groupmode );
 }
-if ($showpostbutton) {
+
+// If timed blog posts show info.
+$capable = has_capability('mod/oublog:ignorepostperiod',
+        $oublog->global ? context_system::instance() : $context);
+
+if (($showpostbutton || $capable) && $oublog->postfrom != 0 && $oublog->postfrom > time()) {
+    echo $oublogoutput->render_time_limit_msg('beforestartpost', $oublog->postfrom, $capable);
+}
+if (($showpostbutton || $capable) && $oublog->postuntil != 0) {
+    if ($oublog->postuntil > time()) {
+        echo $oublogoutput->render_time_limit_msg('beforeendpost', $oublog->postuntil, $capable);
+    } else {
+        echo $oublogoutput->render_time_limit_msg('afterendpost', $oublog->postuntil, $capable);
+    }
+}
+// If timed comments show info.
+if ($posts) {
+    $maxpost = (object) array('allowcomments' => false, 'visibility' => OUBLOG_VISIBILITY_COURSEUSER);
+    foreach ($posts as $apost) {
+        // Work out if any posts on page allow commenting + max visibility.
+        if ($apost->allowcomments) {
+            $maxpost->allowcomments = true;
+        }
+        if ($apost->visibility > $maxpost->visibility) {
+            $maxpost->visibility = $apost->visibility;
+        }
+    }
+    if (oublog_can_comment($cm, $oublog, $maxpost, true)) {
+        $ccapable = has_capability('mod/oublog:ignorecommentperiod',
+                $oublog->global ? context_system::instance() : $context);
+        if ($oublog->commentfrom != 0 && $oublog->commentfrom > time()) {
+            echo $oublogoutput->render_time_limit_msg('beforestartcomment', $oublog->commentfrom, $capable, 'comment');
+        }
+        if ($oublog->commentuntil != 0) {
+            if ($oublog->commentuntil > time()) {
+                echo $oublogoutput->render_time_limit_msg('beforeendcomment', $oublog->commentuntil, $capable, 'comment');
+            } else {
+                echo $oublogoutput->render_time_limit_msg('afterendcomment', $oublog->commentuntil, $capable, 'comment');
+            }
+        }
+    }
+}
+
+echo '<div id="oublogbuttons">';
+
+if ($showpostbutton && oublog_can_post_now($oublog, $context)) {
     echo '<div id="addpostbutton">';
     echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' =>
             $cm->instance)), $straddpost, 'get');

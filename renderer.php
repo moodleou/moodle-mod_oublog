@@ -437,6 +437,21 @@ class mod_oublog_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Returns output for time limit messages
+     * @param string $stringname
+     * @param int $time Unix time when restricted
+     * @param context $capable Used to alter stringname for moderators if true
+     * @param string $type 'post' or 'comment' - used for div class
+     * @return string
+     */
+    public function render_time_limit_msg($stringname, $time, $capable = false, $type = 'post') {
+        $extra = $capable ? 'capable' : '';
+        return html_writer::div(get_string($stringname . $extra, 'oublog',
+                userdate($time, get_string('strftimedatetimeshort', 'langconfig'))),
+                "oublog_time_limit_msg oublog_time_limit_msg_$type");
+    }
+
+    /**
      * Print all user participation records for display
      *
      * @param object $cm current course module object

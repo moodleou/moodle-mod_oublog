@@ -46,6 +46,7 @@ class oublog_locallib_test extends oublog_test_lib {
     * Getting a single post
     * Getting a list of posts
     * Tags
+    * Time limited posting
 
     // TODO: Unit tests do NOT cover:
      * Personal blog auto creation on install has worked
@@ -1514,6 +1515,43 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertNotContains('antelope', $restrictedtaglist);
         $this->assertContains('blogtag01', $restrictedtaglist);
         $this->assertContains('blogtag02', end($restrictedtaglist));// Last in restricted list.
+    }
+
+    public function test_oublog_time_limits() {
+        $this->resetAfterTest();
+        $course = $this->get_new_course();
+        $stud1 = $this->get_new_user('student', $course->id);
+
+        // Future posts + comments start blog.
+        $oublog = $this->get_new_oublog($course->id, array('postfrom' => 2524611600, 'commentfrom' => 2524611600));
+        // Past posts + comments start blog.
+        $oublog1 = $this->get_new_oublog($course->id, array('postfrom' => 1262307600, 'commentfrom' => 1262307600));
+        // Future posts + comments end blog.
+        $oublog2 = $this->get_new_oublog($course->id, array('postuntil' => 2524611600, 'commentuntil' => 2524611600));
+        // Past posts + comments end blog.
+        $oublog3 = $this->get_new_oublog($course->id, array('postuntil' => 1262307600, 'commentuntil' => 1262307600));
+
+        $this->setAdminUser();
+        $this->assertTrue(oublog_can_post_now($oublog, context_module::instance($oublog->cm->id)));
+        $this->assertTrue(oublog_can_post_now($oublog1, context_module::instance($oublog1->cm->id)));
+        $this->assertTrue(oublog_can_post_now($oublog2, context_module::instance($oublog2->cm->id)));
+        $this->assertTrue(oublog_can_post_now($oublog3, context_module::instance($oublog3->cm->id)));
+        $post = (object) array('allowcomments' => true, 'visibility' => OUBLOG_VISIBILITY_COURSEUSER);
+        $this->assertTrue(oublog_can_comment($oublog->cm, $oublog, $post));
+        $this->assertTrue(oublog_can_comment($oublog1->cm, $oublog1, $post));
+        $this->assertTrue(oublog_can_comment($oublog2->cm, $oublog2, $post));
+        $this->assertTrue(oublog_can_comment($oublog3->cm, $oublog3, $post));
+
+        $this->setUser($stud1);
+        $this->assertFalse(oublog_can_post_now($oublog, context_module::instance($oublog->cm->id)));
+        $this->assertTrue(oublog_can_post_now($oublog1, context_module::instance($oublog1->cm->id)));
+        $this->assertTrue(oublog_can_post_now($oublog2, context_module::instance($oublog2->cm->id)));
+        $this->assertFalse(oublog_can_post_now($oublog3, context_module::instance($oublog3->cm->id)));
+        $post = (object) array('allowcomments' => true, 'visibility' => OUBLOG_VISIBILITY_COURSEUSER);
+        $this->assertFalse(oublog_can_comment($oublog->cm, $oublog, $post));
+        $this->assertTrue(oublog_can_comment($oublog1->cm, $oublog1, $post));
+        $this->assertTrue(oublog_can_comment($oublog2->cm, $oublog2, $post));
+        $this->assertFalse(oublog_can_comment($oublog3->cm, $oublog3, $post));
     }
 
 }

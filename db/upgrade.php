@@ -340,5 +340,47 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2014122400, 'oublog');
     }
 
+    if ($oldversion < 2015090800) {
+
+        // Define field postfrom to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('postfrom', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'restricttags');
+
+        // Conditionally launch add field postfrom.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field postuntil to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('postuntil', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'postfrom');
+
+        // Conditionally launch add field postuntil.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field commentfrom to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('commentfrom', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'postuntil');
+
+        // Conditionally launch add field commentfrom.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field commentuntil to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('commentuntil', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'commentfrom');
+
+        // Conditionally launch add field commentuntil.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2015090800, 'oublog');
+    }
+
     return true;
 }
