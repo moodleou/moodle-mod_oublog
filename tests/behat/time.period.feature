@@ -21,6 +21,7 @@ Feature: Test time limited posts and comments
       | oublog   | blog post end past     | A blog when posts start in past   | C1     | oublog3  | 0          | 1262307600 | 0           | 1262307600   |
       | oublog   | blog post end future   | A blog when posts start in future | C1     | oublog4  | 0          | 2524611600 | 0           | 2524611600   |
     Given I log in as "admin"
+    And I am on site homepage
     And I follow "Course 1"
     And I follow "blog post start future"
     And I press "New blog post"
@@ -35,6 +36,7 @@ Feature: Test time limited posts and comments
 
   Scenario: Admin tests timed blogs
    Given I log in as "admin"
+   And I am on site homepage
    And I follow "Course 1"
    # Test blog1.
    When I follow "blog post start past"
@@ -66,6 +68,7 @@ Feature: Test time limited posts and comments
 
   Scenario: Admin tests timed blogs
    Given I log in as "student1"
+   And I am on site homepage
    And I follow "Course 1"
    # Test blog1.
    When I follow "blog post start past"
