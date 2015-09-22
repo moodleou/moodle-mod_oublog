@@ -608,8 +608,11 @@ $string['share'] = 'Share this post';
 $string['tweet'] = 'Tweet';
 $string['oublogcrontask'] = 'OU blog maintenance jobs';
 
-$string['restricttags'] = 'Allow \'Set\' tags only';
+$string['restricttags'] = 'Tag options';
+$string['restricttags_req'] = 'Must enter tags';
+$string['restricttags_req_set'] = 'Must enter pre-defined tags only';
+$string['restricttags_set'] = 'Allow pre-defined tags only';
 $string['restricttags_help'] = 'If you select this option, you can restrict
-tag entry to only those that are set at activity level.';
+tag entry to only those that are pre-defined at activity level and/or require that at least one tag be entered in a post.';
 $string['restricttagslist'] = 'You may only enter the \'Set\' tags: {$a}';
 $string['restricttagsvalidation'] = 'Only \'Set\' tags are allowed to be entered';

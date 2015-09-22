@@ -329,13 +329,12 @@ BTAG07 / admin
 
 BTAG08 / admin
    Select 'Edit settings' link in the Administration block.
-   Scroll down to find the 'General' field entry, 'Tags' with help icon.
-   Click the help icon beside 'Allow 'Set' tags only.
--- Confirm it matches the following,
-   "If you select this option, you can restrict tag entry to only those that are set at activity level."
-   Over write the tags in the tag field with 'cre03settag01, cre03settag02'.
-   Click the 'Allow 'Set' tags only checkbox.
--- Click 'Save and display'.
+   Scroll down to find the 'Tags' heading field entry, 'Tags' with help icon.
+   Click the help icon beside 'Tag options'.
+-- Confirm it shows a help popup.
+   Overwrite the tags in the tag field with 'cre03settag01, cre03settag02'.
+   Change the 'Tag options' dropdown to 'Allow pre-defined tags only'.
+   Click 'Save and display'.
 
 BTAG09 / admin
    Create a new post, enter the title as 'TAG09'
@@ -357,13 +356,13 @@ BTAG10 / admin
    'Only 'Set' tags are allowed to be entered'.
    In the tag field, delete the tag 'tag01' and select 'cre03settag01 Set 0 posts'
    from the choice drop down selector.
-   Click 'Add post'.
+   Click 'Add post' (after filling in any other required fields).
 
-BTAG011/ admin
+BTAG11/ admin
 -- Confirm that the display of the Tag cloud matches those tags entered,
    'btag07(1) btag08(1) cre03settag01(1) cre03settag02(1) cre03tag01(1) cre03tag02(1)'.
 
-BTAG012/ admin
+BTAG12/ admin
    Edit the TAG08 post.
 -- Confirm that beneath the 'Message' box there is a label
    'You may only enter the 'Set' tags: cre03settag01,cre03settag02'.
@@ -378,9 +377,34 @@ BTAG012/ admin
    'cre03settag02 Set 1 post' from the choice drop down selector.
    Click the 'Save changes' button.
 
-BTAG013/ admin
+BTAG13/ admin
 -- Confirm that the display of the Tag cloud matches those tags entered,
    'btag07(1) cre03settag01(1) cre03settag02(2) cre03tag01(1)'.
+
+BTAG14 / admin
+   Select 'Edit settings' link in the Administration block.
+   Scroll down to find the 'Tags' heading.
+   Change the 'Tag options' dropdown to 'Must enter tags'.
+   Click 'Save and display'.
+   Create a new post.
+   In the post leave 'Tags' field empty.
+   Click 'Add post'.
+-- Confirm 'Required' message is shown against 'Tags' field.
+
+BTAG15 / admin
+   Select 'Edit settings' link in the Administration block.
+   Scroll down to find the 'Tags' heading.
+   Change the 'Tag options' dropdown to 'Must enter pre-defined tags only'.
+   Click 'Save and display'.
+   Create a new post 'TAG10'.
+   In the post leave 'Tags' field empty.
+   Click 'Add post'.
+-- Confirm 'Required' message is shown against 'Tags' field.
+-- Confirm 'Only 'Set' tags are allowed to be entered' message is shown against 'Tags' field.
+   Enter 'cre03settag01' into Tags field.
+   Click 'Add post'.
+-- Confirm no warnings shown against 'Tags' field.
+
 
 PAG Testing blog display pagination.
 ===================================

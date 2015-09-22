@@ -1057,7 +1057,7 @@ function oublog_get_tag_list($oublog, $groupid, $cm, $oubloginstanceid = null, $
             $tag->label = get_string('official', 'oublog');
             // Flat array of existing in use 'Set' tags.
             $existingtagnames[] = $tags[$idx]->tag;
-        } else if ($oublog->restricttags) {
+        } else if ($oublog->restricttags == 1 || $oublog->restricttags == 3) {
             // If we are restricting, remove this non-offical tag.
             unset($tags[$idx]);
         }
