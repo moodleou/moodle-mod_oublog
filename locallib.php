@@ -2310,6 +2310,9 @@ function oublog_individual_add_to_sqlwhere(&$sqlwhere, &$params, $userfield, $ou
  * Get last-modified time for blog, as it appears to this user. This takes into
  * account the user's groups/individual settings if required. Only works on
  * course blogs. (Does not check that user can view the blog.)
+ *
+ * This data is all in a static: so can be called in multiple places without issue
+ *
  * @param object $cm Course-modules entry for wiki
  * @param object $Course Course object
  * @param int $userid User ID or 0 = current
@@ -2321,10 +2324,29 @@ function oublog_get_last_modified($cm, $course, $userid=0) {
         $userid = $USER->id;
     }
 
-    // Get blog record and groupmode
-    if (!($oublog = $DB->get_record('oublog', array('id'=>$cm->instance)))) {
+    static $results;
+    if (!isset($results)) {
+        $results = array();
+    }
+    if (!array_key_exists($userid, $results)) {
+        $results[$userid] = array();
+    } else if (array_key_exists($cm->id, $results[$userid])) {
+        return $results[$userid][$cm->id];
+    }
+
+    static $oublogs; // Cache all blogs in this course, saves extra DB calls.
+    if (!isset($oublogs)) {
+        $oublogs = array();
+    }
+    if (empty($oublogs[$course->id])) {
+        $oublogs[$course->id] = $DB->get_records('oublog', array('course' => $course->id));
+    }
+
+    // Get blog record and groupmode.
+    if (!isset($oublogs[$course->id][$cm->instance])) {
         return false;
     }
+    $oublog = $oublogs[$course->id][$cm->instance];
     $groupmode = oublog_get_activity_groupmode($cm, $course);
 
     // Default applies no restriction
@@ -2387,6 +2409,9 @@ WHERE
     bi.oublogid = ?
     AND p.timedeleted IS NULL
     $restrictwhere", array_merge(array($oublog->id), $rwparam));
+
+    $results[$userid][$cm->id] = $result;
+
     return $result;
 }
 

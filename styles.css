@@ -705,3 +705,8 @@ div.tagselector_result .tagselector_result_info {
     padding: 5px;
     border: 1px dotted #555;
 }
+
+.oubloglmt {
+    font-size: 0.8em;
+    margin-left: 5px;
+}

@@ -23,6 +23,8 @@ $string['modulename_help'] = 'The blog activity module allows for creation of bl
  the course posts to the same blog), group blogs, or individual blogs.';
 
 $string['oublogintro'] = 'Intro';
+$string['lastmodified'] = 'Last post: {$a}';
+$string['strftimerecent'] = '%d %B %y, %H:%M';
 
 $string['oublog:view'] = 'View posts';
 $string['oublog:addinstance'] = 'Add a new OU blog';

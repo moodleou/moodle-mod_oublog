@@ -47,6 +47,7 @@ class oublog_locallib_test extends oublog_test_lib {
     * Getting a list of posts
     * Tags
     * Time limited posting
+    * Last modified
 
     // TODO: Unit tests do NOT cover:
      * Personal blog auto creation on install has worked
@@ -484,6 +485,8 @@ class oublog_locallib_test extends oublog_test_lib {
         $course = $this->get_new_course();
         $oublog = $this->get_new_oublog($course->id);
         $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
+        $stud1 = $this->get_new_user('student', $course->id);
+        $oublog2 = $this->get_new_oublog($course->id);
 
         $post = $this->get_post_stub($oublog->id);
         $postid = oublog_add_post($post, $cm, $oublog, $course);
@@ -491,6 +494,19 @@ class oublog_locallib_test extends oublog_test_lib {
         $lastmodified = oublog_get_last_modified($cm, $course, $USER->id);
         $this->assertTrue(is_numeric($lastmodified));
         $this->assertEquals($timeposted, $lastmodified);
+
+        $result = oublog_get_last_modified($oublog2->cm, $course);
+        $this->assertEmpty($result);
+        $this->get_new_post($oublog2);
+
+        // Should static cache result, so remains empty.
+        $result = oublog_get_last_modified($oublog2->cm, $course);
+        $this->assertEmpty($result);
+
+        $result = oublog_get_last_modified($oublog2->cm, $course, $stud1->id);
+        $this->assertNotEmpty($result);
+        $result1 = oublog_get_last_modified($oublog2->cm, $course, $stud1->id);
+        $this->assertEquals($result, $result1);
         // TODO: More comprehensive checking with separate group/individual blogs.
     }
 
@@ -1553,5 +1569,4 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertTrue(oublog_can_comment($oublog2->cm, $oublog2, $post));
         $this->assertFalse(oublog_can_comment($oublog3->cm, $oublog3, $post));
     }
-
 }

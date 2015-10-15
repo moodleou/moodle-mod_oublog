@@ -908,6 +908,25 @@ function oublog_cm_info_dynamic(cm_info $cm) {
 }
 
 /**
+ * Show last updated date + time (post created).
+ *
+ * @param cm_info $cm
+ */
+function oublog_cm_info_view(cm_info $cm) {
+    global $CFG;
+    if (!$cm->uservisible) {
+        return;
+    }
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+
+    $lastpostdate = oublog_get_last_modified($cm, $cm->get_course());
+    if (!empty($lastpostdate)) {
+        $cm->set_after_link(html_writer::span(get_string('lastmodified', 'oublog',
+                        userdate($lastpostdate, get_string('strftimerecent', 'oublog'))), 'lastmodtext oubloglmt'));
+    }
+}
+
+/**
  * Create grade item for given oublog
  *
  * @param object $oublog
