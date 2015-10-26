@@ -263,10 +263,10 @@ function oublog_can_comment($cm, $oublog, $post, $ignoretime = false) {
                 $oublog->allowcomments == (OUBLOG_COMMENTS_ALLOWPUBLIC && !isloggedin()) ||
 
                 // 2. Post is visible to all logged-in users+, and you have the
-                // contributepersonal capabilty normally used for personal blogs.
+                // comment capabilty in context.
                 ($post->visibility >= OUBLOG_VISIBILITY_LOGGEDINUSER
                     && $oublog->maxvisibility >= OUBLOG_VISIBILITY_LOGGEDINUSER
-                    && has_capability('mod/oublog:contributepersonal',
+                    && has_capability('mod/oublog:comment',
                         $modcontext)) ||
 
                 // 3. You have comment permission in the specific context
