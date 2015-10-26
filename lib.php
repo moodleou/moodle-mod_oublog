@@ -927,6 +927,36 @@ function oublog_cm_info_view(cm_info $cm) {
 }
 
 /**
+ * Return blogs on course that have last modified date for current user
+ *
+ * @param stdClass $course
+ * @return array
+ */
+function oublog_get_ourecent_activity($course) {
+    global $CFG;
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+
+    $modinfo = get_fast_modinfo($course);
+
+    $return = array();
+
+    foreach ($modinfo->get_instances_of('oublog') as $blog) {
+        if ($blog->uservisible) {
+            $lastpostdate = oublog_get_last_modified($blog, $blog->get_course());
+            if (!empty($lastpostdate)) {
+                $data = new stdClass();
+                $data->cm = $blog;
+                $data->text = get_string('lastmodified', 'oublog',
+                        userdate($lastpostdate, get_string('strftimerecent', 'oublog')));
+                $data->date = $lastpostdate;
+                $return[$data->cm->id] = $data;
+            }
+        }
+    }
+    return $return;
+}
+
+/**
  * Create grade item for given oublog
  *
  * @param object $oublog
