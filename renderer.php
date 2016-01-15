@@ -25,9 +25,23 @@
 defined('MOODLE_INTERNAL') || die();
 
 class mod_oublog_renderer extends plugin_renderer_base {
+
     /**
      * Print a single blog post
      *
+     * @param object $cm current course module object
+     * @param object $oublog Blog object
+     * @param string $viewname name of view controller file
+     * @return string
+     */
+    public function render_header($cm, $oublog, $viewname) {
+        // This function is empty and for theme renderers to override.
+    }
+
+    /**
+     * Print a single blog post
+     *
+     * @param object $cm current course module object
      * @param object $oublog Blog object
      * @param object $post Structure containing all post info and comments
      * @param string $baseurl Base URL of current page
@@ -37,11 +51,12 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param bool $cancomment Has capability toggle
      * @param bool $forexport Export output rendering toggle
      * @param bool $email Email output rendering toggle
+     * @param bool $socialshareposition Position social sharing buttons top or bottom of post
      * @return bool
      */
     public function render_post($cm, $oublog, $post, $baseurl, $blogtype,
             $canmanageposts = false, $canaudit = false, $commentcount = true,
-            $forexport = false, $format = false, $email = false) {
+            $forexport = false, $format = false, $email = false, $socialshareposition = 'top') {
         global $CFG, $USER, $OUTPUT;
         $output = '';
         $modcontext = context_module::instance($cm->id);
@@ -71,7 +86,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment', $post->id,
                 "timemodified", false)) {
             $output .= html_writer::start_tag('div', array('class'=>'oublog-post-attachments'));
-            $output .= get_string('attachments', 'mod_oublog') . ': ';
+            $output .= html_writer::tag('span', get_string('attachments', 'mod_oublog') . ': ');
             foreach ($files as $file) {
                 if (!$forexport && !$email) {
                     $filename = $file->get_filename();
@@ -102,55 +117,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
             }
             $output .= html_writer::end_tag('div');
         }
-        // Only show widgets if blog is global ect.
-        if ($oublog->global && $oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC) {
-            if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC && !$forexport && !$email) {
-                list($oublog, $oubloginstance) = oublog_get_personal_blog($post->userid);
-                $oubloginstancename = $oubloginstance->name;
-                $linktext = get_string('tweet', 'oublog');
-                $purl = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
-                $postname = !(empty($post->title)) ? $post->title : get_string('untitledpost', 'oublog');
-                $output .= html_writer::start_tag('div', array('class' => 'oublog-post-socialshares'));
-                $output .= get_string('share', 'oublog');
-                $output .= html_writer::start_tag('div', array('class' => 'oublog-post-share'));
-                // Show tweet link.
-                $output .= html_writer::start_tag('div',
-                        array('class' => 'share-button'));
-                $params = array('url' => $purl, 'dnt' => true, 'count' => 'none',
-                        'text' => $postname . " " . $oubloginstance->name,
-                        'class' => 'twitter-share-button');
-                $turl = new moodle_url('https://twitter.com/share', $params);
-                $output .= html_writer::link($turl, $linktext, $params);
-                $output .= html_writer::end_tag('div');
-                // Show facebook link.
-                $output .= html_writer::start_tag('div',
-                        array('class' => 'share-button'));
-                $output .= html_writer::start_tag('div',
-                        array('class' => 'fb-share-button',
-                        'data-href' => $purl,
-                        'data-colorscheme' => 'dark'));
-                $output .= html_writer::end_tag('div');
-                $output .= html_writer::end_tag('div');
-                // Show googleplus link.
-                $output .= html_writer::start_tag('div',
-                        array('class' => 'share-button'));
-                $output .= html_writer::start_tag('div',
-                        array('class'=>'g-plus',
-                        'data-href' => $purl,
-                        'data-action' => 'share',
-                        'data-height' => 20,
-                        'data-annotation' => 'none'));
-                $output .= html_writer::end_tag('div');
-                $output .= html_writer::end_tag('div');
-
-                $output .= html_writer::end_tag('div');
-                $output .= html_writer::end_tag('div');
-                // With JS enabled show social widget buttons.
-                self::render_twitter_js();
-                $output .= self::render_facebook_js();
-                $output .= self::render_googleplus_js();
-            }
-
+        if ($socialshareposition == 'top') {
+            $output .= $this->render_post_socialshares($cm, $oublog, $post, $baseurl, $blogtype,
+                    $canmanageposts, $canaudit, $commentcount, $forexport, $format = false, $email);
         }
         $output .= html_writer::end_tag('div');
 
@@ -418,7 +387,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                             $a->fullname = s($last->authorname);
                         }
                         $a->timeposted = oublog_date($last->timeposted, true);
-                        $output .= ' ' . get_string('lastcomment', 'oublog', $a);
+                        $output .= html_writer::tag('span', ' ' . get_string('lastcomment', 'oublog', $a));
                     }
                 } else if (oublog_can_comment($cm, $oublog, $post)) {
                     if (!$forexport && !$email) {
@@ -429,9 +398,98 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 }
             }
         }
+
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div');
+
+        if ($socialshareposition == 'bottom') {
+            $output .= $this->render_post_socialshares($cm, $oublog, $post, $baseurl, $blogtype,
+                    $canmanageposts, $canaudit, $commentcount, $forexport, $format = false, $email);
+        }
+
+        $output .= html_writer::tag('div', '', array('style' => 'clear: both'));
+
         $output .= html_writer::end_tag('div');
+
+        return $output;
+    }
+
+    /**
+     * Print post social sharing buttons.
+     *
+     * @param object $cm current course module object
+     * @param object $oublog Blog object
+     * @param object $post Structure containing all post info and comments
+     * @param string $baseurl Base URL of current page
+     * @param string $blogtype Blog level ie course or above
+     * @param bool $canmanageposts Has capability toggle
+     * @param bool $canaudit Has capability toggle
+     * @param bool $cancomment Has capability toggle
+     * @param bool $forexport Export output rendering toggle
+     * @param bool $email Email output rendering toggle
+     * @return bool
+     */
+    protected function render_post_socialshares($cm, $oublog, $post, $baseurl, $blogtype,
+            $canmanageposts = false, $canaudit = false, $commentcount = true,
+            $forexport = false, $format = false, $email = false) {
+
+        $output = '';
+
+        // Only show widgets if blog is global ect.
+        if ($oublog->global && $oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC) {
+            if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC && !$forexport && !$email) {
+                list($oublog, $oubloginstance) = oublog_get_personal_blog($post->userid);
+                $oubloginstancename = $oubloginstance->name;
+
+                $linktext = get_string('tweet', 'oublog');
+                $purl = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
+                $postname = !(empty($post->title)) ? $post->title : get_string('untitledpost', 'oublog');
+                $output .= html_writer::start_tag('div', array('class' => 'oublog-post-socialshares'));
+                $output .= html_writer::tag('div', get_string('share', 'oublog'),
+                        array('class' => 'oublog-post-share-title'));
+                $output .= html_writer::start_tag('div', array('class' => 'oublog-post-share'));
+
+                // Show tweet link.
+                $output .= html_writer::start_tag('div',
+                        array('class' => 'share-button'));
+                $params = array('url' => $purl, 'dnt' => true, 'count' => 'none',
+                        'text' => $postname . " " . $oubloginstance->name,
+                        'class' => 'twitter-share-button');
+                $turl = new moodle_url('https://twitter.com/share', $params);
+                $output .= html_writer::link($turl, $linktext, $params);
+                $output .= html_writer::end_tag('div');
+
+                // Show facebook link.
+                $output .= html_writer::start_tag('div',
+                        array('class' => 'share-button'));
+                $output .= html_writer::start_tag('div',
+                        array('class' => 'fb-share-button',
+                        'data-href' => $purl,
+                        'data-layout' => 'button'));
+                $output .= html_writer::end_tag('div');
+                $output .= html_writer::end_tag('div');
+
+                // Show googleplus link.
+                $output .= html_writer::start_tag('div',
+                        array('class' => 'share-button'));
+                $output .= html_writer::start_tag('div',
+                        array('class'=>'g-plus',
+                        'data-href' => $purl,
+                        'data-action' => 'share',
+                        'data-height' => 20,
+                        'data-annotation' => 'none'));
+                $output .= html_writer::end_tag('div');
+                $output .= html_writer::end_tag('div');
+
+                $output .= html_writer::end_tag('div');
+                $output .= html_writer::end_tag('div');
+
+                // With JS enabled show social widget buttons.
+                self::render_twitter_js();
+                $output .= self::render_facebook_js();
+                $output .= self::render_googleplus_js();
+            }
+        }
 
         return $output;
     }
@@ -1406,6 +1464,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $struse = get_string('use', 'oublog');
         $output .= html_writer::start_tag('div', array('class' => 'oublog-tag-order'));
         $output .= $strorder . $OUTPUT->help_icon('order', 'oublog');
+        $output .= html_writer::start_tag('span', array('class' => 'oublog-tag-order-actions'));
         if ($selected == 'use') {
             $burl = new moodle_url($PAGE->url, array('tagorder' => 'alpha'));
             $output .= "&nbsp;" . html_writer::link($burl, $stralpha) . " | " . $struse;
@@ -1413,6 +1472,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $burl = new moodle_url($PAGE->url, array('tagorder' => 'use'));
             $output .= "&nbsp;" . $stralpha . " | " . html_writer::link($burl, $struse);
         }
+        $output .= html_writer::end_tag('span');
         $output .= html_writer::end_tag('div');
         return $output;
     }
@@ -1443,7 +1503,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $facebookjs = <<<EOF
 <div id="fb-root"></div>
 EOF;
-            $PAGE->requires->js_init_code("Y.Get.js('https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.0', {async:true})");
+            $PAGE->requires->js_init_code("Y.Get.js('https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.5', {async:true})");
             $loaded = true;
             return $facebookjs;
         }
@@ -1469,6 +1529,38 @@ EOF;
      */
     public function render_summary($summary, $oubloguser) {
         return $summary;
+    }
+
+    public function render_export_button_top($context, $oublog, $post, $oubloguserid,
+            $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm, $courseid) {
+        return '';
+    }
+
+    public function render_export_button_bottom($context, $oublog, $post, $oubloguserid,
+            $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm) {
+
+        global $CFG;
+
+        $output = '';
+
+        $output .= '<div id="addexportpostsbutton">';
+
+        $button = new portfolio_add_button();
+        $button->set_callback_options('oublog_all_portfolio_caller',
+                array('postid' => $post->id,
+                        'oublogid' => $oublog->id,
+                        'offset' => $offset,
+                        'currentgroup' => $currentgroup,
+                        'currentindividual' => $currentindividual,
+                        'oubloguserid' => $oubloguserid,
+                        'canaudit' => $canaudit,
+                        'tag' =>  $tagid,
+                        'cmid' => $cm->id), 'mod_oublog');
+        $output .= $button->to_html(PORTFOLIO_ADD_TEXT_LINK) . get_string('exportpostscomments', 'oublog');
+
+        $output .= '</div>';
+
+        return $output;
     }
 }
 

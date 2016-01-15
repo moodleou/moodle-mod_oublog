@@ -184,6 +184,7 @@ if (!$frmpost = $mform->get_data()) {
     $PAGE->set_heading(format_string($course->fullname));
     echo $OUTPUT->header();
     $renderer = $PAGE->get_renderer('mod_oublog');
+    echo $renderer->render_header($cm, $oublog, 'editpost');
     echo $renderer->render_pre_postform($oublog, $cm);
     $mform->display();
     // Add tagselector yui mod - autocomplete of tags.

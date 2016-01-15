@@ -162,6 +162,9 @@ echo '<div class="oublog-topofpage"></div>';
 
 // Print blog posts.
 echo '<div id="middle-column" >';
+
+echo $oublogoutput->render_header($cm, $oublog, 'viewpost');
+
 echo '<div class="oublog-post-commented">';
 
 // Load ratings.

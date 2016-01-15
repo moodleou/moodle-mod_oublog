@@ -98,6 +98,9 @@ echo $OUTPUT->header();
 // Print the main part of the page.
 echo '<div class="oublog-topofpage"></div>';
 
+$renderer = $PAGE->get_renderer('mod_oublog');
+echo $renderer->render_header($cm, $oublog, 'viewedit');
+
 // Print blog posts.
 ?>
 <div id="middle-column">

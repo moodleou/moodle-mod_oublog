@@ -1056,11 +1056,13 @@ function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstancei
         return($cloud);
     }
 
+    $cloud .= html_writer::start_tag('div', array('class' => 'oublog-tag-items'));
     foreach ($tags as $tag) {
         $cloud .= '<a href="'.$baseurl.'&amp;tag='.urlencode($tag->tag).'" class="oublog-tag-cloud-'.
             $tag->weight.'"><span class="oublog-tagname">'.strtr(($tag->tag), array(' '=>'&nbsp;')).
             '</span><span class="oublog-tagcount">('.$tag->count.')</span></a> ';
     }
+    $cloud .= html_writer::end_tag('div');
 
     return($cloud);
 }
@@ -1747,17 +1749,20 @@ function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $i
         $commentsurlrss = oublog_get_feedurl('rss',  $oublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
     }
 
-    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog',
-            oublog_get_displayname($oublog)) . '</div>';
+    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog', oublog_get_displayname($oublog));
     $html .= $OUTPUT->help_icon('feedhelp', 'oublog');
+    $html .= '</div>';
     $html .= '<div class="oublog-feedlinks">';
-    $html .= get_string('blogfeed', 'oublog', oublog_get_displayname($oublog, true)).': ';
-    $html .= '<a href="'.$blogurlatom.'">'.get_string('atom', 'oublog').'</a> ';
-    $html .= '<a href="'.$blogurlrss.'">'.get_string('rss', 'oublog').'</a>';
+    $html .= '<span class="oublog-feedlinks-feedtitle">' . get_string('blogfeed', 'oublog', oublog_get_displayname($oublog, true)) . ': </span>';
+    $html .= '<span class="oublog-feedlinks-feedtype">';
+    $html .= '<br/><a href="'.$blogurlatom.'">'.get_string('atom', 'oublog').'</a> ';
+    $html .= '<br/><a href="'.$blogurlrss.'">'.get_string('rss', 'oublog').'</a>';
+    $html .= '</span>';
 
     if ($oublog->allowcomments) {
         if (!is_string($bloginstance)) {
-            $html .= '<div class="oublog-links">'.get_string('commentsfeed', 'oublog').': ';
+            $html .= '<div class="oublog-links">';
+            $html .= '<span class="oublog-feedcommentlinks-feedtitle">'.get_string('commentsfeed', 'oublog') . ': </span>';
             $html .= '<br/><a href="'.$commentsurlatom.'">'.get_string('comments', 'oublog').' '.get_string('atom', 'oublog').'</a> ';
             $html .= '<br/><a href="'.$commentsurlrss.'">'.get_string('comments', 'oublog').' '.get_string('rss', 'oublog').'</a>';
             $html .= '</div>';

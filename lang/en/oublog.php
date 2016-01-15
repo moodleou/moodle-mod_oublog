@@ -149,7 +149,7 @@ $string['onepending'] = '{$a} comment awaiting approval';
 $string['npendingafter'] = ', {$a} awaiting approval';
 $string['onependingafter'] = ', {$a} awaiting approval';
 $string['comment'] = 'Add your comment';
-$string['lastcomment'] = '(latest by {$a->fullname}, {$a->timeposted})';
+$string['lastcomment'] = '(latest comment by {$a->fullname}, {$a->timeposted})';
 $string['addcomment'] = 'Add comment';
 
 $string['confirmdeletepost'] = 'Are you sure you want to delete this post?';
@@ -634,7 +634,7 @@ $string['grading_invalid'] = 'Posts can only be graded when either grade type or
 $string['nograde'] = 'No grade (default)';
 $string['teachergrading'] = 'Teacher grades students';
 $string['userrating'] = 'Use ratings';
-$string['share'] = 'Share this post';
+$string['share'] = 'Share post';
 $string['tweet'] = 'Tweet';
 $string['oublogcrontask'] = 'OU blog maintenance jobs';
 
