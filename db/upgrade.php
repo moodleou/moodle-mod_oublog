@@ -382,5 +382,15 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2015090800, 'oublog');
     }
 
+    if ($oldversion < 2015101501) {
+        global $DB;
+
+        // Fix grade set when grading off.
+        $DB->set_field_select('oublog', 'grade', 0, 'grading = 0 and grade != 0');
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2015101501, 'oublog');
+    }
+
     return true;
 }

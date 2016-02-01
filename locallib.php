@@ -3052,7 +3052,7 @@ function oublog_can_grade($course, $oublog, $cm, $groupid=0) {
     global $USER;
 
     // Cannot grade if blog has grading turned off
-    if (!$oublog->grade) {
+    if ($oublog->grading == OUBLOG_NO_GRADING) {
         return false;
     }
 

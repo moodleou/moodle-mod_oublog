@@ -600,7 +600,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     }
 
                     // Grades.
-                    if ($oublog->grade != 0 && isset($user->gradeobj)) {
+                    if ($oublog->grading != OUBLOG_NO_GRADING && isset($user->gradeobj)) {
                         if (!$table->is_downloading()) {
                             $attributes = array('userid' => $user->id);
                             if (empty($user->gradeobj->grade)) {
@@ -639,7 +639,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $table->finish_output();
         if (!$table->is_downloading()) {
             // Print the grade form footer if necessary.
-            if ($oublog->grade != 0 && !empty($participation)) {
+            if ($oublog->grading != OUBLOG_NO_GRADING && !empty($participation)) {
                 echo $table->grade_form_footer();
             }
         }

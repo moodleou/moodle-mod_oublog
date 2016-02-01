@@ -268,6 +268,10 @@ class mod_oublog_mod_form extends moodleform_mod {
         if (empty($data->commentuntil)) {
             $data->commentuntil = 0;
         }
+        if ($data->grading == OUBLOG_NO_GRADING) {
+            // Unset grade if grading turned off.
+            $data->grade = 0;
+        }
         return $data;
     }
 
