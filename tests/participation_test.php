@@ -359,7 +359,7 @@ class oublog_participation_test extends oublog_test_lib {
         $student1 = $this->get_new_user('student', $course->id);
         $student2 = $this->get_new_user('student', $course->id);
 
-        $oublog = $this->get_new_oublog($course->id, array('grade' => 100));
+        $oublog = $this->get_new_oublog($course->id, array('grading' => 1, 'grade' => 100));
         $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
         $context = context_module::instance($oublog->cmid);
 
