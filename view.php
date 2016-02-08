@@ -565,8 +565,7 @@ $event->trigger();
 $views = oublog_update_views($oublog, $oubloginstance);
 
 // Finish the page.
-if (isloggedin() || isguestuser()) {
-    echo "<div class=\"clearer\"></div><div class=\"oublog-views\">$strviews $views</div></div>";
-}
+echo "<div class=\"clearer\"></div><div class=\"oublog-views\">$strviews $views</div></div>";
+
 
 echo $OUTPUT->footer();

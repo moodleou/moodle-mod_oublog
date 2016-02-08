@@ -351,18 +351,20 @@ Feature: Test Post and Comment on Personal OUBlog
     Then I should see "SC02 Personal OUBlog post02"
     And I should see "SC02 Admin Persblog post02 content WorldVis"
     And I should see "sc02edap02"
-    And I should see "Share this post"
-    And I should see "Tweet"
-    And I should see "Share"
-
+    # Changed below to make more specific.
+    And I should see "Share post" in the "div.oublog-post-share-title" "css_element"
+    And I should see "Tweet" in the "div.share-button:nth-child(1)" "css_element"
+    And "div.share-button:nth-child(2) div.fb-share-button" "css_element" should exist
+    And "div.share-button:nth-child(3)" "css_element" should exist
     # Admin opens viewpost page and Socialmedia widgets are available
     And I click on "Permalink" "link" in the ".oublog-post-links" "css_element"
     And I wait to be redirected
     Then I should see "SC02 Personal OUBlog post02"
     And I should see "SC02 Admin Persblog post02 content WorldVis"
     And I should see "sc02edap02"
-    And I should see "Share this post"
-    And I should see "Tweet"
-    And I should see "Share"
+    And I should see "Share post" in the "div.oublog-post-share-title" "css_element"
+    And I should see "Tweet" in the "div.share-button:nth-child(1)" "css_element"
+    And "div.share-button:nth-child(2) div.fb-share-button" "css_element" should exist
+    And "div.share-button:nth-child(3)" "css_element" should exist
     And I should not see "SC02 Personal OUBlog post01"
     And I should not see "SC02 Admin Persblog post01 content Private"
