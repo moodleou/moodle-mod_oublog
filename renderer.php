@@ -126,7 +126,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-top-content'));
         if (!$forexport) {
             $output .= html_writer::start_tag('div', array('class' => 'oublog-userpic'));
-            $postuser = new object();
+            $postuser = new stdClass();
             $postuser->id = $post->userid;
             $postuser->firstname = $post->firstname;
             $postuser->lastname = $post->lastname;
@@ -975,7 +975,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             }
             if ($comment->userid && !$forexport) {
                 $output .= html_writer::start_tag('div', array('class' => 'oublog-userpic'));
-                $commentuser = new object();
+                $commentuser = new stdClass();
                 $fields = explode(',', user_picture::fields());
                 foreach($fields as $field) {
                     if ($field != 'id') {
@@ -1142,7 +1142,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $poststable->data = array();
             foreach ($participation->posts as $post) {
                 // Post user object required for user_picture.
-                $postuser = new object();
+                $postuser = new stdClass();
                 $postuser->id = $post->userid;
                 $fields = explode(',', user_picture::fields('', null, '', 'poster'));
                 foreach ($fields as $field) {

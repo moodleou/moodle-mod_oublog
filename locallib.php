@@ -4215,7 +4215,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
         $content .= html_writer::tag('p', get_string('recentposts', 'oublog'));
         foreach ($participation->posts as $post) {
             // Post user object required for oublog_statsinfo.
-            $postuser = new object();
+            $postuser = new stdClass();
             $postuser->id = $post->userid;
             $postuser->groupid = $post->groupid;
             $fields = explode(',', user_picture::fields('', null, '', null));
@@ -4295,7 +4295,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
         }
         foreach ($participation->comments as $comment) {
             // Comment user object required for oublog_statsinfo.
-            $commentuser = new object();
+            $commentuser = new stdClass();
             if (empty($comment->commenterid)) {
                 $commentuser->id =-1;
             } else {
@@ -4309,7 +4309,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
                 }
             }
             // Comment poster object required.
-            $commentposter = new object();
+            $commentposter = new stdClass();
             $commentposter->id = $comment->posterid;
             $fields = explode(',', user_picture::fields('', null, '', 'poster'));
             foreach ($fields as $field) {
