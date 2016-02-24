@@ -1314,7 +1314,6 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
     }
 
     if ($canmanagelinks) {
-        $html .= '<br />';
         if ($oublog->global) {
             $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;bloginstance='.$oubloginstance->id.'" class="oublog-links">'.get_string('addlink', 'oublog').'</a>';
         } else {

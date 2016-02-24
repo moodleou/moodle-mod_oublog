@@ -506,9 +506,11 @@ echo '</div>';
 
 // Print blog posts.
 if ($posts) {
-    echo "<div class='oublog-paging'>";
-    echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
-    echo '</div>';
+    if ($recordcount > OUBLOG_POSTS_PER_PAGE) {
+        echo "<div class='oublog-paging'>";
+        echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
+        echo '</div>';
+    }
     echo '<div id="oublog-posts">';
     $rowcounter = 1;
     // Only add page onto returnurl within call to render post.
@@ -519,9 +521,12 @@ if ($posts) {
                 $canmanageposts, $canaudit, true, false);
         $rowcounter++;
     }
-    echo "<div class='oublog-paging'>";
-    echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
-    echo '</div></div>';
+    if ($recordcount > OUBLOG_POSTS_PER_PAGE) {
+        echo "<div class='oublog-paging'>";
+        echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
+        echo '</div>';
+    }
+    echo '</div>';
 
     // Show portfolio export link.
     // Will need to be passed enough details on the blog so it can accurately work out what

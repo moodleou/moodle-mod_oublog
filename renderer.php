@@ -312,6 +312,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                                 '/mod/oublog/deletepost.php?blog=' . $post->oublogid .
                                 '&post=' . $post->id . '&delete=1' . '&referurl=' . urlencode($referurl)));
                     }
+                    $output .= ' ';
                 }
             }
             // Show portfolio export link.
@@ -387,7 +388,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                             $a->fullname = s($last->authorname);
                         }
                         $a->timeposted = oublog_date($last->timeposted, true);
-                        $output .= html_writer::tag('span', ' ' . get_string('lastcomment', 'oublog', $a));
+                        $output .= html_writer::tag('span', ' ' . get_string('lastcomment', 'oublog', $a), array('class' => 'oublog_links_comment'));
                     }
                 } else if (oublog_can_comment($cm, $oublog, $post)) {
                     if (!$forexport && !$email) {
@@ -930,10 +931,12 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param bool $canaudit Has capability toggle
      * @param bool $forexport Export output rendering toggle
      * @param object $cm Current course module object
+     * @param string $format
+     * @param boolean $contenttitle True to position title with content
      * @return html
      */
     public function render_comments($post, $oublog, $canaudit, $canmanagecomments, $forexport,
-            $cm, $format = false) {
+            $cm, $format = false, $contenttitle = false) {
         global $DB, $CFG, $USER, $OUTPUT;
         $viewfullnames = true;
         $strdelete      = get_string('delete', 'oublog');
@@ -951,6 +954,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
         foreach ($post->comments as $comment) {
             $extraclasses = $comment->deletedby ? ' oublog-deleted' : '';
             $extraclasses .= ' oublog-hasuserpic';
+            $title = '';
+            if (trim(format_string($comment->title))!=='') {
+                $title = html_writer::tag('h3', format_string($comment->title),
+                        array('class' => 'oublog-title'));
+            } else if (!$forexport) {
+                $commenttitle = get_accesshide(get_string('newcomment', 'mod_oublog'));
+                $title = html_writer::tag('h3', $commenttitle, array('class' => 'oublog-title'));
+            }
 
             $output .= html_writer::start_tag('div', array('class' =>
                     'oublog-comment' . $extraclasses, 'id' => 'cid' . $comment->id));
@@ -973,6 +984,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $output .= html_writer::tag('div', get_string('deletedby', 'oublog', $a),
                         array('class' => 'oublog-comment-deletedby'));
             }
+            $output .= html_writer::start_div('oublog-comment-details');
             if ($comment->userid && !$forexport) {
                 $output .= html_writer::start_tag('div', array('class' => 'oublog-userpic'));
                 $commentuser = new stdClass();
@@ -988,12 +1000,8 @@ class mod_oublog_renderer extends plugin_renderer_base {
                         array('courseid' => $oublog->course, 'size' => 70));
                 $output .= html_writer::end_tag('div');
             }
-            if (trim(format_string($comment->title))!=='') {
-                $output .= html_writer::tag('h2', format_string($comment->title),
-                        array('class' => 'oublog-title'));
-            } else if (!$forexport) {
-                $commenttitle = get_accesshide(get_string('newcomment', 'mod_oublog'));
-                $output .= html_writer::tag('h2', $commenttitle, array('class' => 'oublog-title'));
+            if (!$contenttitle) {
+                $output .= $title;
             }
             $output .= html_writer::start_tag('div', array('class' => 'oublog-post-date'));
             $output .= oublog_date($comment->timeposted);
@@ -1020,8 +1028,12 @@ class mod_oublog_renderer extends plugin_renderer_base {
             }
             $output .= html_writer::end_tag('div');
             $output .= html_writer::end_tag('div');
+            $output .= html_writer::end_div();
             $output .= html_writer::start_tag('div',
                     array('class' => 'oublog-comment-content'));
+            if ($contenttitle) {
+                $output .= $title;
+            }
             if (!$forexport) {
                 if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
                     $fileurlbase = 'mod/oublog/pluginfile.php';

@@ -241,8 +241,8 @@ if ($post->allowcomments >= OUBLOG_COMMENTS_ALLOWPUBLIC &&
 
             // Title.
             if (trim(format_string($comment->title))!=='') {
-                print '<h2 class="oublog-comment-title">' .
-                        format_string($comment->title) . '</h2>';
+                print '<h3 class="oublog-comment-title">' .
+                        format_string($comment->title) . '</h3>';
             }
 
             // Date and author.

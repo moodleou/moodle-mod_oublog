@@ -249,7 +249,7 @@ div.oublog-deleted .oublog-post-content {
     margin-right: 10px;
     margin-bottom: 1em;
 }
-.oublog-comment h2.oublog-title {
+.oublog-comment h3.oublog-title {
     margin: 0 0 0.5em 0;
     font-weight: normal;
 }
