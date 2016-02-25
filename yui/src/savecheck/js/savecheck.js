@@ -25,7 +25,7 @@
 M.mod_oublog = M.mod_oublog || {};
 
 M.mod_oublog.savecheck = {
-    init : function() {
+    init : function(contextid) {
         // Trap edit saving and test that the server connection is available.
         var btns = Y.all('#id_submitbutton');
         btns.on('click', function(e) {
@@ -61,7 +61,7 @@ M.mod_oublog.savecheck = {
             }
             var cfg = {
                 method : 'POST',
-                data : 'sesskey=' + M.cfg.sesskey,
+                data : 'sesskey=' + M.cfg.sesskey + '&contextid=' + contextid,
                 on : {
                     success : checksave,
                     failure : savefail
