@@ -119,7 +119,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         }
         if ($socialshareposition == 'top') {
             $output .= $this->render_post_socialshares($cm, $oublog, $post, $baseurl, $blogtype,
-                    $canmanageposts, $canaudit, $commentcount, $forexport, $format = false, $email);
+                    $canmanageposts, $canaudit, $commentcount, $forexport, $format, $email);
         }
         $output .= html_writer::end_tag('div');
 
@@ -404,7 +404,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
         if ($socialshareposition == 'bottom') {
             $output .= $this->render_post_socialshares($cm, $oublog, $post, $baseurl, $blogtype,
-                    $canmanageposts, $canaudit, $commentcount, $forexport, $format = false, $email);
+                    $canmanageposts, $canaudit, $commentcount, $forexport, $format, $email);
         }
 
         $output .= html_writer::tag('div', '', array('style' => 'clear: both'));
