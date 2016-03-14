@@ -382,5 +382,17 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2015090800, 'oublog');
     }
 
+    if ($oldversion < 2015101501) {
+        // Fix the gradebook entries for all OUblogs with grading == OUBLOG_NO_GRADING.
+        require_once($CFG->dirroot.'/mod/oublog/lib.php');
+        $rs = $DB->get_recordset('oublog', ['grading' => OUBLOG_NO_GRADING]);
+        foreach ($rs as $oublog) {
+            oublog_grade_item_update($oublog);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2015101501, 'oublog');
+    }
+
     return true;
 }
