@@ -970,6 +970,8 @@ function oublog_grade_item_update($oublog, $grades = null) {
     // Use 'grade' or 'scale' depends upon 'grading'.
     if ($oublog->grading == OUBLOG_USE_RATING) {
         $oublogscale = $oublog->scale;
+    } else if ($oublog->grading == OUBLOG_NO_GRADING) {
+        $oublogscale = 0;
     } else {
         $oublogscale = $oublog->grade;
     }
