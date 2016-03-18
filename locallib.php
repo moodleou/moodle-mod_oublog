@@ -3515,7 +3515,7 @@ function oublog_stats_output_poststats($oublog, $cm, $renderer = null, $ajax = f
         $sql = "SELECT p.groupid, count(p.id) as posts
                     FROM {oublog_posts} p
                     JOIN {oublog_instances} bi on p.oubloginstancesid = bi.id
-                    JOIN {groups} as g on g.id = p.groupid
+                    JOIN {groups} g on g.id = p.groupid
                     WHERE bi.oublogid = ?
                     AND p.deletedby IS NULL AND p.timeposted >= ?
                     AND p.groupid > 0
@@ -3696,7 +3696,7 @@ function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax 
             FROM {oublog_comments} c
             JOIN {oublog_posts} p on p.id = c.postid
             JOIN {oublog_instances} bi on p.oubloginstancesid = bi.id
-            JOIN {groups} as g on g.id = p.groupid
+            JOIN {groups} g on g.id = p.groupid
             WHERE bi.oublogid = ?
             AND p.groupid > 0
             AND p.deletedby IS NULL
@@ -3956,7 +3956,7 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
             AND c.deletedby IS NULL AND c.timeposted >= ?
             AND (c.userid <> bi2.userid OR c.userid IS NULL)
             GROUP BY p.id
-        ) as pos on pos.pid = posts.id
+        ) pos on pos.pid = posts.id
         JOIN {oublog_instances} bi on bi.id = posts.oubloginstancesid
         ORDER BY pos.comments DESC, posts.title ASC, posts.id DESC";
 
