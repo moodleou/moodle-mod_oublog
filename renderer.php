@@ -948,8 +948,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $canmanagecomments = has_capability('mod/oublog:managecomments', $context);
         }
 
+        // IE needs tabindex="-1" or focus ends up in the wrong place when you
+        // follow a link like .../mod/oublog/viewpost.php?post=123#oublogcomments.
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-comments',
-                'id' => 'oublogcomments'));
+                'id' => 'oublogcomments', 'tabindex' => '-1'));
         $counter = 0;
         foreach ($post->comments as $comment) {
             $extraclasses = $comment->deletedby ? ' oublog-deleted' : '';
