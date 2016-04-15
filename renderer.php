@@ -1427,14 +1427,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
         // Get the avatar picture for user/group.
         if (isset($info->user->courseid)) {
             // Group not user.
-            if (!$userpic = print_group_picture($info->user, $info->user->courseid, true, true, false)) {
+            if (!$userpic = print_group_picture($info->user, $info->user->courseid, true, true, true)) {
                 // No group pic set, use default user image.
                 $userpic = $OUTPUT->pix_icon('u/f2', '');
             }
         } else {
-            $userpic = $this->output->user_picture($info->user, array('courseid' => $COURSE->id, 'link' => false));
+            $userpic = $this->output->user_picture($info->user, array('courseid' => $COURSE->id, 'link' => true));
         }
-        $avatar = html_writer::link($info->url, $userpic, array('class' => 'oublog_statsinfo_avatar'));
+        $avatar = html_writer::span($userpic, 'oublog_statsinfo_avatar');
         $infodiv = html_writer::start_div('oublog_statsinfo_infocol');
         if ($info->stat) {
             $infodiv .= html_writer::start_div('oublog_statsinfo_bar');
