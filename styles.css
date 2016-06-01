@@ -227,6 +227,9 @@ div.oublog-deleted .oublog-post-content {
 #oublogcomments {
     padding: 1em;
 }
+#oublogcomments:focus {
+    outline: 0;
+}
 #oublogcomments.oublogpartcomments {
     background-color: #F2F2F2;
 }
