@@ -368,3 +368,25 @@ Feature: Test Post and Comment on Personal OUBlog
     And "div.share-button:nth-child(3)" "css_element" should exist
     And I should not see "SC02 Personal OUBlog post01"
     And I should not see "SC02 Admin Persblog post01 content Private"
+
+  Scenario: Admin follows the link to the main page and back
+    Given I log in as "admin"
+    And I am on homepage
+    And I follow "Personal Blogs"
+    And I follow "Blog options"
+    Then I should see "Blog name"
+    And I should see "Summary"
+    And I set the following fields to these values:
+      | Blog name| Admin User's blog follow the link to the main page |
+    When I press "Save changes"
+    Then I should see "Admin User's blog follow the link to the main page"
+    Given I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Personal OUBlog post01 |
+      | Message | Admin Persblog post01 content |
+    When I press "Add post"
+    And I follow "Permalink"
+    Then "#oublog-arrowback" "css_element" should exist
+    And I should see "Admin User's blog follow the link to the main page" in the "#oublog-arrowback" "css_element"
+    Given I click on "#oublog-arrowback a" "css_element"
+    Then "#addpostbutton" "css_element" should exist

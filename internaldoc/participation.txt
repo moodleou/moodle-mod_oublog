@@ -81,6 +81,11 @@ The participants to display is as follows:
 | ''Own participation only''
 |}
 
+=== Back to blog link ===
+A button (link) reading as "< [blog-name]", where [blog-name] is the name of
+the oublog will redirect the user from participation-page or viewpost-page to
+the main-blog-page
+
 === Grading ===
 
 A user with the capability ''mod/oublog:grade'' in relation to the current blog has the ability to add grade values.
