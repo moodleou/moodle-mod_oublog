@@ -178,6 +178,8 @@ $oublogoutput->render_participation_list($cm, $course, $oublog, $groupid,
     $download, $page, $participation, $coursecontext, $viewfullnames,
     $groupname);
 
+echo $oublogoutput->get_link_back_to_oublog($cm->name, $cm->id);
+
 if (empty($download)) {
     echo $OUTPUT->footer();
 }

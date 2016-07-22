@@ -1576,6 +1576,24 @@ EOF;
 
         return $output;
     }
+
+    /**
+     * Return a button-like link which takes the user back to the main page.
+     *
+     * @param string $label, String.
+     * @param int $id, cmid or userid (if blog is global).
+     * @param bool $global, set to true when global blog.
+     * @return string
+     */
+    public function get_link_back_to_oublog($label, $id, $global = false) {
+        $idstring = 'id';
+        if ($global) {
+            $idstring = 'user';
+        }
+        $url = new moodle_url('/mod/oublog/view.php', array($idstring => $id));
+        return html_writer::tag('div', link_arrow_left($label, $url), array('id' => 'oublog-arrowback'));
+    }
+
 }
 
 class oublog_statsinfo implements renderable {

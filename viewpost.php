@@ -287,6 +287,12 @@ if ($post->allowcomments >= OUBLOG_COMMENTS_ALLOWPUBLIC &&
 
 echo '</div>';
 
+if ($oublog->global) {
+    echo $oublogoutput->get_link_back_to_oublog($blogname, $oubloginstance->userid, true);
+} else {
+    echo $oublogoutput->get_link_back_to_oublog($blogname, $cm->id);
+}
+
 // Finish the page.
 echo '<div class="clearfix"></div>';
 echo $OUTPUT->footer();

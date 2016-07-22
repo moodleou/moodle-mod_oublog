@@ -608,3 +608,45 @@ Feature: Test Post and Comment on OUBlog entry
     When I follow "Test oublog basics"
     Then I should see "2 comments"
     And I log out
+
+  Scenario: Check back to main page link
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I follow "Course 1"
+    When I follow "Test oublog basics"
+    And I press "New blog post"
+    And I set the following fields to these values:
+      | Title | Teacher1 blog |
+      | Message | Teacher1 message |
+    And I press "Add post"
+    # Go to viewpost page and back to the main blog page
+    When I follow "Permalink"
+    Then "#oublog-arrowback" "css_element" should exist
+    And I should see "Test oublog basics" in the "#oublog-arrowback" "css_element"
+    Given I click on "#oublog-arrowback a" "css_element"
+    Then "#addpostbutton" "css_element" should exist
+    # Go to participation page and back to the main blog page
+    Given I press "Participation by user"
+    Then I should see "Participation - All time"
+    And "#oublog-arrowback" "css_element" should exist
+    And I should see "Test oublog basics" in the "#oublog-arrowback" "css_element"
+    Given I click on "#oublog-arrowback a" "css_element"
+    Then "#addpostbutton" "css_element" should exist
+    # Go to userparticipatiom page and back to the main blog page
+    When I expand "BLOG USAGE" node
+    And I expand "My participation summary" node
+    And I follow "View all participation"
+    Then I should see "Participation - All time"
+    And "#oublog-arrowback" "css_element" should exist
+    And I should see "Test oublog basics" in the "#oublog-arrowback" "css_element"
+    Given I click on "#oublog-arrowback a" "css_element"
+    Then "#addpostbutton" "css_element" should exist
+    # Go to participatiomlist page and back to the main blog page
+    When I expand "Participation" node
+    And I follow "View all participation"
+    Then I should see "Participation - All time"
+    And "#oublog-arrowback" "css_element" should exist
+    And I should see "Test oublog basics" in the "#oublog-arrowback" "css_element"
+    Given I click on "#oublog-arrowback a" "css_element"
+    Then "#addpostbutton" "css_element" should exist
+    And I log out

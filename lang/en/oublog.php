@@ -18,9 +18,9 @@ $string['attachments'] = "Attachments";
 $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
 $string['modulenameplural'] = 'OU blogs';
-$string['modulename_help'] = 'The blog activity module allows for creation of blogs within a course
- (these are separate to the core Moodle blog system). You can have course-wide blogs (everyone in
- the course posts to the same blog), group blogs, or individual blogs.';
+$string['modulename_help'] = 'This allows for the creation of blogs within a module (which are separate
+to the core Moodle blog system). You can have module-wide blogs (everyone in the module posts to the same
+blog), group blogs, or individual blogs. The blog activity can be renamed to reflect its purpose e.g. Learning Log.';
 
 $string['oublogintro'] = 'Intro';
 $string['lastmodified'] = 'Last post: {$a}';

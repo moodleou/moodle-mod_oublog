@@ -219,6 +219,8 @@ if (empty($download)) {
 $oublogoutput->render_user_participation_list($cm, $course, $oublog, $participation,
         $groupid, $download, $page, $coursecontext, $viewfullnames, $groupname, $start, $end);
 
+echo $oublogoutput->get_link_back_to_oublog($cm->name, $cm->id);
+
 if (empty($download)) {
     echo $pag;
     echo $OUTPUT->footer();
