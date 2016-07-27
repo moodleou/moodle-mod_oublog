@@ -27,11 +27,6 @@
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
-use Behat\Behat\Context\Step\Given as Given,
-Behat\Gherkin\Node\TableNode as TableNode;
-use Behat\Behat\Context\Step\Then;
-use Behat\Mink\Exception\ElementNotFoundException;
-
 /**
  * oublog-related steps definitions.
  *
