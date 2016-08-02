@@ -208,8 +208,13 @@ class mod_oublog_external extends external_api {
             return array();
         }
         $selected = explode(',', $params['selected']);
-        $return = oublog_import_getposts($params['blogid'], $params['bcontextid'],
+        if ($selected[0] == 0) {
+            $return = oublog_import_getposts($params['blogid'], $params['bcontextid'],
+                $selected, $params['inccomments'], $user, true);
+        } else {
+            $return = oublog_import_getposts($params['blogid'], $params['bcontextid'],
                 $selected, $params['inccomments'], $user);
+        }
         // Convert file objects into a custom known object to send.
         foreach ($return as &$post) {
             foreach ($post->images as &$file) {

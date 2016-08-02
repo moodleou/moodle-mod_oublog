@@ -96,12 +96,17 @@ if ($step == 0) {
     try {
         if ($remoteblogs = oublog_import_remote_call('mod_oublog_get_user_blogs',
                 array('username' => $USER->username))) {
-            $blogs = array_merge($blogs, $remoteblogs);
+            $blogs = array_merge($remoteblogs, $blogs);
         }
     } catch (moodle_exception $e) {
         // Ignore fail when contacting external server, keep message for debugging.
         debugging($e->getMessage());
     }
+    // Sort coursename in alphabetical order.
+    usort($blogs, function($a, $b)
+    {
+        return strcasecmp($a->coursename, $b->coursename);
+    });
     $personalblogout = '';
     $blogout = '';
     foreach ($blogs as $bloginfo) {
@@ -118,14 +123,20 @@ if ($step == 0) {
                 'alt' => ''));
         $bloglink = '';
         if ($bloginfo->numposts) {
-            $url = new moodle_url('/mod/oublog/import.php', $params +
-                    array('step' => 1, 'bid' => $bloginfo->cmid));
+            $url = new moodle_url('/mod/oublog/import.php', $params + array('step' => 1, 'bid' => $bloginfo->cmid));
+            $urlimportblog = new moodle_url('/mod/oublog/import.php',
+                $params + array('step' => 2, 'bid' => $bloginfo->cmid, 'importall' => 'true', 'sesskey' => sesskey()));
             if (isset($bloginfo->remote)) {
                 $url->param('remote', true);
+                $urlimportblog->param('remote', true);
             }
-            $link = html_writer::link($url, $bloginfo->name);
-            $bloglink = html_writer::tag('li', $img . ' ' . $link . ' ' .
-                    get_string('import_step0_numposts', 'oublog', $bloginfo->numposts));
+            $linkimportselectedposts = html_writer::link($url, get_string('import_step0_selected_posts', 'oublog'),
+                    array('class' => 'oublog_link_import_selectedposts'));
+            $linkimportblog = html_writer::link($urlimportblog, get_string('import_step0_blog', 'oublog'),
+                    array('class' => 'oublog_link_import_blog'));
+            $bloglink = html_writer::tag('li', $img . ' ' . $bloginfo->name . ' ' .
+                    get_string('import_step0_numposts', 'oublog', $bloginfo->numposts) . ' ' .
+                $linkimportselectedposts . ' ' . $linkimportblog);
         } else {
             $bloglink = html_writer::tag('li', $img . ' ' . $bloginfo->name . ' ' .
                     get_string('import_step0_numposts', 'oublog', 0));
@@ -280,10 +291,14 @@ if ($step == 0) {
         echo html_writer::end_tag('form');
     }
 } else if ($step == 2) {
+    // Div used to hide the 'progress' once the page gets onto 'finished'.
+    echo html_writer::start_div('', array('id' => 'oublog_import_progress_container'));
+
     // Do the import, show feedback. First check access.
     echo html_writer::tag('p', get_string('import_step2_inst', 'oublog'));
     flush();
     $bid = required_param('bid', PARAM_INT);
+    $importall = optional_param('importall', false, PARAM_BOOL);
     if ($remote = optional_param('remote', false, PARAM_BOOL)) {
         // Blog on remote server, use WS to get info.
         if (!$result = oublog_import_remote_call('mod_oublog_get_blog_info',
@@ -299,30 +314,45 @@ if ($step == 0) {
     }
     require_sesskey();
     // Get selected and pre-selected posts.
-    $preselected = explode(',', optional_param('preselected', '', PARAM_SEQUENCE));
     $selected = array();
-    foreach ($_POST as $name => $val) {
-        if (strpos($name, 'post_') === 0) {
-            $selected[] = $val;
+    $preselected = explode(',', optional_param('preselected', '', PARAM_SEQUENCE));
+    if ($_POST) {
+        foreach ($_POST as $name => $val) {
+            if (strpos($name, 'post_') === 0) {
+                $selected[] = $val;
+            }
         }
     }
     $selected = array_filter(array_unique(array_merge($selected, $preselected), SORT_NUMERIC));
     $stepinfo = array('step' => 2, 'bid' => $bid, 'preselected' => implode(',', $selected), 'remote' => $remote);
-    if (empty($selected)) {
-        echo html_writer::tag('p', get_string('import_step2_none', 'oublog'));
-        echo $OUTPUT->continue_button(new moodle_url('/mod/oublog/import.php',
+    if ($_POST) {
+        if (empty($selected)) {
+            echo html_writer::tag('p', get_string('import_step2_none', 'oublog'));
+            echo $OUTPUT->continue_button(new moodle_url('/mod/oublog/import.php',
                 array_merge($params, $stepinfo, array('step' => 1))));
-        echo $OUTPUT->footer();
-        exit;
+            echo $OUTPUT->footer();
+            exit;
+        }
     }
-
     if ($remote) {
-        $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
+        if ($importall) {
+            $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
+                array('username' => $USER->username, 'blogid' => $boublogid, 'selected' => '0',
+                    'inccomments' => $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
+        } else {
+            $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
                 array('username' => $USER->username, 'blogid' => $boublogid, 'selected' => implode(',', $selected),
-                        'inccomments' => $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
+                    'inccomments' => $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
+        }
+
     } else {
-        $posts = oublog_import_getposts($boublogid, $bcontextid, $selected,
+        if ($importall) {
+            $posts = oublog_import_getposts($boublogid, $bcontextid, $selected,
+                $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, $USER->id, $importall);
+        } else {
+            $posts = oublog_import_getposts($boublogid, $bcontextid, $selected,
                 $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, $USER->id);
+        }
     }
 
     if (empty($posts)) {
@@ -451,6 +481,10 @@ if ($step == 0) {
         $trans->allow_commit();
         $bar->update($cur, count($posts), get_string('import_step2_prog', 'oublog'));
     }
+
+    // End of div 'oublog_import_progress_container'.
+    echo html_writer::end_div();
+
     if (count($conflicts) != count($posts)) {
         // Inform completion system, if available.
         $completion = new completion_info($course);
@@ -470,8 +504,27 @@ if ($step == 0) {
     $event = \mod_oublog\event\post_imported::create($params);
     $event->trigger();
 
-    echo html_writer::tag('p', get_string('import_step2_total', 'oublog',
-            (count($posts) - count($conflicts))));
+    // Div used to show the 'result' once the page gets onto 'finished'.
+    echo html_writer::start_div('', array('id' => 'oublog_import_result_container'));
+
+    // When 'importing posts' in progress, hide 'result_container'.
+    // When it've finished, hide 'progress_container', and show 'result_container'.
+    $jsstep2 = 'var resultContainer = document.getElementById("oublog_import_result_container");
+        var progressContainer = document.getElementById("oublog_import_progress_container");
+        var progressBar = document.getElementsByClassName("bar")[0];
+        var checkProgress = setInterval(function(){ toggleProgressResult() }, 1000);
+        function toggleProgressResult() {
+            if (progressBar.getAttribute("aria-valuenow") == progressBar.getAttribute("aria-valuemax")) {
+                clearInterval(checkProgress);
+                progressContainer.style.display = "none";
+                resultContainer.style.display = "block";
+            }
+        }
+    ';
+    $PAGE->requires->js_init_code($jsstep2, true);
+
+    echo html_writer::tag('h3', get_string('import_step2_total', 'oublog',
+        (count($posts) - count($conflicts))));
     $continueurl = '/mod/oublog/view.php?id=' . $cm->id;
     if ($oublog->global) {
         $continueurl = '/mod/oublog/view.php?user=' . $USER->id;
@@ -480,6 +533,7 @@ if ($step == 0) {
         // Enable conflicts to be ignored by resending only these.
         $stepinfo['ignoreconflicts'] = true;
         $stepinfo['preselected'] = implode(',', $conflicts);
+        $stepinfo['importall'] = false;
         $url = new moodle_url('/mod/oublog/import.php', array_merge($params, $stepinfo));
         $conflictimport = new single_button($url, get_string('import_step2_conflicts_submit', 'oublog'));
         echo $OUTPUT->confirm(get_string('import_step2_conflicts', 'oublog', count($conflicts)),
@@ -487,6 +541,9 @@ if ($step == 0) {
     } else {
         echo $OUTPUT->continue_button($continueurl);
     }
+
+    // End of div 'oublog_import_result_container'.
+    echo html_writer::end_div();
 }
 
 echo html_writer::end_div();

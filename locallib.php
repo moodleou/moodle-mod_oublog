@@ -5138,24 +5138,28 @@ function oublog_import_getallposts($blogid, $sort, $userid = 0, $page = 0, $tags
  * @param array $selected - array of selected post ids
  * @param bool $inccomments - include comments?
  * @param int $userid - user id (ensures user is post author)
+ * @param bool $importall - indicate whether or not get all posts
  * @return array posts
  */
-function oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments = false, $userid = 0) {
+function oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments = false, $userid = 0, $importall = false) {
     global $DB, $USER;
     if ($userid == 0) {
         $userid = $USER->id;
     }
-    list($inwhere, $sqlparams) = $DB->get_in_or_equal($selected);
+    $sqlwhere = "bi.userid = ? AND bi.oublogid = ?  AND p.deletedby IS NULL";
+    $sqlparams = array();
+    if ($importall) {
+        $sqlparams = array($userid, $blogid);
+    } else {
+        list($inwhere, $params) = $DB->get_in_or_equal($selected);
+        $sqlwhere .= " AND p.id $inwhere";
+        $sqlparams = array_merge(array($userid, $blogid), $params);
+    }
     $sql = "SELECT p.*
         FROM {oublog_posts} p
         INNER JOIN {oublog_instances} bi on bi.id = p.oubloginstancesid
-        WHERE bi.userid = ?
-        AND bi.oublogid = ?
-        AND p.deletedby IS NULL
-        AND p.id $inwhere
+        WHERE $sqlwhere
         ORDER BY p.id ASC";
-
-    $sqlparams = array_merge(array($userid, $blogid), $sqlparams);
     if (!$posts = $DB->get_records_sql($sql, $sqlparams)) {
         return array();
     }
