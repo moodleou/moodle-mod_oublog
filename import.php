@@ -494,14 +494,14 @@ if ($step == 0) {
     }
 
     // Log post imported event.
-    $params = array(
+    $eventparams = array(
         'context' => $context,
         'objectid' => $oublog->id,
         'other' => array(
             'info' => count($posts),
         )
     );
-    $event = \mod_oublog\event\post_imported::create($params);
+    $event = \mod_oublog\event\post_imported::create($eventparams);
     $event->trigger();
 
     // Div used to show the 'result' once the page gets onto 'finished'.
