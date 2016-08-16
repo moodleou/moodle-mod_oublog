@@ -1081,7 +1081,7 @@ function oublog_get_tag_list($oublog, $groupid, $cm, $oubloginstanceid = null, $
 
     $tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, 'alpha');
 
-    $blogtags = oublog_clarify_tags($oublog->tags);
+    $blogtags = oublog_clarify_tags($oublog->tagslist);
 
     // For each tag added to the blog check if it is already in use
     // in the post, if it is then the 'Official' label is added to it.

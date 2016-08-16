@@ -122,11 +122,11 @@ class mod_oublog_mod_form extends moodleform_mod {
 
             $mform->addElement('header', 'tagheading', get_string('tags', 'oublog'));
 
-            $mform->addElement('text', 'tags', get_string('tags', 'oublog'),
+            $mform->addElement('text', 'tagslist', get_string('tags', 'oublog'),
                             array('size'=>'48'));
-            $mform->addHelpButton('tags', 'predefinedtags', 'oublog');
-            $mform->setType('tags', PARAM_TAGLIST);
-            $mform->addRule('tags', get_string('maximumchars', '', 255),
+            $mform->addHelpButton('tagslist', 'predefinedtags', 'oublog');
+            $mform->setType('tagslist', PARAM_TAGLIST);
+            $mform->addRule('tagslist', get_string('maximumchars', '', 255),
                             'maxlength', 255, 'client');
 
             $tagopts = array(
@@ -250,8 +250,8 @@ class mod_oublog_mod_form extends moodleform_mod {
         if (empty($data->introonpost)) {
             $data->introonpost = 0;
         }
-        if (!empty($data->tags)) {
-            $data->tags = core_text::strtolower(trim($data->tags));
+        if (!empty($data->tagslist)) {
+            $data->tagslist = core_text::strtolower(trim($data->tagslist));
         }
         if (empty($data->restricttags)) {
             $data->restricttags = 0;
@@ -323,10 +323,10 @@ class mod_oublog_mod_form extends moodleform_mod {
                 $errors['grading'] = get_string('grading_invalid', 'oublog');
             }
         }
-        if (isset($data['restricttags']) && empty($data['tags'])
+        if (isset($data['restricttags']) && empty($data['tagslist'])
                 && ($data['restricttags'] == 1 || $data['restricttags'] == 3)) {
             // When forcing use of pre-defined tags must define some.
-            $errors['tags'] = get_string('required');
+            $errors['tagslist'] = get_string('required');
         }
         return $errors;
     }

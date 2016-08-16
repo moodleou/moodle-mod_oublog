@@ -1452,21 +1452,21 @@ class oublog_locallib_test extends oublog_test_lib {
         // Testing the create update of a blog instance with predefined tags.
         // set and also testing oublog_get_tag_list().
         // Whole course blog created with predefined tag set.
-        $oublog = $this->get_new_oublog($course->id, array('tags' => 'blogtag01'));
+        $oublog = $this->get_new_oublog($course->id, array('tagslist' => 'blogtag01'));
         $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
         // Check that the predefined tag is inserted to the oublog_tags table.
-        $blogtags = oublog_clarify_tags($oublog->tags);
+        $blogtags = oublog_clarify_tags($oublog->tagslist);
         foreach ($blogtags as $tag) {
             $predefinedtags[] = $DB->get_record('oublog_tags', array('tag' => $tag));
         }
         // Confirm finding one predefined tag in the oublog_tags table.
         $this->assertCount(1, $predefinedtags);
         // Change the predefined tags on the blog.
-        $oublog->tags = 'blogtag01, blogtag02';
+        $oublog->tagslist = 'blogtag01, blogtag02';
         $oublog->instance = $oublog->id;
         oublog_update_instance($oublog);
         // Check that the changed tags are inserted to the oublog_tags table.
-        $blogtags = oublog_clarify_tags($oublog->tags);
+        $blogtags = oublog_clarify_tags($oublog->tagslist);
         foreach ($blogtags as $tag) {
             $changedtags[] = $DB->get_record('oublog_tags', array('tag' => $tag));
         }
@@ -1495,7 +1495,7 @@ class oublog_locallib_test extends oublog_test_lib {
             $fulltaglist[] = $tag->tag;
             if (isset($tag->label)) {
                 // It should be an 'Official' ie. 'Set' predefined blog tag.
-                $this->assertContains($tag->tag, $oublog->tags);
+                $this->assertContains($tag->tag, $oublog->tagslist);
                 $this->assertNotEmpty($tag->label);
                 $this->assertGreaterThanOrEqual(0, $tag->count);
             }
@@ -1518,7 +1518,7 @@ class oublog_locallib_test extends oublog_test_lib {
             $restrictedtaglist[] = $tag->tag;
             if (isset($tag->label)) {
                 // It should be an 'Official' ie. 'Set' predefined blog tag.
-                $this->assertContains($tag->tag, $oublog->tags);
+                $this->assertContains($tag->tag, $oublog->tagslist);
                 $this->assertNotEmpty($tag->label);
                 $this->assertGreaterThanOrEqual(0, $tag->count);
             }

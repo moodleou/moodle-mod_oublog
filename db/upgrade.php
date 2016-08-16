@@ -392,5 +392,18 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2015101501, 'oublog');
     }
 
+    if ($oldversion < 2016081600) {
+
+        // Rename field tags on table oublog to tagslist.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('tags', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'introonpost');
+
+        // Launch rename field tags.
+        $dbman->rename_field($table, $field, 'tagslist');
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2016081600, 'oublog');
+    }
+
     return true;
 }

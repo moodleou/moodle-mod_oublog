@@ -50,8 +50,8 @@ function oublog_add_instance($oublog) {
     if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
         return(false);
     }
-    if (!empty($oublog->tags)) {
-        $blogtags = oublog_clarify_tags($oublog->tags);
+    if (!empty($oublog->tagslist)) {
+        $blogtags = oublog_clarify_tags($oublog->tagslist);
         // For each tag added to the blog check if it exists in oublog_tags table,
         // if it does not a tag record is created.
         foreach ($blogtags as $tag) {
@@ -92,7 +92,7 @@ function oublog_update_instance($oublog) {
         return(false);
     }
 
-    $blogtags = oublog_clarify_tags($oublog->tags);
+    $blogtags = oublog_clarify_tags($oublog->tagslist);
     // For each tag in the blog check if it already exists in oublog_tags table,
     // if it does not a tag record is created.
     foreach ($blogtags as $tag) {
@@ -965,8 +965,8 @@ function oublog_get_ourecent_activity($course) {
  */
 function oublog_grade_item_update($oublog, $grades = null) {
     global $CFG;
-    require_once($CFG->libdir.'/gradelib.php');
-    require_once('locallib.php');
+    require_once($CFG->libdir . '/gradelib.php');
+    require_once($CFG->dirroot . '/mod/oublog/locallib.php');
     // Use 'grade' or 'scale' depends upon 'grading'.
     if ($oublog->grading == OUBLOG_USE_RATING) {
         $oublogscale = $oublog->scale;
