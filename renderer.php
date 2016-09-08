@@ -39,6 +39,19 @@ class mod_oublog_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Hook run prior to displaying the page header. Note that this does not return anything
+     * and must not echo any output, because nothing can be displayed prior to the header, so it
+     * isn't a normal renderer function!
+     *
+     * @param stdClass $cm current course module object
+     * @param stdClass $oublog Blog object
+     * @param string $viewname name of view controller file
+     */
+    public function pre_display($cm, $oublog, $viewname) {
+        // This function is empty and for theme renderers to override.
+    }
+
+    /**
      * Print a single blog post
      *
      * @param object $cm current course module object

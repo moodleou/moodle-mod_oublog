@@ -93,12 +93,15 @@ if (!empty($post->title)) {
 $PAGE->navbar->add($strviewedit);
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($course->fullname));
+
+$renderer = $PAGE->get_renderer('mod_oublog');
+$renderer->pre_display($cm, $oublog, 'viewedit');
+
 echo $OUTPUT->header();
 
 // Print the main part of the page.
 echo '<div class="oublog-topofpage"></div>';
 
-$renderer = $PAGE->get_renderer('mod_oublog');
 echo $renderer->render_header($cm, $oublog, 'viewedit');
 
 // Print blog posts.

@@ -158,6 +158,9 @@ $PAGE->set_title(format_string($post->title));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_button($buttontext);
 oublog_get_post_extranav($post, false);
+
+$oublogoutput->pre_display($cm, $oublog, 'viewpost');
+
 echo $OUTPUT->header();
 // Print the main part of the page.
 echo '<div class="oublog-topofpage"></div>';

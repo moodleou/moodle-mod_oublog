@@ -182,8 +182,9 @@ if (!$frmpost = $mform->get_data()) {
     $PAGE->navbar->add($post->general);
     $PAGE->set_title(format_string($oublog->name));
     $PAGE->set_heading(format_string($course->fullname));
-    echo $OUTPUT->header();
     $renderer = $PAGE->get_renderer('mod_oublog');
+    $renderer->pre_display($cm, $oublog, 'editpost');
+    echo $OUTPUT->header();
     echo $renderer->render_header($cm, $oublog, 'editpost');
     echo $renderer->render_pre_postform($oublog, $cm);
     $mform->display();

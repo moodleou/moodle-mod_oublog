@@ -117,6 +117,9 @@ $context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
+// Hook for pre-page-display output (if any).
+$oublogoutput->pre_display($cm, $oublog, 'view');
+
 // Check security.
 $canpost        = oublog_can_post($oublog, $user, $cm);
 $canmanageposts = has_capability('mod/oublog:manageposts', $context);
@@ -236,9 +239,9 @@ if (!$hideunusedblog) {
         $PAGE->navbar->add(get_string('extranavtag', 'oublog', $tag));
     }
 }
-$PAGE->set_title(format_string($oublog->name));
-$PAGE->set_heading(format_string($oublog->name));
-
+$blogname = format_string($oublog->name);
+$PAGE->set_title($blogname);
+$PAGE->set_heading($blogname);
 
 // Initialize $PAGE, compute blocks.
 $editing = $PAGE->user_is_editing();
