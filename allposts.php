@@ -124,8 +124,6 @@ $url = new moodle_url("$CFG->wwwroot/course/mod.php",
         array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
 $PAGE->set_button($buttontext);
 
-$PAGEWILLCALLSKIPMAINDESTINATION = true; // OU accessibility feature.
-
 // The right column, BEFORE the middle-column.
 if (isloggedin() and !isguestuser()) {
     list($oublog, $oubloginstance) = oublog_get_personal_blog($USER->id);

@@ -25,9 +25,9 @@
 require_once("../../config.php");
 require_once("locallib.php");
 
-$editid = required_param('edit', PARAM_INT);       // Blog post edit ID.
+$editid = required_param('edit', PARAM_INT); // Blog post edit ID.
 
-if (!$edit = $DB->get_record('oublog_edits', array('id'=>$editid))) {
+if (!$edit = $DB->get_record('oublog_edits', array('id' => $editid))) {
     print_error('invalidedit', 'oublog');
 }
 
@@ -39,18 +39,18 @@ if (!$cm = get_coursemodule_from_instance('oublog', $post->oublogid)) {
     print_error('invalidcoursemodule');
 }
 
-if (!$course = $DB->get_record("course", array("id"=>$cm->course))) {
+if (!$course = $DB->get_record("course", array('id' => $cm->course))) {
     print_error('coursemisconf');
 }
 
-if (!$oublog = $DB->get_record("oublog", array("id"=>$cm->instance))) {
+if (!$oublog = $DB->get_record("oublog", array('id' => $cm->instance))) {
     print_error('invalidcoursemodule');
 }
 
 $context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 
-$url = new moodle_url('/mod/oublog/viewedit.php', array('edit'=>$editid));
+$url = new moodle_url('/mod/oublog/viewedit.php', array('edit' => $editid));
 $PAGE->set_url($url);
 
 // Check security.
@@ -72,22 +72,22 @@ $groupmode = oublog_get_activity_groupmode($cm, $course);
 
 // Print the header.
 if ($oublog->global) {
-    if (!$oubloginstance = $DB->get_record('oublog_instances', array('id'=>$post->oubloginstancesid))) {
+    if (!$oubloginstance = $DB->get_record('oublog_instances', array('id' => $post->oubloginstancesid))) {
         print_error('invalidblog', 'oublog');
     }
-    if (!$oubloguser = $DB->get_record('user', array('id'=>$oubloginstance->userid))) {
+    if (!$oubloguser = $DB->get_record('user', array('id' => $oubloginstance->userid))) {
         print_error('invaliduserid');
     }
 
-    $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id'=>$oubloguser->id)));
-    $PAGE->navbar->add(format_string($oublog->name), new moodle_url('/mod/oublog/view.php', array('user'=>$oubloguser->id)));
+    $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id' => $oubloguser->id)));
+    $PAGE->navbar->add(format_string($oublog->name), new moodle_url('/mod/oublog/view.php', array('user' => $oubloguser->id)));
 }
 
 if (!empty($post->title)) {
-    $PAGE->navbar->add(format_string($post->title), new moodle_url('/mod/oublog/viewpost.php', array('post'=>$post->id)));
+    $PAGE->navbar->add(format_string($post->title), new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id)));
 } else {
     $PAGE->navbar->add(shorten_text(format_string($post->message, 30)),
-            new moodle_url('/mod/oublog/viewpost.php', array('post'=>$post->id)));
+            new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id)));
 }
 
 $PAGE->navbar->add($strviewedit);

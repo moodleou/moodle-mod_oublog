@@ -48,7 +48,7 @@ if (isloggedin()) {
         $tagorder = get_user_preferences('oublog_tagorder', 'alpha');
     }
 } else {
-    // Use 'alpha'
+    // Use 'alpha'.
     $tagorder = 'alpha';
 }
 
@@ -69,7 +69,7 @@ if ($id) {
         print_error('invalidcoursemodule');
     }
 
-    if (!$oublog = $DB->get_record("oublog", array("id"=>$cm->instance))) {
+    if (!$oublog = $DB->get_record('oublog', array('id' => $cm->instance))) {
         print_error('invalidcoursemodule');
     }
     $oubloguser = (object) array('id' => null);
@@ -88,7 +88,7 @@ if ($id) {
     if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
         print_error('invalidcoursemodule');
     }
-    if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
+    if (!$course = $DB->get_record('course', array('id' => $oublog->course))) {
         print_error('coursemisconf');
     }
     $oubloginstanceid = $oubloginstance->id;
@@ -146,10 +146,10 @@ $groupmode = oublog_get_activity_groupmode($cm, $course);
 $currentgroup = oublog_get_activity_group($cm, true);
 
 if (!oublog_is_writable_group($cm)) {
-    $canpost=false;
-    $canmanageposts=false;
-    $cancomment=false;
-    $canaudit=false;
+    $canpost = false;
+    $canmanageposts = false;
+    $cancomment = false;
+    $canaudit = false;
 }
 
 if (isset($cm)) {
@@ -158,8 +158,7 @@ if (isset($cm)) {
 }
 
 // Print the header.
-$PAGEWILLCALLSKIPMAINDESTINATION = true;
-$hideunusedblog=false;
+$hideunusedblog = false;
 
 if ($oublog->global) {
     $blogtype = 'personal';
@@ -195,13 +194,13 @@ if ($oublog->individual) {
         $showgroupselector = false;
     }
 
-    $canpost=true;
+    $canpost = true;
     $individualdetails = oublog_individual_get_activity_details($cm, $returnurl, $oublog,
             $currentgroup, $context);
     if ($individualdetails) {
         $currentindividual = $individualdetails->activeindividual;
         if (!$individualdetails->newblogpost) {
-            $canpost=false;
+            $canpost = false;
         }
     }
 }
@@ -211,7 +210,7 @@ list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, $
         $currentindividual, $oubloguser->id, $tag, $canaudit);
 
 
-$hideunusedblog=!$posts && !$canpost && !$canaudit;
+$hideunusedblog = !$posts && !$canpost && !$canaudit;
 
 if ($oublog->global && !$hideunusedblog) {
     // Bit about hidden with if global then $posts
@@ -230,9 +229,8 @@ if (!$hideunusedblog) {
     $PAGE->set_button($buttontext);
     if ($offset > 0) {
         $a = new stdClass();
-        $a->from = ($offset+1);
-        $a->to   = (($recordcount - $offset) > OUBLOG_POSTS_PER_PAGE) ? $offset +
-                OUBLOG_POSTS_PER_PAGE : $recordcount;
+        $a->from = ($offset + 1);
+        $a->to = (($recordcount - $offset) > OUBLOG_POSTS_PER_PAGE) ? $offset + OUBLOG_POSTS_PER_PAGE : $recordcount;
         $PAGE->navbar->add(get_string('extranavolderposts', 'oublog', $a));
     }
     if ($tag) {
@@ -320,7 +318,7 @@ if (!$hideunusedblog) {
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 
-    // 'Discovery' block.
+    // Discovery block.
     $stats = array();
     $stats[] = oublog_stats_output_myparticipation($oublog, $cm, $oublogoutput, $course, $currentindividual, $oubloguser->id);
     $stats[] = oublog_stats_output_participation($oublog, $cm, $oublogoutput, $course, false, $currentindividual, $oubloguser->id);
@@ -383,8 +381,10 @@ if (!empty($CFG->enableportfolios) && (has_capability('mod/oublog:exportpost', $
     // Note: render_export_button_top and render_export_button_bottom are added to
     // support the OSEP design which includes the export button differently from the old OU theme.
     if ($posts) {
-        // Do this to get $post variable
+        // Do this to get $post variable.
         foreach ($posts as $post) {
+            // Do nothing, but codechecker would complain if literally nothing.
+            $donothing = true;
         }
 
         if (isset($posts)) {
@@ -480,14 +480,14 @@ echo '<div id="oublogbuttons">';
 
 if ($showpostbutton && oublog_can_post_now($oublog, $context)) {
     echo '<div id="addpostbutton">';
-    echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php', array('blog' =>
-            $cm->instance)), $straddpost, 'get');
+    echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php',
+            array('blog' => $cm->instance)), $straddpost, 'get');
     echo '</div>';
     if ($oublog->allowimport && ($oublog->global ||
             $oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS)) {
         echo '<div class="oublog_importpostbutton">';
-        echo $OUTPUT->single_button(new moodle_url('/mod/oublog/import.php', array('id' =>
-                $cm->id)), get_string('import', 'oublog'), 'get');
+        echo $OUTPUT->single_button(new moodle_url('/mod/oublog/import.php',
+                array('id' => $cm->id)), get_string('import', 'oublog'), 'get');
         echo '</div>';
     }
 }
@@ -541,7 +541,7 @@ if ($posts) {
 }
 // Print information allowing the user to log in if necessary, or letting
 // them know if there are no posts in the blog.
-if (isguestuser() && $USER->id==$user) {
+if (isguestuser() && $USER->id == $user) {
     print '<p class="oublog_loginnote">'.
             get_string('guestblog', 'oublog',
                     'bloglogin.php?returnurl='.urlencode($returnurl)).'</p>';
