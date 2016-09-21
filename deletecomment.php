@@ -118,3 +118,4 @@ echo $OUTPUT->header();
 echo $OUTPUT->confirm(get_string('confirmdeletecomment', 'oublog'),
                  new moodle_url('/mod/oublog/deletecomment.php', array('comment'=>$commentid, 'confirm'=>'1')),
                  $viewurl);
+echo $OUTPUT->footer();
