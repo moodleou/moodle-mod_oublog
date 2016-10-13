@@ -1371,10 +1371,20 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
         $default = get_user_preferences("oublog_accordion_{$name}_open", $default);
         user_preference_allow_ajax_update("oublog_accordion_{$name}_open", PARAM_INT);
-        $PAGE->requires->yui_module('moodle-mod_oublog-accordion', 'M.mod_oublog.accordion.init',
-                array($name, $default));
+        $this->include_accordion_js($name, $default);
 
         return $out;
+    }
+
+    /**
+     * Include the js file
+     * @param string $name
+     * @param int $default Default tab to open
+     */
+    public function include_accordion_js($name, $default = 1) {
+        global $PAGE;
+        $PAGE->requires->yui_module('moodle-mod_oublog-accordion', 'M.mod_oublog.accordion.init',
+                array($name, $default));
     }
 
     public function render_stats_view($name, $maintitle, $content, $subtitle = '', $info = '', $form = null, $ajax = false) {
