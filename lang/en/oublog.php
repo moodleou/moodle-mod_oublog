@@ -444,6 +444,7 @@ $string['nousergrade'] = 'User grade not available.';
 
 // Participation download strings.
 $string['downloadas'] = 'Download data as';
+$string['downloadcsv'] = 'Comma separated values text file';
 $string['postauthor'] = 'Post author';
 $string['postdate'] = 'Post date';
 $string['posttime'] = 'Post time';

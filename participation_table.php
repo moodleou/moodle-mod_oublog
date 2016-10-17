@@ -121,7 +121,7 @@ class oublog_participation_table extends flexible_table {
      * Overriding here to avoid downloading in unsupported formats
      */
     public function get_download_menu() {
-        $exportclasses = array('csv' => get_string('downloadcsv', 'table'));
+        $exportclasses = array('csv' => get_string('downloadcsv', 'oublog'));
         return $exportclasses;
     }
 
@@ -281,7 +281,7 @@ class oublog_user_participation_table extends flexible_table {
      * Overriding here to avoid downloading in unsupported formats
      */
     public function get_download_menu() {
-        $exportclasses = array('csv' => get_string('downloadcsv', 'table'));
+        $exportclasses = array('csv' => get_string('downloadcsv', 'oublog'));
         return $exportclasses;
     }
 
@@ -298,7 +298,7 @@ class oublog_user_participation_table extends flexible_table {
             $html .= '<div class="mdl-align">';
             $html .= '<input type="submit" value="'.get_string('downloadas', 'oublog').'"/> ';
             $html .= html_writer::select($downloadoptions, 'download',
-                $this->defaultdownloadformat, false);
+                $this->download, false);
             $html .= '</div></form>';
         }
         return $html;
