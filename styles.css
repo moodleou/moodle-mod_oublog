@@ -352,6 +352,9 @@ div.oublog-individualselector {
   margin-bottom:1.0em;
   line-height: 1.6em;
 }
+#page-mod-oublog-search .oublog-individualselector {
+    display: block;
+}
 
 .oublog-post-content,.oublog-comment-content {
   overflow:hidden;

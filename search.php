@@ -80,10 +80,10 @@ if ($oublog->global) {
         $usercontext = context_user::instance($oubloguser->id);
         require_capability('mod/oublog:view', $usercontext);
     }
-    $returnurl = $CFG->wwwroot . '/mod/oublog/view.php?user='.$user;
+    $returnurl = $CFG->wwwroot . "/mod/oublog/search.php?user=$user&query=$querytext";
     $mreturnurl = new moodle_url('/mod/oublog/view.php', array('user'=>$user));
 } else {
-    $returnurl = $CFG->wwwroot . '/mod/oublog/view.php?id='.$id;
+    $returnurl = $CFG->wwwroot . "/mod/oublog/search.php?id=$id&query=$querytext";
     $mreturnurl = new moodle_url('/mod/oublog/view.php', array('id'=>$id));
 }
 
@@ -94,6 +94,12 @@ $groupmode = oublog_get_activity_groupmode($cm, $course);
 // oublog_get_activity_group? Or maybe more checks are needed? Not sure.
 if ($currentgroup===0 && $groupmode==SEPARATEGROUPS) {
     require_capability('moodle/site:accessallgroups', $context);
+}
+
+if ($oublog->individual) {
+    // Individual selector.
+    $individualdetails = oublog_individual_get_activity_details($cm, $returnurl, $oublog,
+            $currentgroup, $context);
 }
 
 // Print the header
@@ -130,8 +136,17 @@ $PAGE->set_button($buttontext);
 
 echo $OUTPUT->header();
 
+// Print Groups and individual drop-down menu.
+echo html_writer::start_div('oublog-groups-individual-selectors');
+
 // Print Groups
 groups_print_activity_menu($cm, $returnurl);
+
+if ($oublog->individual && $individualdetails) {
+    echo $individualdetails->display;
+}
+
+echo html_writer::end_div();
 
 global $modulecontext, $personalblog;
 $modulecontext=$context;
@@ -142,11 +157,25 @@ $query=new local_ousearch_search($querytext);
 $query->set_coursemodule($cm);
 if ($oublog->global && isset($oubloguser)) {
     $query->set_user_id($oubloguser->id);
-} else if ($oublog->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS &&
-        !has_capability('mod/oublog:viewindividual', $context)) {
-    $query->set_user_id($USER->id);
+} else if ($oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS) {
+    if (!empty($individualdetails->activeindividual)) {
+        // Only get results for currently selected user.
+        $query->set_user_id($individualdetails->activeindividual, false);
+    } else if ($groupmode && $currentgroup) {
+        // All individual, get results for all users in current group.
+        $sepcontext = $oublog->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS ? $context : 0;
+        $usersingroup = oublog_individual_get_all_users($course->id, $oublog->id,
+                $currentgroup, $sepcontext);
+        if ($usersingroup) {
+            $query->set_user_ids(array_keys($usersingroup), false);
+        } else {
+            // Stop groups with no members returning all results.
+            $query->set_user_ids(local_ousearch_search::NONE, false);
+        }
+    }
 }
-if ($groupmode && $currentgroup) {
+
+if ($groupmode && $currentgroup && $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
     $query->set_group_id($currentgroup);
 }
 $query->set_filter('visibility_filter');
