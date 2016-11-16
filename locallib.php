@@ -484,6 +484,7 @@ function oublog_edit_post($post, $cm) {
     $post->itemid = $post->message['itemid'];
     $post->message = $post->message['text'];
     $modcontext = context_module::instance($cm->id);
+
     if (!isset($post->id) || !$oldpost = $DB->get_record('oublog_posts', array('id'=>$post->id))) {
         return(false);
     }
@@ -680,7 +681,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
 
     $rs = $DB->get_recordset_sql($sql);
     foreach ($rs as $tag) {
-        $posts[$tag->postid]->tags[$tag->id] = $tag->tag;
+        $posts[$tag->postid]->outags[$tag->id] = $tag->tag;
     }
 
     // Load ratings.
@@ -783,7 +784,7 @@ function oublog_get_post($postid, $canaudit=false) {
 
     $rs = $DB->get_recordset_sql($sql, array($postid));
     foreach ($rs as $tag) {
-        $post->tags[$tag->id] = $tag->tag;
+        $post->outags[$tag->id] = $tag->tag;
     }
     $rs->close();
 
@@ -1081,7 +1082,7 @@ function oublog_get_tag_list($oublog, $groupid, $cm, $oubloginstanceid = null, $
 
     $tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, 'alpha');
 
-    $blogtags = oublog_clarify_tags($oublog->tags);
+    $blogtags = oublog_clarify_tags($oublog->outags);
 
     // For each tag added to the blog check if it is already in use
     // in the post, if it is then the 'Official' label is added to it.
@@ -1628,8 +1629,8 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
     foreach ($rs as $item) {
         $item->link = $CFG->wwwroot.'/mod/oublog/viewpost.php?post='.$item->id;
         $item->author = fullname($item);
-        $item->tags = array();
-        $item->tagscheme = $scheme;
+        $item->outags = array();
+        $item->outagscheme = $scheme;
         // Feeds do not allow blank titles
         if ((string)$item->title === '') {
             $item->title = html_to_text(shorten_text($item->description));
@@ -1653,7 +1654,7 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
     $rs = $DB->get_recordset_sql($sql, $params);
     foreach ($rs as $tag) {
         if (array_key_exists($tag->postid, $items)) {
-            $items[$tag->postid]->tags[$tag->tagid] = $tag->tag;
+            $items[$tag->postid]->outags[$tag->tagid] = $tag->tag;
         }
     }
     $rs->close();
@@ -1890,8 +1891,8 @@ function oublog_get_post_tags($post, $includespaces = false) {
     global $CFG, $DB;
 
     // Work out tags from existing data if possible (to save adding a query)
-    if (isset($post->tags)) {
-        $taglist=oublog_clarify_tags($post->tags);
+    if (isset($post->outags)) {
+        $taglist=oublog_clarify_tags($post->outags);
     } else {
         // Tags aren't in post so use database query
         $rs=$DB->get_recordset_sql("
@@ -5119,10 +5120,10 @@ function oublog_import_getallposts($blogid, $sort, $userid = 0, $page = 0, $tags
         $rs = $DB->get_recordset_sql($tsql, $inparams);
         foreach ($rs as $tag) {
             $postid = $tag->postid;
-            if (!isset($posts[$postid]->tags)) {
-                $posts[$postid]->tags = array();
+            if (!isset($posts[$postid]->outags)) {
+                $posts[$postid]->outags = array();
             }
-            $posts[$postid]->tags[$tag->id] = $tag->tag;
+            $posts[$postid]->outags[$tag->id] = $tag->tag;
         }
         $rs->close();
         // Add total record count.
@@ -5181,10 +5182,10 @@ function oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments = 
     $rs = $DB->get_recordset_sql($tsql, $inparams);
     foreach ($rs as $tag) {
         $postid = $tag->postid;
-        if (!isset($posts[$postid]->tags)) {
-            $posts[$postid]->tags = array();
+        if (!isset($posts[$postid]->outags)) {
+            $posts[$postid]->outags = array();
         }
-        $posts[$postid]->tags[] = $tag;
+        $posts[$postid]->outags[] = $tag;
     }
     $rs->close();
     if ($inccomments) {

@@ -159,8 +159,9 @@ class mod_oublog_post_form extends moodleform {
             }
         }
         if ($this->restricttags && $testtags > 0) {
-            $errors['tags'] = get_string('restricttagsvalidation', 'oublog');
+            $errors['tags'] = get_string('restricttagsvalidation', 'oublog'); 
         }
+
         return $errors;
     }
 }

@@ -201,12 +201,12 @@ if ($step == 0) {
         $tagnames = $result->tagnames;
         // Fix up post tags to required format as passed differently from WS.
         foreach ($posts as &$post) {
-            if (isset($post->tags)) {
+            if (isset($post->outags)) {
                 $newtagarr = array();
-                foreach ($post->tags as $tag) {
+                foreach ($post->outags as $tag) {
                     $newtagarr[$tag->id] = $tag->tag;
                 }
-                $post->tags = $newtagarr;
+                $post->outags = $newtagarr;
             }
         }
     } else {
@@ -241,9 +241,9 @@ if ($step == 0) {
         $untitledcount = 1;
         foreach ($posts as &$post) {
             $tagcol = '';
-            if (isset($post->tags)) {
+            if (isset($post->outags)) {
                 // Create tag column for post.
-                foreach ($post->tags as $tagid => $tag) {
+                foreach ($post->outags as $tagid => $tag) {
                     $newtagval = empty($tags) ? $tagid : $tags . ",$tagid";
                     $turl = new moodle_url('/mod/oublog/import.php',
                             array_merge($params, $stepinfo, array('tags' => $newtagval)));
@@ -380,14 +380,14 @@ if ($step == 0) {
                 $bctag = $DB->insert_record('oublog_tags',
                         (object) array('tag' => $tagname));
             }
-            if (!isset($post->tags)) {
-                $post->tags = array((object) array('id' => $bctag, 'tag' => $tagname));
+            if (!isset($post->outags)) {
+                $post->outags = array((object) array('id' => $bctag, 'tag' => $tagname));
             } else {
-                $post->tags[] = (object) array('id' => $bctag, 'tag' => $tagname);
+                $post->outags[] = (object) array('id' => $bctag, 'tag' => $tagname);
             }
         }
-        if (isset($post->tags)) {
-            foreach ($post->tags as $tagval) {
+        if (isset($post->outags)) {
+            foreach ($post->outags as $tagval) {
                 if (!$remote || ($bcoursename && $tagval == $tagname)) {
                     $DB->insert_record('oublog_taginstances', (object) array(
                             'oubloginstancesid' => $oubloginstance->id, 'postid' => $newid, 'tagid' => $tagval->id));
@@ -441,10 +441,10 @@ if ($step == 0) {
         // Update search (add required properties to newpost).
         $newpost->id = $newid;
         $newpost->userid = $USER->id;
-        $newpost->tags = array();
-        if (isset($post->tags)) {
-            foreach ($post->tags as $tag) {
-                $newpost->tags[$tag->id] = $tag->tag;
+        $newpost->outags = array();
+        if (isset($post->outags)) {
+            foreach ($post->outags as $tag) {
+                $newpost->outags[$tag->id] = $tag->tag;
             }
         }
         oublog_search_update($newpost, $cm);

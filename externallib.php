@@ -40,9 +40,14 @@ class mod_oublog_external extends external_api {
      * @param string $username
      */
     public static function get_user_blogs($username) {
-        global $DB, $remoteuserid;
+        global $DB, $remoteuserid, $USER;
         $username = self::validate_parameters(self::get_user_blogs_parameters(),
                 array('username' => $username));
+
+        //Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
         $user = $DB->get_field('user', 'id', array('username' => $username['username']), IGNORE_MISSING);
         if (!$user) {
             return array();
@@ -80,9 +85,14 @@ class mod_oublog_external extends external_api {
     }
 
     public static function get_blog_info($cmid, $username) {
-        global $DB, $remoteuserid;
+        global $DB, $remoteuserid, $USER;
         $params = self::validate_parameters(self::get_blog_info_parameters(),
                 array('cmid' => $cmid, 'username' => $username));
+
+        //Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
         $user = $DB->get_field('user', 'id', array('username' => $params['username']), IGNORE_MISSING);
         if (!$user) {
             return array();
@@ -131,10 +141,15 @@ class mod_oublog_external extends external_api {
      * @return array
      */
     public static function get_blog_allposts($blogid, $sort, $username, $page = 0, $tags = null) {
-        global $DB;
+        global $DB, $USER;
         $params = self::validate_parameters(self::get_blog_allposts_parameters(),
                 array('blogid' => $blogid, 'sort' => $sort, 'username' => $username,
                         'page' => $page, 'tags' => $tags));
+
+        //Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
         $user = $DB->get_field('user', 'id', array('username' => $params['username']), IGNORE_MISSING);
         if (!$user) {
             return array();
@@ -145,13 +160,13 @@ class mod_oublog_external extends external_api {
             $result[2] = array();
         }
         foreach ($result[0] as &$post) {
-            if (isset($post->tags)) {
+            if (isset($post->outags)) {
                 $tagupdate = array();
                 // Update post tags into a format that Moodle WS can work with.
-                foreach ($post->tags as $id => $tag) {
+                foreach ($post->outags as $id => $tag) {
                     $tagupdate[] = (object) array('id' => $id, 'tag' => $tag);
                 }
-                $post->tags = $tagupdate;
+                $post->outags = $tagupdate;
             }
         }
         return array('posts' => $result[0], 'total' => $result[1], 'tagnames' => $result[2]);
@@ -199,10 +214,15 @@ class mod_oublog_external extends external_api {
      * @return array of posts
      */
     public static function get_blog_posts($blogid, $bcontextid, $selected, $inccomments = false, $username) {
-        global $DB;
+        global $DB, $USER;
         $params = self::validate_parameters(self::get_blog_posts_parameters(),
                 array('blogid' => $blogid, 'bcontextid' => $bcontextid, 'selected' => $selected,
                         'inccomments' => $inccomments, 'username' => $username));
+
+        //Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
         $user = $DB->get_field('user', 'id', array('username' => $username), IGNORE_MISSING);
         if (!$user) {
             return array();

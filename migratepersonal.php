@@ -561,7 +561,7 @@ function migrate_backup($dir) {
                     $updaterec = null;
                 }
                 // Add post tags (also used in search to save DB query).
-                $newpost->tags = array();
+                $newpost->outags = array();
                 // $tags = $xpath->query("/DATA/TAGS/TAG[POSTID=$oldid]");
                 if (!$tagsonly || empty($tagnames)) {
                     $tagnames = array();
@@ -576,7 +576,7 @@ function migrate_backup($dir) {
                 if (!empty($tagnames)) {
                     $tagnames = array_unique(array_filter($tagnames));
                     oublog_update_item_tags($instance->newid, $postid, $tagnames);
-                    $newpost->tags = $tagnames;
+                    $newpost->outags = $tagnames;
                     $tagnames = null;
                 }
                 if (is_null($newpost->deletedby)) {

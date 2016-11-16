@@ -5,6 +5,11 @@ Feature: Test Post and Comment on Personal OUBlog
   I need to be able to see OUBblog personal post entries
   # Note this test will only pass on OU systems as using an OU custom step.
 
+  Background:
+    Given the following "activities" exist:
+      | activity | name           | course               | global | maxvisibility | allowcomments | idnumber |
+      | oublog   | Personal Blogs | Acceptance test site | 1      | 300           | 2             | oublog1  |
+
   Scenario: Admin edits the blog options
     Given I log in as "admin"
     And I am on homepage
