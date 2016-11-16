@@ -650,3 +650,15 @@ Feature: Test Post and Comment on OUBlog entry
     Given I click on "#oublog-arrowback a" "css_element"
     Then "#addpostbutton" "css_element" should exist
     And I log out
+
+  Scenario: Check info block doesn't appear if there's no summary
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I follow "Course 1"
+    When I follow "Test oublog basics"
+    And "#oublog_info_block" "css_element" should exist
+    And I follow "Edit settings"
+    When I set the following fields to these values:
+      | Intro | |
+    And I press "Save and display"
+    And "#oublog_info_block" "css_element" should not exist
