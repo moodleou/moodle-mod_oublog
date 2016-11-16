@@ -23,7 +23,7 @@
  * @package oublog
  **/
 
-$plugin->version = 2016051000;
+$plugin->version = 2016051001;
 $plugin->requires = 2014111000;
 $plugin->component = 'mod_oublog';// Full name of the plugin (used for diagnostics)
 $plugin->maturity = MATURITY_STABLE;

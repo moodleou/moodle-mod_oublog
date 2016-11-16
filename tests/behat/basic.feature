@@ -485,7 +485,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I follow "Edit settings"
     # Add the 'Set' tags restriction
     When I set the following fields to these values:
-      | Tags | ctag4sc02, btag5sc02, dogtag |
+      | OU Tags | ctag4sc02, btag5sc02, dogtag |
       | Tag options | 1 |
     And I press "Save and display"
 

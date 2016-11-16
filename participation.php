@@ -135,7 +135,7 @@ if (empty($download)) {
     if (isset($SESSION->oubloggradesupdated)) {
         $message = $SESSION->oubloggradesupdated;
         unset($SESSION->oubloggradesupdated);
-        echo $OUTPUT->notification($message, 'notifysuccess');
+        echo $OUTPUT->notification($message, \core\output\notification::NOTIFY_INFO);
     }
 
     // Print Groups drop-down menu.

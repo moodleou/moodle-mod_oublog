@@ -28,6 +28,10 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_oublog_install() {
     global $DB, $CFG;
 
+    if (defined('BEHAT_UTIL') || defined('PHPUNIT_UTIL')) {
+        return true;  // Do not install on test sites.
+    }
+
     require_once($CFG->dirroot . '/course/lib.php');
 
     // Setup the global blog.

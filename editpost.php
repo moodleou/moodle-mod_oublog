@@ -207,7 +207,7 @@ if (!$frmpost = $mform->get_data()) {
         $post->id = $post->post;
         $post->oublogid = $oublog->id;
         $post->userid = $oubloginstance->userid;
-
+// the function edit post?
         oublog_edit_post($post, $cm);
 
         // Log post edited event.

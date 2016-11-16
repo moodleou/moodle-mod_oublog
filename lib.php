@@ -50,8 +50,8 @@ function oublog_add_instance($oublog) {
     if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
         return(false);
     }
-    if (!empty($oublog->tags)) {
-        $blogtags = oublog_clarify_tags($oublog->tags);
+    if (!empty($oublog->outags)) {
+        $blogtags = oublog_clarify_tags($oublog->outags);
         // For each tag added to the blog check if it exists in oublog_tags table,
         // if it does not a tag record is created.
         foreach ($blogtags as $tag) {
@@ -92,7 +92,7 @@ function oublog_update_instance($oublog) {
         return(false);
     }
 
-    $blogtags = oublog_clarify_tags($oublog->tags);
+    $blogtags = oublog_clarify_tags($oublog->outags);
     // For each tag in the blog check if it already exists in oublog_tags table,
     // if it does not a tag record is created.
     foreach ($blogtags as $tag) {

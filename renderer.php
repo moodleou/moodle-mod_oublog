@@ -261,15 +261,15 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('div');
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-bottom'));
 
-        if (isset($post->tags)) {
+        if (isset($post->outags)) {
             $output .= html_writer::start_tag('div', array('class' => 'oublog-post-tags')) .
                     $strtags . ': ';
             $tagcounter = 1;
             // Get rid of page from the URL we dont want it in tags.
             $pagelessurl = preg_replace('/&page=[^&]*/', '', $baseurl);
-            foreach ($post->tags as $taglink) {
+            foreach ($post->outags as $taglink) {
                 $taglinktext = $taglink;
-                if ($tagcounter < count($post->tags)) {
+                if ($tagcounter < count($post->outags)) {
                     $taglinktext .= ',';
                 }
                 if (!$forexport && !$email) {
