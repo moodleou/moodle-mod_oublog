@@ -276,22 +276,22 @@ if (!$hideunusedblog) {
     }
 
     // Name, summary, related links.
-    if (!empty($summary)) {
-        $bc = new block_contents();
-        $bc->attributes['class'] = 'oublog-sideblock block';
-        $bc->attributes['id'] = 'oublog_info_block';
-        $bc->title = format_string($title);
-        if ($oublog->global) {
-            $bc->content = file_rewrite_pluginfile_urls($summary, 'mod/oublog/pluginfile.php',
-                    $context->id, 'mod_oublog', 'summary', $oubloginstance->id);
-            $bc->content = format_text($bc->content, $format);
-            $bc->content = $oublogoutput->render_summary($bc->content, $oubloguser);
-        } else {
-            $bc->content = file_rewrite_pluginfile_urls($summary, 'pluginfile.php',
-                    $context->id, 'mod_oublog', 'intro', null);
-            $bc->content = format_text($bc->content, $format);
-        }
-        $bc->content = $bc->content . $links;
+    $bc = new block_contents();
+    $bc->attributes['class'] = 'oublog-sideblock block';
+    $bc->attributes['id'] = 'oublog_info_block';
+    $bc->title = format_string($title);
+    if ($oublog->global) {
+        $bc->content = file_rewrite_pluginfile_urls($summary, 'mod/oublog/pluginfile.php',
+                $context->id, 'mod_oublog', 'summary', $oubloginstance->id);
+        $bc->content = format_text($bc->content, $format);
+        $bc->content = $oublogoutput->render_summary($bc->content, $oubloguser);
+    } else {
+        $bc->content = file_rewrite_pluginfile_urls($summary, 'pluginfile.php',
+                $context->id, 'mod_oublog', 'intro', null);
+        $bc->content = format_text($bc->content, $format);
+    }
+    $bc->content = $bc->content . $links;
+    if (!empty($bc->content)) {
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 
