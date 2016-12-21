@@ -564,7 +564,7 @@ WHERE
                 }
                 print '.';
                 $dotcount++;
-                if ($dotcount==20 || $count==count($coursemodules)) {
+                if ($dotcount == 20 || $instances == count($coursemodules)) {
                     print "done $posts posts ($instances instances)</li>";
                     $dotcount=0;
                 }
