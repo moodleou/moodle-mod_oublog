@@ -482,7 +482,7 @@ Feature: Test Post and Comment on OUBlog entry
     Given I log in as "teacher1"
     And I follow "Course 1"
     When I follow "Test oublog basics"
-    And I follow "Edit settings"
+    And I navigate to "Edit settings" in current page administration
     # Add the 'Set' tags restriction
     When I set the following fields to these values:
       | Tags | ctag4sc02, btag5sc02, dogtag |
