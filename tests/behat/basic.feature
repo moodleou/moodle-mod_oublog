@@ -510,13 +510,14 @@ Feature: Test Post and Comment on OUBlog entry
     Then I should see "ctag3sc02(2) dogtag(1) dtag3sc02(1)"
     And I log out
 
-    Scenario: Further standard regression/basic tests - non-js.
+
+  Scenario: Further standard regression/basic tests - non-js.
     # Check post with comments disabled as Teacher.
     Given I log in as "teacher1"
     And I am on homepage
     And I follow "Course 1"
     When I follow "Test oublog basics"
-    And I follow "Edit settings"
+    And I navigate to "Edit settings" in current page administration
     When I set the following fields to these values:
       | Allow comments | Comments not allowed |
     And I press "Save and display"
@@ -542,9 +543,11 @@ Feature: Test Post and Comment on OUBlog entry
     When I press "id_submitbutton"
     Then "#oublog-links form" "css_element" should exist
     And "Personal blog link2" "link" should exist
-    Given I click on "//div[@id='oublog-links']//li[2]//input[@type='image']" "xpath_element"
-    Then I should see "Teachers Personal blog link2" in the "//div[@id='oublog-links']//li[1]//a[1]" "xpath_element"
-    Given I click on "//div[@id='oublog-links']//li[1]//a[@title='Delete']" "xpath_element"
+
+    Given I click on "//aside[@id='oublog-links']//li[2]//input[@type='image']" "xpath_element"
+
+    Then I should see "Teachers Personal blog link2" in the "//aside[@id='oublog-links']//li[1]//a[1]" "xpath_element"
+    Given I click on "//aside[@id='oublog-links']//li[1]//a[@title='Delete']" "xpath_element"
     When I press "Continue"
     Then I should not see "Teachers Personal blog link2"
     And "#oublog-links form" "css_element" should not exist
@@ -564,13 +567,12 @@ Feature: Test Post and Comment on OUBlog entry
     And I am on homepage
     And I follow "Course 1"
     When I follow "Test oublog basics"
-    And I press "New blog post"
-    And I follow "Edit settings"
+    And I navigate to "Edit settings" in current page administration
     When I set the following fields to these values:
       | Allow comments | Yes, from logged-in users |
     And I press "Save and display"
     Then I should not see "Add your comment"
-    Given I follow "Edit"
+    Given I click on "div.oublog-post-links a:nth-child(2)" "css_element"
     And I set the field "Allow comments" to "Yes, from logged-in users"
     And I press "Save changes"
     When I follow "Add your comment"
