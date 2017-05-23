@@ -5,8 +5,10 @@ Feature: Test Post and Comment on Personal OUBlog
   I need to be able to see OUBblog personal post entries
   # Note this test will only pass on OU systems as using an OU custom step.
 
+  @javascript
   Scenario: Admin edits the blog options
     Given I log in as "admin"
+    And I am using the OU theme
     And I am on site homepage
     And I follow "Personal Blogs"
     And I follow "Blog options"
@@ -47,7 +49,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I press "Add comment"
     And I follow "Admin User's blog edited"
     Then "2 comments" "link" should exist
-    And I log out
+    And I log out (in the OU theme)
 
     # User not logged in tests visibility of Admin Users personal post.
     Given I visit the personal blog for "admin"
@@ -66,13 +68,13 @@ Feature: Test Post and Comment on Personal OUBlog
     When I click on "Permalink" "link" in the ".oublog-post .oublog-post-links" "css_element"
     Then I should see "Personal OUBlog post02"
     And I should see "Admin User's blog"
-    Given I log out
+    Given I log out (in the OU theme)
 
     # Admin changes post to world visibility.
     Given I log in as "admin"
     And I am on site homepage
     And I follow "Personal Blogs"
-    And I follow "Edit"
+    When I click on "Edit" "link" in the ".oublog-post .oublog-post-links" "css_element"
     And I set the following fields to these values:
       | Title | Personal OUBlog post01 WorldVis |
       | Message | Admin Persblog post01 content WorldVis |
@@ -85,7 +87,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should see "Admin Persblog post01 content WorldVis"
     And I should see "edap01"
     And I should see "Total visits to this blog: 3"
-    And I log out
+    And I log out (in the OU theme)
 
     # User not logged in tests Admin Users post and comments.
     And I wait to be redirected
@@ -241,7 +243,7 @@ Feature: Test Post and Comment on Personal OUBlog
     Then ".oublog-paging" "css_element" should exist
     And I should see "Next" in the ".oublog-paging" "css_element"
     And I should not see "Previous" in the ".oublog-paging" "css_element"
-    Given I follow "2"
+    And I click on "2" "link" in the ".oublog-paging" "css_element"
     Then I should see "Personal OUBlog post01"
     Given I follow "View site entries"
     Then I should not see "Personal OUBlog post20"
