@@ -81,3 +81,4 @@ echo $OUTPUT->header();
 echo $OUTPUT->confirm(get_string('confirmdeletelink', 'oublog'),
                  new moodle_url('/mod/oublog/deletelink.php', array('link'=>$linkid, 'confirm'=>'1')),
                  $viewurl);
+echo $OUTPUT->footer();

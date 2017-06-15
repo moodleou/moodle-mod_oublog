@@ -43,6 +43,7 @@ class mod_oublog_mod_form extends moodleform_mod {
         $mform->addElement('text', 'name', get_string('blogname', 'oublog'), array('size'=>'64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         if (!defined('OUBLOG_EDIT_INSTANCE')) {
             $this->standard_intro_elements(get_string('oublogintro', 'oublog'));
