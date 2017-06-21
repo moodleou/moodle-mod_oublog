@@ -40,7 +40,7 @@ function xmldb_oublog_install() {
     $oublog->maxvisibility = 300;// OUBLOG_VISIBILITY_PUBLIC.
     $oublog->global = 1;
     $oublog->allowcomments = 2;// OUBLOG_COMMENTS_ALLOWPUBLIC.
-
+    $oublog->timemodified = time();
     if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
         return false;
     }
