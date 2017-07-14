@@ -104,6 +104,18 @@ class post extends \core_search\base_mod {
                 self::FILEAREA['MESSAGE'], $record->oublogid);
         $doc->set('content', content_to_text($content, FORMAT_HTML));
 
+        // Set document description.
+        // Because tag is a part of blog so we get all tags that are belongs to this blog and index along with
+        // this document.
+        $strtags = '';
+        $postinstance = \oublog_get_post($record->oublogid, 0);
+        if (!empty($postinstance->tags)) {
+            foreach ($postinstance->tags as $tag) {
+                $strtags .= ' ' . $tag;
+            }
+        }
+        $doc->set('description1', content_to_text(trim($strtags), false));
+
         // Set other search metadata.
         $doc->set('contextid', $context->id);
         $doc->set('type', \core_search\manager::TYPE_TEXT);

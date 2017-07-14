@@ -75,7 +75,8 @@ class oublog_search_test extends oublog_test_lib {
 
         // Test posts using standard course blog.
         $oublog = $this->get_new_oublog($course->id,
-                array('individual' => OUBLOG_VISIBLE_INDIVIDUAL_BLOGS, 'groupmode' => SEPARATEGROUPS));
+                array('individual' => OUBLOG_VISIBLE_INDIVIDUAL_BLOGS, 'groupmode' => SEPARATEGROUPS,
+                        'tagslist' => 'blogtag1,blogtag2'));
         $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
 
         $titlecheck = 'test_oublog_get_posts';
@@ -86,6 +87,7 @@ class oublog_search_test extends oublog_test_lib {
         $post1stub->title = $titlecheck . '_1';
         $post1stub->message['text'] = $messagecheck . '_1';
         $post1stub->userid = $suser1->id;
+        $post1stub->tags = 'blogtag1';
         $post1id = oublog_add_post($post1stub, $cm, $oublog, $course);
 
         // Get a list of the posts.
@@ -99,6 +101,7 @@ class oublog_search_test extends oublog_test_lib {
         $out = $page->get_document($results[0], array('lastindexedtime' => 0));
         $this->assertEquals('test_oublog_get_posts_1', $out->get('title'));
         $this->assertEquals('test_oublog_mesage_1', $out->get('content'));
+        $this->assertEquals('blogtag1', $out->get('description1'));
         $this->assertEquals($context->id, $out->get('contextid'));
         $this->assertEquals(\core_search\manager::TYPE_TEXT, $out->get('type'));
         $this->assertEquals($course->id, $out->get('courseid'));
