@@ -572,7 +572,7 @@ $event->add_record_snapshot('course_modules', $cm);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
-$views = oublog_update_views($oublog, $oubloginstance);
+$views = oublog_update_views($oublog, $oubloginstance, $currentindividual, $currentgroup);
 
 // Finish the page.
 echo "<div class=\"clearer\"></div><div class=\"oublog-views\">$strviews $views</div></div>";
