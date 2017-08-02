@@ -1,5 +1,5 @@
 @ou @ou_vle @mod @mod_oublog @lastmodified
-Feature: Show last updated information on activity link
+Feature: Show last updated information on OU blog activity link
   In know when a blog was last updated
   As a user
   I need to see the last post date on the blog link

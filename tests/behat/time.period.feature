@@ -66,7 +66,7 @@ Feature: Test time limited posts and comments
    And "New blog post" "button" should exist
    Given I log out
 
-  Scenario: Admin tests timed blogs
+  Scenario: Admin tests timed blogs as student
    Given I log in as "student1"
    And I am on site homepage
    And I follow "Course 1"
