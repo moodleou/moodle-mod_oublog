@@ -437,7 +437,7 @@ function oublog_print_recent_mod_activity($activity, $courseid, $detail, $modnam
 
     echo '<div class="title">';
     if ($detail) {
-        echo "<img src=\"".$OUTPUT->pix_url('icon', $activity->type)."\" class=\"icon\" alt=\"".s($activity->title)."\" />";
+        echo "<img src=\"".$OUTPUT->image_url('icon', $activity->type)."\" class=\"icon\" alt=\"".s($activity->title)."\" />";
     }
     echo "<a href=\"$CFG->wwwroot/mod/oublog/viewpost.php?post={$activity->content->postid}\">{$activity->content->title}</a>";
     echo '</div>';

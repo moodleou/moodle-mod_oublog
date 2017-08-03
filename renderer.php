@@ -105,7 +105,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $filename = $file->get_filename();
                     $mimetype = $file->get_mimetype();
                     $iconimage = html_writer::empty_tag('img',
-                            array('src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
+                            array('src' => $this->output->image_url(file_mimetype_icon($mimetype)),
                             'alt' => $mimetype, 'class' => 'icon'));
                     if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
                         $fileurlbase = '/mod/oublog/pluginfile.php';
@@ -718,7 +718,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                             $filename = $file->get_filename();
                             $mimetype = $file->get_mimetype();
                             $iconimage = html_writer::empty_tag('img', array(
-                                    'src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
+                                    'src' => $this->output->image_url(file_mimetype_icon($mimetype)),
                                     'alt' => $mimetype, 'class' => 'icon'
                             ));
                             $fileurlbase = $CFG->wwwroot . '/pluginfile.php';

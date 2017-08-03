@@ -1282,7 +1282,7 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
                 if ($i > 1) {
                     $html .= '<form action="movelink.php" method="post" style="display:inline" title="'.$strmoveup.'">';
                     $html .= '<div>';
-                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/up').'" alt="'.$strmoveup.'" />';
+                    $html .= '<input type="image" src="'.$OUTPUT->image_url('t/up').'" alt="'.$strmoveup.'" />';
                     $html .= '<input type="hidden" name="down" value="0" />';
                     $html .= '<input type="hidden" name="link" value="'.$link->id.'" />';
                     $html .= '<input type="hidden" name="returnurl" value="'.$_SERVER['REQUEST_URI'].'" />';
@@ -1293,7 +1293,7 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
                 if ($i < $numlinks) {
                     $html .= '<form action="movelink.php" method="post" style="display:inline" title="'.$strmovedown.'">';
                     $html .= '<div>';
-                    $html .= '<input type="image" src="'.$OUTPUT->pix_url('t/down').'" alt="'.$strmovedown.'" />';
+                    $html .= '<input type="image" src="'.$OUTPUT->image_url('t/down').'" alt="'.$strmovedown.'" />';
                     $html .= '<input type="hidden" name="down" value="1" />';
                     $html .= '<input type="hidden" name="link" value="'.$link->id.'" />';
                     $html .= '<input type="hidden" name="returnurl" value="'.$_SERVER['REQUEST_URI'].'" />';
@@ -1302,10 +1302,10 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
                     $html .= '</form>';
                 }
                 $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.
-                    $stredit.'"><img src="'.$OUTPUT->pix_url('t/edit').'" alt="'.$stredit.
+                    $stredit.'"><img src="'.$OUTPUT->image_url('t/edit').'" alt="'.$stredit.
                     '" class="iconsmall" /></a>';
                 $html .= '<a href="deletelink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.
-                    $strdelete.'"><img src="'.$OUTPUT->pix_url('t/delete').'" alt="'.$strdelete.
+                    $strdelete.'"><img src="'.$OUTPUT->image_url('t/delete').'" alt="'.$strdelete.
                     '" class="iconsmall" /></a>';
             }
             $html .= '</li>';
@@ -2993,7 +2993,7 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
             'id' => 'oublog_searchquery', 'value' => $querytext));
     $out .= html_writer::empty_tag('input', array('type' => 'image',
             'id' => 'ousearch_searchbutton', 'alt' => get_string('search'),
-            'title' => get_string('search'), 'src' => $OUTPUT->pix_url('i/search')));
+            'title' => get_string('search'), 'src' => $OUTPUT->image_url('i/search')));
     $out .= html_writer::end_tag('div');
     $out .= html_writer::end_tag('form');
     return $out;

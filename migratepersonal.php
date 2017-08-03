@@ -878,7 +878,7 @@ function oublog_add_files($text, $dir, $contextid, $filearea, $itemid) {
             // Add MyStuff images in a folder based on user name.
             $match = $matches[2][$a];
             $match = str_ireplace('.gif', '', $match);
-            $newurl = $OUTPUT->pix_url('/s/' . $match);
+            $newurl = $OUTPUT->image_url('/s/' . $match);
             $text = str_replace($matches[1][$a], $newurl, $text);
         }
     }

@@ -345,7 +345,7 @@ if (!$hideunusedblog) {
 
     // Feeds.
     if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false, $cm, $currentindividual)) {
-        $feedicon = ' <img src="'.$OUTPUT->pix_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
+        $feedicon = ' <img src="'.$OUTPUT->image_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-feeds';
         $bc->attributes['class'] = 'oublog-sideblock block';
