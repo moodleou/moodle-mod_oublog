@@ -23,7 +23,7 @@ Feature: Test rate individual posts
     # Admin changes settings
     And I log in as "admin"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Testing rate individuals posts"
     And I follow "Edit settings"
     # Maximum points of more than 10 gets very slow
@@ -38,7 +38,7 @@ Feature: Test rate individual posts
   Scenario: Teacher tests the rate post widget
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Testing rate individuals posts"
     And I press "New blog post"
     And I should see "New blog post"
@@ -54,7 +54,7 @@ Feature: Test rate individual posts
 
     # Student1 user posts
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Testing rate individuals posts"
     Given I press "New blog post"
     And I should see "New blog post"
@@ -70,7 +70,7 @@ Feature: Test rate individual posts
     # Teacher checks visibility
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Testing rate individuals posts"
     Then I should see "SC06 student1 post01"
     And I should see "SC06 student1 post01 content"

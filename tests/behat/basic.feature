@@ -33,7 +33,7 @@ Feature: Test Post and Comment on OUBlog entry
   Scenario: Multiple blog type tests - basic access etc
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU blog" to section "1" and I fill the form with:
       | Blog name | B.SG |
@@ -71,7 +71,7 @@ Feature: Test Post and Comment on OUBlog entry
       | Title | P0 |
       | Message | P0 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SG"
     And I set the field "Separate groups" to "G1"
     And I press "Go"
@@ -87,14 +87,14 @@ Feature: Test Post and Comment on OUBlog entry
       | Title | P3 |
       | Message | P3 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SI"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P10 |
       | Message | P10 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VI"
     When I press "New blog post"
     And I set the following fields to these values:
@@ -105,136 +105,136 @@ Feature: Test Post and Comment on OUBlog entry
     # Student 1 adds posts.
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "Test oublog basics"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P1 |
       | Message | P1 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P4 |
       | Message | P4 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P6 |
       | Message | P6 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SI"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P8 |
       | Message | P8 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VI"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P11 |
       | Message | P11 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SISG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P15 |
       | Message | P15 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SIVG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P16 |
       | Message | P16 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VISG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P17 |
       | Message | P17 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VIVG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P18 |
       | Message | P18 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Then I log out
     # Student 2 adds posts.
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P5 |
       | Message | P5 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P7 |
       | Message | P7 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SI"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P9 |
       | Message | P9 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VI"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P12 |
       | Message | P12 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SISG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P19 |
       | Message | P19 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.SIVG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P20 |
       | Message | P20 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VISG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P21 |
       | Message | P21 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Given I follow "B.VIVG"
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | P22 |
       | Message | P22 |
     And I press "Add post"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Then I log out
     # Editing teacher - check view.
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "B.SG"
     Then the "Separate groups" select box should contain "G1"
     And the "Separate groups" select box should contain "G2"
@@ -245,7 +245,7 @@ Feature: Test Post and Comment on OUBlog entry
     When I press "Go"
     Then I should see "P4" in the "#oublog-posts" "css_element"
     And I should not see "P5" in the "#oublog-posts" "css_element"
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.SI"
     Then the "jump" select box should contain "Student 1"
     And the field "jump" matches value "View all users"
@@ -256,7 +256,7 @@ Feature: Test Post and Comment on OUBlog entry
     When I press "Go"
     Then I should see "P10" in the "#oublog-posts" "css_element"
     And I should not see "P9" in the "#oublog-posts" "css_element"
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.SISG"
     Then the "Separate groups" select box should contain "All participants"
     And the "Separate groups" select box should contain "G2"
@@ -272,7 +272,7 @@ Feature: Test Post and Comment on OUBlog entry
     When I click on "#selectindividual input[type=submit]" "css_element"
     Then I should see "P19" in the "#oublog-posts" "css_element"
     And I should not see "P15" in the "#oublog-posts" "css_element"
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.SIVG"
     Then the "Visible groups" select box should contain "G1"
     And the "Visible groups" select box should contain "G2"
@@ -288,7 +288,7 @@ Feature: Test Post and Comment on OUBlog entry
     When I press "Go"
     Then I should see "P16" in the "#oublog-posts" "css_element"
     And I should not see "P20" in the "#oublog-posts" "css_element"
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.VISG"
     Then the "Separate groups" select box should contain "All participants"
     And the "Separate groups" select box should contain "G2"
@@ -303,7 +303,7 @@ Feature: Test Post and Comment on OUBlog entry
     When I click on "#selectindividual input[type=submit]" "css_element"
     Then I should see "P17" in the "#oublog-posts" "css_element"
     And I should not see "P21" in the "#oublog-posts" "css_element"
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.VIVG"
     Then the "Visible groups" select box should contain "G1"
     And the "Visible groups" select box should contain "G2"
@@ -318,17 +318,17 @@ Feature: Test Post and Comment on OUBlog entry
     When I press "Go"
     Then I should see "P22" in the "#oublog-posts" "css_element"
     And I should not see "P18" in the "#oublog-posts" "css_element"
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I log out
     # Student 1 - check view.
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "B.SG"
     Then I should see "P4" in the "#oublog-posts" "css_element"
     And I should see "P2" in the "#oublog-posts" "css_element"
     And ".groupselector select" "css_element" should not exist
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "B.VG"
     Then ".groupselector select" "css_element" should exist
     And the field "Visible groups" matches value "G1"
@@ -340,11 +340,11 @@ Feature: Test Post and Comment on OUBlog entry
     When I press "Go"
     Then I should see "P7" in the "#oublog-posts" "css_element"
     And I should not see "P6" in the "#oublog-posts" "css_element"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "B.SI"
     Then I should see "P8" in the "#oublog-posts" "css_element"
     And ".oublog-individualselector select" "css_element" should not exist
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "B.VI"
     Then I should see "P11" in the "#oublog-posts" "css_element"
     And the field "jump" matches value "View all users"
@@ -353,23 +353,23 @@ Feature: Test Post and Comment on OUBlog entry
     When I press "Go"
     Then I should see "P12" in the "#oublog-posts" "css_element"
     And I should not see "P11" in the "#oublog-posts" "css_element"
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.SISG"
     Then I should see "P15" in the "#oublog-posts" "css_element"
     And I should not see "P19" in the "#oublog-posts" "css_element"
     And ".oublog-individualselector select" "css_element" should not exist
     And ".groupselector select" "css_element" should not exist
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.SIVG"
     Then I should see "P16" in the "#oublog-posts" "css_element"
     And I should not see "P20" in the "#oublog-posts" "css_element"
     And ".oublog-individualselector select" "css_element" should not exist
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.VISG"
     Then I should see "P17" in the "#oublog-posts" "css_element"
     And I should not see "P21" in the "#oublog-posts" "css_element"
     And ".groupselector select" "css_element" should not exist
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I follow "B.VIVG"
     Then I should see "P22" in the "#oublog-posts" "css_element"
     And I should not see "P18" in the "#oublog-posts" "css_element"
@@ -378,12 +378,12 @@ Feature: Test Post and Comment on OUBlog entry
     Given I set the field "jump" to "View all users"
     When I click on "#selectindividual input[type=submit]" "css_element"
     Then I should see "P18" in the "#oublog-posts" "css_element"
-    Given I follow "Course 1"
+    Given I am on "Course 1" course homepage
     When I log out
     # Student2 - check view.
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     Then I should see "P0" in the ".oublog-post.oublog-even .oublog-post-content" "css_element"
     And I should see "P1" in the ".oublog-post.oublog-odd .oublog-post-content" "css_element"
@@ -392,7 +392,7 @@ Feature: Test Post and Comment on OUBlog entry
   Scenario: Check tag sorting and filter by tag as student
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     And I press "New blog post"
     # Before the 'Set' tags restriction
@@ -406,7 +406,7 @@ Feature: Test Post and Comment on OUBlog entry
 
     # Student tests without Set tags restrictions.
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test oublog basics"
     And I press "New blog post"
     # Before the 'Set' tags restriction
@@ -480,7 +480,7 @@ Feature: Test Post and Comment on OUBlog entry
 
     # Check post with restrictions enabled as Teacher.
     Given I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     And I navigate to "Edit settings" in current page administration
     # Add the 'Set' tags restriction
@@ -515,7 +515,7 @@ Feature: Test Post and Comment on OUBlog entry
     # Check post with comments disabled as Teacher.
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     And I navigate to "Edit settings" in current page administration
     When I set the following fields to these values:
@@ -555,7 +555,7 @@ Feature: Test Post and Comment on OUBlog entry
 
     # Student test comments disabled and related link.
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     Then "Add your comment" "link" should not exist in the ".oublog-post" "css_element"
     And "Teachers Personal blog test" "link" should exist
@@ -565,7 +565,7 @@ Feature: Test Post and Comment on OUBlog entry
     # Test commenting.
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     And I navigate to "Edit settings" in current page administration
     When I set the following fields to these values:
@@ -593,7 +593,7 @@ Feature: Test Post and Comment on OUBlog entry
     Then I should see "1 comment"
     And I log out
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     Given I follow "1 comment"
     Then I should not see "Teacher comment 2"
@@ -614,7 +614,7 @@ Feature: Test Post and Comment on OUBlog entry
   Scenario: Check back to main page link
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     And I press "New blog post"
     And I set the following fields to these values:
@@ -656,7 +656,7 @@ Feature: Test Post and Comment on OUBlog entry
   Scenario: Check info block doesn't appear if there's no summary
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     And "#oublog_info_block" "css_element" should exist
     And I follow "Edit settings"
