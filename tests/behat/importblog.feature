@@ -54,8 +54,7 @@ Feature: Test import posts function for blog
 
   @javascript
   Scenario: Display import selected posts and import blog links for each blog that has post.
-    Given I am on site homepage
-    And I am on "Course 1" course homepage
+    Given I am on "Course 1" course homepage
     And I follow "student 1 blog two"
     When I click on "Import" "button"
     Then I should see "student 1 blog three (0 posts)"
@@ -65,8 +64,7 @@ Feature: Test import posts function for blog
 
   @javascript
   Scenario: Navigate to post listing page when clicking on import selected posts link.
-    Given I am on site homepage
-    And I am on "Course 1" course homepage
+    Given I am on "Course 1" course homepage
     And I follow "student 1 blog two"
     And I click on "Import" "button"
     When I follow "Import selected posts"
@@ -93,8 +91,7 @@ Feature: Test import posts function for blog
 
   @javascript
   Scenario: Perform the import all posts of the selected blog when clicking on import blog link.
-    Given I am on site homepage
-    And I am on "Course 1" course homepage
+    Given I am on "Course 1" course homepage
     And I follow "student 1 blog two"
     And I click on "Import" "button"
     When I follow "Import blog"

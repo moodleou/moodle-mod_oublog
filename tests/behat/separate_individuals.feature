@@ -24,7 +24,6 @@ Feature: Test Post and Comment on Seperate Individual Blogs
 
     # Admin changes settings for separate individuals
     And I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I follow "Testing separate individuals oublogs"
     And I follow "Edit settings"

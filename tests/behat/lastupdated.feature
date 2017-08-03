@@ -45,7 +45,6 @@ Feature: Show last updated information on OU blog activity link
 
   Scenario: Group blog
     Given I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU blog" to section "1" and I fill the form with:
@@ -73,14 +72,12 @@ Feature: Show last updated information on OU blog activity link
     And I press "Add post"
     Given I log out
     And I log in as "student1"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     # Student should see both indicators.
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
     And "/descendant::div[@class='activityinstance'][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
     Given I log out
     And I log in as "student2"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     # Student should see only visible group indicators.
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
@@ -88,7 +85,6 @@ Feature: Show last updated information on OU blog activity link
 
   Scenario: Indivdual blogs
     Given I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
     And I add a "OU blog" to section "1" and I fill the form with:
@@ -112,7 +108,6 @@ Feature: Show last updated information on OU blog activity link
     And I press "Add post"
     Given I log out
     And I log in as "student1"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     # Student should see visible indicator only.
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
@@ -120,7 +115,6 @@ Feature: Show last updated information on OU blog activity link
 
   Scenario: Mixed blogs
     Given I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
     And I add a "OU blog" to section "1" and I fill the form with:
@@ -174,7 +168,6 @@ Feature: Show last updated information on OU blog activity link
     And "/descendant::div[@class='activityinstance'][4]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
     And I log out
     Given I log in as "student1"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     # Student should see visible indicator only.
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
@@ -191,7 +184,6 @@ Feature: Show last updated information on OU blog activity link
     Then "/descendant::div[@class='activityinstance'][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
     And I log out
     Given I log in as "student2"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     # Student should see visible group+individuals only.
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
