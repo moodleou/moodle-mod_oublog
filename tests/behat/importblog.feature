@@ -9,8 +9,8 @@ Feature: Test import posts function for blog
       | username | firstname | lastname | email            |
       | student1 | Student1  | 1        | student1@asd.com |
     And the following "courses" exist:
-      | fullname | shortname | format      | category |
-      | Course 1 | C1        | oustudyplan | 0        |
+      | fullname | shortname | format      | category | numsections |
+      | Course 1 | C1        | oustudyplan | 0        | 0           |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | student1 | C1     | student |
