@@ -222,7 +222,7 @@ class oublog_search_test extends oublog_test_lib {
         $comment2->messagecomment['text'] = 'Message for test comment 2';
         $comment2->postid = $post1id;
         $comment2->userid = $USER->id;
-        $comment2id = oublog_add_comment($SITE, $cm, $oublog, $comment1);
+        $comment2id = oublog_add_comment($SITE, $cm, $oublog, $comment2);
 
         // Get a list of the posts.
         $context = context_module::instance($cm->id);
@@ -232,7 +232,7 @@ class oublog_search_test extends oublog_test_lib {
         $this->assertCount(2, $results);
 
         // Check first one in detail using the get_document function.
-        $out = $page->get_document($results[1], array('lastindexedtime' => 0));
+        $out = $page->get_document($results[0], array('lastindexedtime' => 0));
         $this->assertEquals('Test Seach Comment 1', $out->get('title'));
         $this->assertEquals('Message for test comment 1', $out->get('content'));
         $this->assertEquals($context->id, $out->get('contextid'));
