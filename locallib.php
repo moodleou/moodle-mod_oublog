@@ -1202,7 +1202,9 @@ function oublog_update_views($oublog, $oubloginstance, $userid = null, $groupid 
         $oubloginstance = $DB->get_record('oublog_instances', array('oublogid' => $oublog->id, 'userid' => $userid));
         // Add new if oubloginstance did not exist.
         if (!$oubloginstance) {
-            $oubloginstance = oublog_add_bloginstance($oublog->id, $userid, '', null);   
+            $oubloginstance = new \stdClass();
+            $oubloginstance->views = 0;
+            $oubloginstance->id = oublog_add_bloginstance($oublog->id, $userid, '', null);
         }
     }
 

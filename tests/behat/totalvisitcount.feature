@@ -11,6 +11,7 @@ Feature: Test total visit count
       | student1 | Student | 1 | student1@asd.com |
       | student2 | Student | 2 | student2@asd.com |
       | student3 | Student | 3 | student3@asd.com |
+      | student4 | Student | 4 | student4@asd.com |
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1 | 0 |
@@ -20,6 +21,7 @@ Feature: Test total visit count
       | student1 | C1 | student |
       | student2 | C1 | student |
       | student3 | C1 | student |
+      | student4 | C1 | student |
     And the following "groups" exist:
       | name | course | idnumber |
       | G1 | C1 | G1 |
@@ -99,6 +101,15 @@ Feature: Test total visit count
     And I should see "Total visits to this blog: 1"
     And I set the field "jump" to "View all users"
     And I should see "Total visits to this blog: 8"
+
+    Given I log out
+    And I log in as "student4"
+    And I am on homepage
+    And I am on "Course 1" course homepage
+    When I follow "Test oublog"
+    Then I should see "Total visits to this blog: 9"
+    Given I set the field "jump" to "Student 4"
+    Then I should see "Total visits to this blog: 1"
 
   Scenario: Group's blog total visit count.
     Given I log in as "teacher1"
