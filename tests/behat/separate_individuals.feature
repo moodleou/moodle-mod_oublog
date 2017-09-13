@@ -30,6 +30,7 @@ Feature: Test Post and Comment on Seperate Individual Blogs
     And I set the following fields to these values:
       | Individual blogs | Separate individual blogs |
     And I press "Save and display"
+    And I should see "Separate individuals"
     And ".oublog-individualselector" "css_element" should exist
     And I should see "There are no visible posts in this blog"
     And I log out

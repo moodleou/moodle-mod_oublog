@@ -2085,9 +2085,9 @@ function oublog_individual_get_activity_details($cm, $urlroot, $oublog, $current
     }
 
     if ($individualmode == OUBLOG_VISIBLE_INDIVIDUAL_BLOGS) {
-        $label = get_string('visibleindividual', 'oublog') . '&nbsp;';
+        $label = get_string('visibleindividual', 'oublog') . ' ';
     } else {
-        $label = get_string('separateindividual', 'oublog') . '&nbsp;';
+        $label = get_string('separateindividual', 'oublog') . ' ';
     }
 
     $output = "";
