@@ -213,6 +213,7 @@ class oublog_search_test extends oublog_test_lib {
         $comment1->title = 'Test Seach Comment 1';
         $comment1->messagecomment = array();
         $comment1->messagecomment['text'] = 'Message for test comment 1';
+        $comment1->timeposted = 1;
         $comment1->postid = $post1id;
         $comment1->userid = $USER->id;
         $comment1id = oublog_add_comment($SITE, $cm, $oublog, $comment1);
@@ -220,6 +221,7 @@ class oublog_search_test extends oublog_test_lib {
         $comment2->title = 'Test Seach Comment 2';
         $comment2->messagecomment = array();
         $comment2->messagecomment['text'] = 'Message for test comment 2';
+        $comment2->timeposted = 2;
         $comment2->postid = $post1id;
         $comment2->userid = $USER->id;
         $comment2id = oublog_add_comment($SITE, $cm, $oublog, $comment2);
