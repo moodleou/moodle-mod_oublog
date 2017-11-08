@@ -174,6 +174,64 @@ class oublog_search_test extends oublog_test_lib {
     }
 
     /**
+     * Tests that the get_recordset_by_timestamp function works correctly when there are some
+     * edited posts.
+     */
+    public function test_post_search_index_with_editing() {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $oublog = $generator->create_module('oublog', ['course' => $course->id]);
+        $modinfo = get_fast_modinfo($course);
+        $cm = $modinfo->get_cm($oublog->cmid);
+
+        // Add 5 posts with time 10, 20, 30, 40, 50.
+        $postids = [];
+        for ($timeposted = 10; $timeposted <= 50; $timeposted += 10) {
+            $post = $this->get_post_stub($oublog->id);
+            $post->timeposted = $timeposted;
+            $postids[$timeposted] = oublog_add_post($post, $cm, $oublog, $course);
+        }
+
+        // Edit the post at time 20 so that it has time 60, and the post at time 30 so it has time 45.
+        $DB->set_field('oublog_posts', 'timeupdated', 60, ['id' => $postids[20]]);
+        $DB->set_field('oublog_posts', 'timeupdated', 45, ['id' => $postids[30]]);
+
+        // Get a list of the posts and check the order.
+        $area = new post();
+        $this->assertEquals([$postids[10], $postids[40], $postids[30], $postids[50], $postids[20]],
+                self::recordset_to_ids($area->get_recordset_by_timestamp(), 'postid'));
+
+        // List starting from time 45.
+        $this->assertEquals([$postids[30], $postids[50], $postids[20]],
+                self::recordset_to_ids($area->get_recordset_by_timestamp(45), 'postid'));
+
+        // Get a list starting from time 61 (no results).
+        $this->assertEquals([],
+                self::recordset_to_ids($area->get_recordset_by_timestamp(61), 'postid'));
+    }
+
+    /**
+     * Turns a recordset into an array of ids and closes it.
+     *
+     * @param moodle_recordset $rs Recordset
+     * @param string $field Name of id field
+     * @return array Array of ids
+     */
+    protected static function recordset_to_ids(moodle_recordset $rs, $field = 'id') {
+        $result = [];
+        foreach ($rs as $rec) {
+            $result[] = $rec->{$field};
+        }
+        $rs->close();
+        return $result;
+    }
+
+    /**
      * Tests get_recordset_by_timestamp function (obtains modified document pages) and get_document
      * function (converts them into the format the search system wants).
      */

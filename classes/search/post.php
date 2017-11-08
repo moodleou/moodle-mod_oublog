@@ -57,18 +57,18 @@ class post extends \core_search\base_mod {
         // Get all posts.
         global $DB;
         $querystring = '
-            SELECT ob.id, ob.course,
-                   op.id as oublogid, op.oubloginstancesid, op.groupid, op.title, op.message, oi.userid,
-                   op.timeposted as timeupdated, op.deletedby,
+            SELECT ob.id AS oublogid, ob.course,
+                   op.id as postid, op.oubloginstancesid, op.groupid, op.title, op.message, oi.userid,
+                   COALESCE(op.timeupdated, op.timeposted) as timemodified, op.deletedby,
                    op.timedeleted, op.visibility, op.lasteditedby
               FROM {oublog_posts} op
               JOIN {oublog_instances} oi ON oi.id = op.oubloginstancesid
               JOIN {oublog} ob ON ob.id = oi.oublogid
-             WHERE (timeupdated >= ? OR op.timeposted >= ?)
+             WHERE COALESCE(op.timeupdated, op.timeposted) >= ?
                    AND op.timedeleted IS NULL
-          ORDER BY COALESCE(timeupdated, op.timeposted) ASC';
+          ORDER BY COALESCE(op.timeupdated, op.timeposted) ASC';
 
-        return $DB->get_recordset_sql($querystring, array($modifiedfrom, $modifiedfrom));
+        return $DB->get_recordset_sql($querystring, [$modifiedfrom]);
     }
 
     /**
@@ -80,18 +80,18 @@ class post extends \core_search\base_mod {
      */
     public function get_document($record, $options = array()) {
         try {
-            $cm = get_coursemodule_from_instance($this->get_module_name(), $record->id, $record->course);
+            $cm = get_coursemodule_from_instance($this->get_module_name(), $record->oublogid, $record->course);
             $context = \context_module::instance($cm->id);
         } catch (\dml_exception $ex) {
             // Don't throw an exception, apparently it might upset the search process.
-            debugging('Error retrieving ' . $this->areaid . ' ' . $record->oublogid .
+            debugging('Error retrieving ' . $this->areaid . ' ' . $record->postid .
                     ' document: ' . $ex->getMessage(), DEBUG_DEVELOPER);
             return false;
         }
 
         // Construct the document instance to return.
         $doc = \core_search\document_factory::instance(
-                $record->oublogid, $this->componentname, $this->areaname);
+                $record->postid, $this->componentname, $this->areaname);
 
         // Set document title.
         // Document title will be post title.
@@ -101,14 +101,14 @@ class post extends \core_search\base_mod {
         // Set document content.
         $content = $record->message;
         $content = file_rewrite_pluginfile_urls($content, 'pluginfile.php', $context->id, $this->componentname,
-                self::FILEAREA['MESSAGE'], $record->oublogid);
+                self::FILEAREA['MESSAGE'], $record->postid);
         $doc->set('content', content_to_text($content, FORMAT_HTML));
 
         // Set document description.
         // Because tag is a part of blog so we get all tags that are belongs to this blog and index along with
         // this document.
         $strtags = '';
-        $postinstance = \oublog_get_post($record->oublogid, 0);
+        $postinstance = \oublog_get_post($record->postid, 0);
         if (!empty($postinstance->tags)) {
             foreach ($postinstance->tags as $tag) {
                 $strtags .= ' ' . $tag;
@@ -121,13 +121,13 @@ class post extends \core_search\base_mod {
         $doc->set('type', \core_search\manager::TYPE_TEXT);
         $doc->set('courseid', $record->course);
 
-        $doc->set('modified', $record->timeupdated);
-        $doc->set('itemid', $record->oublogid);
+        $doc->set('modified', $record->timemodified);
+        $doc->set('itemid', $record->postid);
         $doc->set('owneruserid', \core_search\manager::NO_OWNER_ID);
         $doc->set('userid', $record->userid);
 
         // Set optional 'new' flag.
-        if (isset($options['lastindexedtime']) && ($options['lastindexedtime'] < $record->timeupdated)) {
+        if (isset($options['lastindexedtime']) && ($options['lastindexedtime'] < $record->timemodified)) {
             // If the document was created after the last index time, it must be new.
             $doc->set_is_new(true);
         }
