@@ -333,7 +333,8 @@ if (!$hideunusedblog) {
     }
     $stats = array_filter($stats);
     if (!empty($stats)) {
-        $stats = $oublogoutput->render_stats_container('view', $stats, count($stats));
+        // Open the first block by default.
+        $stats = $oublogoutput->render_stats_container('view', $stats, 1);
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-discover';
         $bc->attributes['class'] = 'oublog-sideblock block';
