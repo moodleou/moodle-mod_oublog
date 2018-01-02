@@ -93,6 +93,32 @@ abstract class oublog_test_lib extends advanced_testcase {
     }
 
     /**
+     * Create a new grouping and add it into a course
+     *
+     * @param int $courseid
+     * @return \stdClass
+     */
+    public function get_new_grouping($courseid) {
+        $grouping = new stdClass();
+        $grouping->courseid = $courseid;
+        return $this->getDataGenerator()->create_grouping($grouping);
+    }
+
+    /**
+     * Add a group to a grouping
+     *
+     * @param $groupingid
+     * @param $groupid
+     * @return bool
+     */
+    public function get_new_grouping_group($groupingid, $groupid) {
+        $groupmember = new stdClass();
+        $groupmember->groupid = $groupid;
+        $groupmember->groupingid = $groupingid;
+        return $this->getDataGenerator()->create_grouping_group($groupmember);
+    }
+
+    /**
      * Wrapper for generator create_content() to add a post
      * Supports creating post attachments ($post->attachments)
      * @param object $oublog

@@ -41,7 +41,7 @@ function oublog_add_instance($oublog) {
     global $DB;
     // Generate an accesstoken.
     $oublog->accesstoken = md5(uniqid(rand(), true));
-
+    $oublog->timemodified = time();
     if (empty($oublog->ratingtime) || empty($oublog->assessed)) {
         $oublog->assesstimestart = 0;
         $oublog->assesstimefinish = 0;
@@ -78,7 +78,7 @@ function oublog_add_instance($oublog) {
 function oublog_update_instance($oublog) {
     global $DB;
     $oublog->id = $oublog->instance;
-
+    $oublog->timemodified = time();
     if (!$DB->get_record('oublog', array('id' => $oublog->id))) {
         return(false);
     }

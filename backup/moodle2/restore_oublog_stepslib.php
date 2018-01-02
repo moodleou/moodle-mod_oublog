@@ -55,6 +55,9 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
         global $DB;
 
         $data = (object)$data;
+        if (!isset($data->timemodified)) {
+            $data->timemodified = time();
+        }
         $oldid = $data->id;
         $data->course = $this->get_courseid();
 

@@ -1187,15 +1187,36 @@ function oublog_add_comment($course, $cm, $oublog, $comment) {
  *
  * @param object $oublog
  * @param object $oubloginstance
+ * @param int $userid
+ * @param int $groupid
  * @return int
  */
-function oublog_update_views($oublog, $oubloginstance) {
+function oublog_update_views($oublog, $oubloginstance, $userid = null, $groupid = null) {
     global $SESSION, $DB;
 
-    if ($oublog->global && isset($oubloginstance)) {
+    if ($groupid > 0 && (!$userid || $userid == -1)) {
+        return get_group_view($oublog->id, $groupid);
+    }
+
+    if ($userid > 0 && !isset($oubloginstance)) {
+        $oubloginstance = $DB->get_record('oublog_instances', array('oublogid' => $oublog->id, 'userid' => $userid));
+        // Add new if oubloginstance did not exist.
+        if (!$oubloginstance) {
+            $oubloginstance = new \stdClass();
+            $oubloginstance->views = 0;
+            $oubloginstance->id = oublog_add_bloginstance($oublog->id, $userid, '', null);
+        }
+    }
+
+    if (isset($oubloginstance)) {
         if (!isset($SESSION->bloginstanceview[$oubloginstance->id])) {
             $SESSION->bloginstanceview[$oubloginstance->id] = true;
             $oubloginstance->views++;
+            if (!$oublog->global) {
+                // Increase total views of main blog.
+                $sql = "UPDATE {oublog} SET views = views + 1 WHERE id = ?";
+                $DB->execute($sql, array($oublog->id));
+            }
             $sql = "UPDATE {oublog_instances} SET views = views + 1 WHERE id = ?";
             $DB->execute($sql, array($oubloginstance->id));
         }
@@ -1210,6 +1231,24 @@ function oublog_update_views($oublog, $oubloginstance) {
         return($oublog->views);
     }
 
+}
+
+/**
+ * Get views of group's post.
+ * 
+ * @param  int $oublogid 
+ * @param  int $groupid
+ * @return int
+ */
+function get_group_view($oublogid, $groupid) {
+    global $DB;
+    $sql = "SELECT SUM(bi.views)
+            FROM {oublog_instances} bi
+                INNER JOIN {groups_members} gm ON gm.groupid = ? AND bi.userid = gm.userid
+            WHERE bi.oublogid = ?";
+    $params = array('groupid' => $groupid, 'oublogid' => $oublogid);
+    $views = $DB->get_fieldset_sql($sql, $params);
+    return $views[0] ? $views[0] : 0;
 }
 
 /**
