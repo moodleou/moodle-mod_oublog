@@ -26,7 +26,7 @@ if (!strpos($returnurl, $CFG->wwwroot . '/mod/oublog/') === 0) {
 }
 
 if ($CFG->autologinguests) {
-    $_SESSION['wantsurl']=$returnurl;
+    $SESSION->wantsurl = $returnurl;
     redirect($CFG->wwwroot.'/login/');
 } else {
     require_login();
