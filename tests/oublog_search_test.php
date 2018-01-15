@@ -171,6 +171,18 @@ class oublog_search_test extends oublog_test_lib {
                     break;
             }
         }
+
+        // Create a second blog with one post.
+        $otherblog = $this->getDataGenerator()->create_module('oublog', ['course' => $course->id]);
+        $post = $this->get_post_stub($otherblog->id);
+        oublog_add_post($post, $cm, $oublog, $course);
+        $otherblogcontext = context_module::instance($otherblog->cmid);
+
+        // Test get_document_recordset with and without context.
+        $results = self::recordset_to_array($page->get_document_recordset(0));
+        $this->assertCount(2, $results);
+        $results = self::recordset_to_array($page->get_document_recordset(0, $otherblogcontext));
+        $this->assertCount(1, $results);
     }
 
     /**
@@ -347,6 +359,26 @@ class oublog_search_test extends oublog_test_lib {
                     break;
             }
         }
+
+        // Create a second blog with one post and one comment.
+        $otherblog = $this->getDataGenerator()->create_module('oublog', ['course' => $course->id]);
+        $post = $this->get_post_stub($otherblog->id);
+        $otherpostid = oublog_add_post($post, $cm, $oublog, $course);
+        $otherblogcontext = context_module::instance($otherblog->cmid);
+        $comment = new stdClass();
+        $comment->title = 'Test Seach Comment Other';
+        $comment->messagecomment = [];
+        $comment->messagecomment['text'] = 'Message for test comment Other';
+        $comment->timeposted = 1;
+        $comment->postid = $otherpostid;
+        $comment->userid = $USER->id;
+        oublog_add_comment($SITE, $cm, $oublog, $comment);
+
+        // Test get_document_recordset with and without context.
+        $results = self::recordset_to_array($page->get_document_recordset(0));
+        $this->assertCount(3, $results);
+        $results = self::recordset_to_array($page->get_document_recordset(0, $otherblogcontext));
+        $this->assertCount(1, $results);
     }
 
     /**
