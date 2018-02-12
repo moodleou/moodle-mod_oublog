@@ -559,9 +559,9 @@ $string['import_step2_inst'] = 'Importing posts:';
 $string['import_step2_none'] = 'No posts selected for import.';
 $string['import_step2_prog'] = 'Importing in progress';
 $string['import_step2_total'] = '{$a} post(s) imported successfully';
-$string['import_step2_conflicts'] = '{$a} post(s) to import were identified as conflicts with existing posts.';
-$string['import_step2_conflicts_submit'] = 'Import conflicting posts';
-
+$string['import_step2_conflicts'] = '{$a} post(s) have been imported before. If you wish to import the posts again select ‘import duplicate posts’ and another copy will be added to your blog.';
+$string['import_step2_conflicts_submit'] = 'Import duplicate posts';
+$string['import_step2_cancel_submit'] = 'Do not import duplicate posts';
 // My Participation.
 $string['contribution'] = 'Participation';
 $string['contribution_all'] = 'Participation - All time';

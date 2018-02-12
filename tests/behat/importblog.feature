@@ -110,3 +110,18 @@ Feature: Test import posts function for blog
     Then I should see "Post 0 Comment 1 message"
     Then I should see "Post 0 comment 2"
     Then I should see "Post 0 Comment 2 message"
+
+  @javascript
+  Scenario: Perform the import all posts again to should see confirm duplicate posts.
+    Given I am on "Course 1" course homepage
+    And I follow "student 1 blog two"
+    And I click on "Import" "button"
+    When I follow "Import blog"
+    Then I should see "2 post(s) imported successfully"
+    And I click on "Continue" "button"
+    And I click on "Import" "button"
+    When I follow "Import blog"
+    Then I should see "0 post(s) imported successfully"
+    Then I should see "2 post(s) have been imported before. If you wish to import the posts again select ‘import duplicate posts’ and another copy will be added to your blog."
+    And "Import duplicate posts" "button" should exist
+    And "Do not import duplicate posts" "button" should exist

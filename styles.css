@@ -554,6 +554,10 @@ ul.oublog-accordion li .oublog_statsview_content {
 .oublog_import_step UL {
     list-style: none;
 }
+#page-mod-oublog-import .oublog_import_step #oublog_import_result_container .modal-header {
+    display: none;
+}
+#page-mod-oublog-import .oublog_import_step p.import-conflicts-message,
 #page-mod-oublog-import .oublog_import_step h3 {
     font-weight: bold;
 }

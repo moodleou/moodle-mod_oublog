@@ -538,8 +538,11 @@ if ($step == 0) {
         $stepinfo['importall'] = false;
         $url = new moodle_url('/mod/oublog/import.php', array_merge($params, $stepinfo));
         $conflictimport = new single_button($url, get_string('import_step2_conflicts_submit', 'oublog'));
-        echo $OUTPUT->confirm(get_string('import_step2_conflicts', 'oublog', count($conflicts)),
-                $conflictimport, $continueurl);
+        $cancelurl = new moodle_url($continueurl);
+        $cancelbutton = new single_button($cancelurl, get_string('import_step2_cancel_submit', 'oublog'));
+        $message = html_writer::tag('p', get_string('import_step2_conflicts', 'oublog', count($conflicts)),
+                ['class' => 'import-conflicts-message']);
+        echo $OUTPUT->confirm($message, $conflictimport, $cancelbutton );
     } else {
         echo $OUTPUT->continue_button($continueurl);
     }
