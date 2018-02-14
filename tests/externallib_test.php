@@ -98,7 +98,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect invalid_parameter_exception because the passed username contain special character.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
 
         mod_oublog_external::get_user_blogs('username1****');
     }
@@ -177,7 +177,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because blogid expect integer pass a string.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
 
         mod_oublog_external::get_blog_posts('a', $blog->cm->id, $post1id, true, $USER->username);
     }
@@ -210,7 +210,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because bcontextid expect integer pass a string.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
 
         mod_oublog_external::get_blog_posts($blog->id, 'a', $post1id, true, $USER->username);
     }
@@ -242,7 +242,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
 
         mod_oublog_external::get_blog_posts($blog->id, $blog->cm->id, '1,2;3', true, $USER->username);
     }
@@ -371,7 +371,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
 
         mod_oublog_external::get_blog_posts($blog->id, $blog->cm->id, $post1id, true, 'username1&');
     }
@@ -405,7 +405,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because blogid expect int but pass string.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
         mod_oublog_external::get_blog_allposts('string', 'timeposted DESC', $USER->username);
     }
 
@@ -436,7 +436,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because sort expect not null but pass empty.
-        $this->setExpectedException('dml_read_exception');
+        $this->expectException('dml_read_exception');
         mod_oublog_external::get_blog_allposts($blog->id, null, $USER->username);
     }
 
@@ -451,7 +451,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because sort expect text but pass int.
-        $this->setExpectedException('dml_read_exception');
+        $this->expectException('dml_read_exception');
         mod_oublog_external::get_blog_allposts($blog->id, 1, $USER->username);
     }
 
@@ -482,7 +482,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because username have special character.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
         mod_oublog_external::get_blog_allposts($blog->id, 'timeposted DESC', 'user$');
     }
 
@@ -513,7 +513,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because page expect int but pass string.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
         mod_oublog_external::get_blog_allposts($blog->id, 'timeposted DESC', $USER->username, 'string');
     }
 
@@ -528,7 +528,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because tags not in format sequence type.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
         mod_oublog_external::get_blog_allposts($blog->id, 'timeposted DESC', $USER->username, 0, '1.2.3');
     }
 
@@ -578,7 +578,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because cmid expect int but pass string.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
 
         mod_oublog_external::get_blog_info('some string', $USER->id);
     }
@@ -628,7 +628,7 @@ class externallib_test extends oublog_test_lib
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
         // Expect exception because username contain special characters.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
 
         mod_oublog_external::get_blog_info($blog->cm->id, 'username1&');
     }

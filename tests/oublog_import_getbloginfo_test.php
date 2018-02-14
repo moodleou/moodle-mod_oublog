@@ -50,7 +50,7 @@ class oublog_import_getbloginfo_test extends oublog_test_lib
      */
     public function test_oublog_import_getbloginfo_noblog() {
         // Expect exception because the blog and course not existed.
-        $this->setExpectedException('dml_missing_record_exception');
+        $this->expectException('dml_missing_record_exception');
 
         oublog_import_getbloginfo(-1);
     }
@@ -62,7 +62,7 @@ class oublog_import_getbloginfo_test extends oublog_test_lib
         $blog = $this->get_new_oublog($this->course1, array('global' => 0, 'individual' => OUBLOG_VISIBLE_INDIVIDUAL_BLOGS));
 
         // Expect exception because the user haven't enroll into this course yet.
-        $this->setExpectedException('moodle_exception');
+        $this->expectException('moodle_exception');
 
         oublog_import_getbloginfo($blog->cm->id);
     }
@@ -81,7 +81,7 @@ class oublog_import_getbloginfo_test extends oublog_test_lib
         $this->get_new_oublog($this->course2, array('global' => 0, 'individual' => OUBLOG_VISIBLE_INDIVIDUAL_BLOGS));
 
         // Expect exception because the user haven't enroll into correct course.
-        $this->setExpectedException('moodle_exception');
+        $this->expectException('moodle_exception');
 
         oublog_import_getbloginfo($blog->cm->id);
     }
@@ -99,7 +99,7 @@ class oublog_import_getbloginfo_test extends oublog_test_lib
         $blog = $this->get_new_oublog($this->course1, array('global' => 0, 'individual' => OUBLOG_NO_INDIVIDUAL_BLOGS));
 
         // Expect exception because the individual is set to OUBLOG_NO_INDIVIDUAL_BLOGS.
-        $this->setExpectedException('moodle_exception');
+        $this->expectException('moodle_exception');
 
         oublog_import_getbloginfo($blog->cm->id);
     }
