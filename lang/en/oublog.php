@@ -654,3 +654,5 @@ $string['restricttagsvalidation'] = 'Only \'Set\' tags are allowed to be entered
 $string['search:post'] = 'OU blog - posts';
 $string['search:activity'] = 'OU blog - activity information';
 $string['search:comments'] = 'OU blog - posts comments';
+$string['numberofposts'] = 'Number of posts per page';
+$string['numberofposts_help'] = 'Set the number of posts per page to display in a blog.';

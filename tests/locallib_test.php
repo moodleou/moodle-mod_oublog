@@ -390,7 +390,8 @@ class oublog_locallib_test extends oublog_test_lib {
         $stud2 = $this->get_new_user();
 
         if (!$oublog = $DB->get_record('oublog', array('global' => 1))) {
-            $oublog = $this->get_new_oublog($SITE->id, array('global' => 1, 'maxvisibility' => OUBLOG_VISIBILITY_PUBLIC));
+            $oublog = $this->get_new_oublog($SITE->id, array('global' => 1, 'maxvisibility' => OUBLOG_VISIBILITY_PUBLIC,
+                'postperpage' => 25));
         }
 
         $cm = get_coursemodule_from_instance('oublog', $oublog->id);
@@ -435,7 +436,7 @@ class oublog_locallib_test extends oublog_test_lib {
         // Test 4 - create multiple posts for pagination tests.
         $this->setAdminUser();
         // Number of posts/comments for tests.
-        $postcount = OUBLOG_POSTS_PER_PAGE;
+        $postcount = $postperpage = (int)$oublog->postperpage;
         // Create further post stubs for students, ie 3 pages.
         // Create student 1s post stubs.
         $posthashes = $postids = array();
@@ -460,18 +461,18 @@ class oublog_locallib_test extends oublog_test_lib {
         }
         // Setup pagination offset count for page 1.
         $page = 0;
-        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        $offset = $page * $postperpage;
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0, -1, null, '', true, true);
-        $this->assertEquals(OUBLOG_POSTS_PER_PAGE * 2 + 2, $recordcount);// Includes count of lesser visibility posts.
-        $this->assertCount(OUBLOG_POSTS_PER_PAGE, $posts);// Includes only paged visibile posts.
+        $this->assertEquals($postperpage * 2 + 2, $recordcount);// Includes count of lesser visibility posts.
+        $this->assertCount($postperpage, $posts);// Includes only paged visibile posts.
         // Setup pagination offset count for page 2.
         $page = 1;
-        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        $offset = $page * $postperpage;
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0, -1, null, '', true, true);
-        $this->assertCount(OUBLOG_POSTS_PER_PAGE, $posts);// Includes only paged visibile posts.
+        $this->assertCount($postperpage, $posts);// Includes only paged visibile posts.
         // Setup pagination offset count for page 3.
         $page = 2;
-        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        $offset = $page * $postperpage;
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0, -1, null, '', true, true);
         $this->assertCount(2, $posts);// Includes only paged visibile posts.
     }
@@ -1283,7 +1284,7 @@ class oublog_locallib_test extends oublog_test_lib {
         $oublog = $this->get_new_oublog($course->id);
         $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
         // Number of posts for test, more than posts per page
-        $postcount = OUBLOG_POSTS_PER_PAGE + (OUBLOG_POSTS_PER_PAGE / 2);
+        $postcount = $oublog->postperpage + (int)($oublog->postperpage / 2);
         $titlecheck = 'test_oublog_get_posts_pagination';
 
         // First make sure we have some posts to use.
@@ -1302,17 +1303,17 @@ class oublog_locallib_test extends oublog_test_lib {
         $context = context_module::instance($cm->id);
         // Build paging parameters for the first page .
         $page = 0;
-        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        $offset = $page * $oublog->postperpage;
         // Get a list of the pages posts.
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0);
         // Same number of records discovered that were created?
         $this->assertEquals($postcount, $recordcount);
         // Is the number of posts returned that were expected?.
-        $this->assertEquals(OUBLOG_POSTS_PER_PAGE, count($posts));
+        $this->assertEquals($oublog->postperpage, count($posts));
 
         // Build paging parameters for the second page.
         $page = 1;
-        $offset = $page * OUBLOG_POSTS_PER_PAGE;
+        $offset = $page * $oublog->postperpage;
         // Get the list of the second pages posts.
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, 0);
         // Number of posts returned that were expected?.

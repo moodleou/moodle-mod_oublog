@@ -428,5 +428,19 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2017061600, 'oublog');
     }
 
+    if ($oldversion < 2018031300) {
+        // Add postperpage field setting.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('postperpage', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '25', 'timemodified');
+
+        // Conditionally launch add field postperpage.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oublog savepoint reached.
+        upgrade_mod_savepoint(true, 2018031300, 'oublog');
+    }
+
     return true;
 }

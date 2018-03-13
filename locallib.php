@@ -55,12 +55,6 @@ define('OUBLOG_MODERATED_REJECTED', 2);
 /**#@-*/
 
 /**#@+
- * Constant defining the number of posts to display per page
- */
-define('OUBLOG_POSTS_PER_PAGE', 20);
-/**#@-*/
-
-/**#@+
  * Constant defining the max number of items in an RSS or Atom feed
  */
 define('OUBLOG_MAX_FEED_ITEMS', 20);
@@ -637,8 +631,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
             ORDER BY p.timeposted DESC
             ";
     $countsql = "SELECT count(p.id) $from WHERE $sqlwhere";
-
-    $rs = $DB->get_recordset_sql($sql, $params, $offset, OUBLOG_POSTS_PER_PAGE);
+    $rs = $DB->get_recordset_sql($sql, $params, $offset, $oublog->postperpage);
     // Get paging info
     $recordcnt = $DB->count_records_sql($countsql, $params);
     if (!$rs->valid()) {
@@ -650,7 +643,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $postids    = array();
 
     foreach ($rs as $post) {
-        if ($cnt > OUBLOG_POSTS_PER_PAGE) {
+        if ($cnt > $oublog->postperpage) {
             break;
         }
         if (oublog_can_view_post($post, $USER, $context, $oublog->global)) {

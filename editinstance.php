@@ -72,7 +72,8 @@ $strblogoptions = get_string('blogoptions', 'oublog');
 $currentgroup = oublog_get_activity_group($cm, true);
 $groupmode = oublog_get_activity_groupmode($cm, $course);
 
-$mform = new mod_oublog_mod_form('editinstance.php', array('maxvisibility' => $oublog->maxvisibility, 'edit' => !empty($postid)));
+$mform = new mod_oublog_mod_form('editinstance.php', array('maxvisibility' => $oublog->maxvisibility, 'edit' => !empty($postid),
+            'postperpage' => $oublog->postperpage));
 
 if ($mform->is_cancelled()) {
     redirect($viewurl);

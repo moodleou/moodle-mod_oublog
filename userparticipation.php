@@ -107,7 +107,7 @@ $PAGE->set_url($url);
 $getposts = true;
 $getcomments = false;
 $getgrades = false;
-$limitnum = OUBLOG_POSTS_PER_PAGE;
+$limitnum = $oublog->postperpage;
 $limitfrom = empty($page) ? null : $page * $limitnum;
 if (!empty($download)) {
     $limitnum = null;

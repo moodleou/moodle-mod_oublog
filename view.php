@@ -52,7 +52,6 @@ if (isloggedin()) {
     $tagorder = 'alpha';
 }
 
-$offset = $page * OUBLOG_POSTS_PER_PAGE;
 $url = new moodle_url('/mod/oublog/view.php', array('id' => $id, 'user' => $user,
         'page' => $page, 'tag' => $tag, 'tagorder' => $tagorder));
 
@@ -97,6 +96,8 @@ if ($id) {
 } else {
     redirect('bloglogin.php');
 }
+$postperpage = $oublog->postperpage;
+$offset = $page * $postperpage;
 
 // The mod_edit page gets it wrong when redirecting to a personal blog.
 // Since there's no way to know what personal blog was being updated
@@ -230,7 +231,7 @@ if (!$hideunusedblog) {
     if ($offset > 0) {
         $a = new stdClass();
         $a->from = ($offset + 1);
-        $a->to = (($recordcount - $offset) > OUBLOG_POSTS_PER_PAGE) ? $offset + OUBLOG_POSTS_PER_PAGE : $recordcount;
+        $a->to = (($recordcount - $offset) > $postperpage) ? $offset + $postperpage : $recordcount;
         $PAGE->navbar->add(get_string('extranavolderposts', 'oublog', $a));
     }
     if ($tag) {
@@ -525,9 +526,9 @@ echo '</div>';
 
 // Print blog posts.
 if ($posts) {
-    if ($recordcount > OUBLOG_POSTS_PER_PAGE) {
+    if ($recordcount > $postperpage) {
         echo "<div class='oublog-paging'>";
-        echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
+        echo $OUTPUT->paging_bar($recordcount, $page, $postperpage, $returnurl);
         echo '</div>';
     }
     echo '<div id="oublog-posts">';
@@ -540,9 +541,9 @@ if ($posts) {
                 $canmanageposts, $canaudit, true, false);
         $rowcounter++;
     }
-    if ($recordcount > OUBLOG_POSTS_PER_PAGE) {
+    if ($recordcount > $postperpage) {
         echo "<div class='oublog-paging'>";
-        echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
+        echo $OUTPUT->paging_bar($recordcount, $page, $postperpage, $returnurl);
         echo '</div>';
     }
     echo '</div>';

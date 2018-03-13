@@ -239,6 +239,36 @@ Feature: Test Post and Comment on Personal OUBlog
     And I set the following fields to these values:
       | Title | Personal OUBlog post20 |
       | Message | Admin Persblog post20 content |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title             | Personal OUBlog post21         |
+      | Message           | Admin Persblog post21 content  |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title             | Personal OUBlog post22         |
+      | Message           | Admin Persblog post22 content  |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title             | Personal OUBlog post23         |
+      | Message           | Admin Persblog post23 content  |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title             | Personal OUBlog post24         |
+      | Message           | Admin Persblog post24 content  |
+      | Who can read this | Visible to anyone in the world |
+    And I press "Add post"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title             | Personal OUBlog post25         |
+      | Message           | Admin Persblog post25 content  |
+      | Who can read this | Visible to anyone in the world |
     When I press "Add post"
     Then ".oublog-paging" "css_element" should exist
     And I should see "Next" in the ".oublog-paging" "css_element"
@@ -251,22 +281,22 @@ Feature: Test Post and Comment on Personal OUBlog
     Given I follow "Admin User's blog edited"
     When I press "New blog post"
     And I set the following fields to these values:
-      | Title | Personal OUBlog post21 |
-      | Message | Admin Persblog post21 content |
+      | Title             | Personal OUBlog post26         |
+      | Message           | Admin Persblog post26 content  |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
     When I press "New blog post"
     And I set the following fields to these values:
-      | Title | Personal OUBlog post22 |
-      | Message | Admin Persblog post22 content |
-      | Who can read this | Visible to anyone in the world |
-      | Tags (separated by commas) | Taggy1 |
+      | Title                      | Personal OUBlog post27         |
+      | Message                    | Admin Persblog post27 content  |
+      | Who can read this          | Visible to anyone in the world |
+      | Tags (separated by commas) | Taggy1                         |
     And I press "Add post"
     And I follow "Next"
     And I should see "Previous" in the ".oublog-paging" "css_element"
     And I should not see "Next" in the ".oublog-paging" "css_element"
     Then I should see "Personal OUBlog post02" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
-    And I should not see "Personal OUBlog post22" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I should not see "Personal OUBlog post27" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
 
     # 'Edit' post01 ie 3rd post on the second page
     And I click on "Edit" "link" in the ".oublog-post:nth-child(3) .oublog-post-links" "css_element"
@@ -306,20 +336,29 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should see "Next" in the ".oublog-paging" "css_element"
     And I should not see "Previous" in the ".oublog-paging" "css_element"
     Given I follow "taggy1"
-    Then I should see "Personal OUBlog post22"
-    And I should not see "Personal OUBlog post21"
+    Then I should see "Personal OUBlog post27"
+    And I should not see "Personal OUBlog post26"
     And I should not see "Next" in the ".oublog-paging" "css_element"
-    # 'Edit' the "taggy" post22
+    # 'Edit' the "taggy" post27
     And I click on "Edit" "link" in the ".oublog-post-links" "css_element"
     And I wait to be redirected
     And I set the following fields to these values:
-      | Title | Personal OUBlog post22 edited|
-      | Message | Admin Persblog post22 content edited for return url test|
+      | Title | Personal OUBlog post27 edited|
+      | Message | Admin Persblog post27 content edited for return url test|
     And I press "Save changes"
     # Confirm return to correct page after "taggy" edit
-    Then I should see "Personal OUBlog post22 edited" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
-    And I should not see "Personal OUBlog post21" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    Then I should see "Personal OUBlog post27 edited" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I should not see "Personal OUBlog post26" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
     And I should not see "Next" in the ".oublog-paging" "css_element"
+    # Test paging when post per page is 50.
+    And I am on site homepage
+    And I follow "Personal Blogs"
+    And I click on "Edit settings" "link"
+    When I set the following fields to these values:
+      | postperpage | 50 |
+    And I press "Save and display"
+    Then ".oublog-paging" "css_element" should not exist
+    Then I should see "Personal OUBlog post27"
 
   # New scenario tests the Socialmedia widgets availability
   Scenario: Admin tests the blog tweet facility

@@ -39,7 +39,8 @@ if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
     print_error('coursemisconf');
 }
 
-$offset = $page * OUBLOG_POSTS_PER_PAGE;
+$postperpage = $oublog->postperpage;
+$offset = $page * $postperpage;
 $url = new moodle_url('/mod/oublog/allposts.php', array(
         'page' => $page,
         'tag' => $tag));
@@ -102,8 +103,7 @@ $CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, 'all', '', $cm);
 if ($offset) {
     $a = new stdClass();
     $a->from = ($offset+1);
-    $a->to   = (($recordcount - $offset) > OUBLOG_POSTS_PER_PAGE) ? $offset +
-            OUBLOG_POSTS_PER_PAGE : $recordcount;
+    $a->to   = (($recordcount - $offset) > $postperpage) ? $offset + $postperpage : $recordcount;
     $PAGE->navbar->add(get_string('extranavolderposts', 'oublog', $a));
 } else if (!empty($tag)) {
     $PAGE->navbar->add(get_string('extranavtag', 'oublog', $tag));
@@ -176,7 +176,7 @@ echo $oublogoutput->render_viewpage_prepost();
 // Print blog posts.
 if ($posts) {
     echo "<div class='oublog-paging'>";
-    echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
+    echo $OUTPUT->paging_bar($recordcount, $page, $postperpage, $returnurl);
     echo '</div>';
     echo '<div id="oublog-posts">';
     $rowcounter = 1;
@@ -187,7 +187,7 @@ if ($posts) {
         $rowcounter++;
     }
     echo "<div class='oublog-paging'>";
-    echo $OUTPUT->paging_bar($recordcount, $page, OUBLOG_POSTS_PER_PAGE, $returnurl);
+    echo $OUTPUT->paging_bar($recordcount, $page, $postperpage, $returnurl);
     echo '</div>';
 }
 

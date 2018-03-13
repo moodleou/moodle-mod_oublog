@@ -95,6 +95,13 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->addHelpButton('maxattachments', 'maxattachments', 'oublog');
             $mform->setDefault('maxattachments', $modulesettings->maxattachments);
 
+            // Number of post per page.
+            $choices = array(25 => 25, 50 => 50, 75 => 75, 100 => 100);
+            $mform->addElement('select', 'postperpage',
+                get_string('numberofposts', 'oublog'), $choices);
+            $mform->addHelpButton('postperpage', 'numberofposts', 'oublog');
+            $mform->setDefault('postperpage', 25);
+
             // Show OU Alerts reporting link.
             if (oublog_oualerts_enabled()) {
                 $mform->addElement('text', 'reportingemail', get_string('reportingemail', 'oublog'),
