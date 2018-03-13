@@ -395,4 +395,81 @@ class oublog_search_test extends oublog_test_lib {
         $rs->close();
         return $result;
     }
+
+    public function test_oublog_posts_for_group_support() {
+        global $CFG;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        // Enable global search for this test.
+        set_config('enableglobalsearch', true);
+        $search = testable_core_search::instance();
+
+        $searcharea = new post();
+        $course = $this->get_new_course();
+        $suser1 = $this->get_new_user('student', $course->id);
+        $group1 = $this->get_new_group($course->id);
+        $this->get_new_group_member($group1->id, $suser1->id);
+
+        // Create an OUBlog.
+        $oublog1 = $this->get_new_oublog($course->id,
+                ['individual' => OUBLOG_NO_INDIVIDUAL_BLOGS, 'groupmode' => SEPARATEGROUPS, 'tagslist' => 'blogtag1,blogtag2']);
+
+        $cm1 = get_coursemodule_from_id('oublog', $oublog1->cmid);
+
+        $titlecheck = 'test_oublog_get_posts';
+        $messagecheck = 'test_oublog_mesage';
+
+        $post1stub = $this->get_post_stub($oublog1->id);
+        $post1stub->title = $titlecheck . '_1';
+        $post1stub->message['text'] = $messagecheck . '_1';
+        $post1stub->userid = $suser1->id;
+        $post1stub->tags = 'blogtag1';
+        $post1stub->groupid = $group1->id;
+        $post1id = oublog_add_post($post1stub, $cm1, $oublog1, $course);
+
+        // Create an OUBlog without groups.
+        $oublog2 = $this->get_new_oublog($course->id,
+                ['individual' => OUBLOG_NO_INDIVIDUAL_BLOGS, 'groupmode' => NOGROUPS, 'tagslist' => 'blogtag1,blogtag2']);
+        $cm2 = get_coursemodule_from_id('oublog', $oublog2->cmid);
+
+        $post2stub = $this->get_post_stub($oublog2->id);
+        $post2stub->title = 'No groups';
+        $post2stub->userid = $suser1->id;
+        $post2stub->tags = 'blogtag1';
+        $post2id = oublog_add_post($post2stub, $cm2, $oublog2, $course);
+
+        // OU Blog with Individual blogs and No groups.
+        $oublog3 = $this->get_new_oublog($course->id,
+                ['individual' => OUBLOG_VISIBLE_INDIVIDUAL_BLOGS, 'groupmode' => VISIBLEGROUPS, 'tagslist' => 'blogtag1,blogtag2']);
+        $cm3 = get_coursemodule_from_id('oublog', $oublog3->cmid);
+        $post3stub = $this->get_post_stub($oublog3->id);
+        $post3stub->title = 'Individual blogs';
+        $post3stub->userid = $suser1->id;
+        $post3stub->groupid = 0;
+        $post3id = oublog_add_post($post3stub, $cm3, $oublog3, $course);
+
+        // Get a list of the posts.
+        $results = self::recordset_to_array($searcharea->get_recordset_by_timestamp());
+
+        // Now check results.
+        $this->assertCount(3, $results);
+
+        // Check detail using the get_document function.
+        $out1 = $searcharea->get_document($results[0], array('lastindexedtime' => 0));
+        $this->assertEquals('test_oublog_get_posts_1', $out1->get('title'));
+        $this->assertTrue($out1->is_set('groupid'));
+        $this->assertEquals($group1->id, $out1->get('groupid'));
+        $this->assertTrue($out1->get_is_new());
+
+        $out2 = $searcharea->get_document($results[1], array('lastindexedtime' => 0));
+        $this->assertEquals('No groups', $out2->get('title'));
+        $this->assertFalse($out2->is_set('groupid'));
+        $this->assertTrue($out2->get_is_new());
+
+        $out3 = $searcharea->get_document($results[2], array('lastindexedtime' => 0));
+        $this->assertEquals('Individual blogs', $out3->get('title'));
+        $this->assertFalse($out3->is_set('groupid'));
+        $this->assertTrue($out3->get_is_new());
+    }
 }

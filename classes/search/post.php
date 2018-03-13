@@ -76,7 +76,7 @@ class post extends \core_search\base_mod {
         $sql = "SELECT ob.id AS oublogid, ob.course,
                    op.id as postid, op.oubloginstancesid, op.groupid, op.title, op.message, oi.userid,
                    COALESCE(op.timeupdated, op.timeposted) as timemodified, op.deletedby,
-                   op.timedeleted, op.visibility, op.lasteditedby
+                   op.timedeleted, op.visibility, op.lasteditedby, op.groupid AS groupid
                   FROM {oublog_posts} op
                   JOIN {oublog_instances} oi ON oi.id = op.oubloginstancesid
                   JOIN {oublog} ob ON ob.id = oi.oublogid
@@ -141,6 +141,11 @@ class post extends \core_search\base_mod {
         $doc->set('itemid', $record->postid);
         $doc->set('owneruserid', \core_search\manager::NO_OWNER_ID);
         $doc->set('userid', $record->userid);
+
+        // Store groupid if there is one.
+        if ($record->groupid > 0) {
+            $doc->set('groupid', $record->groupid);
+        }
 
         // Set optional 'new' flag.
         if (isset($options['lastindexedtime']) && ($options['lastindexedtime'] < $record->timemodified)) {
@@ -236,5 +241,14 @@ class post extends \core_search\base_mod {
      */
     protected function get_module_name() {
         return substr($this->componentname, 4);
+    }
+
+    /**
+     * Indicates that this search area may restrict access by group.
+     *
+     * @return bool True
+     */
+    public function supports_group_restriction() {
+        return true;
     }
 }
