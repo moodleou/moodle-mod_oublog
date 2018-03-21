@@ -152,7 +152,8 @@ $mform = new mod_oublog_post_form('editpost.php', array(
     'restricttags' => $childoublog ? $childoublog->restricttags : $oublog->restricttags,
     'availtags' => $tags,
     'referurl' => $referurl,
-    'cmid' => $cmid));
+    'cmid' => $cmid,
+    'tagslist' => $childoublog ? $childoublog->tagslist : $oublog->tagslist));
 if ($mform->is_cancelled()) {
     redirect($viewurl);
     exit;

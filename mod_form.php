@@ -157,6 +157,7 @@ class mod_oublog_mod_form extends moodleform_mod {
                     '1' => get_string('restricttags_set', 'oublog'),
                     '2' => get_string('restricttags_req', 'oublog'),
                     '3' => get_string('restricttags_req_set', 'oublog'),
+                    '4' => get_string('restricttags_default', 'oublog')
             );
             $mform->addElement('select', 'restricttags', get_string('restricttags', 'oublog'), $tagopts);
             $mform->addHelpButton('restricttags', 'restricttags', 'oublog');

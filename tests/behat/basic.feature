@@ -27,8 +27,10 @@ Feature: Test Post and Comment on OUBlog entry
       | student1 | G1 |
       | student2 | G2 |
     And the following "activities" exist:
-      | activity | name | intro  | course | idnumber |
-      | oublog | Test oublog basics | Test oublog basics intro text | C1 | oublog1 |
+      | activity | name                             | intro                         | course | idnumber | restricttags | tagslist       |
+      | oublog   | Test oublog basics               | Test oublog basics intro text | C1     | oublog1  |              |                |
+      | oublog   | Test oublog with default tags    | Test oublog with default tags | C1     | oublog2  | 4            | tag1,tag2,tag3 |
+      | oublog   | Test oublog with no default tags | Test oublog with default tags | C1     | oublog2  |              | tag1,tag2,tag3 |
 
   Scenario: Multiple blog type tests - basic access etc
     Given I log in as "teacher1"
@@ -664,3 +666,26 @@ Feature: Test Post and Comment on OUBlog entry
       | Intro | |
     And I press "Save and display"
     And "#oublog_info_block" "css_element" should not exist
+
+  Scenario: Check blog posts with setting Add tags by default
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I am on "Course 1" course homepage
+    When I follow "Test oublog with default tags"
+    And I press "New blog post"
+    And I set the following fields to these values:
+      | Title   | Teacher1 blog                     |
+      | Message | Teacher1 post with default tags 1 |
+    And I press "Add post"
+    Then I should see "tag1(1) tag2(1) tag3(1)"
+    And I press "New blog post"
+    And I set the following fields to these values:
+      | Title   | Teacher1 blog 2                   |
+      | Message | Teacher1 post with default tags 2 |
+    And I press "Add post"
+    Then I should see "tag1(2) tag2(2) tag3(2)"
+    And I am on "Course 1" course homepage
+    # Test blog with no default tags
+    When I follow "Test oublog with no default tags"
+    And I press "New blog post"
+    Then I should not see "tag1,tag2,tag3"

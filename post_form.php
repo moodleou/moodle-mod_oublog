@@ -33,6 +33,7 @@ class mod_oublog_post_form extends moodleform {
         $personal      = $this->_customdata['personal'];
         $maxbytes      = $this->_customdata['maxbytes'];
         $maxattachments = $this->_customdata['maxattachments'];
+        $tagslist = $this->_customdata['tagslist'];
         $referurl = $this->_customdata['referurl'];
         $cmid = $this->_customdata['cmid'];
         $this->restricttags = false;
@@ -72,6 +73,9 @@ class mod_oublog_post_form extends moodleform {
         $mform->addElement('textarea', 'tags', get_string('tagsfield', 'oublog'), array('cols'=>48, 'rows'=>2));
         $mform->setType('tags', PARAM_TAGLIST);
         $mform->addHelpButton('tags', 'tags', 'oublog');
+        if ($this->_customdata['restricttags'] == 4) {
+            $mform->setDefault('tags', $tagslist);
+        }
         if ($this->requiretags) {
             $mform->addRule('tags', get_string('required'), 'required', null, 'client');
         }
