@@ -79,6 +79,16 @@ define('OUBLOG_NO_GRADING', 0);
 define('OUBLOG_TEACHER_GRADING', 1);
 define('OUBLOG_USE_RATING', 2);
 
+/**#@+
+ * Constant defining the number of posts to display per page for export
+ */
+define('OUBLOG_POSTS_PER_PAGE_EXPORT', 50);
+
+/**#@+
+ * Constant defining the max length of tags
+ */
+define('OUBLOG_EXPORT_TAGS_LENGTH', 40);
+
 /**
  * Get a blog from a user id
  *
@@ -617,10 +627,12 @@ function oublog_edit_post($post, $cm) {
  * @param int $userid
  * @param bool $ignoreprivate set true to not return private posts (global blog only)
  * @param object $masterblog
+ * @param int $paginglimit limit post per page
+ * @param string $sqlorder port sorting
  * @return mixed all data to print a list of blog posts
  */
 function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $individualid = -1,
-        $userid = null, $tag = '', $canaudit = false, $ignoreprivate = null, $masterblog = null) {
+        $userid = null, $tag = '', $canaudit = false, $ignoreprivate = null, $masterblog = null, $paginglimit = null, $sqlorder = '') {
     global $CFG, $USER, $DB;
     $params = array();
     // Check master blog.
@@ -628,6 +640,16 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $sqlwhere = "bi.oublogid = ?";
     $params[] = $postsoublog->id;
     $sqljoin = '';
+
+    if (empty($sqlorder)) {
+        $sqlorder = 'timeposted DESC';
+    }
+    if (empty($paginglimit)) {
+        $paginglimit = $oublog->postperpage;
+    }
+    $sqlorder = str_replace('title', 'p.title', $sqlorder);
+    $sqlorder = str_replace('author', 'u.firstname', $sqlorder);
+    $sqlorder = str_replace('timeposted', 'p.timeposted', $sqlorder);
 
     if (isset($userid)) {
         $sqlwhere .= " AND bi.userid = ? ";
@@ -697,10 +719,10 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $sql = "SELECT $fieldlist
             $from
             WHERE  $sqlwhere
-            ORDER BY p.timeposted DESC
+            ORDER BY $sqlorder
             ";
     $countsql = "SELECT count(p.id) $from WHERE $sqlwhere";
-    $rs = $DB->get_recordset_sql($sql, $params, $offset, $oublog->postperpage);
+    $rs = $DB->get_recordset_sql($sql, $params, $offset, $paginglimit);
     // Get paging info
     $recordcnt = $DB->count_records_sql($countsql, $params);
     if (!$rs->valid()) {
@@ -712,7 +734,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $postids    = array();
 
     foreach ($rs as $post) {
-        if ($cnt > $oublog->postperpage) {
+        if ($cnt > $paginglimit) {
             break;
         }
         if (oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
@@ -2983,6 +3005,39 @@ function oublog_add_cmid_to_tag_atrribute($cmid, $html, $tag, $attribute, $param
         $html = $doc->saveHTML();
     }
     return $html;
+}
+
+/**
+ * Gets blog posts by given ids.
+ *
+ * @param object $oublog Blog object.
+ * @param array $ids Ids of post to get.
+ * @return array
+ * @throws coding_exception
+ * @throws dml_exception
+ */
+function oublog_get_posts_by_id($oublog, $ids) {
+    global $CFG, $USER, $DB;
+    list($usql, $params) = $DB->get_in_or_equal($ids);
+    $sql = "SELECT p.*, p.timeposted AS timecreated, bi.oublogid, u.firstnamephonetic, u.lastnamephonetic,
+                   u.middlename, u.alternatename, u.firstname, u.lastname, bi.userid, u.idnumber, u.picture,
+	               u.imagealt, u.email, u.username, ud.firstnamephonetic AS delfirstnamephonetic,
+	               ud.lastnamephonetic AS dellastnamephonetic, ud.middlename AS delmiddlename,
+	               ud.alternatename AS delalternatename, ud.firstname AS delfirstname,
+	               ud.lastname AS dellastname, ue.firstnamephonetic AS edfirstnamephonetic,
+	               ue.lastnamephonetic AS edlastnamephonetic, ue.middlename AS edmiddlename,
+	               ue.alternatename AS edalternatename, ue.firstname AS edfirstname,
+	               ue.lastname AS edlastname
+              FROM {oublog_posts} p
+        INNER JOIN {oublog_instances} bi ON p.oubloginstancesid = bi.id
+        INNER JOIN {user} u ON bi.userid = u.id
+         LEFT JOIN {user} ud ON p.deletedby = ud.id
+         LEFT JOIN {user} ue ON p.lasteditedby = ue.id
+             WHERE bi.oublogid = ?
+	               AND p.id {$usql}
+          ORDER BY p.timeposted DESC";
+    $rs = $DB->get_records_sql($sql, array_merge(array($oublog->id), $params));
+    return $rs;
 }
 
 class oublog_portfolio_caller extends portfolio_module_caller_base {
@@ -5658,3 +5713,5 @@ class oublog_participation_timefilter_form extends moodleform {
         return $errors;
     }
 }
+
+class oublog_export_portfolio_caller extends \mod_oublog\portfolio_caller {};

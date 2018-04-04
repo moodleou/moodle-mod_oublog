@@ -734,3 +734,14 @@ div.tagselector_result .tagselector_result_info {
 #oublog_import_result_container h3 {
     text-align: center;
 }
+
+#oublogbuttons button[name="oublog-export-select-none"] {
+    margin-left: 10px;
+}
+
+.oublog-export_instance {
+    padding-bottom: 15px;
+}
+.oublog-export_instance button[name="oublog-export-selected"] {
+    margin-left: 10px;
+}

@@ -422,17 +422,9 @@ if (!empty($CFG->enableportfolios) && (has_capability('mod/oublog:exportpost', $
 
     // Note: render_export_button_top and render_export_button_bottom are added to
     // support the OSEP design which includes the export button differently from the old OU theme.
-    if ($posts) {
-        // Do this to get $post variable.
-        foreach ($posts as $post) {
-            // Do nothing, but codechecker would complain if literally nothing.
-            $donothing = true;
-        }
-
-        if (isset($posts)) {
-            $oublogoutput->render_export_button_top($context, $postsoublog, $post, $oubloguserid,
-                        $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm, $course->id, $masterblog ? 1 : 0);
-        }
+    if (!empty($posts)) {
+        $oublogoutput->render_export_button_top($context, $postsoublog, null, $oubloguserid,
+                $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm, $course->id, $masterblog ? 1 : 0);
     }
 }
 
@@ -578,7 +570,7 @@ if ($posts) {
     // Will need to be passed enough details on the blog so it can accurately work out what
     // posts are displayed (as oublog_get_posts above).
     if (!empty($CFG->enableportfolios) && (has_capability('mod/oublog:exportpost', $context))) {
-        echo $oublogoutput->render_export_button_bottom($context, $postsoublog, $post, $oubloguserid,
+        echo $oublogoutput->render_export_button_bottom($context, $postsoublog, null, $oubloguserid,
                 $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm, $masterblog ? 1 : 0);
     }
 }

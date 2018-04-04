@@ -160,7 +160,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I set the following administration settings values:
       | enableportfolios | 1 |
     And I navigate to "Manage portfolios" node in "Site administration > Plugin > Portfolios"
-    And I set the field with xpath "//form[@id='applytodownload']/select" to "Enabled and visible"
+    And I set the field with xpath "//form[@id='applytodownload']//select" to "Enabled and visible"
     And I press "Save"
     And I am on "Course 1" course homepage
     And I follow "Child Blog"
