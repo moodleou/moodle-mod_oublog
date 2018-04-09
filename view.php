@@ -250,6 +250,19 @@ $hasleft = !empty($CFG->showblocksonmodpages);
 if (!$hideunusedblog) {
     global $USER, $CFG;
     $links = '';
+    // Search block.
+    if ($oublog->global && strtolower($CFG->theme) == 'osep') {
+        $buttontext = oublog_get_search_form('user', $oubloguser->id, $strblogsearch, '', true);
+        $bc = new block_contents();
+        $bc->attributes['class'] = 'oublog-sideblock block';
+        $bc->attributes['id'] = 'oublog_info_block_search';
+        $bc->title = format_string(get_string('searchblogs', 'mod_oublog'));
+        $bc->content = $buttontext;
+        if (!empty($bc->content)) {
+            $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
+        }
+    }
+
     if ($oublog->global) {
         $title = $oubloginstance->name;
         $summary = $oubloginstance->summary;
