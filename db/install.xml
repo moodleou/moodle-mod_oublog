@@ -40,6 +40,7 @@
         <FIELD NAME="commentuntil" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Commenting allowed until"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Time (in seconds since epoch)."/>
         <FIELD NAME="postperpage" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="25" SEQUENCE="false" COMMENT="Number of posts to default perpage on blog"/>
+        <FIELD NAME="idsharedblog" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="ID Number of master blog"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

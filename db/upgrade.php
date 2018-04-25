@@ -442,5 +442,20 @@ function xmldb_oublog_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2018031300, 'oublog');
     }
 
+    if ($oldversion < 2018032001) {
+        // Define field idsharedblog to be added to oublog.
+        $table = new xmldb_table('oublog');
+        $field = new xmldb_field('idsharedblog', XMLDB_TYPE_CHAR, '100',
+            null, null, null, null, 'postperpage');
+
+        // Conditionally launch add field idsharedblog.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // OUblog savepoint reached.
+        upgrade_mod_savepoint(true, 2018032001, 'oublog');
+    }
+
     return true;
 }

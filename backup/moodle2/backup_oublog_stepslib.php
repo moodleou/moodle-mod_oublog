@@ -42,7 +42,7 @@ class backup_oublog_activity_structure_step extends backup_activity_structure_st
                 'completionposts', 'completioncomments', 'reportingemail', 'displayname',
                 'statblockon', 'allowimport', 'introonpost', 'tags', 'assessed',
                 'assesstimestart', 'assesstimefinish', 'scale', 'grading', 'restricttags',
-                'postfrom', 'postuntil', 'commentfrom', 'commentuntil', 'timemodified', 'postperpage'
+                'postfrom', 'postuntil', 'commentfrom', 'commentuntil', 'timemodified', 'postperpage', 'idsharedblog'
         ));
 
         $instances = new backup_nested_element('instances');

@@ -73,6 +73,21 @@ class mod_oublog_mod_form extends moodleform_mod {
                     OUBLOG_VISIBILITY_LOGGEDINUSER => get_string('visibleloggedinusers', 'oublog'),
                     OUBLOG_VISIBILITY_PUBLIC => get_string('visiblepublic', 'oublog'));
 
+            $haschild = false;
+            if (!empty($this->_cm->idnumber)) {
+                $haschild = !empty(oublog_get_children($this->_cm->idnumber)) ? true : false;
+            }
+            if ($haschild) {
+                $mform->addElement('text', 'idsharedblog', get_string('sharedblog', 'oublog'), array('disabled'));
+            } else {
+                // Enable "sharedblog" field when "individual" field is set.
+                $mform->disabledIf('idsharedblog', 'individual', 'eq', OUBLOG_NO_INDIVIDUAL_BLOGS);
+                $mform->addElement('text', 'idsharedblog', get_string('sharedblog', 'oublog'));
+            }
+            $mform->setType('idsharedblog', PARAM_TEXT);
+            // Have to add content later.
+            $mform->addHelpButton('idsharedblog', 'sharedblog', 'oublog');
+
             $mform->addElement('select', 'maxvisibility', get_string('maxvisibility', 'oublog'), $options);
             $mform->setType('maxvisibility', PARAM_INT);
             $mform->addHelpButton('maxvisibility', 'maxvisibility', 'oublog');
@@ -335,6 +350,30 @@ class mod_oublog_mod_form extends moodleform_mod {
                 && ($data['restricttags'] == 1 || $data['restricttags'] == 3)) {
             // When forcing use of pre-defined tags must define some.
             $errors['tagslist'] = get_string('required');
+        }
+        if (!empty($data['idsharedblog'])) {
+            $masterblog = oublog_get_master($data['idsharedblog'], false);
+
+            // Cannot get master if it doesn't have ID number or has more than 1.
+            if (empty($masterblog)) {
+                $errors['idsharedblog'] = get_string('sharedblog_invalid', 'oublog');
+            }
+            if (count($masterblog) > 1) {
+                $errors['idsharedblog'] = get_string('sharedblog_invalid_morethan1', 'oublog');
+            }
+            // Cannot be child if it is master.
+            if (!empty($data['cmidnumber'])) {
+                $validatemasterblog = oublog_get_children($data['cmidnumber']);
+                if (!empty($validatemasterblog)) {
+                    $errors['idsharedblog'] = get_string('sharedblog_mastered', 'oublog');
+                }
+            }
+
+            $masterblog = reset($masterblog);
+            // Cannot be master blog if it already child of the other blog.
+            if (!empty($masterblog->idsharedblog)) {
+                $errors['idsharedblog'] = get_string('sharedblog_existed', 'oublog');
+            }
         }
         return $errors;
     }

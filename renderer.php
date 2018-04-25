@@ -65,14 +65,16 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param bool $forexport Export output rendering toggle
      * @param bool $email Email output rendering toggle
      * @param bool $socialshareposition Position social sharing buttons top or bottom of post
+     * @param object $cmmaster master blog course module object
      * @return bool
      */
     public function render_post($cm, $oublog, $post, $baseurl, $blogtype,
             $canmanageposts = false, $canaudit = false, $commentcount = true,
-            $forexport = false, $format = false, $email = false, $socialshareposition = 'top') {
+            $forexport = false, $format = false, $email = false, $socialshareposition = 'top', $cmmaster = null) {
         global $CFG, $USER, $OUTPUT;
         $output = '';
         $modcontext = context_module::instance($cm->id);
+        $filescontext = !empty($cmmaster) ? context_module::instance($cmmaster->id) : context_module::instance($cm->id);
         $referurl = $baseurl;
         // Get rid of any existing tag from the URL as we only support one at a time.
         $baseurl = preg_replace('~&amp;tag=[^&]*~', '', $baseurl);
@@ -96,7 +98,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' => 'oublog-post-top'));
         $output .= html_writer::start_tag('div', array('class' => 'oublog-social-container'));
         $fs = get_file_storage();
-        if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment', $post->id,
+        if ($files = $fs->get_area_files($filescontext->id, 'mod_oublog', 'attachment', $post->id,
                 'timemodified', false)) {
             $output .= html_writer::start_tag('div', array('class' => 'oublog-post-attachments'));
             $output .= html_writer::tag('span', get_string('attachments', 'mod_oublog') . ': ');
@@ -112,7 +114,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     } else {
                         $fileurlbase = '/pluginfile.php';
                     }
-                    $filepath = '/' . $modcontext->id . '/mod_oublog/attachment/'
+                    $filepath = '/' . $filescontext->id . '/mod_oublog/attachment/'
                             . $post->id . '/' . $filename;
                     $path = moodle_url::make_file_url($fileurlbase, $filepath, true);
                     $output .= html_writer::start_tag('div', array('class' => 'oublog-post-attachment'));
@@ -257,10 +259,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $fileurlbase = 'pluginfile.php';
             }
             $post->message = file_rewrite_pluginfile_urls($post->message, $fileurlbase,
-                    $modcontext->id, 'mod_oublog', 'message', $post->id);
+                    $filescontext->id, 'mod_oublog', 'message', $post->id);
         } else {
             require_once($CFG->libdir . '/portfoliolib.php');
-            $post->message = portfolio_rewrite_pluginfile_urls($post->message, $modcontext->id,
+            $post->message = portfolio_rewrite_pluginfile_urls($post->message, $filescontext->id,
                     'mod_oublog', 'message', $post->id, $format);
         }
         $posttextoptions = new stdClass();

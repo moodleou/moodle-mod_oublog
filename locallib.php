@@ -550,14 +550,17 @@ function oublog_edit_post($post, $cm) {
  * @param int $offset
  * @param int $userid
  * @param bool $ignoreprivate set true to not return private posts (global blog only)
+ * @param object $masterblog
  * @return mixed all data to print a list of blog posts
  */
 function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $individualid = -1,
-        $userid = null, $tag = '', $canaudit = false, $ignoreprivate = null) {
+        $userid = null, $tag = '', $canaudit = false, $ignoreprivate = null, $masterblog = null) {
     global $CFG, $USER, $DB;
     $params = array();
+    // Check master blog.
+    $postsoublog = !empty($masterblog) ? $masterblog : $oublog;
     $sqlwhere = "bi.oublogid = ?";
-    $params[] = $oublog->id;
+    $params[] = $postsoublog->id;
     $sqljoin = '';
 
     if (isset($userid)) {
@@ -568,7 +571,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     // Individual blog.
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $oublog->id, $groupid, $individualid, $capable);
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $postsoublog->id, $groupid, $individualid, $capable);
     } else {// No individual blog.
         if (isset($groupid) && $groupid) {
             $sqlwhere .= " AND p.groupid =  ? ";
@@ -678,7 +681,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
 
     // Load ratings.
     require_once($CFG->dirroot.'/rating/lib.php');
-    if ($oublog->assessed != RATING_AGGREGATE_NONE) {
+    if ($oublog->assessed != RATING_AGGREGATE_NONE && $postsoublog->assessed != RATING_AGGREGATE_NONE) {
         $ratingoptions = new stdClass();
         $ratingoptions->context = $context;
         $ratingoptions->component = 'mod_oublog';
@@ -948,19 +951,23 @@ function oublog_get_tags_csv($postid) {
  *
  * @param int $oublogid
  * @param int $oubloginstanceid
+ * @param object $masterblog
  * @return array Tag data
  */
-function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder = 'alpha') {
+function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder = 'alpha',
+        $masterblog = null) {
     global $CFG, $DB, $USER;
     $tags = array();
     $params = array();
+    // Check master blog.
+    $tagsoublog = !empty($masterblog) ? $masterblog : $oublog;
     $sqlwhere = "bi.oublogid = ? ";
-    $params[] = $oublog->id;
+    $params[] = $tagsoublog->id;
 
     // If individual blog.
     if ($individualid > -1) {
         $capable = oublog_individual_has_permissions($cm, $oublog, $groupid, $individualid);
-        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $oublog->id, $groupid,
+        oublog_individual_add_to_sqlwhere($sqlwhere, $params, 'bi.userid', $tagsoublog->id, $groupid,
                 $individualid, $capable);
     } else {
         // No individual blog.
@@ -1038,14 +1045,16 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
  * @param int $groupid
  * @param object $cm
  * @param int $oubloginstanceid
+ * @param object $masterblog
  * @return string Tag cloud HTML
  */
-function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder) {
+function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder,
+        $masterblog = null) {
     $cloud = '';
     $urlparts= array();
 
     $baseurl = oublog_replace_url_param($baseurl, 'tag');
-    if (!$tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, $tagorder)) {
+    if (!$tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, $tagorder, $masterblog)) {
         return($cloud);
     }
 
@@ -1762,22 +1771,25 @@ function oublog_get_feedurl($format, $oublog, $bloginstance, $groupid, $comments
  * @param int $groupid
  * @param int $postid
  * @param object $context
+ * @param object $masterblog
  * @return string HTML of block
  * @uses $CFG
  */
-function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $individualid=-1) {
+function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $individualid=-1, $masterblog = null) {
     global $CFG, $OUTPUT;
 
     if (!$CFG->enablerssfeeds) {
         return(false);
     }
+    // Check master blog.
+    $feedoublog = !empty($masterblog) ? $masterblog : $oublog;
 
-    $blogurlatom = oublog_get_feedurl('atom',  $oublog, $bloginstance, $groupid, false, false, $cm, $individualid);
-    $blogurlrss = oublog_get_feedurl('rss',  $oublog, $bloginstance, $groupid, false, false, $cm, $individualid);
+    $blogurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid);
+    $blogurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid);
 
     if (!is_string($bloginstance)) {
-        $commentsurlatom = oublog_get_feedurl('atom',  $oublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
-        $commentsurlrss = oublog_get_feedurl('rss',  $oublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
+        $commentsurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
+        $commentsurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
     }
 
     $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog', oublog_get_displayname($oublog));
@@ -2781,6 +2793,61 @@ function oublog_get_post_extranav($post, $link=true) {
     }
 }
 
+/**
+ * Get oublog content where the blog activity idnumber matches that requested.
+ *
+ * @param string $idshared Id shared of OUblog.
+ * @param bool $printerror check to throw error.
+ * @return object OUblog master.
+ */
+function oublog_get_master($idshared, $printerror = true) {
+    global $DB;
+
+    $sql = 'SELECT b.*
+              FROM {course_modules} cm
+              JOIN {oublog} b on cm.instance = b.id
+             WHERE cm.idnumber = ?';
+
+    // Get masterblog from idshared.
+    $result = $DB->get_records_sql($sql, [$idshared]);
+
+    if ($printerror) {
+        // Cannot get master if it doesn't have ID number or has more than 1.
+        if (empty($result) || count($result) > 1) {
+            throw new moodle_exception('sharedblog_error', 'oublog');
+        }
+
+        $result = reset($result);
+        // Cannot get master blog if it already child of the other blog.
+        if (!empty($result->idsharedblog)) {
+            throw new moodle_exception('sharedblog_existed', 'oublog');
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * Get child from idnumber of master blog.
+ *
+ * @param string $idnumber Id idnumber of OUblog.
+ * @return array object OUblog child.
+ */
+function oublog_get_children($idnumber) {
+    global $DB;
+    $sql = 'SELECT b.*
+              FROM {course_modules} cm
+              JOIN {oublog} b on cm.instance = b.id
+              JOIN {modules} m ON cm.module = m.id
+             WHERE b.idsharedblog = ?
+               AND m.name = ?';
+
+    // Get child from idnumber.
+    $result = $DB->get_records_sql($sql, [$idnumber, 'oublog']);
+
+    return $result;
+}
+
 class oublog_portfolio_caller extends portfolio_module_caller_base {
 
     protected $postid;
@@ -3015,7 +3082,20 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='', $n
     if (!oublog_search_installed()) {
         return '';
     }
-    global $OUTPUT;
+    global $OUTPUT, $DB;
+
+    // Check if search in shared blog.
+    if ($name == 'id') {
+        $cm = get_coursemodule_from_id('oublog', $value);
+        $oublog = $DB->get_record('oublog', ['id' => $cm->instance]);
+        if ($oublog->individual && $oublog->idsharedblog) {
+            // Get master blog.
+            $masterblog = oublog_get_master($oublog->idsharedblog);
+            // Get cmid of master blog.
+            $cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id);
+            $value = $cmmaster->id;
+        }
+    }
     $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
     $out .= html_writer::start_tag('div');
     $out .= html_writer::tag('label', $strblogsearch . ' ', array('for' => 'oublog_searchquery'));

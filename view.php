@@ -187,6 +187,8 @@ $individualdetails = 0;
 
 // Set up whether the group selector should display.
 $showgroupselector = true;
+$masterblog = null;
+$cmmaster = null;
 if ($oublog->individual) {
     // If separate individual and visible group, do not show groupselector
     // unless the current user has permission.
@@ -204,11 +206,24 @@ if ($oublog->individual) {
             $canpost = false;
         }
     }
+
+    // Get master blog.
+    if ($oublog->idsharedblog) {
+        $masterblog = oublog_get_master($oublog->idsharedblog);
+
+        // Get cm master.
+        if (!$cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id)) {
+            throw new moodle_exception('invalidcoursemodule');
+        }
+    }
+
 }
+// Get current blog.
+$postsoublog = !empty($masterblog) ? $masterblog : $oublog;
 
 // Get Posts.
 list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, $currentgroup,
-        $currentindividual, $oubloguser->id, $tag, $canaudit);
+        $currentindividual, $oubloguser->id, $tag, $canaudit, null, $masterblog);
 
 
 $hideunusedblog = !$posts && !$canpost && !$canaudit;
@@ -311,7 +326,7 @@ if (!$hideunusedblog) {
 
     // Tag Cloud.
     if ($tags = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm,
-            $oubloginstanceid, $currentindividual, $tagorder)) {
+            $oubloginstanceid, $currentindividual, $tagorder, $masterblog)) {
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-tags';
         $bc->attributes['class'] = 'oublog-sideblock block';
@@ -323,7 +338,7 @@ if (!$hideunusedblog) {
     }
 
     // Links.
-    $links = oublog_get_links($oublog, $oubloginstance, $context);
+    $links = oublog_get_links($postsoublog, $oubloginstance, $context);
     if ($links) {
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-links';
@@ -359,7 +374,8 @@ if (!$hideunusedblog) {
     }
 
     // Feeds.
-    if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false, $cm, $currentindividual)) {
+    if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false, $cm, $currentindividual,
+                $masterblog)) {
         $feedicon = ' <img src="'.$OUTPUT->image_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-feeds';
@@ -537,8 +553,8 @@ if ($posts) {
     $retnurl = $returnurl . '&page=' . $page;
     foreach ($posts as $post) {
         $post->row = $rowcounter;
-        echo $oublogoutput->render_post($cm, $oublog, $post, $retnurl, $blogtype,
-                $canmanageposts, $canaudit, true, false);
+        echo $oublogoutput->render_post($cm, $postsoublog, $post, $retnurl, $blogtype,
+                $canmanageposts, $canaudit, true, false, false, false, 'top', $cmmaster);
         $rowcounter++;
     }
     if ($recordcount > $postperpage) {
@@ -587,7 +603,7 @@ $event->add_record_snapshot('course_modules', $cm);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
-$views = oublog_update_views($oublog, $oubloginstance, $currentindividual, $currentgroup);
+$views = oublog_update_views($postsoublog, $oubloginstance, $currentindividual, $currentgroup);
 
 // Finish the page.
 echo "<div class=\"clearer\"></div><div class=\"oublog-views\">$strviews $views</div></div>";
