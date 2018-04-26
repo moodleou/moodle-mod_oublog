@@ -26,6 +26,7 @@ require_once("../../config.php");
 require_once("locallib.php");
 
 $editid = required_param('edit', PARAM_INT); // Blog post edit ID.
+$cmid = optional_param('cmid', null, PARAM_INT);
 
 if (!$edit = $DB->get_record('oublog_edits', array('id' => $editid))) {
     print_error('invalidedit', 'oublog');
@@ -48,13 +49,29 @@ if (!$oublog = $DB->get_record("oublog", array('id' => $cm->instance))) {
 }
 
 $context = context_module::instance($cm->id);
-oublog_check_view_permissions($oublog, $context, $cm);
+$contextmaster = null;
+$childdata = oublog_get_blog_data_base_on_cmid_of_childblog($cmid, $oublog);
+$childcm = null;
+$childcourse = null;
+$childoublog = null;
+if (!empty($childdata)) {
+    $contextmaster = $context;
+    $context = $childdata['context'];
+    $childcm = $childdata['cm'];
+    $childcourse = $childdata['course'];
+    $childoublog = $childdata['ousharedblog'];
+    oublog_check_view_permissions($childdata['ousharedblog'], $childdata['context'], $childdata['cm']);
+} else {
+    oublog_check_view_permissions($oublog, $context, $cm);
+}
+$correctcontext = $contextmaster ? $contextmaster : $context;
 
 $url = new moodle_url('/mod/oublog/viewedit.php', array('edit' => $editid));
 $PAGE->set_url($url);
 
 // Check security.
-$canpost            = oublog_can_post($oublog, $post->userid, $cm);
+$canpost = $childdata ? oublog_can_post($childoublog, $post->userid, $childcm) :
+            oublog_can_post($oublog, $post->userid, $cm);
 $canmanageposts     = has_capability('mod/oublog:manageposts', $context);
 $canmanagecomments  = has_capability('mod/oublog:managecomments', $context);
 $canaudit           = has_capability('mod/oublog:audit', $context);
@@ -66,9 +83,8 @@ $strtags        = get_string('tags', 'oublog');
 $strviewedit    = get_string('viewedit', 'oublog');
 
 // Set-up groups.
-$currentgroup = oublog_get_activity_group($cm, true);
-$groupmode = oublog_get_activity_groupmode($cm, $course);
-
+$currentgroup = oublog_get_activity_group($childcm ? $childcm : $cm, true);
+$groupmode = oublog_get_activity_groupmode($childcm ? $childcm : $cm, $childcourse ? $childcourse : $course);
 
 // Print the header.
 if ($oublog->global) {
@@ -80,29 +96,30 @@ if ($oublog->global) {
     }
 
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id' => $oubloguser->id)));
-    $PAGE->navbar->add(format_string($oublog->name), new moodle_url('/mod/oublog/view.php', array('user' => $oubloguser->id)));
+    $PAGE->navbar->add(format_string($childoublog ? $childoublog->name : $oublog->name),
+        new moodle_url('/mod/oublog/view.php', array('user' => $oubloguser->id)));
 }
-
+$navbarurl = $cmid ?  new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id,
+            'cmid' => $cmid)) : new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id, 'cmid' => $cmid));
 if (!empty($post->title)) {
-    $PAGE->navbar->add(format_string($post->title), new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id)));
+    $PAGE->navbar->add(format_string($post->title), $navbarurl);
 } else {
-    $PAGE->navbar->add(shorten_text(format_string($post->message, 30)),
-            new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id)));
+    $PAGE->navbar->add(shorten_text(format_string($post->message, 30)), $navbarurl);
 }
 
 $PAGE->navbar->add($strviewedit);
-$PAGE->set_title(format_string($oublog->name));
-$PAGE->set_heading(format_string($course->fullname));
+$PAGE->set_title(format_string($childoublog ? $childoublog->name : $oublog->name));
+$PAGE->set_heading(format_string(!empty($childcourse->fullname) ? $childcourse->fullname : $course->fullname));
 
 $renderer = $PAGE->get_renderer('mod_oublog');
-$renderer->pre_display($cm, $oublog, 'viewedit');
+$renderer->pre_display($childcm ? $childcm : $cm, $childoublog ? $childoublog : $oublog, 'viewedit');
 
 echo $OUTPUT->header();
 
 // Print the main part of the page.
 echo '<div class="oublog-topofpage"></div>';
 
-echo $renderer->render_header($cm, $oublog, 'viewedit');
+echo $renderer->render_header($childcm ? $childcm : $cm, $childoublog ? $childoublog : $oublog, 'viewedit');
 
 // Print blog posts.
 ?>
@@ -111,17 +128,19 @@ echo $renderer->render_header($cm, $oublog, 'viewedit');
         <h3><?php print format_string($edit->oldtitle) ?></h3>
         <?php
         $fs = get_file_storage();
-        if ($files = $fs->get_area_files($context->id, 'mod_oublog', 'edit', $edit->id, "timemodified", false)) {
+        if ($files = $fs->get_area_files($correctcontext->id,
+            'mod_oublog', 'edit', $edit->id, "timemodified", false)) {
             echo '<div class="oublog-post-attachments">';
             foreach ($files as $file) {
+                $cmparam = $cmid ? '?cmid=' . $cmid : null;
                 $filename = $file->get_filename();
                 $mimetype = $file->get_mimetype();
                 $iconimage = '<img src="'.$OUTPUT->image_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.
                         $mimetype.'" />';
-                $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$context->id.'/mod_oublog/edit/'.
+                $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$correctcontext->id .'/mod_oublog/edit/' .
                         $edit->id.'/'.$filename);
                 echo "<a href=\"$path\">$iconimage</a> ";
-                echo "<a href=\"$path\">".s($filename)."</a><br />";
+                echo "<a href=\"$path" . "$cmparam\">".s($filename)."</a><br />";
             }
             echo '</div>';
         }
@@ -131,7 +150,8 @@ echo $renderer->render_header($cm, $oublog, 'viewedit');
         </div>
         <p>
 <?php
-$text = file_rewrite_pluginfile_urls($edit->oldmessage, 'pluginfile.php', $context->id, 'mod_oublog',
+$text = file_rewrite_pluginfile_urls($edit->oldmessage, 'pluginfile.php',
+        $correctcontext->id, 'mod_oublog',
         'message', $edit->postid);
 print format_text($text, FORMAT_HTML);
 ?>

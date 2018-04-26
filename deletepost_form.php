@@ -27,6 +27,7 @@ class mod_oublog_deletepost_form extends moodleform {
 
     public function definition() {
         $mform =& $this->_form;
+        $cmid = $this->_customdata['cmid'];
 
         // Header.
         $mform->addElement('header', 'general', get_string('deleteandemail', 'oublog'));
@@ -68,6 +69,8 @@ class mod_oublog_deletepost_form extends moodleform {
         $mform->addElement('hidden', 'confirm', 1);
         $mform->setType('confirm', PARAM_INT);
 
+        $mform->addElement('hidden', 'cmid', $cmid);
+        $mform->setType('cmid', PARAM_INT);
         // Add some buttons.
         $this->add_action_buttons(true, get_string('sendanddelete', 'oublog'));
 

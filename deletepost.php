@@ -29,6 +29,7 @@ $confirm = optional_param('confirm', 0, PARAM_INT);// Confirm that it is ok to d
 $delete = optional_param('delete', 0, PARAM_INT);
 $email = optional_param('email', 0, PARAM_INT);    // Email author.
 $referurl = optional_param('referurl', 0, PARAM_LOCALURL);
+$cmid = optional_param('cmid', null, PARAM_INT);
 
 if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
     print_error('invalidblog', 'oublog');
@@ -48,8 +49,20 @@ $PAGE->set_url($url);
 
 // Check security.
 $context = context_module::instance($cm->id);
-oublog_check_view_permissions($oublog, $context, $cm);
-
+$childdata = oublog_get_blog_data_base_on_cmid_of_childblog($cmid, $oublog);
+$childoublog = null;
+$childcourse = null;
+$childcm = null;
+if (!empty($childdata)) {
+    $context = $childdata['context'];
+    $childoublog = $childdata['ousharedblog'];
+    $childcourse = $childdata['course'];
+    $childcm = $childdata['cm'];
+    oublog_check_view_permissions($childdata['ousharedblog'], $childdata['context'], $childdata['cm']);
+} else {
+    oublog_check_view_permissions($oublog, $context, $cm);
+}
+$correctglobal = isset($childoublog->global) ? $childoublog->global : $oublog->global;
 $postauthor=$DB->get_field_sql("
 SELECT
     i.userid
@@ -63,7 +76,7 @@ if ($postauthor!=$USER->id) {
 
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
-if ($oublog->global) {
+if ($correctglobal) {
     $blogtype = 'personal';
     $oubloguser = $USER;
     $viewurl = new moodle_url('/mod/oublog/view.php', array('user' => $postauthor));
@@ -73,10 +86,10 @@ if ($oublog->global) {
     // Print the header.
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php',
             array('id' => $oubloguser->id)));
-    $PAGE->navbar->add(format_string($oublog->name));
+    $PAGE->navbar->add(format_string(!empty($childoublog->name) ? $childoublog->name : $oublog->name));
 } else {
     $blogtype = 'course';
-    $viewurl = new moodle_url('/mod/oublog/view.php', array('id' => $cm->id));
+    $viewurl = new moodle_url('/mod/oublog/view.php', array('id' => $childcm ? $childcm->id : $cm->id));
     if (isset($referurl)) {
         $viewurl = new moodle_url($referurl);
     }
@@ -86,7 +99,7 @@ if ($email) {
     // Then open and process the form.
     require_once($CFG->dirroot . '/mod/oublog/deletepost_form.php');
     $customdata = (object)array('blog' => $blog, 'post' => $postid,
-            'delete' => $delete, 'email' => $email, 'referurl' => $viewurl);
+            'delete' => $delete, 'email' => $email, 'referurl' => $viewurl, 'cmid' => $cmid);
     $mform = new mod_oublog_deletepost_form('deletepost.php', $customdata);
     if ($mform->is_cancelled()) {
         // Form is cancelled, redirect back to the blog.
@@ -103,7 +116,7 @@ if ($email) {
             $post->title = get_string('deletedblogpost', 'oublog');
         }
         $messagepost = $oublogoutput->render_post($cm, $oublog, $post, $viewurl, $blogtype,
-                $canmanageposts, $canaudit, false, false, false, true);
+                $canmanageposts, $canaudit, false, false, false, true, 'top', $cm, $cmid);
 
         // Set up the email message detail.
         $messagetext = $submitted->message['text'];
@@ -164,15 +177,15 @@ if ($email) {
         if (!isset($post->title) || empty($post->title)) {
             $post->title = get_string('deletedblogpost', 'oublog');
         }
-        $displayname = oublog_get_displayname($oublog, true);
+        $displayname = oublog_get_displayname($childoublog ? $childoublog : $oublog, true);
         // Prepare the object for the emailcontenthtml get_string.
         $emailmessage = new stdClass;
         $emailmessage->subject = $post->title;
-        $emailmessage->blog = $oublog->name;
+        $emailmessage->blog = $childoublog ? $childoublog->name : $oublog->name;
         $emailmessage->activityname = $displayname;
         $emailmessage->firstname = $USER->firstname;
         $emailmessage->lastname = $USER->lastname;
-        $emailmessage->course = $COURSE->fullname;
+        $emailmessage->course = !empty($childcourse->fullname) ? $childcourse->fullname : $COURSE->fullname;
         $emailmessage->deleteurl = $CFG->wwwroot . '/mod/oublog/viewpost.php?&post=' . $post->id;
         $formdata = new stdClass;
         $messagetext = get_string('emailcontenthtml', 'oublog', $emailmessage);
@@ -184,15 +197,15 @@ if ($email) {
     }
 } else {
     if (!$confirm) {
-        $PAGE->set_title(format_string($oublog->name));
-        $PAGE->set_heading(format_string($course->fullname));
+        $PAGE->set_title(format_string(!empty($childoublog->name) ? $childoublog->name : $oublog->name));
+        $PAGE->set_heading(format_string(!empty($childcourse->fullname) ? $childcourse->fullname : $course->fullname));
         echo $OUTPUT->header();
         $confirmdeletestring = get_string('confirmdeletepost', 'oublog');
         $confirmstring = get_string('deleteemailpostdescription', 'oublog');
 
         $deletebutton = new single_button(new moodle_url('/mod/oublog/deletepost.php',
                 array('blog' => $blog, 'post' => $postid, 'delete' => '1',
-                        'confirm' => '1', 'referurl' => $viewurl)), get_string('delete'), 'post');
+                        'confirm' => '1', 'referurl' => $viewurl, 'cmid' => $cmid)), get_string('delete'), 'post');
         $cancelbutton = new single_button($viewurl, get_string('cancel'), 'get');
 
         if ($USER->id == $post->userid) {

@@ -25,7 +25,8 @@ require_once($CFG->libdir . '/completionlib.php');
 
 $commentid  = required_param('comment', PARAM_INT);    // Comment ID to delete
 $confirm = optional_param('confirm', 0, PARAM_INT);    // Confirm that it is ok to delete comment
-
+$cmid = optional_param('cmid', null, PARAM_INT);
+$referurl = optional_param('referurl', null, PARAM_LOCALURL);
 if (!$comment = $DB->get_record('oublog_comments', array('id'=>$commentid))) {
     print_error('invalidcomment',  'oublog');
 }
@@ -50,16 +51,29 @@ $PAGE->set_url($url);
 
 // Check security.
 $context = context_module::instance($cm->id);
-oublog_check_view_permissions($oublog, $context, $cm);
+$childdata = oublog_get_blog_data_base_on_cmid_of_childblog($cmid, $oublog);
+$childoublog = null;
+$childcm = null;
+$childcourse = null;
+if (!empty($childdata)) {
+    $context = $childdata['context'];
+    $childoublog = $childdata['ousharedblog'];
+    $childcm = $childdata['cm'];
+    $childcourse = $childdata['course'];
+    oublog_check_view_permissions($childdata['ousharedblog'], $childdata['context'], $childdata['cm']);
+} else {
+    oublog_check_view_permissions($oublog, $context, $cm);
+}
+$correctglobal = isset($childoublog->global) ? $childoublog->global : $oublog->global;
 
 // You can always delete your own comments, or any comment on your own
 // personal blog
 if (!($comment->userid==$USER->id ||
-    ($oublog->global && $post->userid == $USER->id))) {
+    ($correctglobal && $post->userid == $USER->id))) {
     require_capability('mod/oublog:managecomments', $context);
 }
 
-if ($oublog->global) {
+if ($correctglobal) {
     $blogtype = 'personal';
     // Get blog user from the oublog_get_post result (to save making an
     // extra query); this is only used to display their name anyhow
@@ -71,8 +85,7 @@ if ($oublog->global) {
 } else {
     $blogtype = 'course';
 }
-$viewurl = new moodle_url('/mod/oublog/viewpost.php', array('post'=>$post->id));
-
+$viewurl = !empty($referurl) ? $referurl : new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
 if (!empty($commentid) && !empty($confirm)) {
     $timedeleted = time();
     $updatecomment = (object)array(
@@ -82,8 +95,11 @@ if (!empty($commentid) && !empty($confirm)) {
     $DB->update_record('oublog_comments', $updatecomment);
 
     // Inform completion system, if available
-    $completion = new completion_info($course);
-    if ($completion->is_enabled($cm) && ($oublog->completioncomments)) {
+    $completion = new completion_info($childcourse ? $childcourse : $course);
+    $condition = $childdata ? ($completion->is_enabled($childcm) && ($childoublog->completioncomments) &&
+        $completion->is_enabled($cm) && ($oublog->completioncomments)) :
+        ($completion->is_enabled($cm) && ($oublog->completioncomments));
+    if ($condition) {
         $completion->update_state($cm, COMPLETION_INCOMPLETE, $comment->userid);
     }
 
@@ -108,14 +124,15 @@ $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
 
 // Print the header.
-$PAGE->set_title(format_string($oublog->name));
-$PAGE->set_heading(format_string($course->fullname));
+$PAGE->set_title(format_string(!empty($childoublog->name) ? $childoublog->name : $oublog->name));
+$PAGE->set_heading(format_string(!empty($childcourse->fullname) ? $childcourse->fullname : $course->fullname));
 if ($blogtype == 'personal') {
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id'=>$oubloguser->id)));
     $PAGE->navbar->add(format_string($oublog->name));
 }
 echo $OUTPUT->header();
 echo $OUTPUT->confirm(get_string('confirmdeletecomment', 'oublog'),
-                 new moodle_url('/mod/oublog/deletecomment.php', array('comment'=>$commentid, 'confirm'=>'1')),
-                 $viewurl);
+    new moodle_url('/mod/oublog/deletecomment.php', array('comment'=>$commentid, 'confirm'=>'1',
+    'referurl' => $referurl, 'cmid' => $cmid)),
+    $viewurl);
 echo $OUTPUT->footer();

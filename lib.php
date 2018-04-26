@@ -797,14 +797,14 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
     $fullpath = "/$context->id/mod_oublog/$filearea/$fileid/$relativepath";
-
     if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
         return false;
     }
-
     // Make sure we're allowed to see it...
     // Check if coming from webservice - if so always allow.
     $ajax = constant('AJAX_SCRIPT') ? true : false;
+    $cmid = optional_param('cmid', null, PARAM_INT);
+    $context = $cmid ? context_module::instance($cmid) : $context;
     if ($filearea != 'summary' && !$ajax && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
         return false;
     }

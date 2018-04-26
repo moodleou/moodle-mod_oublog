@@ -34,6 +34,7 @@ class mod_oublog_post_form extends moodleform {
         $maxbytes      = $this->_customdata['maxbytes'];
         $maxattachments = $this->_customdata['maxattachments'];
         $referurl = $this->_customdata['referurl'];
+        $cmid = $this->_customdata['cmid'];
         $this->restricttags = false;
         $this->requiretags = false;
 
@@ -142,6 +143,9 @@ class mod_oublog_post_form extends moodleform {
 
         $mform->addElement('hidden', 'referurl', $referurl);
         $mform->setType('referurl', PARAM_LOCALURL);
+
+        $mform->addElement('hidden', 'cmid', $cmid);
+        $mform->setType('cmid', PARAM_INT);
 
     }
 

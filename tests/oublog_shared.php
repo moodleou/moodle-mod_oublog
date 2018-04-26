@@ -100,4 +100,40 @@ class oublog_shared extends oublog_test_lib
         $this->assertEquals('idmaster2', $result[1][0]->idsharedblog);
         $this->assertEquals('idmaster', $result[0][0]->idsharedblog);
     }
+
+    /**
+     * Test get data from shared blog base on cmid.
+     */
+    public function test_oublog_get_blog_data_base_on_cmid_of_childblog() {
+        global $DB;
+        // Same course.
+        $blog1 = $this->get_new_oublog($this->course1,
+                ['name' => 'Blog1', 'idnumber' => 'idmaster']);
+        // Create blog2 has idsharedblog is idnumber of blog1.
+        $blog2 = $this->get_new_oublog($this->course1,
+                ['name' => 'Blog2',
+                'idsharedblog' => 'idmaster',
+                'individual' => OUBLOG_VISIBLE_INDIVIDUAL_BLOGS
+                ]
+        );
+        $result = oublog_get_blog_data_base_on_cmid_of_childblog($blog2->cm->id, $blog1);
+        $expected['context'] = context_module::instance($blog2->cm->id);
+        list($expected['course'], $expected['cm']) = get_course_and_cm_from_cmid($blog2->cm->id, 'oublog');
+        $expected['ousharedblog'] = $DB->get_record('oublog', array('id' => $expected['cm']->instance));
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test add cmid to img tags in html.
+     */
+    public function test_oublog_add_cmid_to_tag_atrribute() {
+        global $CFG;
+        $link = $CFG->wwwroot . '/abcd/img/test';
+        $html = 'test html <img src="' . $link . '" /> <img src="test.com" />';
+        $result = oublog_add_cmid_to_tag_atrribute(1, $html, 'img', 'src');
+        $dom = new DOMDocument();
+        $dom->loadHTML('test html <img src="' . $link .'?cmid=1" /> <img src="test.com" />');
+        $expected = $dom->saveHTML();
+        $this->assertEquals($expected, $result);
+    }
 }

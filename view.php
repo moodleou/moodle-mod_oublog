@@ -197,16 +197,6 @@ if ($oublog->individual) {
         $showgroupselector = false;
     }
 
-    $canpost = true;
-    $individualdetails = oublog_individual_get_activity_details($cm, $returnurl, $oublog,
-            $currentgroup, $context);
-    if ($individualdetails) {
-        $currentindividual = $individualdetails->activeindividual;
-        if (!$individualdetails->newblogpost) {
-            $canpost = false;
-        }
-    }
-
     // Get master blog.
     if ($oublog->idsharedblog) {
         $masterblog = oublog_get_master($oublog->idsharedblog);
@@ -214,6 +204,16 @@ if ($oublog->individual) {
         // Get cm master.
         if (!$cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id)) {
             throw new moodle_exception('invalidcoursemodule');
+        }
+    }
+
+    $canpost = true;
+    $individualdetails = oublog_individual_get_activity_details($cmmaster ? $cmmaster : $cm, $returnurl, $oublog,
+                $currentgroup, $context);
+    if ($individualdetails) {
+        $currentindividual = $individualdetails->activeindividual;
+        if (!$individualdetails->newblogpost) {
+            $canpost = false;
         }
     }
 
@@ -338,7 +338,7 @@ if (!$hideunusedblog) {
     }
 
     // Links.
-    $links = oublog_get_links($postsoublog, $oubloginstance, $context);
+    $links = oublog_get_links($postsoublog, $oubloginstance, $context, $cm->id);
     if ($links) {
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-links';
@@ -421,8 +421,8 @@ if (!empty($CFG->enableportfolios) && (has_capability('mod/oublog:exportpost', $
         }
 
         if (isset($posts)) {
-            $oublogoutput->render_export_button_top($context, $oublog, $post, $oubloguserid,
-                    $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm, $course->id);
+            $oublogoutput->render_export_button_top($context, $postsoublog, $post, $oubloguserid,
+                        $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm, $course->id, $masterblog ? 1 : 0);
         }
     }
 }
@@ -514,7 +514,8 @@ echo '<div id="oublogbuttons">';
 if ($showpostbutton && oublog_can_post_now($oublog, $context)) {
     echo '<div id="addpostbutton">';
     echo $OUTPUT->single_button(new moodle_url('/mod/oublog/editpost.php',
-            array('blog' => $cm->instance)), $straddpost, 'get');
+        array('blog' => $cmmaster ? $cmmaster->instance : $cm->instance,
+                'cmid' => $masterblog ? $cm->id : 0)), $straddpost, 'get');
     echo '</div>';
     if ($oublog->allowimport && ($oublog->global ||
             $oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS)) {
@@ -554,7 +555,7 @@ if ($posts) {
     foreach ($posts as $post) {
         $post->row = $rowcounter;
         echo $oublogoutput->render_post($cm, $postsoublog, $post, $retnurl, $blogtype,
-                $canmanageposts, $canaudit, true, false, false, false, 'top', $cmmaster);
+                $canmanageposts, $canaudit, true, false, false, false, 'top', $cmmaster, $masterblog ? $cm->id : null);
         $rowcounter++;
     }
     if ($recordcount > $postperpage) {
@@ -568,8 +569,8 @@ if ($posts) {
     // Will need to be passed enough details on the blog so it can accurately work out what
     // posts are displayed (as oublog_get_posts above).
     if (!empty($CFG->enableportfolios) && (has_capability('mod/oublog:exportpost', $context))) {
-        echo $oublogoutput->render_export_button_bottom($context, $oublog, $post, $oubloguserid,
-                $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm);
+        echo $oublogoutput->render_export_button_bottom($context, $postsoublog, $post, $oubloguserid,
+                $canaudit, $offset, $currentgroup, $currentindividual, $tagid, $cm, $masterblog ? 1 : 0);
     }
 }
 // Print information allowing the user to log in if necessary, or letting

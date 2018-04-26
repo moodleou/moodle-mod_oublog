@@ -1290,9 +1290,10 @@ function oublog_require_userblog_permission($capability, $oublog, $oubloginstanc
  * @param object $oublog
  * @param object $oubloginstance
  * @param object $context
+ * @param int $cmid
  * @return string HTML on success, false on failure
  */
-function oublog_get_links($oublog, $oubloginstance, $context) {
+function oublog_get_links($oublog, $oubloginstance, $context, $cmid = null) {
     global $CFG, $DB, $OUTPUT;
 
     $strmoveup      = get_string('moveup');
@@ -1300,6 +1301,8 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
     $stredit        = get_string('edit');
     $strdelete      = get_string('delete');
 
+    // Check master blog.
+    $cmparam = $cmid ? '&amp;cmid=' . $cmid : '';
     $canmanagelinks = oublog_has_userblog_permission('mod/oublog:managelinks', $oublog, $oubloginstance, $context);
 
     if ($oublog->global) {
@@ -1342,10 +1345,10 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
                     $html .= '</div>';
                     $html .= '</form>';
                 }
-                $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.
+                $html .= '<a href="editlink.php?blog=' . $oublog->id . '&amp;link='.$link->id . $cmparam .'" title="'.
                     $stredit.'"><img src="'.$OUTPUT->image_url('t/edit').'" alt="'.$stredit.
                     '" class="iconsmall" /></a>';
-                $html .= '<a href="deletelink.php?blog='.$oublog->id.'&amp;link='.$link->id.'" title="'.
+                $html .= '<a href="deletelink.php?blog=' . $oublog->id . '&amp;link=' . $link->id . $cmparam .'" title="'.
                     $strdelete.'"><img src="'.$OUTPUT->image_url('t/delete').'" alt="'.$strdelete.
                     '" class="iconsmall" /></a>';
             }
@@ -1356,9 +1359,11 @@ function oublog_get_links($oublog, $oubloginstance, $context) {
 
     if ($canmanagelinks) {
         if ($oublog->global) {
-            $html .= '<a href="editlink.php?blog='.$oublog->id.'&amp;bloginstance='.$oubloginstance->id.'" class="oublog-links">'.get_string('addlink', 'oublog').'</a>';
+            $html .= '<a href="editlink.php?blog=' . $oublog->id . '&amp;bloginstance=' . $oubloginstance->id .
+                $cmparam .'" class="oublog-links">' . get_string('addlink', 'oublog').'</a>';
         } else {
-            $html .= '<a href="editlink.php?blog='.$oublog->id.'"  class="oublog-links">'.get_string('addlink', 'oublog').'</a>';
+            $html .= '<a href="editlink.php?blog=' . $oublog->id .
+                $cmparam . '"  class="oublog-links">' . get_string('addlink', 'oublog').'</a>';
         }
     }
 
@@ -2778,11 +2783,14 @@ function oublog_approve_comment($mcomment, $approve) {
  * Gets the extra navigation needed for pages relating to a post.
  * @param object $post Moodle database object for post
  * @param bool $link True if post name should be a link
+ * @param int $cmid course module id for shared blog
  */
-function oublog_get_post_extranav($post, $link=true) {
+function oublog_get_post_extranav($post, $link = true, $cmid = null) {
     global $PAGE;
-    if ($link) {
-        $url = new moodle_url('/mod/oublog/viewpost.php', array('post'=>$post->id));
+    if ($link && $cmid) {
+        $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id, 'cmid' => $cmid));
+    } else if ($link) {
+        $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
     } else {
         $url = null;
     }
@@ -2848,10 +2856,60 @@ function oublog_get_children($idnumber) {
     return $result;
 }
 
+/**
+ * Get context module base on cmid of child blog
+ *
+ * @param int $cmid course module id
+ * @param object $oublog master oublog object
+ * @return array array of course,cm,context of child blog.
+ */
+function oublog_get_blog_data_base_on_cmid_of_childblog($cmid, $oublog) {
+    global $DB;
+    $result = array();
+    if ($cmid) {
+        // Have original child blog course module id and not a child blog.
+        list($course, $cm) = get_course_and_cm_from_cmid($cmid, 'oublog');
+        if (!empty($cm) && empty($oublog->idsharedblog)) {
+            $result['cm'] = $cm;
+            $result['course'] = $course;
+            $result['ousharedblog'] = $DB->get_record('oublog', array('id' => $result['cm']->instance));
+            $result['context'] = context_module::instance($cmid);
+        }
+    }
+    return $result;
+}
+
+/**
+ * Add cmid to internal image in html.
+ *
+ * @param int $cmid course module id
+ * @param string $html html content contains image tag.
+ * @return string html content images with cmid param.
+ */
+function oublog_add_cmid_to_tag_atrribute($cmid, $html, $tag, $attribute, $paramspecialchar = '?') {
+    global $CFG;
+    // We should add cmid for image in shared blog.
+    $doc = new DOMDocument();
+    $doc->loadHTML($html);
+    $tags = $doc->getElementsByTagName($tag);
+    if (!empty($tags)) {
+        foreach ($tags as $tag) {
+            // It should be internal image.
+            if (strpos($tag->getAttribute($attribute), $CFG->wwwroot) !== false) {
+                $newattr = $tag->getAttribute($attribute) . $paramspecialchar . 'cmid=' . $cmid;
+                $tag->setAttribute($attribute, $newattr);
+            }
+        }
+        $html = $doc->saveHTML();
+    }
+    return $html;
+}
+
 class oublog_portfolio_caller extends portfolio_module_caller_base {
 
     protected $postid;
     protected $attachment;
+    protected $cmsharedblogid;
 
     private $post;
     private $keyedfiles = array(); // keyed on entry
@@ -2863,6 +2921,7 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         return array(
             'postid'       => false,
             'attachment'   => false,
+            'cmsharedblogid' => false,
         );
     }
     /**
@@ -2926,6 +2985,11 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         } else {
             $this->add_format(PORTFOLIO_FORMAT_PLAINHTML);
         }
+        // We should get cm in case this is sharedblog after get all files or images from master context.
+        if (!empty($this->cmsharedblogid)) {
+            $shareblogdata = oublog_get_blog_data_base_on_cmid_of_childblog($this->cmsharedblogid, $this->oublog);
+            $this->cm = !empty($shareblogdata['cm']) ? $shareblogdata['cm'] : $this->cm;
+        }
     }
 
     /**
@@ -2934,7 +2998,8 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
      */
     public function get_return_url() {
         global $CFG;
-        return $CFG->wwwroot . '/mod/oublog/viewpost.php?post=' . $this->post->id;
+        $sharedblogparam = $this->cmsharedblogid ? '&amp;cmid=' . $this->cmsharedblogid : '';
+        return $CFG->wwwroot . '/mod/oublog/viewpost.php?post=' . $this->post->id . $sharedblogparam;
     }
     /**
      * @global object
@@ -3008,6 +3073,13 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
             print_error('invalidcoursemodule');
         }
+        // We should override cm in case this is sharedblog.
+        if (!empty($this->cmid)) {
+            $shareblogdata = oublog_get_blog_data_base_on_cmid_of_childblog($this->cmsharedblogid, $this->oublog);
+            $cmmaster = $cm;
+            $cm = !empty($shareblogdata['cm']) ? $shareblogdata['cm'] : $cm;
+        }
+
         $oublogoutput = $PAGE->get_renderer('mod_oublog');
         $context = context_module::instance($cm->id);
         $canmanageposts = has_capability('mod/oublog:manageposts', $context);
@@ -3021,7 +3093,7 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
         // Provide format from the exporter to renderers incase its required.
         $format = $this->get('exporter')->get('format');
         $output .= $oublogoutput->render_post($cm, $oublog, $post, false, $blogtype,
-                $canmanageposts, false, false, true, $format);
+                $canmanageposts, false, false, true, $format, false, 'top', $cm);
         if (!empty($post->comments)) {
             $output .= $oublogoutput->render_comments($post, $oublog, false, false, true, $cm, $format);
         }
@@ -3085,6 +3157,7 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='', $n
     global $OUTPUT, $DB;
 
     // Check if search in shared blog.
+    $cmid = null;
     if ($name == 'id') {
         $cm = get_coursemodule_from_id('oublog', $value);
         $oublog = $DB->get_record('oublog', ['id' => $cm->instance]);
@@ -3094,6 +3167,7 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='', $n
             // Get cmid of master blog.
             $cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id);
             $value = $cmmaster->id;
+            $cmid = $cm->id;
         }
     }
     $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
@@ -3102,6 +3176,8 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='', $n
     $out .= $OUTPUT->help_icon('searchblogs', 'oublog');
     $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => $name,
             'value' => $value));
+    $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'cmid',
+            'value' => $cmid));
     $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
             'id' => 'oublog_searchquery', 'value' => $querytext));
     $src = ($newsearchimage) ? $OUTPUT->image_url('search_rgb_32px', 'theme_osep') : $OUTPUT->image_url('i/search');
@@ -4740,6 +4816,7 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
     protected $tag;
     protected $oublogid;
     protected $cmid;
+    protected $issharedblog;
 
     private $post;
     protected $files = array();
@@ -4759,6 +4836,7 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
                 'canaudit' => true,
                 'cmid' => true,
                 'tag' => true,
+                'issharedblog' => false,
         );
     }
 
@@ -4804,9 +4882,14 @@ class oublog_all_portfolio_caller extends oublog_portfolio_caller {
         if (empty($this->currentindividual) || $this->currentindividual == 0) {
             $this->currentindividual = -1;
         }
+        if ($this->issharedblog) {
+            // We should get shared blog cm for the correct permission.
+            $shareblogdata = oublog_get_blog_data_base_on_cmid_of_childblog($this->cmid, $this->oublogid);
+            $this->cm = !empty($shareblogdata) ? $shareblogdata['cm'] : $this->cm;
+        }
         list($this->posts, $recordcount) = oublog_get_posts($this->oublog,
-                $context, $this->offset, $this->cm, $this->currentgroup, $this->currentindividual,
-                $this->oubloguserid, $this->tag, $this->canaudit);
+            $context, $this->offset, $this->cm, $this->currentgroup, $this->currentindividual,
+            $this->oubloguserid, $this->tag, $this->canaudit);
 
         $fs = get_file_storage();
         $this->multifiles = array();

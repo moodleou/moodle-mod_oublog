@@ -30,6 +30,8 @@ $postid = required_param('post', PARAM_INT);       // Post id.
 // Support redirects across systems - find post by username and time created.
 $username = optional_param('u', '', PARAM_USERNAME);
 $time = optional_param('time', 0, PARAM_INT);
+$cmid = optional_param('cmid', null, PARAM_INT);
+
 if ($postid == 0 && !empty($username) && $time != 0) {
     // Search DB for an existing post (Personal blog only).
     $redirectto = new moodle_url('/mod/oublog/view.php', array('u' => $username));
@@ -63,11 +65,24 @@ if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
     print_error('coursemisconf');
 }
 
-$url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $postid));
+$url = $cmid ? new moodle_url('/mod/oublog/viewpost.php', array('post' => $postid, 'cmid' => $cmid)) :
+        new moodle_url('/mod/oublog/viewpost.php', array('post' => $postid));
 $PAGE->set_url($url);
 
 $context = context_module::instance($cm->id);
-oublog_check_view_permissions($oublog, $context, $cm);
+$childdata = oublog_get_blog_data_base_on_cmid_of_childblog($cmid, $oublog);
+$childcm = null;
+$childcourse = null;
+$childoublog = null;
+if (!empty($childdata)) {
+    $context = $childdata['context'];
+    $childcm = $childdata['cm'];
+    $childcourse = $childdata['course'];
+    $childoublog = $childdata['ousharedblog'];
+    oublog_check_view_permissions($childdata['ousharedblog'], $childdata['context'], $childdata['cm']);
+} else {
+    oublog_check_view_permissions($oublog, $context, $cm);
+}
 
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
@@ -104,8 +119,13 @@ $strlinks       = get_string('links', 'oublog');
 $strfeeds       = get_string('feeds', 'oublog');
 
 // Set-up groups.
-$groupmode = oublog_get_activity_groupmode($cm, $course);
-$currentgroup = oublog_get_activity_group($cm, true);
+if (!empty($childcm)) {
+    $groupmode = oublog_get_activity_groupmode($childcm, $childcourse);
+    $currentgroup = oublog_get_activity_group($childcm, true);
+} else {
+    $groupmode = oublog_get_activity_groupmode($cm, $course);
+    $currentgroup = oublog_get_activity_group($cm, true);
+}
 
 // Check permissions for group (of post).
 if ($groupmode == VISIBLEGROUPS && !groups_is_member($post->groupid) &&
@@ -116,7 +136,7 @@ if ($groupmode == VISIBLEGROUPS && !groups_is_member($post->groupid) &&
 }
 
 // Print the header.
-$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($oublog));
+$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($childoublog ? $childoublog : $oublog));
 if ($oublog->global) {
     $blogtype = 'personal';
     $returnurl = 'view.php?user=' . $oubloginstance->userid;
@@ -135,8 +155,8 @@ if ($oublog->global) {
     $buttontext = oublog_get_search_form('user', $oubloguser->id, $strblogsearch);
 } else {
     $blogtype = 'course';
-    $returnurl = 'view.php?id='.$cm->id;
-    $blogname = $oublog->name;
+    $returnurl = $cmid ? 'view.php?id='.$cmid : 'view.php?id='.$cm->id;
+    $blogname = $childoublog ? $childoublog->name : $oublog->name;
     $url = new moodle_url("$CFG->wwwroot/course/mod.php", array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
     $buttontext = oublog_get_search_form('id', $cm->id, $strblogsearch);
 }
@@ -152,14 +172,20 @@ $params = array(
 $event = \mod_oublog\event\post_viewed::create($params);
 $event->add_record_snapshot('oublog_posts', $post);
 $event->trigger();
-
-$CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm, $post);
+if ($childoublog) {
+    $CFG->additionalhtmlhead .= oublog_get_meta_tags($childoublog, $oubloginstance, $currentgroup, $childcm, $post);
+} else {
+    $CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm, $post);
+}
 $PAGE->set_title(format_string($post->title));
-$PAGE->set_heading(format_string($course->fullname));
+$PAGE->set_heading(format_string($childcourse ? $childcourse->fullname : $course->fullname));
 $PAGE->set_button($buttontext);
 oublog_get_post_extranav($post, false);
-
-$oublogoutput->pre_display($cm, $oublog, 'viewpost');
+if ($childdata) {
+    $oublogoutput->pre_display($childcm, $childoublog, 'viewpost');
+} else {
+    $oublogoutput->pre_display($cm, $oublog, 'viewpost');
+}
 
 echo $OUTPUT->header();
 // Print the main part of the page.
@@ -167,8 +193,11 @@ echo '<div class="oublog-topofpage"></div>';
 
 // Print blog posts.
 echo '<div id="middle-column" >';
-
-echo $oublogoutput->render_header($cm, $oublog, 'viewpost');
+if ($childdata) {
+    echo $oublogoutput->render_header($childcm, $childoublog, 'viewpost');
+} else {
+    echo $oublogoutput->render_header($cm, $oublog, 'viewpost');
+}
 
 echo '<div class="oublog-post-commented">';
 
@@ -184,18 +213,32 @@ if ($oublog->assessed != RATING_AGGREGATE_NONE) {
     $ratingoptions->userid = $USER->id;
     $ratingoptions->assesstimestart = $oublog->assesstimestart;
     $ratingoptions->assesstimefinish = $oublog->assesstimefinish;
-
+    if ($childoublog && $childoublog->assessed != RATING_AGGREGATE_NONE && $oublog->assessed != RATING_AGGREGATE_NONE) {
+        $ratingoptions->aggregate = $childoublog->assessed;// The aggregation method.
+        $ratingoptions->scaleid = $childoublog->scale;
+        $ratingoptions->assesstimestart = $childoublog->assesstimestart;
+        $ratingoptions->assesstimefinish = $childoublog->assesstimefinish;
+    }
     $rm = new rating_manager();
     $postswithratings = $rm->get_ratings($ratingoptions);
     $post = $postswithratings['post'];
 }
 
-echo $oublogoutput->render_post($cm, $oublog, $post, $returnurl, $blogtype, $canmanageposts,
-        $canaudit, false, false);
+$referurlparam = null;
+$cmparam = null;
+if ($cmid) {
+    // In shared blog,when comment,we should return previous page,not main blog page.
+    $referurlparam = '&referurl=' . urlencode($PAGE->url->out(true, array('cmid' => $cmid)));
+    $cmparam = '&cmid=' . $cmid;
+}
+echo $oublogoutput->render_post($childcm ? $childcm : $cm, $childoublog ? $childoublog : $oublog, $post, $returnurl, $blogtype, $canmanageposts,
+        $canaudit, false, false, false, false, 'top', $childcm ? $cm : null, $cmid, $referurlparam);
 
 if (!empty($post->comments)) {
     // Code extracted to new renderer function.
-    echo $oublogoutput->render_comments($post, $oublog, $canaudit, $canmanagecomments, false, $cm);
+    echo $oublogoutput->render_comments($post, $childoublog ? $childoublog : $oublog,
+        $canaudit, $canmanagecomments, false, $childcm ? $childcm : $cm, false, false,
+        $referurlparam, $cmparam, $childcm ? $cm : null);
 }
 echo '</div>';
 // If it is your own post, then see if there are any moderated comments -
@@ -205,8 +248,9 @@ echo '</div>';
 // Logic should be if public comments are allowed and,
 // either post user and can comment, or can manage comments.
 $includeset = $canaudit;
+$cancomment = $childdata ? oublog_can_comment($childcm, $childoublog, $post) : oublog_can_comment($cm, $oublog, $post);
 if ($post->allowcomments >= OUBLOG_COMMENTS_ALLOWPUBLIC &&
-        (($post->userid == $USER->id && oublog_can_comment($cm, $oublog, $post)) || $canmanagecomments)) {
+        (($post->userid == $USER->id && $cancomment) || $canmanagecomments)) {
     // Also, if this is a personal global blog include accepted/rejected comments.
     if ($oublog->global) {
         $includeset = true;
@@ -292,6 +336,8 @@ echo '</div>';
 
 if ($oublog->global) {
     echo $oublogoutput->get_link_back_to_oublog($blogname, $oubloginstance->userid, true);
+} else if ($childcm) {
+    echo $oublogoutput->get_link_back_to_oublog($blogname, $childcm->id);
 } else {
     echo $oublogoutput->get_link_back_to_oublog($blogname, $cm->id);
 }

@@ -20,8 +20,8 @@ class mod_oublog_link_form extends moodleform {
     public function definition() {
 
         global $CFG;
-
         $edit = $this->_customdata['edit'];
+        $cmid = $this->_customdata['cmid'];
 
         $mform =& $this->_form;
 
@@ -52,6 +52,9 @@ class mod_oublog_link_form extends moodleform {
 
         $mform->addElement('hidden', 'link');
         $mform->setType('link', PARAM_INT);
+
+        $mform->addElement('hidden', 'cmid', $cmid);
+        $mform->setType('cmid', PARAM_INT);
 
     }
 }

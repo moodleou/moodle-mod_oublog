@@ -30,7 +30,8 @@ class mod_oublog_comment_form extends moodleform {
         $postid = $this->_customdata['postid'];
         $maxbytes = $this->_customdata['maxbytes'];
         $postrender = $this->_customdata['postrender'];
-
+        $referurl =  $this->_customdata['referurl'];
+        $cmid = $this->_customdata['cmid'];
         $mform    =& $this->_form;
 
         if (!$edit) {
@@ -94,6 +95,13 @@ class mod_oublog_comment_form extends moodleform {
 
         $mform->addElement('hidden', 'post');
         $mform->setType('post', PARAM_INT);
+
+        $mform->addElement('hidden', 'referurl', $referurl);
+        $mform->setType('referurl', PARAM_LOCALURL);
+
+        $mform->addElement('hidden', 'cmid', $cmid);
+        $mform->setType('cmid', PARAM_INT);
+
     }
 
     public function validation($data, $files) {

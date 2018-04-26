@@ -27,6 +27,7 @@ require_once('link_form.php');
 $blog = required_param('blog', PARAM_INT);                          // Blog ID
 $bloginstancesid = optional_param('bloginstance', 0, PARAM_INT);     // Blog instances ID
 $linkid = optional_param('link', 0, PARAM_INT);                     // Comment ID for editing
+$cmid = optional_param('cmid', null, PARAM_INT);
 
 if ($blog) {
     if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
@@ -51,21 +52,31 @@ $PAGE->set_url($url);
 
 // Check security.
 $context = context_module::instance($cm->id);
-oublog_check_view_permissions($oublog, $context, $cm);
-
+$childdata = oublog_get_blog_data_base_on_cmid_of_childblog($cmid, $oublog);
+$childoublog = null;
+$childcourse = null;
+if (!empty($childdata)) {
+    $context = $childdata['context'];
+    $childoublog = $childdata['ousharedblog'];
+    $childcourse = $childdata['course'];
+    oublog_check_view_permissions($childdata['ousharedblog'], $childdata['context'], $childdata['cm']);
+} else {
+    oublog_check_view_permissions($oublog, $context, $cm);
+}
+$correctglobal = isset($childoublog->global) ? $childoublog->global : $oublog->global;
 if ($linkid) {
     $bloginstancesid=$link->oubloginstancesid;
 }
 $oubloginstance = $bloginstancesid ? $DB->get_record('oublog_instances', array('id'=>$bloginstancesid)) : null;
     oublog_require_userblog_permission('mod/oublog:managelinks', $oublog, $oubloginstance, $context);
 
-if ($oublog->global) {
+if ($correctglobal) {
     $blogtype = 'personal';
     $oubloguser = $USER;
     $viewurl = 'view.php?user='.$oubloginstance->userid;
 } else {
     $blogtype = 'course';
-    $viewurl = 'view.php?id='.$cm->id;
+    $viewurl = $cmid ? 'view.php?id=' . $cmid : 'view.php?id=' . $cm->id;
 }
 
 // Get strings.
@@ -73,8 +84,7 @@ $stroublogs  = get_string('modulenameplural', 'oublog');
 $stroublog   = get_string('modulename', 'oublog');
 $straddlink  = get_string('addlink', 'oublog');
 $streditlink = get_string('editlink', 'oublog');
-
-$mform = new mod_oublog_link_form('editlink.php', array('edit' => !empty($linkid)));
+$mform = new mod_oublog_link_form('editlink.php', array('edit' => !empty($linkid), 'cmid' => $cmid));
 
 if ($mform->is_cancelled()) {
     redirect($viewurl);
@@ -104,8 +114,8 @@ if (!$frmlink = $mform->get_data()) {
     } else {
         $PAGE->navbar->add(($linkid ? $streditlink : $straddlink));
     }
-    $PAGE->set_title(format_string($oublog->name));
-    $PAGE->set_heading(format_string($course->fullname));
+    $PAGE->set_title(format_string(!empty($childoublog->name) ? $childoublog->name : $oublog->name));
+    $PAGE->set_heading(format_string(!empty($childcourse->fullname) ? $childcourse->fullname : $course->fullname));
     echo $OUTPUT->header();
 
     echo '<br />';

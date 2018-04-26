@@ -30,6 +30,7 @@ $id     = optional_param('id', 0, PARAM_INT);       // Course Module ID
 $user   = optional_param('user', 0, PARAM_INT);     // User ID
 $querytext = required_param('query', PARAM_RAW);
 $querytexthtml = htmlspecialchars($querytext);
+$cmid = optional_param('cmid', null, PARAM_INT);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('oublog', $id)) {
@@ -66,49 +67,66 @@ if ($id) {
 }
 
 $context = context_module::instance($cm->id);
+$childdata = oublog_get_blog_data_base_on_cmid_of_childblog($cmid, $oublog);
+$childcm = null;
+$childoublog = null;
+$childcourse = null;
+if (!empty($childdata)) {
+    $context = $childdata['context'];
+    $childcm = $childdata['cm'];
+    $childoublog = $childdata['ousharedblog'];
+    $childcourse = $childdata['course'];
+    oublog_check_view_permissions($childdata['ousharedblog'], $childdata['context'], $childdata['cm']);
+
+} else {
+    oublog_check_view_permissions($oublog, $context, $cm);
+}
+$correctindividual = isset($childoublog->individual) ? $childoublog->individual : $oublog->individual;
+$correctglobal = isset($childoublog->global) ? $childoublog->global : $oublog->global;
 $PAGE->set_context($context);
 
 $url = new moodle_url('/mod/oublog/search.php', array('id'=>$id, 'user'=>$user, 'query'=>$querytext));
 $PAGE->set_url($url);
-$PAGE->set_cm($cm);
-$PAGE->set_title(format_string($oublog->name));
-oublog_check_view_permissions($oublog, $context, $cm);
+$PAGE->set_cm($childcm ? $childcm : $cm);
+$PAGE->set_title(format_string($childoublog ? $childoublog->name : $oublog->name));
 
-if ($oublog->global) {
+if ($correctglobal) {
     // Check this user is allowed to view the user's blog
-    if ($oublog->maxvisibility != OUBLOG_VISIBILITY_PUBLIC && isset($oubloguser)) {
+    $maxvisibility = isset($childoublog->maxvisibility) ? $childoublog->maxvisibility : $oublog->maxvisibility;
+    if ($maxvisibility != OUBLOG_VISIBILITY_PUBLIC && isset($oubloguser)) {
         $usercontext = context_user::instance($oubloguser->id);
         require_capability('mod/oublog:view', $usercontext);
     }
     $returnurl = $CFG->wwwroot . "/mod/oublog/search.php?user=$user&query=$querytext";
     $mreturnurl = new moodle_url('/mod/oublog/view.php', array('user'=>$user));
 } else {
-    $returnurl = $CFG->wwwroot . "/mod/oublog/search.php?id=$id&query=$querytext";
+    $cmparam = $cmid ? '&cmid=' . $cmid : null;
+    $returnurl = $CFG->wwwroot . "/mod/oublog/search.php?id=$id&query=$querytext$cmparam";
     $mreturnurl = new moodle_url('/mod/oublog/view.php', array('id'=>$id));
 }
 
 // Set up groups
-$currentgroup = oublog_get_activity_group($cm, true);
-$groupmode = oublog_get_activity_groupmode($cm, $course);
+$currentgroup = oublog_get_activity_group($childcm ? $childcm : $cm, true);
+$groupmode = oublog_get_activity_groupmode($childcm ? $childcm : $cm, $childcourse ? $childcourse : $course);
 // Note I am not sure this check is necessary, maybe it is handled by
 // oublog_get_activity_group? Or maybe more checks are needed? Not sure.
 if ($currentgroup===0 && $groupmode==SEPARATEGROUPS) {
     require_capability('moodle/site:accessallgroups', $context);
 }
 
-if ($oublog->individual) {
+if ($correctindividual) {
     // Individual selector.
-    $individualdetails = oublog_individual_get_activity_details($cm, $returnurl, $oublog,
+    $individualdetails = oublog_individual_get_activity_details($cm, $returnurl, $childoublog ? $childoublog : $oublog,
             $currentgroup, $context);
 }
 
 // Print the header
 $stroublog      = get_string('modulename', 'oublog');
-$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($oublog));
+$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($childoublog ?  $childoublog :$oublog));
 $strblogssearch  = get_string('searchblogs', 'oublog');
 
 
-if ($oublog->global) {
+if ($correctglobal) {
     if (!is_null($oubloginstance)) {
         $name = $oubloginstance->name;
         $buttontext = oublog_get_search_form('user', $oubloguser->id, $strblogsearch,
@@ -126,7 +144,7 @@ if ($oublog->global) {
     }
 
 } else {
-    $name = $oublog->name;
+    $name = !empty($childoublog->name) ? $childoublog->name : $oublog->name;
 
     $buttontext = oublog_get_search_form('id', $cm->id, $strblogsearch, $querytexthtml);
 }
@@ -140,30 +158,30 @@ echo $OUTPUT->header();
 echo html_writer::start_div('oublog-groups-individual-selectors');
 
 // Print Groups
-groups_print_activity_menu($cm, $returnurl);
+groups_print_activity_menu($childcm ? $childcm : $cm, $returnurl);
 
-if ($oublog->individual && $individualdetails) {
+if ($correctindividual && $individualdetails) {
     echo $individualdetails->display;
 }
 
 echo html_writer::end_div();
 
 global $modulecontext, $personalblog;
-$modulecontext=$context;
-$personalblog=$oublog->global ? true : false;
+$modulecontext = $context;
+$personalblog = $correctglobal ? true : false;
 
 // FINALLY do the actual query
 $query=new local_ousearch_search($querytext);
 $query->set_coursemodule($cm);
-if ($oublog->global && isset($oubloguser)) {
+if ($correctglobal && isset($oubloguser)) {
     $query->set_user_id($oubloguser->id);
-} else if ($oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS) {
+} else if ($correctindividual != OUBLOG_NO_INDIVIDUAL_BLOGS) {
     if (!empty($individualdetails->activeindividual)) {
         // Only get results for currently selected user.
         $query->set_user_id($individualdetails->activeindividual, false);
     } else if ($groupmode && $currentgroup) {
         // All individual, get results for all users in current group.
-        $sepcontext = $oublog->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS ? $context : 0;
+        $sepcontext = $correctindividual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS ? $context : 0;
         $usersingroup = oublog_individual_get_all_users($course->id, $oublog->id,
                 $currentgroup, $sepcontext);
         if ($usersingroup) {
@@ -175,15 +193,17 @@ if ($oublog->global && isset($oubloguser)) {
     }
 }
 
-if ($groupmode && $currentgroup && $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
+if ($groupmode && $currentgroup && $correctindividual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
     $query->set_group_id($currentgroup);
 }
 $query->set_filter('visibility_filter');
-
-$searchurl = 'search.php?'.(empty($id) ? 'user='.$oubloguser->id : 'id='.$cm->id);
+$searchurl = 'search.php?' . (empty($id) ? 'user=' . $oubloguser->id : 'id='. $cm->id) . ($cmid) ? '&cmid=' . $cmid : '';
 
 $foundsomething=$query->display_results($searchurl);
-
+if ($cmid) {
+    // We should add cmid for search result if this is shared blog.
+    $foundsomething = oublog_add_cmid_to_tag_atrribute($cmid, $foundsomething, 'a', 'href', '&');
+}
 echo $foundsomething;
 
 // Add link to search the rest of this website if service available.
