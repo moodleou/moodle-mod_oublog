@@ -84,21 +84,19 @@ class oublog_shared extends oublog_test_lib
                 'individual' => OUBLOG_VISIBLE_INDIVIDUAL_BLOGS]);
 
         // Get children blog from ID number.
-        $childrenblog1 = oublog_get_children($blogmaster1->cm->idnumber);
-        $childrenblog2 = oublog_get_children($blogmaster2->cm->idnumber);
-
-        $result[] = array_slice($childrenblog1, 0, 2);
-        $result[] = array_slice($childrenblog2, 0, 2);
+        $result[] = oublog_get_children($blogmaster1->cm->idnumber);
+        $result[] = oublog_get_children($blogmaster2->cm->idnumber);
 
         $this->assertNotNull($result);
         $this->assertEquals(count($result), 2);
 
-        $this->assertEquals($chilblog1->id, $result[0][1]->id);
-        $this->assertEquals($chilblog2->id, $result[0][0]->id);
-        $this->assertEquals($chilblog3->id, $result[1][1]->id);
-        $this->assertEquals($chilblog4->id, $result[1][0]->id);
-        $this->assertEquals('idmaster2', $result[1][0]->idsharedblog);
-        $this->assertEquals('idmaster', $result[0][0]->idsharedblog);
+        $this->assertEquals($chilblog1->id, $result[0][$chilblog1->id]->id);
+        $this->assertEquals($chilblog2->id, $result[0][$chilblog2->id]->id);
+        $this->assertEquals($chilblog3->id, $result[1][$chilblog3->id]->id);
+        $this->assertEquals($chilblog4->id, $result[1][$chilblog4->id]->id);
+
+        $this->assertEquals('idmaster', $result[0][$chilblog1->id]->idsharedblog);
+        $this->assertEquals('idmaster2', $result[1][$chilblog3->id]->idsharedblog);
     }
 
     /**
@@ -135,5 +133,65 @@ class oublog_shared extends oublog_test_lib
         $dom->loadHTML('test html <img src="' . $link .'?cmid=1" /> <img src="test.com" />');
         $expected = $dom->saveHTML();
         $this->assertEquals($expected, $result);
+    }
+
+    /**
+     *Test participation of masterblog and child blog.
+     */
+    public function test_masterblog_and_childblog_get_participation_details() {
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        // Create data of masterblog for getting participation.
+        $course = $this->get_new_course();
+        $masterblog = $this->get_new_oublog($course->id);
+        $masterblog->allowcomments = OUBLOG_COMMENTS_ALLOW;
+        $masterblog->cm->idnumber = 'idmaster';
+        $masterblog->individual = OUBLOG_VISIBLE_INDIVIDUAL_BLOGS;
+
+        $cmmaster = get_coursemodule_from_id('oublog', $masterblog->cmid);
+        $student1 = $this->get_new_user('student', $course->id);
+        $student2 = $this->get_new_user('student', $course->id);
+        // Number of posts and comments to create for whole course tests.
+        $postcountwc = 3;
+        $titlecheck = 'test_sharedlog_participation';
+        // Prepare to make some posts using the posts stub.
+        $posthashes = array();
+        for ($i = 1; $i <= $postcountwc; $i++) {
+            $posthashes[$i] = $this->get_post_stub($masterblog->id);
+            $posthashes[$i]->title = 'Test Post ' . $titlecheck;
+            // Add the posting student.
+            $posthashes[$i]->userid = $student1->id;
+        }
+        // Create the posts also add student comments to those posts.
+        $postids = $commentids = array();
+        foreach ($posthashes as $posthash) {
+            $postids[] = oublog_add_post($posthash, $cmmaster, $masterblog, $course);
+            // Add the commenting student.
+            $comment = $this->get_comment_stub($posthash->id, $student2->id);
+            $comment->title .= " ".$titlecheck;
+            $commentids[] = oublog_add_comment($course, $cmmaster, $masterblog, $comment);
+        }
+        // Get the participation object with counts of posts and comments.
+        $groupmaster = oublog_get_activity_group($cmmaster);
+        $individualmaster = 0;
+        $getposts = true;
+        $getcomments = true;
+        $resultparticipationmaster = oublog_get_participation_details($masterblog, $groupmaster, $individualmaster,
+            null, null, 0, $getposts, $getcomments, 0, 0);
+
+        // Create childblog get participation from masterblog.
+        $childblog = $this->get_new_oublog($course->id);
+        $childblog->allowcomments = OUBLOG_COMMENTS_ALLOW;
+        $childblog->idsharedblog = 'idmaster';
+        $childblog->individual = OUBLOG_VISIBLE_INDIVIDUAL_BLOGS;
+        $cmchild = get_coursemodule_from_id('oublog', $childblog->cmid);
+        $childgroup = oublog_get_activity_group($cmchild);
+        $childindividual = 0;
+        $resultparticipationchild = oublog_get_participation_details($childblog, $childgroup, $childindividual,
+            null, null, 0, $getposts, $getcomments, 0, 0, $masterblog);
+
+        $this->assertEquals($resultparticipationmaster, $resultparticipationchild);
+
     }
 }

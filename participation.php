@@ -64,6 +64,9 @@ if ($groupid) {
 
 // set up whether the group selector should display
 $showgroupselector = true;
+$masterblog = null;
+$cmmaster = null;
+$coursemaster = null;
 if ($oublog->individual) {
     // if separate individual and visible group, do not show groupselector
     // unless the current user has permission
@@ -71,8 +74,24 @@ if ($oublog->individual) {
         && !has_capability('mod/oublog:viewindividual', $context)) {
         $showgroupselector = false;
     }
-}
 
+    // Get master blog.
+    if ($oublog->idsharedblog) {
+        $masterblog = oublog_get_master($oublog->idsharedblog);
+
+        // Get cm master.
+        if (!$cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id)) {
+            throw new moodle_exception('invalidcoursemodule');
+        }
+
+        // Get course master.
+        if (!$coursemaster = $DB->get_record('course', array('id' => $masterblog->course))) {
+            throw new moodle_exception('coursemisconf');
+        }
+    }
+}
+// Get CM master.
+$participationcm = !empty($cmmaster) ? $cmmaster : $cm;
 // All enrolled users for table pagination.
 $coursecontext = context_course::instance($course->id);
 // If data has been received from this form.
@@ -86,7 +105,7 @@ $default = get_user_preferences('mod_oublog_postformfilter', OUBLOG_STATS_TIMEFI
     // Create time filter options form.
     $customdata = array(
             'type' => 'participation',
-            'cmid' => $cm->id,
+            'cmid' => $participationcm->id,
             'user' => $USER->id,
             'group' => $groupid,
             'download' => $download,
@@ -108,7 +127,8 @@ if ($submitted = $timefilter->get_data()) {
     }
 }
 
-$participation = oublog_get_participation($oublog, $context, $groupid, $cm, $course, $start, $end);
+$participation = oublog_get_participation($oublog, $context, $groupid, $cm, $course, $start, $end,
+        'u.firstname,u.lastname', $masterblog, $cmmaster, $coursemaster);
 $PAGE->navbar->add(get_string('userparticipation', 'oublog'));
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($oublog->name));

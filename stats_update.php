@@ -32,6 +32,7 @@ require_once($CFG->dirroot . '/mod/oublog/locallib.php');
 require_sesskey();
 $type = required_param('type', PARAM_ALPHA);
 $id = optional_param('id', 0, PARAM_INT);
+$currentcmid = optional_param('currentcmid', 0, PARAM_INT);
 
 if ($id) {
     // Load efficiently (and with full $cm data) using get_fast_modinfo.
@@ -57,12 +58,28 @@ if ($id) {
     if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
         print_error('invalidcoursemodule');
     }
+    $masterblog = null;
+    $cmmaster = null;
+}
+$childdata = oublog_get_blog_data_base_on_cmid_of_childblog($currentcmid, $oublog);
+
+$currentoublog = $oublog;
+$currentcontext = context_module::instance($cm->id);
+$currentcm = $cm;
+$childblog = null;
+$childcm = null;
+if (!empty($childdata)) {
+    $currentoublog = $childdata['ousharedblog'];
+    $currentcontext = $childdata['context'];
+    $currentcm = $childdata['cm'];
+    $childblog = $oublog;
+    $childcm = $cm;
 }
 
-oublog_check_view_permissions($oublog, context_module::instance($cm->id), $cm);
+oublog_check_view_permissions($currentoublog, $currentcontext, $currentcm);
 
 $func = "oublog_stats_output_$type";
 
 if (function_exists($func)) {
-    echo json_encode($func($oublog, $cm, null, true));
+    echo json_encode($func($currentoublog, $currentcm, null, true, $childblog, $childcm));
 }

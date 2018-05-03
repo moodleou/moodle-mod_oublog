@@ -52,6 +52,18 @@ $cm = get_coursemodule_from_id('oublog', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 $oublog = $DB->get_record('oublog', array('id' => $cm->instance), '*', MUST_EXIST);
 
+$masterblog = null;
+$cmmaster = null;
+// Get master blog.
+if ($oublog->individual && $oublog->idsharedblog) {
+    $masterblog = oublog_get_master($oublog->idsharedblog);
+
+    // Get cm master.
+    if (!$cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id)) {
+        throw new moodle_exception('invalidcoursemodule');
+    }
+}
+
 $PAGE->set_cm($cm);
 $context = context_module::instance($cm->id);
 $PAGE->set_pagelayout('incourse');
@@ -112,7 +124,7 @@ echo $OUTPUT->header();
 groups_print_activity_menu($cm, $url);
 if ($oublog->individual) {
     $individualdetails = oublog_individual_get_activity_details($cm, $url, $oublog,
-            $groupid, $context);
+            $groupid, $context, $cmmaster);
     if ($individualdetails) {
         $curindividual = $individualdetails->activeindividual;
         $oublog->individual = $individualdetails->mode;
@@ -143,7 +155,7 @@ if ($start && $end) {
     $info = get_string('participation_fromto', 'oublog', $a);
 }
 $participation = oublog_get_participation_details($oublog, $groupid, $curindividual,
-    $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum);
+        $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum, $masterblog);
 
 $url->params(array('individual' => $curindividual, 'start' => $start, 'end' => $end));
 echo html_writer::tag('h2', $info, array('class' => 'oublog-post-title'));
@@ -182,7 +194,7 @@ $pagingurl = new moodle_url('/mod/oublog/participationlist.php',
 
 echo $oublogoutput->render_all_users_participation_table($cm, $course, $oublog,
         $page, $limitnum, $participation, $getposts, $getcomments,
-        $start, $end, $pagingurl);
+        $start, $end, $pagingurl, $cmmaster);
 
 echo $oublogoutput->get_link_back_to_oublog($cm->name, $cm->id);
 

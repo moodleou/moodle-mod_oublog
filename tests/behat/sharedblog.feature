@@ -41,10 +41,79 @@ Feature: Test shared data from Master blog on OUBlog
   Scenario: Child blog only show data relating to master blog
     When I am on homepage
     And I am on "Course 1" course homepage
+    And I follow "Master Blog"
+    And I click on "Add your comment" "link" in the ".oublog-post-links" "css_element"
+    And I set the following fields to these values:
+      | Title            | Comment post 1                 |
+      | Add your comment | This is comment in master blog |
+    And I press "id_submitbutton"
+    And I am on "Course 1" course homepage
     And I follow "Child Blog"
     Then I should see "Content Master Blog 1"
     And I should see "upload_users.csv"
     And I should see "blog(1)" in the "#oublog-tags" "css_element"
+    And I should see "1 comment" in the ".oublog-post-links" "css_element"
+    And I should see "1 posts" in the ".oublog_statsview_content_myparticipation" "css_element"
+    # View participation.
+    And I should see "Content Master Blog 1" in the ".oublog_statsview_content_myparticipation" "css_element"
+    And I should see "Comment post 1" in the ".oublog_statsview_content_myparticipation" "css_element"
+    When I click on "View my participation" "link" in the ".oublog_statsview_content_myparticipation" "css_element"
+    Then I should see "1 Posts" in the ".nav-tabs" "css_element"
+    And I should see "Child Blog"
+    And I should see "1 Comments" in the ".nav-tabs" "css_element"
+    And I should see "Content Master Blog 1" in the "h3.oublog-post-title" "css_element"
+    And I click on "1 Comments" "link" in the ".nav-tabs" "css_element"
+    And I should see "Comment post 1" in the ".oublog-comment" "css_element"
+    When I click on "Content Master Blog 1" "link"
+    # We should be in shared blog when click on posts link
+    Then I should see "Child Blog"
+    And I should see "Content Master Blog 1"
+    And I should see "Comment post 1"
+    And I follow "Child Blog"
+    And I click on "View my participation" "link" in the ".oublog_statsview_content_myparticipation" "css_element"
+    And I click on "1 Comments" "link" in the ".nav-tabs" "css_element"
+    When I click on "Content Master Blog 1" "link"
+    # We should be in shared blog when click on comment link
+    Then I should see "Child Blog"
+    And I should see "Content Master Blog 1"
+    And I should see "Comment post 1"
+    And I follow "Child Blog"
+    And I click on "Participation" "text" in the ".oublog-accordion-view" "css_element"
+    Then I should see "Content Master Blog 1" in the ".oublog_statsview_content_participation" "css_element"
+    And I should see "Comment post 1" in the ".oublog_statsview_content_participation" "css_element"
+    And I click on "View all participation" "link" in the ".oublog_statsview_content_participation" "css_element"
+    Then I should see "Admin User" in the ".cell.c0" "css_element"
+    And I should see "Content Master Blog 1" in the ".cell.c1" "css_element"
+    When I click on "Content Master Blog 1" "link"
+    Then I should see "Child Blog"
+    And I should see "Content Master Blog 1"
+    And I should see "Comment post 1"
+    And I follow "Child Blog"
+    And I click on "View all participation" "link" in the ".oublog_statsview_content_participation" "css_element"
+    And I click on "1 Comments" "link" in the ".nav-tabs" "css_element"
+    Then I should see "Admin User" in the ".cell.c0" "css_element"
+    And I should see "Comment post 1" in the ".cell.c1" "css_element"
+    When I click on ".arrow_link" "css_element"
+    And I navigate to "Edit settings" in current page administration
+    And I expand all fieldsets
+    And I set the following fields to these values:
+      | Show blog usage extra statistics | 1 |
+    And I press "id_submitbutton"
+    And I should not see "Most posts" in the "#oublog-discover" "css_element"
+    # Set setting of masterblog that allow to show Most posts on Blog usage.
+    Then I am on "Course 1" course homepage
+    And I follow "Master Blog"
+    And I navigate to "Edit settings" in current page administration
+    And I expand all fieldsets
+    And I set the following fields to these values:
+      | Show blog usage extra statistics | 1 |
+      | Individual blogs                 | 2 |
+    And I press "id_submitbutton"
+    Then I am on "Course 1" course homepage
+    And I follow "Child Blog"
+    And I should see "Most posts" in the "#oublog-discover" "css_element"
+    And I click on "Most posts" "text" in the ".oublog-accordion-view" "css_element"
+    And I should see "1 posts" in the ".oublog_statsinfo_bar" "css_element"
 
   @javascript
   Scenario: Child blog show links from master blog
@@ -53,8 +122,8 @@ Feature: Test shared data from Master blog on OUBlog
     And I follow "Master Blog"
     And I follow "Add link"
     And I set the following fields to these values:
-      | Title                 | Teachers Personal blog test                 |
-      | Full Web address      | http://127.0.0.1/mod/oublog/view.php?user=3 |
+      | Title            | Teachers Personal blog test                 |
+      | Full Web address | http://127.0.0.1/mod/oublog/view.php?user=3 |
     And I press "id_submitbutton"
     And I am on "Course 1" course homepage
     And I follow "Child Blog"
@@ -64,10 +133,10 @@ Feature: Test shared data from Master blog on OUBlog
   Scenario: Fail to create child blog because wrong ID number.
     When I am on "Course 1" course homepage
     And I add a "OU blog" to section "0" and I fill the form with:
-      | Blog name         | Child Blog 2              |
-      | Intro             | Can not create this blog  |
-      | Individual blogs  | Visible individual blogs  |
-      | Shared blog       | masterblog2               |
+      | Blog name        | Child Blog 2             |
+      | Intro            | Can not create this blog |
+      | Individual blogs | Visible individual blogs |
+      | Shared blog      | masterblog2              |
     Then I press "Save and display"
     And I should see "No matching ID number"
 
@@ -75,10 +144,10 @@ Feature: Test shared data from Master blog on OUBlog
   Scenario: Fail to create child blog because that blog is child of the other.
     When I am on "Course 1" course homepage
     And I add a "OU blog" to section "0" and I fill the form with:
-      | Blog name         | Child Blog 3              |
-      | Intro             | Can not create this blog  |
-      | Individual blogs  | Visible individual blogs  |
-      | Shared blog       | childblog                 |
+      | Blog name        | Child Blog 3             |
+      | Intro            | Can not create this blog |
+      | Individual blogs | Visible individual blogs |
+      | Shared blog      | childblog                |
     Then I press "Save and display"
     And I should see "This is an ID number of a child blog"
 
@@ -229,3 +298,36 @@ Feature: Test shared data from Master blog on OUBlog
     And I follow "Master Blog"
     Then I should see "P1 of student in different course"
     Then following "upload_users.csv" should download between "100" and "100000" bytes
+
+  @javascript
+  Scenario: Activity settings should be independent.
+    Given the following "activities" exist:
+      | activity | name       | intro                          | course | individual | idsharedblog | idnumber  |
+      | oublog   | Child Blog | A blog get content from master | C1     | 2          | masterblog   | childblog |
+    When I am on "Course 1" course homepage
+    And I add a "OU blog" to section "0" and I fill the form with:
+      | Blog name                           | Child Blog 3             |
+      | Intro                               | Can not create this blog |
+      | Individual blogs                    | Visible individual blogs |
+      | Allow comments (if chosen for post) | Comments not allowed     |
+      | Shared blog                         | masterblog               |
+    And I follow "Master Blog"
+    And I click on "Add your comment" "link" in the ".oublog-post-links" "css_element"
+    And I set the following fields to these values:
+      | Title            | Comment post 1                 |
+      | Add your comment | This is comment in master blog |
+    And I press "id_submitbutton"
+    And I am on "Course 1" course homepage
+    # Allow comment in setting.
+    And I follow "Child Blog"
+    Then I should see "Content Master Blog 1"
+    And I should see "1 comment" in the ".oublog-post-links" "css_element"
+    And I should see "Participation" in the ".oublog-accordion" "css_element"
+    And I should see "Most commented posts" in the ".oublog-accordion " "css_element"
+    # Not allow comment in setting.
+    When I am on "Course 1" course homepage
+    And I follow "Child Blog 3"
+    Then I should see "Content Master Blog 1"
+    And I should not see "1 comment" in the ".oublog-post-links" "css_element"
+    And I should not see "Participation" in the ".oublog-accordion " "css_element"
+    And I should not see "Most commented posts" in the ".oublog-accordion " "css_element"

@@ -189,6 +189,7 @@ $individualdetails = 0;
 $showgroupselector = true;
 $masterblog = null;
 $cmmaster = null;
+$coursemaster = null;
 if ($oublog->individual) {
     // If separate individual and visible group, do not show groupselector
     // unless the current user has permission.
@@ -204,6 +205,11 @@ if ($oublog->individual) {
         // Get cm master.
         if (!$cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id)) {
             throw new moodle_exception('invalidcoursemodule');
+        }
+
+        // Get course master.
+        if (!$coursemaster = $DB->get_record('course', array('id' => $masterblog->course))) {
+            throw new moodle_exception('coursemisconf');
         }
     }
 
@@ -351,14 +357,17 @@ if (!$hideunusedblog) {
 
     // Discovery block.
     $stats = array();
-    $stats[] = oublog_stats_output_myparticipation($oublog, $cm, $oublogoutput, $course, $currentindividual, $oubloguser->id);
-    $stats[] = oublog_stats_output_participation($oublog, $cm, $oublogoutput, $course, false, $currentindividual, $oubloguser->id);
-    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, false, $currentindividual, $oubloguser->id);
+    $stats[] = oublog_stats_output_myparticipation($oublog, $cm, $oublogoutput, $course, $currentindividual, $oubloguser->id,
+            $masterblog, $cmmaster, $coursemaster);
+    $stats[] = oublog_stats_output_participation($oublog, $cm, $oublogoutput, $course, false, $currentindividual, $oubloguser->id,
+            $masterblog);
+    $stats[] = oublog_stats_output_commentpoststats($oublog, $cm, $oublogoutput, false, $masterblog, $cmmaster,
+            false, $currentindividual, $oubloguser->id);
     if ($oublog->statblockon) {
         // Add to 'Discovery' block when enabled only.
         $stats[] = oublog_stats_output_visitstats($oublog, $cm, $oublogoutput);
-        $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput);
-        $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput);
+        $stats[] = oublog_stats_output_poststats($oublog, $cm, $oublogoutput, false, $masterblog, $cmmaster);
+        $stats[] = oublog_stats_output_commentstats($oublog, $cm, $oublogoutput, false, $masterblog, $cmmaster);
     }
     $stats = array_filter($stats);
     if (!empty($stats)) {

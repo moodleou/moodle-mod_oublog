@@ -67,6 +67,24 @@ if ($canview == OUBLOG_NO_PARTICIPATION || $viewonlyown) {
 }
 $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
 
+$masterblog = null;
+$cmmaster = null;
+$coursemaster = null;
+// Get master blog.
+if ($oublog->individual && $oublog->idsharedblog) {
+    $masterblog = oublog_get_master($oublog->idsharedblog);
+
+    // Get cm master.
+    if (!$cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id)) {
+        throw new moodle_exception('invalidcoursemodule');
+    }
+
+    // Get course master.
+    if (!$coursemaster = $DB->get_record('course', array('id' => $masterblog->course))) {
+        throw new moodle_exception('coursemisconf');
+    }
+}
+
 // all enrolled users for table pagination
 $coursecontext = context_course::instance($course->id);
 
@@ -126,7 +144,7 @@ switch($tab) {
 }
 $participation = oublog_get_user_participation($oublog, $context,
         $userid, $groupid, $cm, $course, $start, $end, $getposts, $getcomments, $limitfrom,
-        $limitnum, $getgrades);
+        $limitnum, $getgrades, $masterblog, $cmmaster, $coursemaster);
 // Add extra navigation link for users who can see all participation.
 $canviewall = oublog_can_view_participation($course, $oublog, $cm, $groupid);
 if ($canviewall == OUBLOG_USER_PARTICIPATION) {
@@ -185,8 +203,15 @@ if (empty($download)) {
             new tabobject('tab1', $taburl->out() . '&amp;tab=1', $participation->numcomments . ' ' .
                     get_string('comments', 'oublog')),
     );
-    if (oublog_can_grade($course, $oublog, $cm, $groupid)) {
-        $tabs[] = new tabobject('tab2', $taburl->out() . '&amp;tab=2', get_string('usergrade', 'oublog'));
+    if (!empty($masterblog)) {
+        if (oublog_can_grade($course, $oublog, $cm, $groupid) &&
+                oublog_can_grade($coursemaster, $masterblog, $cmmaster, $groupid)) {
+            $tabs[] = new tabobject('tab2', $taburl->out() . '&amp;tab=2', get_string('usergrade', 'oublog'));
+        }
+    } else {
+        if (oublog_can_grade($course, $oublog, $cm, $groupid)) {
+            $tabs[] = new tabobject('tab2', $taburl->out() . '&amp;tab=2', get_string('usergrade', 'oublog'));
+        }
     }
     echo $OUTPUT->tabtree($tabs, "tab$tab");
 
@@ -217,7 +242,7 @@ if (empty($download)) {
 }
 
 $oublogoutput->render_user_participation_list($cm, $course, $oublog, $participation,
-        $groupid, $download, $page, $coursecontext, $viewfullnames, $groupname, $start, $end);
+        $groupid, $download, $page, $coursecontext, $viewfullnames, $groupname, $cmmaster);
 
 echo $oublogoutput->get_link_back_to_oublog($cm->name, $cm->id);
 

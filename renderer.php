@@ -690,9 +690,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param object $context current context
      * @param bool $viewfullnames flag for global users fullnames capability
      * @param string groupname group name for display, default ''
+     * @param object $cmmaster master course module object
      */
     public function render_user_participation_list($cm, $course, $oublog, $participation, $groupid,
-        $download, $page, $context, $viewfullnames, $groupname) {
+        $download, $page, $context, $viewfullnames, $groupname, $cmmaster) {
         global $DB, $CFG;
 
         $user = $participation->user;
@@ -701,6 +702,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         // Setup the table.
         require_once($CFG->dirroot.'/mod/oublog/participation_table.php');
         $filename = "$course->shortname-".format_string($oublog->name, true);
+        $cmparam = !empty($cmmaster) ? '&cmid=' . $cm->id : '';
         if ($groupname !== '') {
             $filename .= '-'.format_string($groupname, true);
         }
@@ -713,11 +715,16 @@ class mod_oublog_renderer extends plugin_renderer_base {
         // Print standard output.
         $output = '';
         $modcontext = context_module::instance($cm->id);
+        $filecontext = !empty($cmmaster) ? context_module::instance($cmmaster->id) : context_module::instance($cm->id);
         if (!$table->is_downloading()) {
             if ($participation->posts) {
                 $output .= html_writer::tag('h2', get_string('postsby', 'oublog', $fullname));
                 $counter = 0;
                 foreach ($participation->posts as $post) {
+                    $urlparams['post'] = $post->id;
+                    if (!empty($cmmaster)) {
+                        $urlparams['cmid'] = $cm->id;
+                    }
                     $row = ($counter % 2) ? 'oublog-odd' : 'oublog-even';
                     $counter++;
                     $output .= html_writer::start_tag('div',
@@ -726,7 +733,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                             array('class' => 'oublog-post-top'));
                     // Post attachments.
                     $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment',
+                    if ($files = $fs->get_area_files($filecontext->id, 'mod_oublog', 'attachment',
                             $post->id, 'timemodified', false)) {
                         $output .= html_writer::start_tag('div',
                                 array('class' => 'oublog-post-attachments'));
@@ -738,18 +745,17 @@ class mod_oublog_renderer extends plugin_renderer_base {
                                     'alt' => $mimetype, 'class' => 'icon'
                             ));
                             $fileurlbase = $CFG->wwwroot . '/pluginfile.php';
-                            $filepath = '/' . $modcontext->id . '/mod_oublog/attachment/'
+                            $filepath = '/' . $filecontext->id . '/mod_oublog/attachment/'
                             . $post->id . '/' . $filename;
-                            $path = moodle_url::make_file_url($fileurlbase, $filepath);
+                            $path = moodle_url::make_file_url($fileurlbase, $filepath, true);
                             $output .= html_writer::tag('a', $iconimage, array('href' => $path));
-                            $output .= html_writer::tag('a', s($filename), array('href' => $path));
+                            $output .= html_writer::tag('a', s($filename), array('href' => $path . $cmparam));
                         }
                         $output .= html_writer::end_tag('div');
                     }
                     // Post title and date.
                     if (isset($post->title) && !empty($post->title)) {
-                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
-                            array('post' => $post->id));
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php', $urlparams);
                         $viewpost = html_writer::link($viewposturl, s($post->title));
                         $output .= html_writer::tag('h3', $viewpost,
                             array('class' => 'oublog-post-title'));
@@ -758,8 +764,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                         $output .= oublog_date($post->timeposted);
                         $output .= html_writer::end_tag('div');
                     } else {
-                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
-                            array('post' => $post->id));
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php', $urlparams);
                         $viewpost = html_writer::link($viewposturl,
                             oublog_date($post->timeposted));
                         $output .= html_writer::tag('h3', $viewpost,
@@ -770,8 +775,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $output .= html_writer::start_tag('div',
                         array('class' => 'oublog-post-content'));
                     $post->message = file_rewrite_pluginfile_urls($post->message,
-                        'pluginfile.php', $modcontext->id, 'mod_oublog',
+                        'pluginfile.php', $filecontext->id, 'mod_oublog',
                         'message', $post->id);
+                    if ($cmmaster) {
+                        $post->message = oublog_add_cmid_to_tag_atrribute($cm->id, $post->message, 'img', 'src');
+                    }
                     $output .= format_text($post->message, FORMAT_HTML);
                     $output .= html_writer::end_tag('div');
 
@@ -785,6 +793,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $output .= html_writer::start_tag('div',
                         array('id' => 'oublogcomments', 'class' => 'oublog-post-comments oublogpartcomments'));
                 foreach ($participation->comments as $comment) {
+                    $urlparams['post'] = $comment->postid;
+                    if (!empty($cmmaster)) {
+                        $urlparams['cmid'] = $cm->id;
+                    }
                     $output .= html_writer::start_tag('div', array('class' => 'oublog-comment'));
 
                     $author = new stdClass();
@@ -796,16 +808,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $authorurl = new moodle_url('/user/view.php', array('id' => $author->id));
                     $authorlink = html_writer::link($authorurl, fullname($author, $viewfullnames));
                     if (isset($comment->posttitle) && !empty($comment->posttitle)) {
-                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
-                            array('post' => $comment->postid));
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php', $urlparams);
                         $viewpostlink = html_writer::link($viewposturl, s($comment->posttitle));
                         $strparams = array('title' => $viewpostlink, 'author' => $authorlink,
                                 'date' => oublog_date($comment->postdate));
                         $output .= html_writer::tag('h3', get_string('commentonby', 'oublog',
                                 $strparams));
                     } else {
-                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php',
-                            array('post' => $comment->postid));
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php', $urlparams);
                         $viewpostlink = html_writer::link($viewposturl,
                             oublog_date($comment->postdate));
                         $strparams = array('title' => $viewpostlink, 'author' => $authorlink, 'date' => '');
@@ -827,8 +837,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $output .= html_writer::start_tag('div',
                         array('class' => 'oublog-comment-content'));
                     $comment->message = file_rewrite_pluginfile_urls($comment->message,
-                            'pluginfile.php', $modcontext->id, 'mod_oublog',
+                            'pluginfile.php', $filecontext->id, 'mod_oublog',
                             'messagecomment', $comment->id);
+                    if ($cmmaster) {
+                        $comment->message = oublog_add_cmid_to_tag_atrribute($cm->id, $comment->message, 'img', 'src');
+                    }
                     $output .= format_text($comment->message, FORMAT_HTML);
                     $output .= html_writer::end_tag('div');
 
@@ -860,11 +873,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $row[] = userdate($post->timeposted, get_string('strftimetime'));
                     $row[] = (isset($post->title) && !empty($post->title)) ? $post->title : '';
                     $post->message = file_rewrite_pluginfile_urls($post->message,
-                        'pluginfile.php', $modcontext->id, 'mod_oublog',
+                        'pluginfile.php', $filecontext->id, 'mod_oublog',
                         'message', $post->id);
+                    if ($cmmaster) {
+                        $post->message = oublog_add_cmid_to_tag_atrribute($cm->id, $post->message, 'img', 'src');
+                    }
                     $row[] = format_text($post->message, FORMAT_HTML);
                     $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modcontext->id, 'mod_oublog', 'attachment',
+                    if ($files = $fs->get_area_files($filecontext->id, 'mod_oublog', 'attachment',
                             $post->id, 'timemodified', false)) {
                         $attachmentstring = '';
                         foreach ($files as $file) {
@@ -898,8 +914,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $row[] = userdate($comment->timeposted, get_string('strftimetime'));
                     $row[] = (isset($comment->title)) ? $comment->title : '';
                     $comment->message = file_rewrite_pluginfile_urls($comment->message,
-                            'pluginfile.php', $modcontext->id, 'mod_oublog',
+                            'pluginfile.php', $filecontext->id, 'mod_oublog',
                             'messagecomment', $comment->id);
+                    if ($cmmaster) {
+                        $comment->message = oublog_add_cmid_to_tag_atrribute($cm->id, $comment->message, 'img', 'src');
+                    }
                     $row[] = format_text($comment->message, FORMAT_HTML);
                     $row[] = $authorfullname;
                     $row[] = userdate($comment->postdate, get_string('strftimedate'));
@@ -1168,11 +1187,12 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param object $course current course object
      * @param object $oublog current oublog object
      * @param int $page html_table pagination page
+     * @param object $cmmaster master course module object
      * @param array $participation mixed array of user participation values
      */
     public function render_all_users_participation_table($cm, $course, $oublog,
             $page, $limitnum, $participation,
-            $getposts, $getcomments, $start, $end, $pagingurl) {
+            $getposts, $getcomments, $start, $end, $pagingurl, $cmmaster) {
         global $DB, $CFG, $OUTPUT, $USER;
         require_once($CFG->dirroot.'/mod/oublog/participation_table.php');
         $groupmode = oublog_get_activity_groupmode($cm, $course);
@@ -1213,7 +1233,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $row = array();
                 $row[] = $OUTPUT->user_picture($postuser,
                         array('class' => 'userpicture')) . $fullname;
-                $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
+                if (!empty($cmmaster)) {
+                    $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id, 'cmid' => $cm->id));
+                } else {
+                    $url = new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
+                }
                 $postname = !(empty($post->title)) ? $post->title : get_string('untitledpost', 'oublog');
                 $row[] = html_writer::div(html_writer::link($url, $postname), '');
                 $row[] = html_writer::div(oublog_date($post->timeposted));
@@ -1288,8 +1312,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
                             $commentauthor->$field = $comment->$cfield;
                         }
                     }
-                    $viewposturl = new moodle_url('/mod/oublog/viewpost.php', array('post' => $comment->postid));
-                    $viewpostcommenturl = $viewposturl->out() . '#cid' . $comment->id;
+                    if (!empty($cmmaster)) {
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php', array('post' => $comment->postid,
+                                'cmid' => $cm->id));
+                        $viewpostcommenturl = $viewposturl->out(false) . '#cid' . $comment->id;
+                    } else {
+                        $viewposturl = new moodle_url('/mod/oublog/viewpost.php', array('post' => $comment->postid));
+                        $viewpostcommenturl = $viewposturl->out() . '#cid' . $comment->id;
+                    }
                     $commenttitle = !(empty($comment->title)) ? $comment->title : get_string('untitledcomment', 'oublog');
                     $posttitle = !(empty($comment->posttitle)) ? $comment->posttitle : get_string('untitledpost', 'oublog');
                     $viewcommentlink = html_writer::link($viewpostcommenturl, s($commenttitle));
