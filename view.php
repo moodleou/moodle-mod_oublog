@@ -563,7 +563,7 @@ if ($posts) {
     $retnurl = $returnurl . '&page=' . $page;
     foreach ($posts as $post) {
         $post->row = $rowcounter;
-        echo $oublogoutput->render_post($cm, $postsoublog, $post, $retnurl, $blogtype,
+        echo $oublogoutput->render_post($cm, $oublog, $post, $retnurl, $blogtype,
                 $canmanageposts, $canaudit, true, false, false, false, 'top', $cmmaster, $masterblog ? $cm->id : null);
         $rowcounter++;
     }

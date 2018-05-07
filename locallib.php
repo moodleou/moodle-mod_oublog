@@ -1718,11 +1718,12 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
  * @param bool $comments
  * @param int $postid
  * @param unknown_type $context
+ * @param object $childoublog
  * @return string
  * @uses $CFG
  * @uses $USER
  */
-function oublog_get_feedurl($format, $oublog, $bloginstance, $groupid, $comments, $postid, $cm, $individualid=0) {
+function oublog_get_feedurl($format, $oublog, $bloginstance, $groupid, $comments, $postid, $cm, $individualid=0, $childoublog = null) {
     global $CFG, $USER;
     $url  = $CFG->wwwroot.'/mod/oublog/feed.php';
     $url .= '?format='.$format;
@@ -1736,7 +1737,12 @@ function oublog_get_feedurl($format, $oublog, $bloginstance, $groupid, $comments
             $accesstoken = $bloginstance->accesstoken;
         }
     } else {
-        $accesstoken = $oublog->accesstoken;
+        if (!empty($childoublog)) {
+            $accesstoken = $childoublog->accesstoken;
+            $url .= '&amp;childblog='.$childoublog->id;
+        } else {
+            $accesstoken = $oublog->accesstoken;
+        }
     }
 
     if ($groupid) {
@@ -1788,13 +1794,14 @@ function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $i
     }
     // Check master blog.
     $feedoublog = !empty($masterblog) ? $masterblog : $oublog;
+    $childoublog = !empty($masterblog) ? $oublog : null;
 
-    $blogurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid);
-    $blogurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid);
+    $blogurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid, $childoublog);
+    $blogurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid, $childoublog);
 
     if (!is_string($bloginstance)) {
-        $commentsurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
-        $commentsurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid);
+        $commentsurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid, $childoublog);
+        $commentsurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid, $childoublog);
     }
 
     $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog', oublog_get_displayname($oublog));
