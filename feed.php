@@ -82,8 +82,9 @@ if (!empty($childblogid)) {
     }
 }
 $feedcm = !empty($cmchildblog) ? $cmchildblog : $cm;
+$feedblog = !empty($childblog) ? $childblog : $blog;
 // Work out link for ordinary web page equivalent to requested feed
-if ($blog->global) {
+if ($feedblog->global) {
     if ($bloginstancesid == 'all') {
         $url = $CFG->wwwroot . '/mod/oublog/allposts.php';
     } else {
@@ -104,7 +105,7 @@ if ($blog->global) {
 // Check browser compatibility.
 if (core_useragent::check_browser_version('MSIE', 0) || core_useragent::check_browser_version('Firefox', 0)) {
     if (!core_useragent::check_browser_version('MSIE', '7') && !core_useragent::check_browser_version('Firefox', '2')) {
-        if ($blog->global) {
+        if ($feedblog->global) {
             $url='view.php?user='.$bloginstance->userid;
         } else {
             $url='view.php?id='.$cm->id.($groupid ? '&group='.$groupid : '');
@@ -130,14 +131,10 @@ if ($mtime && isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
     }
 }
 
-if ($blog->global && $bloginstancesid != 'all') {
+if ($feedblog->global && $bloginstancesid != 'all') {
     $accesstoken = $bloginstance->accesstoken;
 } else {
-    if (!empty($childblog)) {
-        $accesstoken = $childblog->accesstoken;
-    } else {
-        $accesstoken = $blog->accesstoken;
-    }
+    $accesstoken = $feedblog->accesstoken;
 }
 
 if ($full) {
@@ -152,7 +149,7 @@ if ($full) {
         // This is the old token. Ooops. We know that at least users were
         // logged in, so they get that version...
         $allowedvisibility = OUBLOG_VISIBILITY_LOGGEDINUSER;
-        if (!$blog->global) {
+        if (!$feedblog->global) {
             // For course blogs, security was actually correct, so let's
             // keep allowing them to read the whole blog
             $allowedvisibility = OUBLOG_VISIBILITY_COURSEUSER;
@@ -173,8 +170,8 @@ if ($full) {
 }
 
 // Check individual
-if ($blog->individual) {
-    if (!oublog_individual_has_permissions($feedcm, $blog, $groupid, $individualid, $user->id)) {
+if ($feedblog->individual) {
+    if (!oublog_individual_has_permissions($feedcm, $feedblog, $groupid, $individualid, $user->id)) {
          print_error('nopermissiontoshow');
     }
 }
@@ -195,15 +192,15 @@ if ($groupmode == SEPARATEGROUPS) {
 if ($comments) {
     $feeddata = oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user,
             $allowedvisibility, $groupid, $feedcm, $blog, $individualid);
-    $feedname = strip_tags($blog->name) . ': ' . get_string('commentsfeed', 'oublog');
+    $feedname = strip_tags($feedblog->name) . ': ' . get_string('commentsfeed', 'oublog');
     $feedsummary='';
 } else {
     $feeddata = oublog_get_feed_posts($blogid,
         isset($bloginstance) ? $bloginstance : null, $user,
         $allowedvisibility, $groupid, $feedcm, $blog, $individualid);
-    $feedname=strip_tags($blog->name);
+    $feedname=strip_tags($feedblog->name);
     if ($bloginstancesid=='all') {
-        $feedsummary=strip_tags($blog->intro);
+        $feedsummary=strip_tags($feedblog->intro);
     } else {
         $feedsummary=strip_tags($bloginstance->summary);
     }
