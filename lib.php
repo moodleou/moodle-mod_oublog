@@ -805,7 +805,7 @@ function oublog_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     $ajax = constant('AJAX_SCRIPT') ? true : false;
     $cmid = optional_param('cmid', null, PARAM_INT);
     $context = $cmid ? context_module::instance($cmid) : $context;
-    if ($filearea != 'summary' && !$ajax && !oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+    if ($filearea != 'summary' && !$ajax && !oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
         return false;
     }
     if ($filearea == 'attachment') {
@@ -864,7 +864,7 @@ function oublog_get_file_info($browser, $areas, $course, $cm, $context, $fileare
     }
     // Check if the user is allowed to view the post
     try {
-        if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+        if (!oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
             return null;
         }
     } catch (mod_oublog_exception $e) {
@@ -1359,8 +1359,11 @@ function mod_oublog_rating_can_see_item_ratings($params) {
 
     $blog = oublog_get_blog_from_postid($params['itemid']);
     $post = oublog_get_post($params['itemid'], true);
+    $modinfo = get_fast_modinfo($blog->course);
+    $bloginstances = $modinfo->get_instances_of('oublog');
+    $cm = $bloginstances[$blog->id];
 
-    if (!oublog_can_view_post($post, $USER, $context, $blog->global)) {
+    if (!oublog_can_view_post($post, $USER, $context, $cm, $blog)) {
         return false;
     }
 

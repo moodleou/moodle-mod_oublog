@@ -355,28 +355,32 @@ function oublog_is_writable_group($cm) {
  * @param object $post
  * @param object $user
  * @param object $context
- * @param bool $personalblog True if this is on a personal blog
+ * @param stdClass|cm_info $cm Course-module object
+ * @param stdClass $oublog Blog object
+ * @param stdClass|cm_info|null $childcm Child course-module or null if none
+ * @param stdClass|null $childoublog Child blog object or null if none
  * @return bool
  */
-function oublog_can_view_post($post, $user, $context, $personalblog) {
+function oublog_can_view_post($post, $user, $context, $cm, $oublog, $childcm = null, $childoublog = null) {
+    global $DB;
+
     if (empty($post->userid)) {
         // Not sent userid from pluginfile etc so get it.
-        global $DB;
         if ($instance = $DB->get_record('oublog_instances',
                 array('id' => $post->oubloginstancesid), 'userid')) {
             $post->userid = $instance->userid;
         }
     }
-    // If you dont have capabilities and its not yours, you cant see it.
+    // If you don't have capabilities and it's not yours, you can't see it.
     if ($post->deletedby && !has_capability('mod/oublog:manageposts', $context, $user->id) &&
                 ($post->userid !== $user->id)) {
         return false;
     }
-    // Public visibility means everyone
+    // Public visibility means everyone.
     if ($post->visibility == OUBLOG_VISIBILITY_PUBLIC) {
         return true;
     }
-    // Logged-in user visibility means everyone logged in, but no guests
+    // Logged-in user visibility means everyone logged in, but no guests.
     if ($post->visibility==OUBLOG_VISIBILITY_LOGGEDINUSER &&
         (isloggedin() && !isguestuser())) {
         return true;
@@ -388,19 +392,81 @@ function oublog_can_view_post($post, $user, $context, $personalblog) {
         print_error('invalidvisibilitylevel', 'oublog', '', $post->visibility);
     }
 
-    // Otherwise this is set to course visibility
-    if ($personalblog) {
+    $correctindividual = isset($childoublog->individual) ? $childoublog->individual : $oublog->individual;
+    $correctglobal = isset($childoublog->global) ? $childoublog->global : $oublog->global;
+    $correctcm = $childcm ? $childcm : $cm;
+
+    // Otherwise this is set to course visibility.
+    if ($correctglobal) {
         // Private posts - only same user or has capability viewprivate can see.
         if (has_capability('mod/oublog:viewprivate', context_system::instance(), $user->id)) {
             return true;
         }
         return $post->userid == $user->id;
     } else {
-        // Check oublog:view capability at module level
+        // Check oublog:view capability at module level.
         // This might not have been checked yet because if the blog is
         // set to public, you're allowed to view it, but maybe not this
         // post.
-        return has_capability('mod/oublog:view', $context, $user->id);
+        if (!has_capability('mod/oublog:view', $context, $user->id)) {
+            return false;
+        }
+
+        // Is it a separate individuals blog? If so, you can only view your own unless you have
+        // permission.
+        if ($correctindividual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS &&
+                !has_capability('mod/oublog:viewindividual', $context, $user->id) &&
+                $post->userid != $user->id) {
+            return false;
+        }
+
+        // Is the blog in separate groups mode, and you don't have access all groups?
+        $groupmode = groups_get_activity_groupmode($correctcm);
+        if ($groupmode == SEPARATEGROUPS &&
+                !has_capability('moodle/site:accessallgroups', $context, $user->id)) {
+            if ($correctindividual == OUBLOG_VISIBLE_INDIVIDUAL_BLOGS ||
+                    $correctindividual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS) {
+                // For visible individual blog (or separate if you have view individuals), you can
+                // only view entries from somebody in another of the groups you are in (that match
+                // the activity grouping if set).
+                $groupingjoin = '';
+                $params = [];
+                if ($correctcm->groupingid) {
+                    $groupingjoin = "
+                            JOIN {groupings_groups} gg ON gg.groupid = gm.groupid AND gg.groupingid = ?
+                            JOIN {groupings_groups} gg2 ON gg2.groupid = gm2.groupid AND gg2.groupingid = ?";
+                    $params = [$correctcm->groupingid, $correctcm->groupingid];
+                }
+                $sql = "SELECT 1
+                          FROM {groups_members} gm
+                          JOIN {groups} g ON g.id = gm.groupid
+                          JOIN {groups_members} gm2 ON gm2.groupid = gm.groupid
+                 $groupingjoin
+                          JOIN {groups} g2 ON g2.id = gm2.groupid AND g2.courseid = g.courseid
+                         WHERE gm.userid = ? AND gm2.userid = ? AND g.courseid = ?";
+                $params = array_merge($params, [$user->id, $post->userid, $correctcm->course]);
+
+                if (!$DB->record_exists_sql($sql, $params)) {
+                    return false;
+                }
+            } else if ($post->groupid) {
+                // For group blog, you can only view entries in one of the groups you are in.
+                $mygroups = groups_get_user_groups($correctcm->course, $user->id);
+                if ($correctcm->groupingid) {
+                    if (empty($mygroups[$correctcm->groupingid][$post->groupid])) {
+                        return false;
+                    }
+                } else {
+                    // For some stupid reason this is stored in a different way for zero versus
+                    // all the groupings.
+                    if (!in_array($post->groupid, $mygroups[0])) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 }
 
@@ -649,7 +715,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
         if ($cnt > $oublog->postperpage) {
             break;
         }
-        if (oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+        if (oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
             if ($oublog->maxvisibility < $post->visibility) {
                 $post->visibility = $oublog->maxvisibility;
             }

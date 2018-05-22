@@ -113,7 +113,7 @@ class oublog_search_test extends oublog_test_lib {
         $this->setUser($suser1);
         $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $page->check_access($post1id));
         $this->setUser($suser2);
-        $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $page->check_access($post1id));
+        $this->assertEquals(\core_search\manager::ACCESS_DENIED, $page->check_access($post1id));
         $this->setUser($etuser);
         $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $page->check_access($post1id));
 

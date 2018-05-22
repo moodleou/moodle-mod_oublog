@@ -166,9 +166,7 @@ if ($correctindividual && $individualdetails) {
 
 echo html_writer::end_div();
 
-global $modulecontext, $personalblog;
 $modulecontext = $context;
-$personalblog = $correctglobal ? true : false;
 
 // FINALLY do the actual query
 $query=new local_ousearch_search($querytext);
@@ -196,7 +194,10 @@ if ($correctglobal && isset($oubloguser)) {
 if ($groupmode && $currentgroup && $correctindividual == OUBLOG_NO_INDIVIDUAL_BLOGS) {
     $query->set_group_id($currentgroup);
 }
-$query->set_filter('visibility_filter');
+$query->set_filter(function($result) use($modulecontext, $oublog, $childoublog, $cm, $childcm) {
+    global $USER;
+    return oublog_can_view_post($result->data, $USER, $modulecontext, $cm, $oublog, $childcm, $childoublog);
+});
 $searchurl = 'search.php?' . (empty($id) ? 'user=' . $oubloguser->id : 'id='. $cm->id) . ($cmid) ? '&cmid=' . $cmid : '';
 
 $foundsomething=$query->display_results($searchurl);
@@ -219,14 +220,3 @@ if (!empty($CFG->block_resources_search_baseurl)) {
 
 // Footer
 echo $OUTPUT->footer();
-
-/**
- * Function filters search results to exclude ones that don't meet the
- * visibility criterion.
- *
- * @param object $result Search result data
- */
-function visibility_filter(&$result) {
-    global $USER, $modulecontext, $personalblog;
-    return oublog_can_view_post($result->data, $USER, $modulecontext, $personalblog);
-}

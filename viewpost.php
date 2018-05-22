@@ -105,7 +105,7 @@ if (!isloggedin() && $post->visibility != OUBLOG_VISIBILITY_PUBLIC) {
     redirect('/mod/oublog/bloglogin.php?returnurl=' . urlencode($url->out()));
 }
 
-if (!oublog_can_view_post($post, $USER, $context, $oublog->global)) {
+if (!oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
     print_error('accessdenied', 'oublog');
 }
 

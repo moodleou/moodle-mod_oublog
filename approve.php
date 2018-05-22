@@ -76,7 +76,7 @@ require_login($course, $cm);
 $context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 if ($USER->id !== $post->userid ||
-        !oublog_can_view_post($post, $USER, $context, $oublog->global) ||
+        !oublog_can_view_post($post, $USER, $context, $cm, $oublog) ||
         !oublog_can_comment($cm, $oublog, $post)) {
     print_error('accessdenied', 'oublog', $backlink);
 }

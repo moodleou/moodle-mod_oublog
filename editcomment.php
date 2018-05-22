@@ -67,7 +67,7 @@ if (!empty($childdata)) {
 }
 $correctglobal = isset($childoublog->global) ? $childoublog->global : $oublog->global;
 $post->userid=$oubloginstance->userid; // oublog_can_view_post needs this
-if (!oublog_can_view_post($post, $USER, $context, $correctglobal)) {
+if (!oublog_can_view_post($post, $USER, $context, $cm, $oublog, $childcm, $childoublog)) {
     print_error('accessdenied', 'oublog');
 }
 

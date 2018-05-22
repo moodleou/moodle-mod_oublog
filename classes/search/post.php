@@ -178,7 +178,7 @@ class post extends \core_search\base_mod {
             }
 
             // Determine if a user can view a post.
-            if (! \oublog_can_view_post($postinstance, $USER, $context, $oublog->global)) {
+            if (! \oublog_can_view_post($postinstance, $USER, $context, $cm, $oublog)) {
                 return \core_search\manager::ACCESS_DENIED;
             }
             return \core_search\manager::ACCESS_GRANTED;
