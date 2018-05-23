@@ -80,11 +80,33 @@ class mod_oublog_generator extends testing_module_generator {
         return parent::create_instance($record, (array)$options);
     }
 
+    /**
+     * Creates or edits a post.
+     *
+     * @param stdClass $oublog Blog instance
+     * @param array|stdClass $record Information about post
+     * @return int|bool Post id if adding one, or true/false if editing an existing one
+     */
+    public function create_post($oublog, $record) {
+        return $this->create_content($oublog, ['post' => (object)$record]);
+    }
+
+    /**
+     * Creates a comment.
+     *
+     * @param stdClass $oublog Blog instance
+     * @param array|stdClass $record Information about comment
+     * @return int Post id
+     */
+    public function create_comment($oublog, $record) {
+        return $this->create_content($oublog, ['comment' => (object)$record]);
+    }
+
     public function create_content($instance, $record = array()) {
         global $USER, $DB, $CFG;
         require_once($CFG->dirroot . '/mod/oublog/locallib.php');
-        // Send $record['post'] (object) or $record['comment'] (object).
-        // Returns id of post/comment created.
+        // Must set either 'post' object or 'comment' (object).
+        // Returns id of post/comment created, or true/false for edit.
 
         $cm = get_coursemodule_from_instance('oublog', $instance->id);
         $context = context_module::instance($cm->id);
@@ -96,11 +118,17 @@ class mod_oublog_generator extends testing_module_generator {
         }
 
         if (isset($record['post'])) {
-            if (empty($record['post']->userid)) {
-                $record['post']->userid = $USER->id;
-            }
-            if (empty($record['post']->oublogid)) {
-                $record['post']->oublogid = $instance->id;
+            if (!empty($record['post']->id)) {
+                $oldpost = oublog_get_post($record['post']->id);
+                $record['post']->userid = $oldpost->userid;
+                $record['post']->oublogid = $oldpost->oublogid;
+            } else {
+                if (empty($record['post']->userid)) {
+                    $record['post']->userid = $USER->id;
+                }
+                if (empty($record['post']->oublogid)) {
+                    $record['post']->oublogid = $instance->id;
+                }
             }
             if (empty($record['post']->message)) {
                 $record['post']->message = array('text' => 'Test post');
@@ -118,12 +146,23 @@ class mod_oublog_generator extends testing_module_generator {
             if (empty($record['post']->title)) {
                 $record['post']->title = '';
             }
-            // Force attachments to be empty as will not work.
-            $record['post']->attachments = null;
+            if (empty($record['post']->visibility)) {
+                $record['post']->visibility = OUBLOG_VISIBILITY_COURSEUSER;
+            }
+            if (empty($record['post']->tags)) {
+                $record['post']->tags = '';
+            }
+            if (empty($record['post']->attachments)) {
+                $record['post']->attachments = 0;
+            }
             if ($USER->id === 0) {
                 mtrace('oublog_add_post() will error as you must be a valid user to add a post');
             }
-            return oublog_add_post($record['post'], $cm, $instance, $course);
+            if (empty($record['post']->id)) {
+                return oublog_add_post($record['post'], $cm, $instance, $course);
+            } else {
+                return oublog_edit_post($record['post'], $cm);
+            }
         } else if (isset($record['comment'])) {
             if (empty($record['comment']->postid)) {
                 throw new coding_exception('Must pass postid when creating comment');
@@ -138,7 +177,7 @@ class mod_oublog_generator extends testing_module_generator {
                     // Support message being string to insert in db not form style.
                     $record['comment']->messagecomment = array('text' => $record['comment']->message);
                 }
-            } else if (is_string($record['post']->messagecomment)) {
+            } else if (is_string($record['comment']->messagecomment)) {
                 // Support message being string to insert in db not form style.
                 $record['comment']->messagecomment = array('text' => $record['comment']->messagecomment);
             }

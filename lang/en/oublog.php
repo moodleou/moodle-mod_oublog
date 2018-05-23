@@ -315,8 +315,7 @@ $string['moderated_restrictpage'] = 'Restrict commenting';
 $string['moderated_restrictpost_info'] = 'Would you like to restrict comments on this post so that only people who are logged into the system can add comments?';
 $string['moderated_restrictblog_info'] = 'Would you like to restrict comments on all your posts on this blog so that only people who are logged into the system can add comments?';
 $string['moderated_emailsubject'] = 'Comment awaiting approval on: {$a->blog} ({$a->commenter})';
-$string['moderated_emailhtml'] =
-'<p>(This is an automatically-generated email. Please do not reply.)</p>
+$string['moderated_emailhtml'] = '<p>(This is an automatically-generated email. Please do not reply.)</p>
 <p>Someone has added a comment to your blog post: {$a->postlink}</p>
 <p>You need to <strong>approve the comment</strong> before it will appear in public.</p>
 <p>The system does not know the identity of the commenter and comments may
@@ -347,8 +346,7 @@ to logged-in users only.
 <li><a href=\'{$a->restrictpostlink}\'>{$a->restrictposttext}</a></li>
 <li><a href=\'{$a->restrictbloglink}\'>{$a->restrictblogtext}</a></li>
 </ul>';
-$string['moderated_emailtext'] =
-'This is an automatically-generated email. Please do not reply.
+$string['moderated_emailtext'] = 'This is an automatically-generated email. Please do not reply.
 
 Someone has added a comment to your blog post:
 {$a->postlink}
@@ -592,7 +590,7 @@ $string['viewmyparticipation'] = 'View my participation';
 $string['viewallparticipation'] = 'View all participation';
 $string['timestartenderror'] = 'Selection end date cannot be earlier than the start date';
 
-$string['savefailtitle']='Post cannot be saved';
+$string['savefailtitle'] = 'Post cannot be saved';
 $string['savefailnetwork'] = '<p>Unfortunately, your changes cannot be saved at this time.
 This is due to a network error; the website is temporarily unavailable or you have been signed out. </p>
 <p>Saving has been disabled on this blog.

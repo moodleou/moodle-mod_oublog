@@ -558,9 +558,12 @@ function oublog_edit_post($post, $cm) {
         return(false);
     }
 
-    if (!$post->oubloginstancesid = $DB->get_field('oublog_instances', 'id', array('oublogid'=>$post->oublogid, 'userid'=>$post->userid))) {
+    $oubloginstance = $DB->get_record('oublog_instances', ['id' => $oldpost->oubloginstancesid],
+            'id, userid', IGNORE_MISSING);
+    if (!$oubloginstance) {
         return(false);
     }
+    $post->oubloginstancesid = $oubloginstance->id;
 
     // Begin transaction
     $tw = $DB->start_delegated_transaction();
@@ -568,7 +571,7 @@ function oublog_edit_post($post, $cm) {
     // insert edit history
     $edit = new stdClass();
     $edit->postid       = $post->id;
-    $edit->userid       = $USER->id;
+    $edit->userid       = $oldpost->lasteditedby ? $oldpost->lasteditedby : $oubloginstance->userid;
     $edit->timeupdated  = time();
     $edit->oldtitle     = $oldpost->title;
     $edit->oldmessage   = $oldpost->message;
@@ -1252,7 +1255,11 @@ function oublog_add_comment($course, $cm, $oublog, $comment) {
     $id = $DB->insert_record('oublog_comments', $comment);
     // Save out any images from the comment message text.
     $context = context_module::instance($cm->id);
-    $draftid = file_get_submitted_draft_itemid('messagecomment');
+    if (!empty($comment->messagecomment['itemid'])) {
+        $draftid = $comment->messagecomment['itemid'];
+    } else {
+        $draftid = file_get_submitted_draft_itemid('messagecomment');
+    }
     $comment->message = file_save_draft_area_files($draftid, $context->id, 'mod_oublog',
             'messagecomment', $id, array('subdirs' => true), $comment->messagecomment['text']);
     $comment->id = $id;
@@ -1471,7 +1478,7 @@ function oublog_add_link($link) {
     global $DB;
 
     // $link->oubloginstancesid is only set for personal blogs
-    if (isset($link->oubloginstanceid)) {
+    if (isset($link->oubloginstancesid)) {
         $sql = "SELECT MAX(sortorder) AS sortorder FROM {oublog_links} WHERE oubloginstancesid = ? ";
         $sortorder = $DB->get_field_sql($sql, array($link->oubloginstancesid));
         $sortorder++;
