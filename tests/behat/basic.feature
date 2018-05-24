@@ -10,6 +10,7 @@ Feature: Test Post and Comment on OUBlog entry
       | teacher1 | Teacher | 1 | teacher1@asd.com |
       | student1 | Student | 1 | student1@asd.com |
       | student2 | Student | 2 | student2@asd.com |
+      | student3 | Student | 3 | student3@asd.com |
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1 | 0 |
@@ -18,6 +19,7 @@ Feature: Test Post and Comment on OUBlog entry
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
       | student2 | C1 | student |
+      | student3 | C1 | student |
     And the following "groups" exist:
       | name | course | idnumber |
       | G1 | C1 | G1 |
@@ -689,3 +691,42 @@ Feature: Test Post and Comment on OUBlog entry
     When I follow "Test oublog with no default tags"
     And I press "New blog post"
     Then I should not see "tag1,tag2,tag3"
+
+  Scenario: Check group level access when no groups
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I am on "Course 1" course homepage
+    And I turn editing mode on
+    When I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.SG |
+      | Group mode | Separate groups |
+    And I add a "OU blog" to section "1" and I fill the form with:
+      | Blog name | B.VG |
+      | Group mode | Visible groups |
+    # Editing teacher adds posts to all the blogs.
+    Given I am on "Course 1" course homepage
+    And I follow "B.SG"
+    And I set the field "Separate groups" to "G1"
+    And I press "Go"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P1 |
+      | Message | P1 |
+    And I press "Add post"
+    Given I am on "Course 1" course homepage
+    And I follow "B.VG"
+    And I set the field "Visible groups" to "G1"
+    And I press "Go"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title | P2 |
+      | Message | P2 |
+    And I press "Add post"
+    Given I log out
+    And I log in as "student3"
+    And I am on "Course 1" course homepage
+    When I follow "B.SG"
+    Then I should see "There are no visible posts in this blog"
+    Given I am on "Course 1" course homepage
+    When I follow "B.VG"
+    Then I should see "P2"

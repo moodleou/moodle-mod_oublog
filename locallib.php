@@ -731,7 +731,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $rs->close();
 
     if (empty($posts)) {
-        return array(true, $recordcnt);
+        return array(false, $recordcnt);
     }
 
     // Get tags for all posts on page
