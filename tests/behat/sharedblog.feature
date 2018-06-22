@@ -168,6 +168,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I log out
     Given I log in as "student1"
     And I am on "Course 1" course homepage
+    And I press "Expand all"
     And I follow "Child Blog"
     Then I should see "Content Master Blog 1"
     When I press "New blog post"
@@ -252,6 +253,7 @@ Feature: Test shared data from Master blog on OUBlog
     # Shared blog in different course.
     Given I log in as "student2"
     And I am on "Course 2" course homepage
+    And I press "Expand all"
     And I follow "Child Blog 2"
     Then I should see "Content Master Blog 1"
     And I should see "P3 of student"

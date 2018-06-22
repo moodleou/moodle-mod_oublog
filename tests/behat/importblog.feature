@@ -25,6 +25,7 @@ Feature: Test import posts function for blog
     And I am on site homepage
     And I am using the OSEP theme
     And I am on "Course 1" course homepage
+    And I press "Expand all"
     And I follow "student 1 blog one"
     And I press "New blog post"
     And I set the following fields to these values:
