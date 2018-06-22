@@ -48,27 +48,43 @@ class post extends \core_search\base_mod {
     protected static $levels = [CONTEXT_MODULE];
 
     /**
+     * Calls get_document_recordset which returns the required data for indexing oublog posts.
+     *
+     * @param int $modifiedfrom
+     * @return \moodle_recordset|null
+     */
+    public function get_recordset_by_timestamp($modifiedfrom = 0) {
+        return $this->get_document_recordset($modifiedfrom);
+    }
+
+    /**
      * Returns recordset containing required data for indexing oublog posts.
      *
      * @param int $modifiedfrom
-     * @return \moodle_recordset
+     * @param \context|null $context
+     * @return \moodle_recordset|null
      */
-    public function get_recordset_by_timestamp($modifiedfrom = 0) {
-        // Get all posts.
+    public function get_document_recordset($modifiedfrom = 0, \context $context = null) {
         global $DB;
-        $querystring = '
-            SELECT ob.id AS oublogid, ob.course,
+
+        list ($contextjoin, $contextparams) = $this->get_context_restriction_sql(
+                $context, 'oublog', 'ob');
+        if ($contextjoin === null) {
+            return null;
+        }
+
+        $sql = "SELECT ob.id AS oublogid, ob.course,
                    op.id as postid, op.oubloginstancesid, op.groupid, op.title, op.message, oi.userid,
                    COALESCE(op.timeupdated, op.timeposted) as timemodified, op.deletedby,
                    op.timedeleted, op.visibility, op.lasteditedby
-              FROM {oublog_posts} op
-              JOIN {oublog_instances} oi ON oi.id = op.oubloginstancesid
-              JOIN {oublog} ob ON ob.id = oi.oublogid
-             WHERE COALESCE(op.timeupdated, op.timeposted) >= ?
+                  FROM {oublog_posts} op
+                  JOIN {oublog_instances} oi ON oi.id = op.oubloginstancesid
+                  JOIN {oublog} ob ON ob.id = oi.oublogid
+          $contextjoin
+                 WHERE COALESCE(op.timeupdated, op.timeposted) >= ?
                    AND op.timedeleted IS NULL
-          ORDER BY COALESCE(op.timeupdated, op.timeposted) ASC';
-
-        return $DB->get_recordset_sql($querystring, [$modifiedfrom]);
+              ORDER BY COALESCE(op.timeupdated, op.timeposted) ASC";
+        return $DB->get_recordset_sql($sql, array_merge($contextparams, [$modifiedfrom]));
     }
 
     /**

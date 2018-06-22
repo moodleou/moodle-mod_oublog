@@ -1461,7 +1461,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $userpic = $OUTPUT->pix_icon('u/f2', '');
             }
         } else {
-            $userpic = $this->output->user_picture($info->user, array('courseid' => $COURSE->id, 'link' => true));
+            $userpic = $this->output->user_picture($info->user, array('courseid' => $COURSE->id, 'link' => true, 'size' => 50));
         }
         $avatar = html_writer::span($userpic, 'oublog_statsinfo_avatar');
         $infodiv = html_writer::start_div('oublog_statsinfo_infocol');

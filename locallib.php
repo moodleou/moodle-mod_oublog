@@ -3015,9 +3015,10 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
  * @param string $value blog identifier value e.g. 266
  * @param string $strblogsearch search this blog text
  * @param string $querytext optional search term
+ * @param bool $newsearchimage optional param to display a different image..
  * @returns string html
  */
-function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
+function oublog_get_search_form($name, $value, $strblogsearch, $querytext='', $newsearchimage = false) {
     if (!oublog_search_installed()) {
         return '';
     }
@@ -3030,9 +3031,10 @@ function oublog_get_search_form($name, $value, $strblogsearch, $querytext='') {
             'value' => $value));
     $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
             'id' => 'oublog_searchquery', 'value' => $querytext));
+    $src = ($newsearchimage) ? $OUTPUT->image_url('search_rgb_32px', 'theme_osep') : $OUTPUT->image_url('i/search');
     $out .= html_writer::empty_tag('input', array('type' => 'image',
             'id' => 'ousearch_searchbutton', 'alt' => get_string('search'),
-            'title' => get_string('search'), 'src' => $OUTPUT->image_url('i/search')));
+            'title' => get_string('search'), 'src' => $src));
     $out .= html_writer::end_tag('div');
     $out .= html_writer::end_tag('form');
     return $out;

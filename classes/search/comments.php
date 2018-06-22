@@ -47,29 +47,45 @@ class comments extends \core_search\base_mod {
     protected static $levels = [CONTEXT_MODULE];
 
     /**
+     * Calls get_document_recordset which returns required data for indexing blog post comments.
+     *
+     * @param int $modifiedfrom
+     * @return \moodle_recordset|null
+     */
+    public function get_recordset_by_timestamp($modifiedfrom = 0) {
+        return $this->get_document_recordset($modifiedfrom);
+    }
+
+    /**
      * Returns recordset containing required data for indexing comments of posts.
      *
      * @param int $modifiedfrom
-     * @return \moodle_recordset
+     * @param \context|null $context
+     * @return \moodle_recordset|null
      */
-    public function get_recordset_by_timestamp($modifiedfrom = 0) {
-        // Get all comments of posts.
+    public function get_document_recordset($modifiedfrom = 0, \context $context = null) {
         global $DB;
-        $querystring = '
-            SELECT ob.id, ob.course, op.id as postid,
+
+        list ($contextjoin, $contextparams) = $this->get_context_restriction_sql(
+                $context, 'oublog', 'ob');
+        if ($contextjoin === null) {
+            return null;
+        }
+
+        $sql = "SELECT ob.id, ob.course, op.id as postid,
                    obcm.id as commentid, obcm.postid, obcm.userid, obcm.title,
                    obcm.message, obcm.timeposted, obcm.deletedby, obcm.timedeleted,
                    obcm.authorname, obcm.authorip, obcm.timeapproved
-              FROM {oublog_comments} obcm
-              JOIN {oublog_posts} op ON op.id = obcm.postid
-              JOIN {oublog_instances} oi ON oi.id = op.oubloginstancesid
-              JOIN {oublog} ob ON ob.id = oi.oublogid
-             WHERE obcm.timeposted >= ?
-                   AND obcm.timedeleted IS NULL
-                   AND op.timedeleted IS NULL
-          ORDER BY obcm.timeposted ASC';
-
-        return $DB->get_recordset_sql($querystring, array($modifiedfrom));
+                  FROM {oublog_comments} obcm
+                  JOIN {oublog_posts} op ON op.id = obcm.postid
+                  JOIN {oublog_instances} oi ON oi.id = op.oubloginstancesid
+                  JOIN {oublog} ob ON ob.id = oi.oublogid
+          $contextjoin
+                 WHERE obcm.timeposted >= ?
+                    AND obcm.timedeleted IS NULL
+                    AND op.timedeleted IS NULL
+              ORDER BY obcm.timeposted ASC";
+        return $DB->get_recordset_sql($sql, array_merge($contextparams, [$modifiedfrom]));
     }
 
     /**
