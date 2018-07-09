@@ -28,9 +28,11 @@ define('NO_OUTPUT_BUFFERING', true);
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+require_once ($CFG->dirroot . '/lib/tablelib.php');
 
 $id = required_param('id', PARAM_INT);// Blog cm ID.
-
+$cmid = optional_param('cmid', null, PARAM_INT); // Shared blog cmid.
+$sharedblogcmid = optional_param('sharedblogcmid', null, PARAM_INT); // Shared blog cmid for import.
 // Load efficiently (and with full $cm data) using get_fast_modinfo.
 $course = $DB->get_record_select('course',
             'id = (SELECT course FROM {course_modules} WHERE id = ?)', array($id),
@@ -52,22 +54,36 @@ if ($tempoublog->global) {
 } else {
     $tempoublog->maxvisibility = OUBLOG_VISIBILITY_COURSEUSER;// Force login regardless of setting.
 }
-oublog_check_view_permissions($tempoublog, $context, $cm);
-$blogname = oublog_get_displayname($oublog);
+$childdata = oublog_get_blog_data_base_on_cmid_of_childblog($cmid, $oublog);
+$childcm = null;
+$childcourse = null;
+$childoublog = null;
+$childcontext = null;
+if (!empty($childdata)) {
+    $childcontext = $childdata['context'];
+    $childcm = $childdata['cm'];
+    $childcourse = $childdata['course'];
+    $childoublog = $childdata['ousharedblog'];
+    oublog_check_view_permissions($childdata['ousharedblog'], $childdata['context'], $childdata['cm']);
+} else {
+    oublog_check_view_permissions($oublog, $context, $cm);
+}
+$blogname = oublog_get_displayname($childoublog ? $childoublog : $oublog);
 
 // Is able to import check for current blog.
-if (!$oublog->allowimport ||
-        (!$oublog->global && $oublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS)) {
+$currentblog = $childoublog ? $childoublog : $oublog;
+if (!$currentblog->allowimport ||
+        (!$currentblog->global && $currentblog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS)) {
     // Must have import enabled. Individual blog mode only.
     print_error('import_notallowed', 'oublog', null, $blogname);
 }
 // Check if group mode set - need to check user is in selected group etc.
-$groupmode = oublog_get_activity_groupmode($cm, $course);
+$groupmode = oublog_get_activity_groupmode($childcm ? $childcm : $cm, $childcourse ? $childcourse : $course);
 $currentgroup = 0;
 if ($groupmode != NOGROUPS) {
-    $currentgroup = oublog_get_activity_group($cm);
+    $currentgroup = oublog_get_activity_group($childcm ? $childcm : $cm);
     $ingroup = groups_is_member($currentgroup);
-    if ($oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS && ($currentgroup && !$ingroup)) {
+    if ($currentblog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS && ($currentgroup && !$ingroup)) {
         // Must be group memeber for individual blog with group mode on.
         print_error('import_notallowed', 'oublog', null, $blogname);
     }
@@ -80,7 +96,8 @@ if (optional_param('cancel', '', PARAM_ALPHA) == get_string('cancel')) {
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
 // Page header.
-$params = array('id' => $id);
+$params = $childoublog ? ['id' => $id, 'cmid' => $cmid] : ['id' => $id];
+$additionalparam = $sharedblogcmid ? $params + ['sharedblogcmid' => $sharedblogcmid] : $params;
 $PAGE->set_url('/mod/oublog/import.php', $params);
 $errlink = new moodle_url('/mod/oublog/import.php', $params);
 $PAGE->set_title(get_string('import', 'oublog'));
@@ -94,7 +111,16 @@ if ($step == 0) {
     // Show list of oublog activities user has access to import from.
     echo html_writer::tag('p', get_string('import_step0_inst', 'oublog'));
     $curcourse = -1;
-    $blogs = oublog_import_getblogs($USER->id, $cm->id);
+    $excludedlist = [];
+    if (!empty($cm->idnumber) && $children = oublog_get_children($cm->idnumber)) {
+        if (!empty($children)) {
+            foreach ($children as $c) {
+                list($mastercourse , $childcoursemodule) = get_course_and_cm_from_instance($c->id, 'oublog');
+                $excludedlist[] = $childcoursemodule->id;
+            }
+        }
+    }
+    $blogs = oublog_import_getblogs($USER->id, $cm->id, $excludedlist);
     try {
         if ($remoteblogs = oublog_import_remote_call('mod_oublog_get_user_blogs',
                 array('username' => $USER->username))) {
@@ -125,9 +151,15 @@ if ($step == 0) {
                 'alt' => ''));
         $bloglink = '';
         if ($bloginfo->numposts) {
-            $url = new moodle_url('/mod/oublog/import.php', $params + array('step' => 1, 'bid' => $bloginfo->cmid));
-            $urlimportblog = new moodle_url('/mod/oublog/import.php',
-                $params + array('step' => 2, 'bid' => $bloginfo->cmid, 'importall' => 'true', 'sesskey' => sesskey()));
+            $additionalparams = [];
+            if (!empty($bloginfo->sharedblogcmid)) {
+                $additionalparams = $params + ['sharedblogcmid' => $bloginfo->sharedblogcmid];
+            } else {
+                $additionalparams = $params;
+            }
+            $url = new moodle_url('/mod/oublog/import.php', $additionalparams + array('step' => 1, 'bid' => $bloginfo->cmid));
+            $urlimportblog = new moodle_url('/mod/oublog/import.php', $additionalparams + array('step' => 2,
+                            'bid' => $bloginfo->cmid, 'importall' => 'true', 'sesskey' => sesskey()));
             if (isset($bloginfo->remote)) {
                 $url->param('remote', true);
                 $urlimportblog->param('remote', true);
@@ -175,14 +207,14 @@ if ($step == 0) {
         $boublogname = $result->boublogname;
         $bcoursename = $result->bcoursename;
     } else {
-        list($bid, $boublogid, $bcontextid, $boublogname, $bcoursename) = oublog_import_getbloginfo($bid);
+        list($bid, $boublogid, $bcontextid, $boublogname, $bcoursename) = oublog_import_getbloginfo($bid, 0 , $sharedblogcmid);
     }
     echo html_writer::start_tag('p', array('class' => 'oublog_import_step1_from'));
     echo get_string('import_step1_from', 'oublog') . '<br />' . html_writer::tag('span', $boublogname);
     echo html_writer::end_tag('p');
     // Setup table early so sort can be determined (needs setup to be called first).
     $table = new flexible_table($cm->id * $bid);
-    $url = new moodle_url('/mod/oublog/import.php', $params + $stepinfo);
+    $url = new moodle_url('/mod/oublog/import.php', $additionalparam + $stepinfo);
     $table->define_baseurl($url);
     $table->define_columns(array('title', 'timeposted', 'tags', 'include'));
     $table->column_style('include', 'text-align', 'center');
@@ -228,7 +260,7 @@ if ($step == 0) {
     }
     if ($posts) {
         // Finish seting up table vars.
-        $url = new moodle_url('/mod/oublog/import.php', $params + $stepinfo);
+        $url = new moodle_url('/mod/oublog/import.php', $additionalparam + $stepinfo);
         $table->define_baseurl($url);
         $perpage = $total < $perpage ? $total : $perpage;
         $table->pagesize($perpage, $total);
@@ -282,7 +314,7 @@ if ($step == 0) {
         $PAGE->requires->js_init_call('M.mod_oublog.init_posttable', null, false, $module);
         $table->finish_output();
         echo html_writer::start_div();
-        foreach (array_merge($params, $stepinfo, array('step' => 2, 'sesskey' => sesskey())) as $param => $value) {
+        foreach (array_merge($additionalparam, $stepinfo, array('step' => 2, 'sesskey' => sesskey())) as $param => $value) {
             echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => $param, 'value' => $value));
         }
         echo html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'submit',
@@ -312,7 +344,7 @@ if ($step == 0) {
         $boublogname = $result->boublogname;
         $bcoursename = $result->bcoursename;
     } else {
-        list($bid, $boublogid, $bcontextid, $boublogname, $bcoursename) = oublog_import_getbloginfo($bid);
+        list($bid, $boublogid, $bcontextid, $boublogname, $bcoursename) = oublog_import_getbloginfo($bid, 0, $sharedblogcmid);
     }
     require_sesskey();
     // Get selected and pre-selected posts.
@@ -331,7 +363,7 @@ if ($step == 0) {
         if (empty($selected)) {
             echo html_writer::tag('p', get_string('import_step2_none', 'oublog'));
             echo $OUTPUT->continue_button(new moodle_url('/mod/oublog/import.php',
-                array_merge($params, $stepinfo, array('step' => 1))));
+                array_merge($additionalparam, $stepinfo, array('step' => 1))));
             echo $OUTPUT->footer();
             exit;
         }
@@ -340,20 +372,20 @@ if ($step == 0) {
         if ($importall) {
             $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
                 array('username' => $USER->username, 'blogid' => $boublogid, 'selected' => '0',
-                    'inccomments' => $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
+                    'inccomments' => $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
         } else {
             $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
                 array('username' => $USER->username, 'blogid' => $boublogid, 'selected' => implode(',', $selected),
-                    'inccomments' => $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
+                    'inccomments' => $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
         }
 
     } else {
         if ($importall) {
             $posts = oublog_import_getposts($boublogid, $bcontextid, $selected,
-                $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, $USER->id, $importall);
+                $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT, $USER->id, $importall);
         } else {
             $posts = oublog_import_getposts($boublogid, $bcontextid, $selected,
-                $oublog->allowcomments != OUBLOG_COMMENTS_PREVENT, $USER->id);
+                $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT, $USER->id);
         }
     }
 
@@ -362,7 +394,7 @@ if ($step == 0) {
     }
 
     // Get/create user blog instance for this activity.
-    if ($oublog->global) {
+    if ($currentblog->global) {
         list($notused, $oubloginstance) = oublog_get_personal_blog($USER->id);
     } else {
         if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid' => $oublog->id, 'userid' => $USER->id))) {
@@ -497,7 +529,7 @@ if ($step == 0) {
 
     // Log post imported event.
     $eventparams = array(
-        'context' => $context,
+        'context' => $childcontext ? $childcontext : $context,
         'objectid' => $oublog->id,
         'other' => array(
             'info' => count($posts),
@@ -514,9 +546,11 @@ if ($step == 0) {
     $jsstep2 = 'var resultContainer = document.getElementById("oublog_import_result_container");
         var progressContainer = document.getElementById("oublog_import_progress_container");
         var progressBar = document.getElementsByClassName("bar")[0];
+        var progressBar2 = document.getElementsByClassName("progress")[0]
         var checkProgress = setInterval(function(){ toggleProgressResult() }, 1000);
         function toggleProgressResult() {
-            if (progressBar.getAttribute("aria-valuenow") == progressBar.getAttribute("aria-valuemax")) {
+            if ((progressBar && progressBar.getAttribute("aria-valuenow") == progressBar.getAttribute("aria-valuemax")) ||
+                (progressBar2 && progressBar2.getAttribute("aria-valuenow") == progressBar2.getAttribute("aria-valuemax"))) {
                 clearInterval(checkProgress);
                 progressContainer.style.display = "none";
                 resultContainer.style.display = "block";
@@ -527,8 +561,8 @@ if ($step == 0) {
 
     echo html_writer::tag('h3', get_string('import_step2_total', 'oublog',
         (count($posts) - count($conflicts))));
-    $continueurl = '/mod/oublog/view.php?id=' . $cm->id;
-    if ($oublog->global) {
+    $continueurl = $childoublog ? '/mod/oublog/view.php?id=' . $cmid : '/mod/oublog/view.php?id=' . $cm->id;
+    if ($currentblog->global) {
         $continueurl = '/mod/oublog/view.php?user=' . $USER->id;
     }
     if (count($conflicts)) {
@@ -536,7 +570,7 @@ if ($step == 0) {
         $stepinfo['ignoreconflicts'] = true;
         $stepinfo['preselected'] = implode(',', $conflicts);
         $stepinfo['importall'] = false;
-        $url = new moodle_url('/mod/oublog/import.php', array_merge($params, $stepinfo));
+        $url = new moodle_url('/mod/oublog/import.php', array_merge($additionalparam, $stepinfo));
         $conflictimport = new single_button($url, get_string('import_step2_conflicts_submit', 'oublog'));
         $cancelurl = new moodle_url($continueurl);
         $cancelbutton = new single_button($cancelurl, get_string('import_step2_cancel_submit', 'oublog'));

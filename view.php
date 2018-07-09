@@ -521,8 +521,9 @@ if ($showpostbutton && oublog_can_post_now($oublog, $context)) {
     if ($oublog->allowimport && ($oublog->global ||
             $oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS)) {
         echo '<div class="oublog_importpostbutton">';
+        $importparams = $cmmaster ? ['id' => $cmmaster->id, 'cmid' => $cm->id] : ['id' => $cm->id];
         echo $OUTPUT->single_button(new moodle_url('/mod/oublog/import.php',
-                array('id' => $cm->id)), get_string('import', 'oublog'), 'get');
+                $importparams), get_string('import', 'oublog'), 'get');
         echo '</div>';
     }
 }
