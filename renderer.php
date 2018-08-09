@@ -1867,6 +1867,42 @@ EOF;
         return $output;
     }
 
+    /**
+     * Render html current filter tag.
+     *
+     * @param $tag current filter tag
+     * @return html
+     * @throws coding_exception
+     * @throws moodle_exception
+     */
+    public function render_current_filter($tag, $baseurl) {
+        $output = '';
+        $baseurl = oublog_replace_url_param($baseurl, 'tag');
+        $closefiltericon = html_writer::empty_tag('img',
+                ['src' => $this->output->image_url('close_button_rgb_30px', 'oublog'), 'class' => 'close-filter-icon']);
+        $output .= html_writer::start_tag('div', ['class' => 'oublog-filter-tag clearfix']);
+        $output .= get_string('filter', 'oublog');
+        $output .= "&nbsp;";
+
+        $output .= html_writer::start_tag('span', ['class' => 'oublog-filter-tag-item']);
+        $output .= html_writer::start_tag('a',
+                ['href' => $baseurl . '&tag=' . urlencode($tag->tag), 'class' => 'oublog-filter-tag-cloud-' . $tag->weight]);
+        $output .= html_writer::start_tag('span', ['class' => 'oublog-filter-tagname']);
+        $output .= strtr(($tag->tag), [' ' => '&nbsp;']);
+        $output .= html_writer::end_tag('span');
+        $output .= html_writer::start_tag('span', ['class' => 'oublog-filter-tagcount']);
+        $output .= ' (' . $tag->count . ')';
+        $output .= html_writer::end_tag('span');
+        $output .= html_writer::end_tag('a');
+        $output .= html_writer::end_tag('span');
+
+        $output .= html_writer::tag('a', $closefiltericon,
+                ['href' => $baseurl, 'title' => get_string('filter-tooltip', 'oublog'),
+                        'id' => 'close-filter-icon']);
+        $output .= html_writer::end_tag('div');
+
+        return $output;
+    }
 }
 
 class oublog_statsinfo implements renderable {

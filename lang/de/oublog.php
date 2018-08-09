@@ -60,7 +60,7 @@ $string['delete'] = 'Löschen';
 $string['olderposts'] = '&lt; Ältere Beiträge';
 $string['newerposts'] = 'Neuere Beiträge &gt;';
 $string['extranavolderposts'] = 'Ältere Beiträge: {$a->von}-{$a->an}';
-$string['extranavtag'] = 'Tag: {$a}';
+$string['extranavtag'] = 'Filter: {$a}';
 
 $string['comments'] = 'Kommentare';
 $string['ncomments'] = '{$a} Kommentare';
@@ -81,6 +81,8 @@ $string['links'] = 'Ähnliche Links';
 
 $string['subscribefeed'] = 'Einen Feed abonnieren (erfordert entsprechende Software) um eine Nachricht zu erhalten wenn der Blog aktualisiert wurde.';
 $string['feeds'] = 'Feeds';
+$string['filter'] = 'Filter:';
+$string['filter-tooltip'] = 'Klicken Sie hier, um das Filter-Tag zu entfernen';
 $string['blogfeed'] = 'Blog Feeds';
 $string['commentsfeed'] = 'Nur Kommentare';
 $string['atom'] = 'Atom';

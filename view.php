@@ -331,14 +331,18 @@ if (!$hideunusedblog) {
     }
 
     // Tag Cloud.
-    if ($tags = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm,
-            $oubloginstanceid, $currentindividual, $tagorder, $masterblog)) {
+    list ($tags, $currentfiltertag) = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm,
+            $oubloginstanceid, $currentindividual, $tagorder, $masterblog);
+    if ($tags) {
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-tags';
         $bc->attributes['class'] = 'oublog-sideblock block';
         $bc->attributes['data-osepid'] = $id . '_oublog_blocktags';
         $bc->title = $strtags;
         $bc->content = $oublogoutput->render_tag_order($tagorder);
+        if ($currentfiltertag) {
+            $bc->content .= $oublogoutput->render_current_filter($currentfiltertag, $returnurl);
+        }
         $bc->content .= $tags;
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }

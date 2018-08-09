@@ -146,7 +146,7 @@ $string['delete'] = 'Delete';
 $string['olderposts'] = 'Previous posts';
 $string['newerposts'] = 'Newer posts';
 $string['extranavolderposts'] = 'Older posts: {$a->from}-{$a->to}';
-$string['extranavtag'] = 'Tag: {$a}';
+$string['extranavtag'] = 'Filter: {$a}';
 
 $string['comments'] = 'Comments';
 $string['recentcomments'] = 'Recent comments';
@@ -600,6 +600,8 @@ access the Edit page again and then paste in your changes.</p>';
 $string['order'] = 'Order:';
 $string['alpha'] = 'A to Z';
 $string['use'] = 'Most used';
+$string['filter'] = 'Filter:';
+$string['filter-tooltip'] = 'Click to remove filter tag';
 $string['order_help'] = 'You can choose to order the display of the list of tags used,
 either in alphabetical order or by number of posts used in.
 Select the two links to switch between ordering methods,

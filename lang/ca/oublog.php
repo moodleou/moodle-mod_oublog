@@ -56,7 +56,7 @@ $string['delete'] = 'Esborra';
 $string['olderposts'] = '&lt; Missatges antics';
 $string['newerposts'] = 'Missatges recents &gt;';
 $string['extranavolderposts'] = 'Missatges antics: {$a->from}-{$a->to}';
-$string['extranavtag'] = 'Etiqueta: {$a}';
+$string['extranavtag'] = 'Filtre: {$a}';
 
 $string['comments'] = 'Comentaris';
 $string['ncomments'] = '{$a} comentaris';
@@ -110,6 +110,8 @@ $string['url']='Adreça web completa';
 $string['bloginfo']='Informació del blog';
 
 $string['feedhelp']='Notícies';
+$string['filter'] = 'Filtre:';
+$string['filter-tooltip'] = "Feu clic per eliminar l'etiqueta del filtre";
 
 $string['unsupportedbrowser']='<p>El teu navegador no pot mostrar notícias Atom o RSS directament.</p>
 <p>Feeds are most useful in separate computer programs or websites. If you want

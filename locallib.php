@@ -1129,7 +1129,7 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
 
 
 /**
- * Print a tag cloud for a given blog or blog instance
+ * Print a tag cloud for a given blog or blog instance and return current filter object
  *
  * @param string $baseurl
  * @param int $oublogid
@@ -1137,16 +1137,19 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
  * @param object $cm
  * @param int $oubloginstanceid
  * @param object $masterblog
- * @return string Tag cloud HTML
+ * @return array Tag cloud HTML, current filter tag
  */
 function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder,
         $masterblog = null) {
+    global $PAGE;
     $cloud = '';
+    $currenttag = $PAGE->url->get_param('tag');
+    $currentfiltertag = '';
     $urlparts= array();
 
     $baseurl = oublog_replace_url_param($baseurl, 'tag');
     if (!$tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, $tagorder, $masterblog)) {
-        return($cloud);
+        return [$cloud, $currentfiltertag];
     }
 
     $cloud .= html_writer::start_tag('div', array('class' => 'oublog-tag-items'));
@@ -1154,10 +1157,13 @@ function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstancei
         $cloud .= '<a href="'.$baseurl.'&amp;tag='.urlencode($tag->tag).'" class="oublog-tag-cloud-'.
             $tag->weight.'"><span class="oublog-tagname">'.strtr(($tag->tag), array(' '=>'&nbsp;')).
             '</span><span class="oublog-tagcount">('.$tag->count.')</span></a> ';
+        if (!is_null($currenttag) && $tag->tag == $currenttag) {
+            $currentfiltertag = $tag;
+        }
     }
     $cloud .= html_writer::end_tag('div');
 
-    return($cloud);
+    return [$cloud, $currentfiltertag];
 }
 
 /**

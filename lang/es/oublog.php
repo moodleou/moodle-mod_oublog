@@ -44,7 +44,7 @@ $string['delete'] = 'Borrar';
 $string['olderposts'] = '&lt; Mensajes antiguos';
 $string['newerposts'] = 'Mensaje recientes &gt;';
 $string['extranavolderposts'] = 'Mensajes antiguos: {$a->from}-{$a->to}';
-$string['extranavtag'] = 'Etiqueta: {$a}';
+$string['extranavtag'] = 'Filtrar: {$a}';
 
 $string['comments'] = 'Comentarios';
 $string['ncomments'] = '{$a} comments';
@@ -65,6 +65,8 @@ $string['links'] = 'Enlaces relacionados';
 
 $string['subscribefeed'] = 'Suscribir a las noticias (requiere el software apropiado) para recibir notificaciones cuando este blog se actualice. ';
 $string['feeds'] = 'Noticias';
+$string['filter'] = 'Filtrar:';
+$string['filter-tooltip'] = 'Haga clic para eliminar la etiqueta de filtro';
 $string['blogfeed'] = 'Noticias de blog';
 $string['commentsfeed'] = 'Solo comentarios';
 $string['atom'] = 'Atom';

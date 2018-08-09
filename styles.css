@@ -1,7 +1,8 @@
 #oublog-tags a {
     text-decoration:none;
 }
-#oublog-tags a:hover .oublog-tagname{
+#oublog-tags a:hover .oublog-tagname,
+.oublog-filter-tag-item a:hover .oublog-filter-tagname {
     text-decoration:underline;
 }
 .oublog-sideblock a:hover,
@@ -744,4 +745,19 @@ div.tagselector_result .tagselector_result_info {
 }
 .oublog-export_instance button[name="oublog-export-selected"] {
     margin-left: 10px;
+}
+
+.oublog-filter-tag-item {
+    font-weight: normal;
+}
+
+.oublog-filter-tagname,
+oublog-filter-tagcount {
+    font-size: 1em;
+}
+
+.close-filter-icon {
+    width: 18px;
+    height: 18px;
+    float: right;
 }
