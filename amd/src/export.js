@@ -136,10 +136,10 @@ define([
          */
         exportSelected: function() {
             if (t.contentIds.length > 0) {
-                var exportUrl = new URL($(t.CSS.EXPORTSELECTED).data("url"));
+                var exportUrl = $(t.CSS.EXPORTSELECTED).data("url");
                 var exportType = $(t.CSS.EXPORTTYPE).val();
-                exportUrl.searchParams.set('instance', exportType);
-                exportUrl.searchParams.set('ca_postids', t.contentIds.join('|'));
+                exportUrl = this.updateQueryStringParameter(exportUrl, 'instance', String(exportType));
+                exportUrl = this.updateQueryStringParameter(exportUrl, 'ca_postids', t.contentIds.join('|'));
                 sessionStorage.removeItem('contentIds');
                 t.contentIds = [];
                 window.location.href = exportUrl;
@@ -186,6 +186,22 @@ define([
             $(t.CSS.SELECTALLPOST).prop('disabled', uncheckBoxes == 0);
             $(t.CSS.SELECTNONE).prop('disabled', uncheckBoxes == boxquantity);
             $(t.CSS.EXPORTSELECTED).prop('disabled', t.contentIds.length == 0);
+        },
+
+        /**
+         * Update or add new param to uri.
+         *
+         * @method updateQueryStringParameter
+         * @param {String} uri
+         * @param {String} key
+         * @param {String} value
+         * @returns {string|*}
+         */
+        updateQueryStringParameter: function(uri, key, value) {
+            var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i"),
+                separator = uri.indexOf('?') !== -1 ? "&" : "?";
+            return uri.match(re) ? uri.replace(re, '$1' + key + "=" + value + '$2') :
+                uri + separator + key + "=" + value;
         }
     };
     return t;
