@@ -3609,13 +3609,13 @@ function oublog_get_user_participation($oublog, $context,
     $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
     $participation = new stdClass();
     $participation->user = $user;
-    $participation->numposts = $DB->get_field_sql("SELECT COUNT(1) FROM ($postssql) as p", $params);
+    $participation->numposts = $DB->get_field_sql("SELECT COUNT(1) FROM ($postssql) p", $params);
     if ($getposts) {
         $participation->posts = $DB->get_records_sql($postssql . $postsqlorder, $params, $limitfrom, $limitnum);
     } else {
         $participation->posts = array();
     }
-    $participation->numcomments = $DB->get_field_sql("SELECT COUNT(1) FROM ($commentssql) as p", $params);
+    $participation->numcomments = $DB->get_field_sql("SELECT COUNT(1) FROM ($commentssql) p", $params);
     if ($getcomments) {
         $participation->comments = $DB->get_records_sql($commentssql . $commentsqlorder, $params, $limitfrom, $limitnum);
     } else {
@@ -3888,7 +3888,7 @@ function oublog_stats_output_poststats($oublog, $cm, $renderer = null, $ajax = f
         $sql = "SELECT p.groupid, count(p.id) as posts
                     FROM {oublog_posts} p
                     JOIN {oublog_instances} bi on p.oubloginstancesid = bi.id
-                    JOIN {groups} as g on g.id = p.groupid
+                    JOIN {groups} g on g.id = p.groupid
                     WHERE bi.oublogid = ?
                     AND p.deletedby IS NULL AND p.timeposted >= ?
                     AND p.groupid > 0
@@ -3941,7 +3941,7 @@ function oublog_stats_output_poststats($oublog, $cm, $renderer = null, $ajax = f
               WHERE bi2.oublogid = ?
               AND p.deletedby IS NULL AND p.timeposted >= ? $subwhere
               GROUP BY p.oubloginstancesid
-        ) as pos on pos.oubloginstancesid = bi.id
+        ) pos on pos.oubloginstancesid = bi.id
         ORDER BY posts DESC";
     }
     $blogs = $DB->get_records_sql($sql, $params, 0, 5);
@@ -4085,7 +4085,7 @@ function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax 
             FROM {oublog_comments} c
             JOIN {oublog_posts} p on p.id = c.postid
             JOIN {oublog_instances} bi on p.oubloginstancesid = bi.id
-            JOIN {groups} as g on g.id = p.groupid
+            JOIN {groups} g on g.id = p.groupid
             WHERE bi.oublogid = ?
             AND p.groupid > 0
             AND p.deletedby IS NULL
@@ -4146,7 +4146,7 @@ function oublog_stats_output_commentstats($oublog, $cm, $renderer = null, $ajax 
             AND c.deletedby IS NULL AND c.timeposted >= ?
             AND (c.userid <> bi2.userid OR c.userid IS NULL)
             GROUP BY p.oubloginstancesid
-        ) as pos on pos.oubloginstancesid = bi.id
+        ) pos on pos.oubloginstancesid = bi.id
         ORDER BY comments DESC";
     }
     $blogs = $DB->get_records_sql($sql, $params, 0, 5);
@@ -4361,7 +4361,7 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
             AND c.deletedby IS NULL AND c.timeposted >= ?
             AND (c.userid <> bi2.userid OR c.userid IS NULL)
             GROUP BY p.id
-        ) as pos on pos.pid = posts.id
+        ) pos on pos.pid = posts.id
         JOIN {oublog_instances} bi on bi.id = posts.oubloginstancesid
         ORDER BY pos.comments DESC, posts.title ASC, posts.id DESC";
 
@@ -4941,13 +4941,13 @@ function oublog_get_participation_details($oublog, $groupid, $individual,
             'allowcomments' => $allowcomments
     );
     $participation = new stdClass();
-    $participation->postscount = $DB->get_field_sql("SELECT COUNT(1) FROM ($postssql) as p", $params);
+    $participation->postscount = $DB->get_field_sql("SELECT COUNT(1) FROM ($postssql) p", $params);
     if ($getposts) {
         $participation->posts = $DB->get_records_sql($postssql . $postssqlorder, $params, $limitfrom, $limitnum);
     } else {
         $participation->posts = array();
     }
-    $participation->commentscount = $DB->get_field_sql("SELECT COUNT(1) FROM ($commentssql) as p", $params);
+    $participation->commentscount = $DB->get_field_sql("SELECT COUNT(1) FROM ($commentssql) p", $params);
     if ($getcomments) {
         $participation->comments = $DB->get_records_sql($commentssql . $commentsqlorder, $params, $limitfrom, $limitnum);
     } else {
@@ -5561,7 +5561,7 @@ function oublog_import_getallposts($blogid, $sort, $userid = 0, $page = 0, $tags
         list($taginwhere, $tagparams) = $DB->get_in_or_equal($tagarr);
         $tagjoin = "INNER JOIN (
         SELECT ti.postid, count(*) as tagcount FROM {oublog_taginstances} ti WHERE ti.tagid $taginwhere
-        group by ti.postid) as hastags on hastags.postid = p.id";
+        group by ti.postid) hastags on hastags.postid = p.id";
         $tagwhere = 'AND hastags.tagcount = ?';
         $sqlparams = array_merge($tagparams, $sqlparams, array(count($tagarr)));
         // Get selected tag names.
@@ -5596,7 +5596,7 @@ function oublog_import_getallposts($blogid, $sort, $userid = 0, $page = 0, $tags
         }
         $rs->close();
         // Add total record count.
-        $total = $DB->get_field_sql('SELECT count(tot.id) FROM (' . $sql . ') as tot', $sqlparams);
+        $total = $DB->get_field_sql('SELECT count(tot.id) FROM (' . $sql . ') tot', $sqlparams);
     }
     return array($posts, $total, $tagnames);
 }
