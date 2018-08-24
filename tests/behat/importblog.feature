@@ -31,7 +31,7 @@ Feature: Test import posts function for blog
       | Title      | Post 0 title                        |
       | Message    | Post 0 message                      |
       | Tags       | C#, Java                            |
-      | Attachment | lib/tests/fixtures/upload_users.csv |
+    And I upload "lib/tests/fixtures/upload_users.csv" file to "Attachments" filemanager (OU themes)
     And I press "Add post"
     When I follow "Add your comment"
     And I set the following fields to these values:
