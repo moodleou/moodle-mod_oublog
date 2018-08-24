@@ -234,7 +234,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I follow "Permalink"
     And I follow "Add your comment"
     # We should check breadcrumb link to make sure we still in shared blog
-    When I click on "P3" "link" in the ".breadcrumb-nav" "css_element"
+    When I click on "P3" "link" in the ".breadcrumb" "css_element"
     Then I should see "Child Blog"
     And I follow "Add your comment"
     And I set the following fields to these values:
@@ -277,7 +277,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I follow "Permalink"
     And I follow "Edited by Student 2"
     # We should check breadcrumb link to make sure we still in shared blog
-    When I click on "P1 of student in different course" "link" in the ".breadcrumb-nav" "css_element"
+    When I click on "P1 of student in different course" "link" in the ".breadcrumb" "css_element"
     Then I should see "Child Blog"
     And I follow "Edited by Student 2"
     Then I should see "P1 of student in different course"
