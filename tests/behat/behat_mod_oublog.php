@@ -47,4 +47,50 @@ class behat_mod_oublog extends behat_base {
         global $CFG;
         $this->getSession()->visit($CFG->wwwroot .'/mod/oublog/view.php?u='. $user);
     }
+
+    /**
+     * Create sample posts.
+     *
+     * @Given /^I create "(?P<number>[^"]+)" sample posts for blog with id "(?P<idnumber_string>(?:[^"]|\\")*)"$/
+     *
+     * @param int number
+     * @param string idnumber
+     */
+    public function i_create_n_posts_with_form_data($number, $idnumber) {
+        global $CFG, $USER;
+        require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+        $oublog = $this->get_oublog_by_idnumber($idnumber);
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+        $course = get_course($oublog->course);
+        for ($i = 0; $i < $number; $i++) {
+            $post = new stdClass();
+            $post->oublogid = $oublog->id;
+            $post->userid = $USER->id;
+            $post->groupid = 0;
+            $post->title = 'Test post ' . $i;
+            $post->message = array();
+            $post->message['itemid'] = 1;
+            $post->message['text'] = '<p>Test post ' . $i . ' content</p>';
+            $post->allowcomments = 1;
+            $post->visibility = 100;
+            $post->attachments = '';
+            oublog_add_post($post, $cm, $oublog, $course);
+        }
+    }
+
+    private function get_oublog_by_idnumber($idnumber) {
+        global $DB;
+        $query = "SELECT blog.*, cm.id as cmid
+                    FROM {oublog} blog
+                    JOIN {course_modules} cm ON blog.id = cm.instance
+                         AND blog.course = cm.course
+                    JOIN {modules} m ON cm.module = m.id
+                   WHERE m.name = 'oublog'
+                         AND cm.idnumber = :idnumber";
+        $oublog = $DB->get_record_sql($query, array('idnumber' => $idnumber));
+        if (!$oublog) {
+            throw new Exception('There is no oublog instance with idnumber ' . $idnumber);
+        }
+        return $oublog;
+    }
 }

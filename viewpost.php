@@ -187,6 +187,17 @@ if ($childdata) {
     $oublogoutput->pre_display($cm, $oublog, 'viewpost');
 }
 
+// Show portfolio export link.
+// Will need to be passed enough details on the blog so it can accurately work out what
+// posts are displayed (as oublog_get_posts above).
+if (!empty($CFG->enableportfolios) && (has_capability('mod/oublog:exportpost', $context))) {
+    require_once($CFG->libdir . '/portfoliolib.php');
+    $oubloguserid = empty($oubloguser->id) ? 0 : $oubloguser->id;
+    // Note: render_export_button_top and render_export_button_bottom are added to
+    // support the OSEP design which includes the export button differently from the old OU theme.
+    $oublogoutput->render_export_button_top($context, $oublog, $post, $oubloguserid,
+        $canaudit, 0, $currentgroup, -1, null, $childdata ? $childcm : $cm, $course->id);
+}
 echo $OUTPUT->header();
 // Print the main part of the page.
 echo '<div class="oublog-topofpage"></div>';
@@ -232,7 +243,7 @@ if ($cmid) {
     $cmparam = '&cmid=' . $cmid;
 }
 echo $oublogoutput->render_post($childcm ? $childcm : $cm, $childoublog ? $childoublog : $oublog, $post, $returnurl, $blogtype, $canmanageposts,
-        $canaudit, false, false, false, false, 'top', $childcm ? $cm : null, $cmid, $referurlparam);
+        $canaudit, false, false, false, false, 'top', $childcm ? $cm : null, $cmid, $referurlparam, true);
 
 if (!empty($post->comments)) {
     // Code extracted to new renderer function.

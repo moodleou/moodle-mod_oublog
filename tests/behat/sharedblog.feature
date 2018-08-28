@@ -11,8 +11,9 @@ Feature: Test shared data from Master blog on OUBlog
       | Course 2 | C2        | oustudyplan | 0        | 0           |
     # Create masterblog.
     And the following "activities" exist:
-      | activity | name        | intro                                  | course | idnumber   |
-      | oublog   | Master Blog | A blog can share content to other blog | C1     | masterblog |
+      | activity | name          | intro                                  | course | idnumber    |
+      | oublog   | Master Blog   | A blog can share content to other blog | C1     | masterblog  |
+      | oublog   | Master Blog 2 | A blog can share content to other blog | C1     | masterblog2 |
     # Create child blog.
     And the following "activities" exist:
       | activity | name       | intro                          | course | individual | idsharedblog | idnumber  |
@@ -136,7 +137,7 @@ Feature: Test shared data from Master blog on OUBlog
       | Blog name        | Child Blog 2             |
       | Intro            | Can not create this blog |
       | Individual blogs | Visible individual blogs |
-      | Shared blog      | masterblog2              |
+      | Shared blog      | masterblog3              |
     Then I press "Save and display"
     And I should see "No matching ID number"
 
@@ -160,7 +161,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I set the following administration settings values:
       | enableportfolios | 1 |
     And I navigate to "Manage portfolios" node in "Site administration > Plugin > Portfolios"
-    And I set the field with xpath "//form[@id='applytodownload']/select" to "Enabled and visible"
+    And I set the field with xpath "//form[@id='applytodownload']//select" to "Enabled and visible"
     And I press "Save"
     And I am on "Course 1" course homepage
     And I follow "Child Blog"
@@ -168,7 +169,6 @@ Feature: Test shared data from Master blog on OUBlog
     And I log out
     Given I log in as "student1"
     And I am on "Course 1" course homepage
-    And I press "Expand all"
     And I follow "Child Blog"
     Then I should see "Content Master Blog 1"
     When I press "New blog post"
@@ -253,7 +253,6 @@ Feature: Test shared data from Master blog on OUBlog
     # Shared blog in different course.
     Given I log in as "student2"
     And I am on "Course 2" course homepage
-    And I press "Expand all"
     And I follow "Child Blog 2"
     Then I should see "Content Master Blog 1"
     And I should see "P3 of student"
@@ -331,3 +330,91 @@ Feature: Test shared data from Master blog on OUBlog
     And I should not see "1 comment" in the ".oublog-post-links" "css_element"
     And I should not see "Participation" in the ".oublog-accordion " "css_element"
     And I should not see "Most commented posts" in the ".oublog-accordion " "css_element"
+
+  @javascript
+  Scenario: Import from shared blog to master blog.
+    Given the following "activities" exist:
+      | activity | name                     | intro                            | course | individual | idsharedblog | idnumber  | allowimport |
+      | oublog   | Child Blog test import   | A blog get content from master   | C1     | 2          | masterblog   | childblog | 1           |
+      | oublog   | Student blog             | A blog for student to post       | C1     | 2          |              |           |             |
+      | oublog   | Child Blog test import 3 | A blog get content from master 3 | C1     | 2          | masterblog2  |           | 1           |
+      | oublog   | Child Blog test import 2 | A blog get content from master   | C2     | 2          | masterblog   | childblog | 1           |
+      | oublog   | Student blog 2           | A blog for student to post       | C2     | 2          |              |           |             |
+    And I log out
+    And I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Student blog"
+    And I press "New blog post"
+    And I set the following fields to these values:
+      | Title      | Post 0 title                        |
+      | Message    | Post 0 message                      |
+      | Tags       | C#, Java                            |
+      | Attachment | lib/tests/fixtures/upload_users.csv |
+    And I press "Add post"
+    When I follow "Add your comment"
+    And I set the following fields to these values:
+      | Title            | Post 0 comment 1         |
+      | Add your comment | Post 0 Comment 1 message |
+    Then I click on "Add comment" "button"
+    When I follow "Add your comment"
+    Given I am on "Course 1" course homepage
+    And I follow "Child Blog test import"
+    When I click on "Import" "button"
+    Then I should see "Student blog (1 posts)"
+    Then I should see "Import selected posts"
+    Then I should see "Import blog"
+    When I click on "Import blog" "link"
+    Then I should see "1 post(s) imported successfully"
+    And I click on "Continue" "button"
+    Then I should see "Child Blog test import"
+    Then I should see "Post 0 title"
+    Given I am on "Course 1" course homepage
+    And I follow "Child Blog test import 3"
+    When I click on "Import" "button"
+    # We should not see current child blog and master blog so that it will not have duplicated post.
+    Then I should not see "Master Blog 2" in the ".oublog_import_step0" "css_element"
+    Then I should not see "Child Blog test import 3" in the ".oublog_import_step0" "css_element"
+    Then I should see "Child Blog test import (1 posts)"
+    And I click on "Import blog" "link" in the "//*[@class='oublog_import_step oublog_import_step0']//li[2]" "xpath_element"
+    Then I should see "1 post(s) imported successfully"
+    And I click on "Continue" "button"
+    Then I should see "Child Blog test import 3"
+    Then I should see "Post 0 title"
+    And I log out
+    # Student 2 in different course.
+    And I log in as "student2"
+    And I am on "Course 2" course homepage
+    And I follow "Student blog 2"
+    And I press "New blog post"
+    And I set the following fields to these values:
+      | Title      | Post 0 title 2                      |
+      | Message    | Post 0 message 2                    |
+      | Tags       | C#, Java                            |
+      | Attachment | lib/tests/fixtures/upload_users.csv |
+    And I press "Add post"
+    When I follow "Add your comment"
+    And I set the following fields to these values:
+      | Title            | Post 0 comment 2         |
+      | Add your comment | Post 0 Comment 2 message |
+    Then I click on "Add comment" "button"
+    When I follow "Add your comment"
+    Given I am on "Course 2" course homepage
+    And I follow "Child Blog test import 2"
+    When I click on "Import" "button"
+    Then I should see "Student blog 2 (1 posts)"
+    Then I should see "Import selected posts"
+    Then I should see "Import blog"
+    And I click on "Import selected posts" "link"
+    And I click on "Select all" "link"
+    And I press "Import"
+    Then I should see "1 post(s) imported successfully"
+    And I click on "Continue" "button"
+    Then I should see "upload_users.csv"
+    Then I should see "Child Blog test import 2"
+    Then I should see "Post 0 title 2"
+    And I log out
+    And I log in as "admin"
+    And I am on "Course 1" course homepage
+    And I follow "Master Blog"
+    And I should see "Post 0 title 2"
+    And I should see "Post 0 title"

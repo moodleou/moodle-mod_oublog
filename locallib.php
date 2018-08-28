@@ -79,6 +79,16 @@ define('OUBLOG_NO_GRADING', 0);
 define('OUBLOG_TEACHER_GRADING', 1);
 define('OUBLOG_USE_RATING', 2);
 
+/**#@+
+ * Constant defining the number of posts to display per page for export
+ */
+define('OUBLOG_POSTS_PER_PAGE_EXPORT', 50);
+
+/**#@+
+ * Constant defining the max length of tags
+ */
+define('OUBLOG_EXPORT_TAGS_LENGTH', 40);
+
 /**
  * Get a blog from a user id
  *
@@ -548,9 +558,12 @@ function oublog_edit_post($post, $cm) {
         return(false);
     }
 
-    if (!$post->oubloginstancesid = $DB->get_field('oublog_instances', 'id', array('oublogid'=>$post->oublogid, 'userid'=>$post->userid))) {
+    $oubloginstance = $DB->get_record('oublog_instances', ['id' => $oldpost->oubloginstancesid],
+            'id, userid', IGNORE_MISSING);
+    if (!$oubloginstance) {
         return(false);
     }
+    $post->oubloginstancesid = $oubloginstance->id;
 
     // Begin transaction
     $tw = $DB->start_delegated_transaction();
@@ -558,7 +571,7 @@ function oublog_edit_post($post, $cm) {
     // insert edit history
     $edit = new stdClass();
     $edit->postid       = $post->id;
-    $edit->userid       = $USER->id;
+    $edit->userid       = $oldpost->lasteditedby ? $oldpost->lasteditedby : $oubloginstance->userid;
     $edit->timeupdated  = time();
     $edit->oldtitle     = $oldpost->title;
     $edit->oldmessage   = $oldpost->message;
@@ -617,10 +630,12 @@ function oublog_edit_post($post, $cm) {
  * @param int $userid
  * @param bool $ignoreprivate set true to not return private posts (global blog only)
  * @param object $masterblog
+ * @param int $paginglimit limit post per page
+ * @param string $sqlorder port sorting
  * @return mixed all data to print a list of blog posts
  */
 function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $individualid = -1,
-        $userid = null, $tag = '', $canaudit = false, $ignoreprivate = null, $masterblog = null) {
+        $userid = null, $tag = '', $canaudit = false, $ignoreprivate = null, $masterblog = null, $paginglimit = null, $sqlorder = '') {
     global $CFG, $USER, $DB;
     $params = array();
     // Check master blog.
@@ -628,6 +643,16 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $sqlwhere = "bi.oublogid = ?";
     $params[] = $postsoublog->id;
     $sqljoin = '';
+
+    if (empty($sqlorder)) {
+        $sqlorder = 'timeposted DESC';
+    }
+    if (empty($paginglimit)) {
+        $paginglimit = $oublog->postperpage;
+    }
+    $sqlorder = str_replace('title', 'p.title', $sqlorder);
+    $sqlorder = str_replace('author', 'u.firstname', $sqlorder);
+    $sqlorder = str_replace('timeposted', 'p.timeposted', $sqlorder);
 
     if (isset($userid)) {
         $sqlwhere .= " AND bi.userid = ? ";
@@ -697,10 +722,10 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $sql = "SELECT $fieldlist
             $from
             WHERE  $sqlwhere
-            ORDER BY p.timeposted DESC
+            ORDER BY $sqlorder
             ";
     $countsql = "SELECT count(p.id) $from WHERE $sqlwhere";
-    $rs = $DB->get_recordset_sql($sql, $params, $offset, $oublog->postperpage);
+    $rs = $DB->get_recordset_sql($sql, $params, $offset, $paginglimit);
     // Get paging info
     $recordcnt = $DB->count_records_sql($countsql, $params);
     if (!$rs->valid()) {
@@ -712,7 +737,7 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
     $postids    = array();
 
     foreach ($rs as $post) {
-        if ($cnt > $oublog->postperpage) {
+        if ($cnt > $paginglimit) {
             break;
         }
         if (oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
@@ -1230,7 +1255,11 @@ function oublog_add_comment($course, $cm, $oublog, $comment) {
     $id = $DB->insert_record('oublog_comments', $comment);
     // Save out any images from the comment message text.
     $context = context_module::instance($cm->id);
-    $draftid = file_get_submitted_draft_itemid('messagecomment');
+    if (!empty($comment->messagecomment['itemid'])) {
+        $draftid = $comment->messagecomment['itemid'];
+    } else {
+        $draftid = file_get_submitted_draft_itemid('messagecomment');
+    }
     $comment->message = file_save_draft_area_files($draftid, $context->id, 'mod_oublog',
             'messagecomment', $id, array('subdirs' => true), $comment->messagecomment['text']);
     $comment->id = $id;
@@ -1449,7 +1478,7 @@ function oublog_add_link($link) {
     global $DB;
 
     // $link->oubloginstancesid is only set for personal blogs
-    if (isset($link->oubloginstanceid)) {
+    if (isset($link->oubloginstancesid)) {
         $sql = "SELECT MAX(sortorder) AS sortorder FROM {oublog_links} WHERE oubloginstancesid = ? ";
         $sortorder = $DB->get_field_sql($sql, array($link->oubloginstancesid));
         $sortorder++;
@@ -2970,7 +2999,7 @@ function oublog_add_cmid_to_tag_atrribute($cmid, $html, $tag, $attribute, $param
     global $CFG;
     // We should add cmid for image in shared blog.
     $doc = new DOMDocument();
-    $doc->loadHTML($html);
+    @$doc->loadHTML($html);
     $tags = $doc->getElementsByTagName($tag);
     if (!empty($tags)) {
         foreach ($tags as $tag) {
@@ -2983,6 +3012,39 @@ function oublog_add_cmid_to_tag_atrribute($cmid, $html, $tag, $attribute, $param
         $html = $doc->saveHTML();
     }
     return $html;
+}
+
+/**
+ * Gets blog posts by given ids.
+ *
+ * @param object $oublog Blog object.
+ * @param array $ids Ids of post to get.
+ * @return array
+ * @throws coding_exception
+ * @throws dml_exception
+ */
+function oublog_get_posts_by_id($oublog, $ids) {
+    global $CFG, $USER, $DB;
+    list($usql, $params) = $DB->get_in_or_equal($ids);
+    $sql = "SELECT p.*, p.timeposted AS timecreated, bi.oublogid, u.firstnamephonetic, u.lastnamephonetic,
+                   u.middlename, u.alternatename, u.firstname, u.lastname, bi.userid, u.idnumber, u.picture,
+	               u.imagealt, u.email, u.username, ud.firstnamephonetic AS delfirstnamephonetic,
+	               ud.lastnamephonetic AS dellastnamephonetic, ud.middlename AS delmiddlename,
+	               ud.alternatename AS delalternatename, ud.firstname AS delfirstname,
+	               ud.lastname AS dellastname, ue.firstnamephonetic AS edfirstnamephonetic,
+	               ue.lastnamephonetic AS edlastnamephonetic, ue.middlename AS edmiddlename,
+	               ue.alternatename AS edalternatename, ue.firstname AS edfirstname,
+	               ue.lastname AS edlastname
+              FROM {oublog_posts} p
+        INNER JOIN {oublog_instances} bi ON p.oubloginstancesid = bi.id
+        INNER JOIN {user} u ON bi.userid = u.id
+         LEFT JOIN {user} ud ON p.deletedby = ud.id
+         LEFT JOIN {user} ue ON p.lasteditedby = ue.id
+             WHERE bi.oublogid = ?
+	               AND p.id {$usql}
+          ORDER BY p.timeposted DESC";
+    $rs = $DB->get_records_sql($sql, array_merge(array($oublog->id), $params));
+    return $rs;
 }
 
 class oublog_portfolio_caller extends portfolio_module_caller_base {
@@ -5335,9 +5397,10 @@ function oublog_import_remotefiles($files, $newcontid, $newitemid) {
  * Gets all blogs on the system (and on remote system if defined) that can be imported from
  * @param int $userid
  * @param int $curcmid Current blog cmid (excludes this from list returned)
+ * @param array $excludedlist array cmid of children
  * @return array of blog 'info objects' [cmid, name, coursename, numposts]
  */
-function oublog_import_getblogs($userid = 0, $curcmid = null) {
+function oublog_import_getblogs($userid = 0, $curcmid = null, $excludedlist = null) {
     global $DB, $USER, $SITE;
     if ($userid == 0) {
         $userid = $USER->id;
@@ -5350,8 +5413,8 @@ function oublog_import_getblogs($userid = 0, $curcmid = null) {
         $crsmodinfo = get_fast_modinfo($course, $userid);
         $blogs = $crsmodinfo->get_instances_of('oublog');
         foreach ($blogs as $blogcm) {
-            if ($curcmid && $blogcm->id == $curcmid) {
-                continue;// Ignore current blog.
+            if ($curcmid && $blogcm->id == $curcmid ||  !empty($excludedlist) && in_array($blogcm->id, $excludedlist)) {
+                continue;// Ignore current blog and if it is shared blog,ignore it as well.
             }
             $blogcontext = context_module::instance($blogcm->id);
             if ($blogoublog = $DB->get_record('oublog', array('id' => $blogcm->instance))) {
@@ -5381,6 +5444,13 @@ function oublog_import_getblogs($userid = 0, $curcmid = null) {
                         $blogob->coursename = $blogcm->get_course()->shortname . ' ' .
                                 get_course_display_name_for_list($blogcm->get_course());
                     }
+                    $masterblog = null;
+                    if (!empty($blogoublog->idsharedblog)) {
+                        $masterblog = oublog_get_master($blogoublog->idsharedblog);
+                        list($mastercourse , $cm) = get_course_and_cm_from_instance($masterblog->id, 'oublog');
+                        $blogob->cmid = !empty($cm->id) ? $cm->id : $blogob->cmid;
+                        $blogob->sharedblogcmid = $blogcm->id;
+                    }
                     // Get number of posts (specific to user, doesn't work with group blogs).
                     $sql = 'SELECT count(p.id) as total
                         FROM {oublog_posts} p
@@ -5388,7 +5458,7 @@ function oublog_import_getblogs($userid = 0, $curcmid = null) {
                         WHERE bi.userid = ?
                         AND bi.oublogid = ?
                         AND p.deletedby IS NULL';
-                    $count = $DB->get_field_sql($sql, array($userid, $blogoublog->id));
+                    $count = $DB->get_field_sql($sql, array($userid, !empty($masterblog->id) ? $masterblog->id : $blogoublog->id));
                     $blogob->numposts = $count ? $count : 0;
                     $blogoublogname = $blogcm->get_formatted_name();
                     if ($blogoublog->global) {
@@ -5408,9 +5478,10 @@ function oublog_import_getblogs($userid = 0, $curcmid = null) {
  * (Throws exception on access error)
  * @param int $cmid
  * @param int $userid
+ * @param int $sharedblogcmid Shared blog cmid when blog is a shared blog.
  * @return array (cm id, oublog id, context id, blog name, course shortname)
  */
-function oublog_import_getbloginfo($cmid, $userid = 0) {
+function oublog_import_getbloginfo($cmid, $userid = 0, $sharedblogcmid = null) {
     global $DB, $USER;
     if ($userid == 0) {
         $userid = $USER->id;
@@ -5419,6 +5490,12 @@ function oublog_import_getbloginfo($cmid, $userid = 0) {
             'id = (SELECT course FROM {course_modules} WHERE id = ?)', array($cmid),
             '*', MUST_EXIST);
     $bmodinfo = get_fast_modinfo($bcourse, $userid);
+    $bcmsharedblog = null;
+    $boublogsharedblog = null;
+    if ($sharedblogcmid) {
+        list($sharedcourse, $bcmsharedblog) = get_course_and_cm_from_cmid($sharedblogcmid, 'oublog');
+        $boublogsharedblog = $DB->get_record('oublog', array('id' => $bcmsharedblog->instance));
+    }
     $bcm = $bmodinfo->get_cm($cmid);
     if ($bcm->modname !== 'oublog') {
         throw new moodle_exception('invalidcoursemodule', 'error');
@@ -5426,31 +5503,36 @@ function oublog_import_getbloginfo($cmid, $userid = 0) {
     if (!$boublog = $DB->get_record('oublog', array('id' => $bcm->instance))) {
         throw new moodle_exception('invalidcoursemodule', 'error');
     }
-    $bcontext = context_module::instance($bcm->id);
-    $canview = $bcm->uservisible;
+    $currentboublog = $boublogsharedblog ? $boublogsharedblog : $boublog;
+    $currentbcm = $bcmsharedblog ? $bcmsharedblog : $bcm;
+    $filescontext = context_module::instance($bcm->id);
+    // We use shared blog context for permission.
+    $bcontext = context_module::instance($currentbcm->id);
+    $canview = $currentbcm->uservisible;
     if ($canview) {
         $canview = has_capability('mod/oublog:view', $bcontext, $userid);
     }
-    if ($boublog->global) {
+    if ($currentboublog->global) {
         // Ignore uservisible for global blog and only check cap.
         $canview = has_capability('mod/oublog:viewpersonal', context_system::instance(), $userid);
     }
     if (!$canview ||
-            (!$boublog->global && $boublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS)) {
+            (!$currentboublog->global && $currentboublog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS)) {
         // Not allowed to get pages from selected blog.
-        throw new moodle_exception('import_notallowed', 'oublog', '', oublog_get_displayname($boublog));
+        throw new moodle_exception('import_notallowed', 'oublog', '', oublog_get_displayname($currentboublog));
     }
-    if ($boublog->global) {
+    if ($currentboublog->global) {
         $boublogname = $DB->get_field('oublog_instances', 'name',
-                array('oublogid' => $boublog->id, 'userid' => $userid));
+                array('oublogid' => $currentboublog->id, 'userid' => $userid));
         $shortname = '';
     } else {
-        $boublogname = $bcm->get_course()->shortname . ' ' .
-                get_course_display_name_for_list($bcm->get_course()) .
-                ' : ' . $bcm->get_formatted_name();
-        $shortname = $bcm->get_course()->shortname;
+        $boublogname = $currentbcm->get_course()->shortname . ' ' .
+                get_course_display_name_for_list($currentbcm->get_course()) .
+                ' : ' . $currentbcm->get_formatted_name();
+        $shortname = $currentbcm->get_course()->shortname;
     }
-    return array($bcm->id, $boublog->id, $bcontext->id, $boublogname, $shortname);
+    // We should keep master context for import files.
+    return array($bcm->id, $boublog->id, $bcmsharedblog ? $filescontext->id : $bcontext->id, $boublogname, $shortname);
 }
 
 /**
@@ -5658,3 +5740,5 @@ class oublog_participation_timefilter_form extends moodleform {
         return $errors;
     }
 }
+
+class oublog_export_portfolio_caller extends \mod_oublog\portfolio_caller {};

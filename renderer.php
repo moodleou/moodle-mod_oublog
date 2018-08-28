@@ -68,12 +68,13 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param object $cmmaster master blog course module object
      * @param int $cmid child course module id.
      * @param string $referurlparam $referurl param for shared blog
+     * @param bool $allowexport allow inline export or not
      * @return bool
      */
     public function render_post($cm, $oublog, $post, $baseurl, $blogtype,
             $canmanageposts = false, $canaudit = false, $commentcount = true,
             $forexport = false, $format = false, $email = false, $socialshareposition = 'top',
-            $cmmaster = null, $cmid = null, $referurlparam = null) {
+            $cmmaster = null, $cmid = null, $referurlparam = null, $allowexport = false) {
         global $CFG, $USER, $OUTPUT;
         $output = '';
         $modcontext = context_module::instance($cm->id);
@@ -343,7 +344,8 @@ class mod_oublog_renderer extends plugin_renderer_base {
             if (!empty($CFG->enableportfolios) &&
                     (has_capability('mod/oublog:exportpost', $modcontext) ||
                     ($post->userid == $USER->id &&
-                    has_capability('mod/oublog:exportownpost', $modcontext)))) {
+                    has_capability('mod/oublog:exportownpost', $modcontext))) &&
+                    $allowexport) {
                 if (!$forexport && !$email) {
                     require_once($CFG->libdir . '/portfoliolib.php');
                     $button = new portfolio_add_button();
@@ -1645,19 +1647,18 @@ EOF;
 
         $output .= '<div id="addexportpostsbutton">';
 
-        $button = new portfolio_add_button();
-        $button->set_callback_options('oublog_all_portfolio_caller',
-                array('postid' => $post->id,
-                        'oublogid' => $oublog->id,
-                        'offset' => $offset,
-                        'currentgroup' => $currentgroup,
-                        'currentindividual' => $currentindividual,
-                        'oubloguserid' => $oubloguserid,
-                        'canaudit' => $canaudit,
-                        'tag' => $tagid,
-                        'cmid' => $cm->id,
-                        'issharedblog' => $issharedblog), 'mod_oublog');
-        $output .= $button->to_html(PORTFOLIO_ADD_TEXT_LINK) . get_string('exportpostscomments', 'oublog');
+        $exportlink = new moodle_url('/mod/oublog/export.php',
+            array('ca_oublogid' => $oublog->id,
+                'ca_offset' => $offset,
+                'ca_currentgroup' => $currentgroup,
+                'ca_currentindividual' => $currentindividual,
+                'ca_oubloguserid' => $oubloguserid,
+                'ca_canaudit' => $canaudit,
+                'ca_cmid' => $cm->id,
+                'ca_issharedblog' => $issharedblog));
+
+        $output .= html_writer::tag('a', get_string('addtoportfolio', 'portfolio'),
+                array('href' => $exportlink)) . get_string('exportpostscomments', 'oublog');
 
         $output .= '</div>';
 
@@ -1679,6 +1680,191 @@ EOF;
         }
         $url = new moodle_url('/mod/oublog/view.php', array($idstring => $id));
         return html_writer::tag('div', link_arrow_left($label, $url), array('id' => 'oublog-arrowback'));
+    }
+
+    /**
+     * Return a logo and header of export page.
+     *
+     * @return string
+     * @throws coding_exception
+     */
+    public function render_export_header() {
+
+    }
+
+    /**
+     * Return Select all/Select none button.
+     *
+     * @return string
+     */
+    public function render_export_select_button() {
+        $output = '';
+        $output .= html_writer::start_div('', array('id' => 'oublogbuttons'));
+        $output .= html_writer::tag('button', 'Select all',
+            array('name' => 'oublog-export-select-all', 'class' => 'btn btn-secondary'));
+        $output .= html_writer::tag('button', 'Select none',
+            array('name' => 'oublog-export-select-none', 'class' => 'btn btn-secondary', 'disabled' => 'disabled'));
+        $output .= html_writer::end_div();
+        return $output;
+    }
+
+    /**
+     * Render content of blog post table for export.
+     *
+     * @param $url
+     * @param $oublogid
+     * @param $canaudit
+     * @param $oubloguserid
+     * @param $currentindividual
+     * @param $offset
+     * @param $currentgroup
+     * @param $orderby
+     * @param $issharedblog
+     * @param $childcmid
+     * @return return mixed all data to print a list of blog posts
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     * @throws portfolio_caller_exception
+     */
+    public function render_table_posts($oublogid, $canaudit, $oubloguserid, $currentindividual, $offset, $currentgroup, $orderby,
+            $issharedblog, $childcmid) {
+        global $DB, $COURSE, $CFG;
+        $sharemode = false;
+        $masterblog = null;
+        $extraparams = [];
+
+        if (!$oublog = $DB->get_record('oublog', ['id' => $oublogid])) {
+            throw new portfolio_caller_exception('invalidpostid', 'oublog');
+        }
+        if (!$cm = get_coursemodule_from_instance('oublog', $oublogid)) {
+            throw new portfolio_caller_exception('invalidcoursemodule');
+        }
+
+        if (!empty($issharedblog) && $issharedblog) {
+            $sharemode = true;
+            $extraparams['cmid'] = $childcmid;
+        }
+
+        // Call early to cache group mode - stops debugging warning from oublog_get_posts later.
+        $cm->activitygroupmode = oublog_get_activity_groupmode($cm, $COURSE);
+        $context = context_module::instance($cm->id);
+        $modcontext = $context;
+        if (empty($oubloguserid)) {
+            $oubloguserid = null;
+        }
+        if (empty($currentindividual) || $currentindividual == 0) {
+            $currentindividual = -1;
+        }
+        list($posts, $recordcount) = oublog_get_posts($oublog,
+                $context, $offset, $cm, $currentgroup, $currentindividual,
+                $oubloguserid, null, $canaudit, null, null, OUBLOG_POSTS_PER_PAGE_EXPORT, $orderby);
+        $data = [];
+        foreach ($posts as $post) {
+            $onerow = [];
+
+            $postuser = new stdClass();
+            $postuser->id = $post->userid;
+            $postuser->firstname = $post->firstname;
+            $postuser->lastname = $post->lastname;
+            $postuser->email = $post->email;
+            $postuser->imagealt = $post->imagealt;
+            $postuser->picture = $post->picture;
+            $postuser->firstnamephonetic = $post->firstnamephonetic;
+            $postuser->lastnamephonetic = $post->lastnamephonetic;
+            $postuser->middlename = $post->middlename;
+            $postuser->alternatename = $post->alternatename;
+
+            $onerow[] = html_writer::checkbox('select', $post->id, false);
+            if ($post->title) {
+                $name = $post->title;
+            } else {
+                $name = get_string('untitledpost', 'oublog');
+            }
+            $onerow[] = html_writer::tag('a', $name,
+                    ['href' => new moodle_url('/mod/oublog/viewpost.php', array_merge(['post' => $post->id], $extraparams))]);
+            $onerow[] = userdate($post->timeposted);
+            $tagtext = '';
+            if (!empty($post->tags)) {
+                $taglength = 0;
+                $tagslist = $post->tags;
+                $tagscount = count($post->tags);
+                $i = 1;
+                foreach ($post->tags as $index => $taglink) {
+                    $taglinktext = $taglink;
+                    $taglength += strlen($taglinktext);
+                    if ($taglength > OUBLOG_EXPORT_TAGS_LENGTH) {
+                        $tooltips = implode(', ', $tagslist);
+                        $tagtext .= html_writer::span('...', '', ['title' => $tooltips]);
+                        break;
+                    } else {
+                        $tagtext .= html_writer::tag('a', $taglinktext,
+                                ['href' => new moodle_url('/mod/oublog/view.php',
+                                        ['id' => !$sharemode ? $cm->id : $childcmid, 'tag' => $taglink])]);
+                        if ($i < $tagscount) {
+                            $tagtext .= ',';
+                        }
+                        unset($tagslist[$index]);
+                    }
+                    $i++;
+                }
+            }
+            $onerow[] = $tagtext;
+
+            $author = html_writer::start_tag('div');
+            $author .= $this->output->user_picture($postuser, ['size' => 32, 'link' => false]);
+
+            $groupmode = oublog_get_activity_groupmode($cm, $COURSE);
+            $bparams = ['id' => !$sharemode ? $cm->id : $childcmid];
+            if ($oublog->name != "") {
+                if ($groupmode > NOGROUPS && isset($post->groupid) && $post->groupid > 0) {
+                    $bparams['group'] = $post->groupid;
+                } else {
+                    if ($oublog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS) {
+                        $bparams['individual'] = $post->userid;
+                    }
+                }
+            }
+            $author .= html_writer::tag('a', fullname($post), ['href' => new moodle_url('/mod/oublog/view.php', $bparams)]);
+            $author .= html_writer::end_tag('div');
+
+            $onerow[] = $author;
+
+            $data[] = $onerow;
+        }
+        return ([$data, $recordcount]);
+    }
+
+    /**
+     * Return dropdown list of export type and Export button.
+     *
+     * @param moodle_url $url Portfolio url
+     * @return string
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws portfolio_caller_exception
+     */
+    public function render_export_type(moodle_url $url) {
+        global $DB;
+        $output = '';
+        $output .= html_writer::start_div('oublog-export_instance');
+        $output .= html_writer::start_div('fitemtitle');
+        $output .= html_writer::tag('h3', get_string('export:type', 'oublog'));
+        $output .= html_writer::end_div();
+        $exporttypeoptions = '';
+        $options = $DB->get_records('portfolio_instance', array('visible' => 1));
+        if (!$options) {
+            throw new portfolio_caller_exception('noavailableplugins', 'portfolio');
+        }
+        foreach ($options as $option) {
+            $exporttypeoptions .= html_writer::tag('option', $option->name, array('value' => $option->id));
+        }
+        $output .= html_writer::tag('select', $exporttypeoptions,
+            array('id' => 'oublog-export-type', 'name' => 'oublog-export-type', 'class' => 'custom-select'));
+        $output .= html_writer::tag('button', 'Export',
+            array('name' => 'oublog-export-selected', 'class' => 'btn btn-secondary', 'data-url' => $url, 'disabled' => 'disabled'));
+        $output .= html_writer::end_div();
+        return $output;
     }
 
 }
