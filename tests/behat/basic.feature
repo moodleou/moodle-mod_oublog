@@ -548,10 +548,10 @@ Feature: Test Post and Comment on OUBlog entry
     Then "#oublog-links form" "css_element" should exist
     And "Personal blog link2" "link" should exist
 
-    Given I click on "//aside[@id='oublog-links']//li[2]//input[@type='image']" "xpath_element"
+    Given I click on "form[title='Move up'] input[type=image]" "css_element" in the "Teachers Personal blog link2" "list_item"
 
-    Then I should see "Teachers Personal blog link2" in the "//aside[@id='oublog-links']//li[1]//a[1]" "xpath_element"
-    Given I click on "//aside[@id='oublog-links']//li[1]//a[@title='Delete']" "xpath_element"
+    Then I should see "Teachers Personal blog link2" in the "//section[@id='oublog-links']//li[1]//a[1]" "xpath_element"
+    Given I click on "Delete" "link" in the "Teachers Personal blog link2" "list_item"
     When I press "Continue"
     Then I should not see "Teachers Personal blog link2"
     And "#oublog-links form" "css_element" should not exist
