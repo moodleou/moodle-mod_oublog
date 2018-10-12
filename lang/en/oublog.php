@@ -115,11 +115,11 @@ $string['sharedblog'] = 'Shared blog';
 $string['sharedblog_invalid'] = 'No matching ID number';
 $string['sharedblog_invalid_morethan1'] = 'More than 1 matching ID number';
 $string['sharedblog_existed'] = 'This is an ID number of a child blog';
-$string['sharedblog_mastered'] = 'This blog is already a master blog';
+$string['sharedblog_mastered'] = 'This blog is already a parent blog';
 $string['sharedblog_error'] = 'Error – no blog with that ID is available';
 $string['sharedblog_help'] = '<p><strong>Shared blog</strong></p>
-<p>This option allows the blog instance to act as a ‘child’ blog and display the content of a ‘master’ blog.</p>
-<p>Please input the IDNumber field value of \'master\' blog whose content you wish this blog to display</p>';
+<p>This option allows the blog instance to act as a ‘child’ blog and display the content of a ‘parent’ blog.</p>
+<p>Please input the IDNumber field value of \'parent\' blog whose content you wish this blog to display</p>';
 $string['displayname_default'] = 'blog';
 $string['displayname'] = 'Alternate activity name (blank uses default)';
 $string['displayname_help'] = 'Set an alternate activity type name within the interface.
