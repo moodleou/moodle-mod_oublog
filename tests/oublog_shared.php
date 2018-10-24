@@ -127,12 +127,15 @@ class oublog_shared extends oublog_test_lib
     public function test_oublog_add_cmid_to_tag_atrribute() {
         global $CFG;
         $link = $CFG->wwwroot . '/abcd/img/test';
-        $html = 'test html <img src="' . $link . '" /> <img src="test.com" />';
+        $html = '<p>test html <img src="' . $link . '"> <img src="test.com"></p>';
         $result = oublog_add_cmid_to_tag_atrribute(1, $html, 'img', 'src');
-        $dom = new DOMDocument();
-        $dom->loadHTML('test html <img src="' . $link .'?cmid=1" /> <img src="test.com" />');
-        $expected = $dom->saveHTML();
-        $this->assertEquals($expected, $result);
+        $html = str_replace('img/test', 'img/test?cmid=1', $html);
+        $this->assertEquals($html, $result);
+
+        // Special character case.
+        $htmlspecial = '<p>ε Σ £ Â ♠</p> <img src="">';
+        $result = oublog_add_cmid_to_tag_atrribute(1, $htmlspecial, 'img', 'src');
+        $this->assertEquals($htmlspecial, $result);
     }
 
     /**
