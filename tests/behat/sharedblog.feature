@@ -418,3 +418,37 @@ Feature: Test shared data from Master blog on OUBlog
     And I follow "Master Blog"
     And I should see "Post 0 title 2"
     And I should see "Post 0 title"
+
+  @javascript
+  Scenario: Searching in shared blog.
+    Given the following "activities" exist:
+      | activity | name       | intro                          | course | individual | idsharedblog | idnumber  |
+      | oublog   | Child Blog | A blog get content from master | C2     | 2          | masterblog   | childblog |
+    And I am on "Course 1" course homepage
+    And I follow "Child Blog"
+    Then I should see "Content Master Blog 1"
+    When I press "New blog post"
+    And I set the following fields to these values:
+      | Title   | P1            |
+      | Message | P1 of student |
+      | Tags    | blog,child    |
+    And I press "Add post"
+    And I log out
+    # Shared blog in different course.
+    Given I log in as "student2"
+    And I am on "Course 2" course homepage
+    And I follow "Child Blog"
+    When I set the field "oublog_searchquery" to "P1 of student"
+    And I click on "#ousearch_searchbutton" "css_element"
+    And I should see "P1 of student"
+    And I should see "Child Blog"
+    And I should see "C2"
+    # I search again to make sure it still in share blog
+    When I set the field "oublog_searchquery" to "Content Master Blog 1"
+    And I click on "#ousearch_searchbutton" "css_element"
+    And I should see "C2"
+    And I should see "Content Master Blog 1"
+    And I should see "Child Blog"
+    And I click on "Content Master Blog 1" "link"
+    And I should see "C2"
+    And I should see "Content Master Blog 1"

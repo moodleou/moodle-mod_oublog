@@ -1338,8 +1338,8 @@ function oublog_update_views($oublog, $oubloginstance, $userid = null, $groupid 
 
 /**
  * Get views of group's post.
- * 
- * @param  int $oublogid 
+ *
+ * @param  int $oublogid
  * @param  int $groupid
  * @return int
  */
@@ -3302,16 +3302,16 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
  * @param string $strblogsearch search this blog text
  * @param string $querytext optional search term
  * @param bool $newsearchimage optional param to display a different image..
+ * @param int $cmid cmid of shared blog.
  * @returns string html
  */
-function oublog_get_search_form($name, $value, $strblogsearch, $querytext='', $newsearchimage = false) {
+function oublog_get_search_form($name, $value, $strblogsearch, $querytext='', $newsearchimage = false, $cmid = null) {
     if (!oublog_search_installed()) {
         return '';
     }
     global $OUTPUT, $DB;
 
     // Check if search in shared blog.
-    $cmid = null;
     if ($name == 'id') {
         $cm = get_coursemodule_from_id('oublog', $value);
         $oublog = $DB->get_record('oublog', ['id' => $cm->instance]);

@@ -130,10 +130,10 @@ if ($correctglobal) {
     if (!is_null($oubloginstance)) {
         $name = $oubloginstance->name;
         $buttontext = oublog_get_search_form('user', $oubloguser->id, $strblogsearch,
-                $querytexthtml);
+                $querytexthtml, false, $cmid);
     } else {
         $buttontext = oublog_get_search_form('id', $cm->id, $strblogssearch,
-                $querytexthtml);
+                $querytexthtml, false, $cmid);
     }
 
     if (isset($name)) {
@@ -145,8 +145,7 @@ if ($correctglobal) {
 
 } else {
     $name = !empty($childoublog->name) ? $childoublog->name : $oublog->name;
-
-    $buttontext = oublog_get_search_form('id', $cm->id, $strblogsearch, $querytexthtml);
+    $buttontext = oublog_get_search_form('id', $cm->id, $strblogsearch, $querytexthtml, false, $cmid);
 }
 
 $PAGE->navbar->add(get_string('searchfor', 'local_ousearch', $querytext));
