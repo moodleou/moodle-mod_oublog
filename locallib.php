@@ -2999,9 +2999,9 @@ function oublog_add_cmid_to_tag_atrribute($cmid, $html, $tag, $attribute, $param
     global $CFG;
     // We should add cmid for image in shared blog.
     $doc = new DOMDocument();
-    @$doc->loadHTML($html);
+    @$doc->loadHTML('<?xml version="1.0" encoding="utf-8" ?>' . $html);
     $tags = $doc->getElementsByTagName($tag);
-    if (!empty($tags)) {
+    if ($tags->length) {
         foreach ($tags as $tag) {
             // It should be internal image.
             if (strpos($tag->getAttribute($attribute), $CFG->wwwroot) !== false) {
@@ -3009,7 +3009,13 @@ function oublog_add_cmid_to_tag_atrribute($cmid, $html, $tag, $attribute, $param
                 $tag->setAttribute($attribute, $newattr);
             }
         }
-        $html = $doc->saveHTML();
+        // Grab tags from body only otherwise we get whole doc or body tag included.
+        $body = $doc->getElementsByTagName('body')->item(0);
+        $html = '';
+        foreach ($body->childNodes as $node) {
+            // Add each tag in body to the output.
+            $html .= $doc->saveHTML($node);
+        }
     }
     return $html;
 }
