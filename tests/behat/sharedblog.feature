@@ -247,8 +247,10 @@ Feature: Test shared data from Master blog on OUBlog
     # Check export
     And I am on "Course 1" course homepage
     And I follow "Child Blog"
-    # Export should have some files,so the file must be large.
-    Then following "Export" should download between "10000" and "100000" bytes
+    And I follow "Export to portfolio"
+    And I press "Select all"
+    And I press "Export"
+    Then I should see "Downloading"
     And I log out
     # Shared blog in different course.
     Given I log in as "student2"
