@@ -761,3 +761,20 @@ Feature: Test Post and Comment on OUBlog entry
     When I click on "#close-filter-icon" "css_element"
     Then I should see "Teacher1 blog" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
     And I should see "Teacher1 blog 2" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+
+  Scenario: Check view count is reset on restore
+    Given I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Test oublog basics"
+    Then I should see "Total visits to this blog: 1"
+    And I log out
+    Given I log in as "admin"
+    And I am on "Course 1" course homepage
+    And I follow "Test oublog basics"
+    Then I should see "Total visits to this blog: 2"
+    Given I am on "Course 1" course homepage
+    And I turn editing mode on
+    And I duplicate "Test oublog basics" activity editing the new copy with:
+      | Blog name | Test oublog basics - duplicate |
+    And I follow "Test oublog basics - duplicate"
+    Then I should see "Total visits to this blog: 1"
