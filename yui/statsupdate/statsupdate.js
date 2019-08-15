@@ -13,7 +13,7 @@ YUI.add('moodle-mod_oublog-statsupdate', function(Y) {
                                 on: {
                                     start: function() {
                                         // Add an ajax 'spinner'.
-                                        var submit = form.one('.felement.fsubmit');
+                                        var submit = form.one('.form-inline');
                                         submit.append('<div class="ajaxworking" />');
                                     },
                                     success: function(transactionid, o) {
