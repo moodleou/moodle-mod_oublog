@@ -160,7 +160,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I am on site homepage
     And I set the following administration settings values:
       | enableportfolios | 1 |
-    And I navigate to "Plugin > Portfolios > Manage portfolios" in site administration
+    And I navigate to "Manage portfolios" node in "Site administration > Plugin > Portfolios"
     And I set the field with xpath "//form[@id='applytodownload']//select" to "Enabled and visible"
     And I press "Save"
     And I am on "Course 1" course homepage
@@ -247,10 +247,8 @@ Feature: Test shared data from Master blog on OUBlog
     # Check export
     And I am on "Course 1" course homepage
     And I follow "Child Blog"
-    And I follow "Export to portfolio"
-    And I press "Select all"
-    And I press "Export"
-    Then I should see "Downloading"
+    # Export should have some files,so the file must be large.
+    Then following "Export" should download between "10000" and "100000" bytes
     And I log out
     # Shared blog in different course.
     Given I log in as "student2"

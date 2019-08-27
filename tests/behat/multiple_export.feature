@@ -30,7 +30,7 @@ Feature: Test multiple export feature on OUBlog with Share feature
       | enableportfolios | 1 |
     And I log in as "admin"
     And I am on site homepage
-    And I navigate to "Plugins > Portfolios > Manage portfolios" in site administration
+    And I navigate to "Manage portfolios" node in "Site administration > Plugins > Portfolios"
     And I set the field with xpath "//form[@id='applytodownload']//select" to "Enabled and visible"
     And I press "Save"
     And I log out
@@ -167,13 +167,13 @@ Feature: Test multiple export feature on OUBlog with Share feature
     And I should see "Post 1" in the "#oublog_export_posts_table_r1" "css_element"
     # Sort by title.
     When I click on "Title" "link"
-    Then I should see "Post Test" in the "#oublog_export_posts_table_r0" "css_element"
-    And I should see "Post 2" in the "#oublog_export_posts_table_r1" "css_element"
-    And I should see "Post 1" in the "#oublog_export_posts_table_r2" "css_element"
-    When I click on "Title" "link"
     Then I should see "Post 1" in the "#oublog_export_posts_table_r0" "css_element"
     And I should see "Post 2" in the "#oublog_export_posts_table_r1" "css_element"
     And I should see "Post Test" in the "#oublog_export_posts_table_r2" "css_element"
+    When I click on "Title" "link"
+    Then I should see "Post Test" in the "#oublog_export_posts_table_r0" "css_element"
+    Then I should see "Post 2" in the "#oublog_export_posts_table_r1" "css_element"
+    Then I should see "Post 1" in the "#oublog_export_posts_table_r2" "css_element"
     And I click on "Reset table preferences" "link"
     # Sort by date.
     When I click on "Date posted" "link"
@@ -186,13 +186,13 @@ Feature: Test multiple export feature on OUBlog with Share feature
     And I should see "Post Test" in the "#oublog_export_posts_table_r2" "css_element"
     # Sort by author.
     When I click on "Author" "link"
-    Then I should see "Teacher 1" in the "#oublog_export_posts_table_r0" "css_element"
-    And I should see "Student 2" in the "#oublog_export_posts_table_r1" "css_element"
-    And I should see "Student 1" in the "#oublog_export_posts_table_r2" "css_element"
-    When I click on "Author" "link"
     Then I should see "Student 2" in the "#oublog_export_posts_table_r0" "css_element"
     And I should see "Student 1" in the "#oublog_export_posts_table_r1" "css_element"
     And I should see "Teacher 1" in the "#oublog_export_posts_table_r2" "css_element"
+    When I click on "Author" "link"
+    Then I should see "Teacher 1" in the "#oublog_export_posts_table_r0" "css_element"
+    And I should see "Student 2" in the "#oublog_export_posts_table_r1" "css_element"
+    And I should see "Student 1" in the "#oublog_export_posts_table_r2" "css_element"
     And I click on "Reset table preferences" "link"
     # View the user’s blog when click name under 'Author' column.
     When I click on "Student 1" "link" in the "Post 1" "table_row"
