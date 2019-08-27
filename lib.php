@@ -517,6 +517,10 @@ WHERE
  */
 function oublog_ousearch_update_all($feedback=false, $courseid=0) {
     global $CFG, $DB;
+    if (get_config('local_ousearch', 'ousearchindexingdisabled')) {
+        // Do nothing if the OU Search system is turned off.
+        return;
+    }
     require_once($CFG->dirroot . '/mod/oublog/locallib.php');
 
     // Get all existing blogs as $cm objects (which we are going to need to

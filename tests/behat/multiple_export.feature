@@ -30,7 +30,7 @@ Feature: Test multiple export feature on OUBlog with Share feature
       | enableportfolios | 1 |
     And I log in as "admin"
     And I am on site homepage
-    And I navigate to "Manage portfolios" node in "Site administration > Plugins > Portfolios"
+    And I navigate to "Plugins > Portfolios > Manage portfolios" in site administration
     And I set the field with xpath "//form[@id='applytodownload']//select" to "Enabled and visible"
     And I press "Save"
     And I log out
