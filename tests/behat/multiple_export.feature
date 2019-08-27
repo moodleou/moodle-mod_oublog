@@ -10,18 +10,22 @@ Feature: Test multiple export feature on OUBlog with Share feature
       | teacher1 | Teacher   | 1        | teacher1@asd.com |
       | student1 | Student   | 1        | student1@asd.com |
       | student2 | Student   | 2        | student2@asd.com |
+      | student3 | Student   | 3        | student3@asd.com |
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1        | 0        |
+      | Course 2 | C2        | 0        |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
       | student1 | C1     | student        |
       | student2 | C1     | student        |
+      | student3 | C2     | student        |
     And the following "activities" exist:
-      | activity | name           | course | idnumber      | individual | idsharedblog  |
-      | oublog   | OU Blog Master | C1     | OUBLOG_MASTER | 2          |               |
-      | oublog   | OU Blog Child  | C1     | OUBLOG_SLAVE  | 2          | OUBLOG_MASTER |
+      | activity | name             | course | idnumber      | individual | idsharedblog  |
+      | oublog   | OU Blog Master   | C1     | OUBLOG_MASTER | 2          |               |
+      | oublog   | OU Blog Child    | C1     | OUBLOG_SLAVE  | 2          | OUBLOG_MASTER |
+      | oublog   | OU Blog Child C2 | C2     | OUBLOG_CHILD  | 2          | OUBLOG_MASTER |
     And the following config values are set as admin:
       | enableportfolios | 1 |
     And I log in as "admin"
@@ -274,3 +278,27 @@ Feature: Test multiple export feature on OUBlog with Share feature
     And I should see "Return to where you were"
     When I follow "Return to where you were"
     Then I should see "OU Blog Child"
+
+  Scenario: Student without permission on course with master blog can export
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "OU Blog Child"
+    And I create "50" sample posts for blog with id "OUBLOG_MASTER"
+    And I log out
+    Given I log in as "student3"
+    And I am on "Course 2" course homepage
+    And I follow "OU Blog Child C2"
+    When I follow "Export"
+    And I click on "Title" "link"
+    When I click on "select" "checkbox" in the "Test post 0" "table_row"
+    Then the "Select none" "button" should be enabled
+    And the "Export" "button" should be enabled
+    When I press "Select all"
+    Then the "Select all" "button" should be disabled
+    And the "Select none" "button" should be enabled
+    And the "Export" "button" should be enabled
+    And I press "Export"
+    Then I should see "Downloading ..."
+    And I should see "Return to where you were"
+    When I follow "Return to where you were"
+    Then I should see "OU Blog Child C2"
