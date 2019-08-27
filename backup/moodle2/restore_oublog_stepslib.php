@@ -72,6 +72,11 @@ class restore_oublog_activity_structure_step extends restore_activity_structure_
             return(true);
         }
 
+        $userinfo = $this->get_setting_value('userinfo');
+        if (!$userinfo) {
+            $data->views = 0;
+        }
+
         // insert the oublog record
         $newitemid = $DB->insert_record('oublog', $data);
         // immediately after inserting "activity" record, call this
