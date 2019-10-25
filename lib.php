@@ -1390,6 +1390,8 @@ function oublog_update_grades($oublog, $userid = 0, $nullifnone = true) {
     global $CFG, $DB;
     require_once($CFG->libdir . '/gradelib.php');
     require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+    $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+    $oublog->cmid = $cm->id;
     if ($oublog->grading != OUBLOG_USE_RATING) {
         return;
     }
@@ -1428,7 +1430,7 @@ function oublog_get_user_grades($oublog, $userid = 0) {
     $options->userid = $userid;
     $options->aggregationmethod = $oublog->assessed;
     $options->scaleid = $oublog->scale;
-    $options->cmid = $oublog->cmidnumber;
+    $options->cmid = $oublog->cmid;
 
     // There now follows a lift of get_user_grades() from rating lib
     // but with the requirement for items modified.
@@ -1458,10 +1460,12 @@ function oublog_get_user_grades($oublog, $userid = 0) {
     $singleuserwhere = '';
     if ($options->userid != 0) {
         // Get the grades for the {posts} the user is responsible for.
-        $cm = get_coursemodule_from_id('oublog', $oublog->cmidnumber);
+        $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
         list($posts, $recordcount) = oublog_get_posts($oublog, $context, 0, $cm, 0, $options->userid);
-        foreach ($posts as $post) {
-            $postids[] = (int)$post->id;
+        if ($posts) {
+            foreach ($posts as $post) {
+                $postids[] = (int)$post->id;
+            }
         }
         $params['userid'] = $userid;
         $singleuserwhere = " AND i.userid = :userid";
