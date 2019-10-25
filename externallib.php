@@ -75,20 +75,21 @@ class mod_oublog_external extends external_api {
                 array(
                         'cmid' => new external_value(PARAM_INT, 'Blog cm id'),
                         'username' => new external_value(PARAM_USERNAME, 'User username'),
+                        'sharedblogcmid' => new external_value(PARAM_INT, 'Shared Blog cm id'),
                 )
         );
     }
 
-    public static function get_blog_info($cmid, $username) {
+    public static function get_blog_info($cmid, $username, $sharedblogcmid) {
         global $DB, $remoteuserid;
         $params = self::validate_parameters(self::get_blog_info_parameters(),
-                array('cmid' => $cmid, 'username' => $username));
+                array('cmid' => $cmid, 'username' => $username, 'sharedblogcmid' => $sharedblogcmid));
         $user = $DB->get_field('user', 'id', array('username' => $params['username']), IGNORE_MISSING);
         if (!$user) {
             return array();
         }
         $remoteuserid = $user;
-        $result = oublog_import_getbloginfo($params['cmid'], $user);
+        $result = oublog_import_getbloginfo($params['cmid'], $user, $sharedblogcmid);
         return array(
                 'bcmid' => $result[0],
                 'boublogid' => $result[1],
