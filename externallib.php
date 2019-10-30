@@ -80,7 +80,7 @@ class mod_oublog_external extends external_api {
         );
     }
 
-    public static function get_blog_info($cmid, $username, $sharedblogcmid) {
+    public static function get_blog_info($cmid, $username, $sharedblogcmid = null) {
         global $DB, $remoteuserid;
         $params = self::validate_parameters(self::get_blog_info_parameters(),
                 array('cmid' => $cmid, 'username' => $username, 'sharedblogcmid' => $sharedblogcmid));
