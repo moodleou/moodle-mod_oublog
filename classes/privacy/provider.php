@@ -25,7 +25,9 @@
 namespace mod_oublog\privacy;
 
 use \core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
 use \core_privacy\local\request\contextlist;
+use core_privacy\local\request\userlist;
 use \core_privacy\local\request\writer;
 use \core_privacy\local\request\helper;
 use \core_privacy\local\metadata\collection;
@@ -47,7 +49,10 @@ class provider implements
     \core_privacy\local\request\plugin\provider,
 
     // This plugin has some sitewide user preferences to export.
-    \core_privacy\local\request\user_preference_provider {
+    \core_privacy\local\request\user_preference_provider,
+
+    // This plugin is capable of determining which users have data within it.
+    \core_privacy\local\request\core_userlist_provider {
 
     /** @var int Number of characters of post to include in the path of its file folder */
     const TITLE_LENGTH_IN_PATH = 30;
@@ -773,5 +778,192 @@ class provider implements
                 writer::export_user_preference('mod_oublog', $field, $value, $description);
             }
         }
+    }
+    public static function get_users_in_context(userlist $userlist) {
+        $context = $userlist->get_context();
+
+        // Add users who created posts in this context
+        $sql = "
+                    SELECT bi.userid
+                      FROM {course_modules} cm
+                      JOIN {oublog} b ON b.id = cm.instance
+                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                      JOIN {context} ctx ON ctx.instanceid = cm.id
+                     WHERE ctx.contextlevel = :contextlevel";
+        $params = [
+            'contextlevel' => $context->contextlevel,
+        ];
+
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Add users who commented in this context
+        $sql = "
+                    SELECT bc.userid
+                      FROM {course_modules} cm
+                      JOIN {oublog} b ON b.id = cm.instance
+                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                      JOIN {oublog_comments} bc ON bc.postid = bp.id
+                      JOIN {context} ctx ON ctx.instanceid = cm.id
+                     WHERE ctx.contextlevel = :contextlevel";
+        $params = [
+            'contextlevel' => $context->contextlevel,
+        ];
+
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Add users who edited in this context
+        $sql = "
+                    SELECT be.userid
+                      FROM {course_modules} cm
+                      JOIN {oublog} b ON b.id = cm.instance
+                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                      JOIN {oublog_edits} be ON be.postid = bp.id
+                      JOIN {context} ctx ON ctx.instanceid = cm.id
+                     WHERE ctx.contextlevel = :contextlevel";
+        $params = [
+            'contextlevel' => $context->contextlevel,
+        ];
+
+        $userlist->add_from_sql('userid', $sql, $params);
+    }
+
+    public static function delete_data_for_users(approved_userlist $userlist) {
+        $context = $userlist->get_context();
+        $userids = $userlist->get_userids();
+        if (empty($userids)) {
+            return;
+        }
+
+        global $DB;
+
+        // This is a little complex regarding data that can safely be deleted or not. The
+        // decision here is:
+        //
+        // Delete all posts owned by the users (even if they aren't the last to edit). Including:
+        // * The actual oublog_posts entry.
+        // * All tag instances.
+        // * All files (attachments, message).
+        // * All comments and edits (even by other people) including files.
+        // Delete blog instance owned by the users.
+        // Delete all old versions of other people's posts by these users:
+        // * The oublog_edits entry.
+        // * All files.
+        // For posts by other users where a user in this list is the editedby id, just change that id
+        // Anonymise all comments on other people's posts by these users:
+        // * Replace the text with placeholder.
+        // * Replace user id with admin.
+        // * Delete files.
+        // Delete all links added by these users (nothing else depends on these).
+
+        $fs = get_file_storage();
+
+        list($useridsql, $params) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        array_push($params, ['blogcmid' => $context->instanceid]);
+
+        // Query for all posts owned by the users given
+        $postsql = "
+                SELECT bp.id AS postid
+                  FROM {course_modules} cm
+                  JOIN {oublog} b ON b.id = cm.instance
+                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                  JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                 WHERE cm.id = :blogcmid AND bi.userid {$useridsql}";
+
+        // Delete files from these posts.
+        $fs->delete_area_files_select($context->id, 'mod_oublog', 'message',
+                                      "IN ($postsql)", $params);
+        $fs->delete_area_files_select($context->id, 'mod_oublog', 'attachment',
+                                      "IN ($postsql)", $params);
+
+        // Delete ratings from these posts.
+        \core_rating\privacy\provider::delete_ratings_select($context, 'mod_oublog', 'post',
+                                                             "IN ($postsql)", $params);
+
+        // Delete all comments (including files) on posts owned by these users
+        $commentsql = "
+                SELECT bc.id AS commentid
+                  FROM {oublog_comments} bc
+                 WHERE bc.postid IN ($postsql)";
+        $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
+                                      "IN ($commentsql)", $params);
+        $DB->delete_records_select('oublog_comments', "id IN ($commentsql)", $params);
+
+        // Delete all edits (including files) on posts owned by these users
+        $editsql = "
+                SELECT be.id AS editid
+                  FROM {oublog_edits} be
+                 WHERE be.postid IN ($postsql)";
+        $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
+                                      "IN ($editsql)", $params);
+        $DB->delete_records_select('oublog_edits', "id IN ($editsql)", $params);
+
+        // Delete tag instances from all these posts.
+        $DB->delete_records_select('oublog_taginstances', "postid IN ($postsql)", $params);
+
+        // Delete the actual posts.
+        $DB->delete_records_select('oublog_posts', "id IN ($postsql)", $params);
+
+        $instancesql = "
+                SELECT bi.id AS instanceid
+                  FROM {course_modules} cm
+                  JOIN {oublog} b ON b.id = cm.instance
+                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                 WHERE cm.id = :blogcmid AND bi.userid {$useridsql}";
+
+        // Delete all links added by the user.
+        $DB->delete_records_select('oublog_links', "oubloginstancesid IN ($instancesql)", $params);
+
+        // Delete the blog instance owned by the user.
+        $DB->delete_records_select('oublog_instances', "id IN ($instancesql)", $params);
+
+        // Delete edits (including files) on other people's posts by these users
+        $editsql = "
+                SELECT be.id AS editid
+                  FROM {course_modules} cm
+                  JOIN {oublog} b ON b.id = cm.instance
+                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                  JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                  JOIN {oublog_edits} be ON be.postid = bp.id
+                 WHERE cm.id = :blogcmid AND be.userid {$useridsql}";
+        $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
+                                      "IN ($editsql)", $params);
+        $DB->delete_records_select('oublog_edits', "id IN ($editsql)", $params);
+
+        // Fix up the editedby, deletedby on posts where it's these users
+        $admin = get_admin();
+        $allpostsql = "
+                SELECT bp.id AS postid
+                  FROM {course_modules} cm
+                  JOIN {oublog} b ON b.id = cm.instance
+                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                  JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                 WHERE cm.id = :blogcmid";
+        $DB->set_field_select('oublog_posts', 'lasteditedby', $admin->id,
+                              "id IN ($allpostsql AND bp.lasteditedby {$useridsql})", $params);
+        $DB->set_field_select('oublog_posts', 'deletedby', $admin->id,
+                              "id IN ($allpostsql AND bp.deletedby {$useridsql})", $params);
+
+        // Find comments for other people's posts.
+        $commentsql = "
+                SELECT bc.id AS commentid
+                  FROM {course_modules} cm
+                  JOIN {oublog} b ON b.id = cm.instance
+                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                  JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                  JOIN {oublog_comments} bc ON bc.postid = bp.id
+                 WHERE cm.id = :blogcmid AND bc.userid = {$useridsql}";
+
+        // Delete the files.
+        $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
+                                      "IN ($commentsql)", $params);
+
+        // Replace the text and user id by admin user.
+        $placeholder = get_string('privacy_commentplaceholder', 'oublog');
+        $DB->execute('UPDATE {oublog_comments} SET userid = :adminid, title = :title, ' .
+                     'message = :message WHERE id IN (' . $commentsql . ')', array_merge($params,
+                                                                                         ['adminid' => $admin->id, 'title' => '', 'message' => $placeholder]));
     }
 }
