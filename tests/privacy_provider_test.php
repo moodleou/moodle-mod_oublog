@@ -790,4 +790,455 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
             throw new \coding_exception('Unexpected userid');
         }
     }
+
+    /**
+     * Init Data to test for provider::get_users_in_context()
+     *
+     * @return array values
+     */
+    public function create_basic_test_data() {
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $bloggenerator = $generator->get_plugin_generator('mod_oublog');
+
+        $oublogdata = [1 => [
+            'course' => $course->id,
+            'name' => 'VictimBlog',
+            'intro' => 'My intro',
+            'scale' => 100,
+            'assessed' => 1
+        ], 2 => [
+            'course' => $course->id,
+            'name' => 'SurvivorBlog',
+            'intro' => 'My intro',
+            'scale' => 100,
+            'assessed' => 1
+        ]];
+
+        $oublog[1] = $generator->create_module('oublog', $oublogdata[1]);
+        $oublog[2] = $generator->create_module('oublog', $oublogdata[2]);
+
+        $users[1] = $generator->create_user();
+        $users[2] = $generator->create_user();
+
+        $generator->enrol_user($users[1]->id, $course->id, 'student');
+        $generator->enrol_user($users[2]->id, $course->id, 'student');
+
+        return [$course, $oublogdata, $oublog, $users, $bloggenerator];
+    }
+
+    /**
+     * Test for privacy function test_get_users_in_context(), table "oublog_post".
+     *
+     * @throws \dml_exception
+     * @throws \coding_exception
+     */
+    public function test_get_users_in_context_oublog_post() {
+        list (, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        $this->setUser($users[1]);
+        $bloggenerator->create_post($oublog[1],
+            ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+
+        $this->setUser($users[2]);
+        $bloggenerator->create_post($oublog[2],
+            ['title' => 'Post2Title', 'message' => 'Post2Message',
+             'attachments' => self::create_file_area_with_frog_picture()]);
+
+        $context1 = \context_module::instance($oublog[1]->cmid);
+        $userlist1 = new \core_privacy\local\request\userlist($context1, 'mod_oublog');
+        provider::get_users_in_context($userlist1);
+        $users1 = $userlist1->get_userids();
+
+        $context2 = \context_module::instance($oublog[2]->cmid);
+        $userlist2 = new \core_privacy\local\request\userlist($context2, 'mod_oublog');
+        provider::get_users_in_context($userlist2);
+        $users2 = $userlist2->get_userids();
+
+        $this->assertCount(1, $userlist1);
+        $this->assertCount(1, $userlist2);
+        $this->assertContains($users[1]->id, $users1);
+        $this->assertContains($users[2]->id, $users2);
+    }
+
+    /**
+     * Test for privacy function test_get_users_in_context(), table "ouwiki_links".
+     *
+     * @throws \dml_exception
+     * @throws \coding_exception
+     */
+    public function test_get_users_in_context_oublog_links() {
+        global $DB;
+        list (, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        $this->setUser($users[1]);
+        $bloggenerator->create_post($oublog[1],
+            ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+        // Create a blog link (note: you can't really do this except on the global one, but
+        // just to make it a (fairly) complete test).
+        oublog_add_link((object)['oubloginstancesid' => $DB->get_field('oublog_instances', 'id',
+            ['oublogid' => $oublog[1]->id, 'userid' => $users[1]->id]),
+            'title' => 'First link', 'url' => 'http://1.example.com/']);
+
+        $this->setUser($users[2]);
+        $bloggenerator->create_post($oublog[2],
+            ['title' => 'Post2Title', 'message' => 'Post2Message',
+                'attachments' => self::create_file_area_with_frog_picture()]);
+
+        $context1 = \context_module::instance($oublog[1]->cmid);
+        $userlist1 = new \core_privacy\local\request\userlist($context1, 'mod_oublog');
+        provider::get_users_in_context($userlist1);
+        $users1 = $userlist1->get_userids();
+
+        $context2 = \context_module::instance($oublog[2]->cmid);
+        $userlist2 = new \core_privacy\local\request\userlist($context2, 'mod_oublog');
+        provider::get_users_in_context($userlist2);
+        $users2 = $userlist2->get_userids();
+
+        $this->assertCount(1, $userlist1);
+        $this->assertCount(1, $userlist2);
+        $this->assertContains($users[1]->id, $users1);
+        $this->assertContains($users[2]->id, $users2);
+    }
+
+    /**
+     * Test for privacy function test_get_users_in_context(), table "oublog_edits".
+     *
+     * @throws \dml_exception
+     * @throws \coding_exception
+     */
+    public function test_get_users_in_context_oublog_edits() {
+        global $DB;
+
+        list (, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        $this->setUser($users[1]);
+        $postid[1] = $bloggenerator->create_post($oublog[1],
+            ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+        $this->setUser($users[2]);
+        $postid[2] = $bloggenerator->create_post($oublog[2],
+            ['title' => 'Post2Title', 'message' => 'Post2Message',
+                'attachments' => self::create_file_area_with_frog_picture()]);
+
+        // Edit both posts - one has a message picture and tags, the other an attachment.
+        $bloggenerator->create_post($oublog[1],
+            ['id' => $postid[1], 'title' => 'Change', 'message' => ['text' => 'Different',
+                'itemid' => self::create_file_area_with_frog_picture()],
+                'tags' => 'frogs,amphibians']);
+        $bloggenerator->create_post($oublog[2],
+            ['id' => $postid[2], 'title' => 'Change2', 'message' => 'Different2',
+                'attachments' => self::create_file_area_with_frog_picture()]);
+
+        // Mark it deleted by the target user as well.
+        $DB->update_record('oublog_posts',
+            ['id' => $postid[1], 'deletedby' => $users[1]->id, 'timedeleted' => 12345]);
+
+        $context1 = \context_module::instance($oublog[1]->cmid);
+        $userlist1 = new \core_privacy\local\request\userlist($context1, 'mod_oublog');
+        provider::get_users_in_context($userlist1);
+        $users1 = $userlist1->get_userids();
+
+        $context2 = \context_module::instance($oublog[2]->cmid);
+        $userlist2 = new \core_privacy\local\request\userlist($context2, 'mod_oublog');
+        provider::get_users_in_context($userlist2);
+        $users2 = $userlist2->get_userids();
+
+        $this->assertCount(1, $userlist1);
+        $this->assertCount(1, $userlist2);
+        $this->assertContains($users[1]->id, $users1);
+        $this->assertContains($users[2]->id, $users2);
+    }
+
+    /**
+     * Test for privacy function test_get_users_in_context(), table "rating".
+     *
+     * @throws \dml_exception
+     * @throws \coding_exception
+     */
+    public function test_get_users_in_context_oublog_ratings() {
+        self::allow_student_to_rate();
+
+        list ($course, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        $rm = new \rating_manager();
+        $modinfo = get_fast_modinfo($course);
+        $cm1 = $modinfo->get_cm($oublog[1]->cmid);
+        $context1 = \context_module::instance($cm1->id);
+        $this->setUser($users[1]);
+        $postid[1] = $bloggenerator->create_post($oublog[1],
+            ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+
+        $this->setUser($users[2]);
+        $rm->add_rating($cm1, $context1, 'mod_oublog', 'post', $postid[1],
+            100, 50, $users[1]->id, RATING_AGGREGATE_AVERAGE);
+
+        $userlist1 = new \core_privacy\local\request\userlist($context1, 'mod_oublog');
+        provider::get_users_in_context($userlist1);
+        $users1 = $userlist1->get_userids();
+
+        $this->assertCount(2, $userlist1);
+        $this->assertContains($users[1]->id, $users1);
+        $this->assertContains($users[2]->id, $users1);
+    }
+
+    /**
+     * Test for privacy function test_get_users_in_context(), table "oublog_comments".
+     *
+     * @throws \dml_exception
+     * @throws \coding_exception
+     */
+    public function test_get_users_in_context_oublog_comments() {
+        list (, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        $this->setUser($users[1]);
+        $postid[1] = $bloggenerator->create_post($oublog[1],
+            ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+        $bloggenerator->create_comment($oublog[1],
+            ['postid' => $postid[1], 'title' => 'Comment',
+             'messagecomment' => ['text' => 'CommentMessage',
+                                  'itemid' => self::create_file_area_with_frog_picture()]]);
+
+        $this->setUser($users[2]);
+        $postid[2] = $bloggenerator->create_post($oublog[2],
+            ['title' => 'Post2Title', 'message' => 'Post2Message',
+                'attachments' => self::create_file_area_with_frog_picture()]);
+
+        $bloggenerator->create_comment($oublog[2],
+            ['postid' => $postid[2], 'title' => 'Comment',
+             'messagecomment' => ['text' => 'CommentMessage',
+                                  'itemid' => self::create_file_area_with_frog_picture()]]);
+
+        $context1 = \context_module::instance($oublog[1]->cmid);
+        $userlist1 = new \core_privacy\local\request\userlist($context1, 'mod_oublog');
+        provider::get_users_in_context($userlist1);
+        $users1 = $userlist1->get_userids();
+
+        $context2 = \context_module::instance($oublog[2]->cmid);
+        $userlist2 = new \core_privacy\local\request\userlist($context2, 'mod_oublog');
+        provider::get_users_in_context($userlist2);
+        $users2 = $userlist2->get_userids();
+
+        $this->assertCount(1, $userlist1);
+        $this->assertCount(1, $userlist2);
+        $this->assertContains($users[1]->id, $users1);
+        $this->assertContains($users[2]->id, $users2);
+    }
+
+    /**
+     * Unit test for provider::delete_data_for_users() for oublog_post
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function test_delete_data_for_users_oublog_post() {
+        global $DB;
+
+        list ($course, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        foreach ($oublog as $item) {
+            $this->setUser($users[1]);
+            $postid[1] = $bloggenerator->create_post($item,
+                ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+            $this->setUser($users[2]);
+            $postid[2] = $bloggenerator->create_post($item,
+                ['title' => 'Post2Title', 'message' => 'Post2Message',
+                    'attachments' => self::create_file_area_with_frog_picture()]);
+
+            // Edit both posts - one has a message picture and tags, the other an attachment.
+            $bloggenerator->create_post($item,
+                ['id' => $postid[1], 'title' => 'Change', 'message' => ['text' => 'Different',
+                    'itemid' => self::create_file_area_with_frog_picture()],
+                    'tags' => 'frogs,amphibians']);
+            $bloggenerator->create_post($item,
+                ['id' => $postid[2], 'title' => 'Change2', 'message' => 'Different2',
+                    'attachments' => self::create_file_area_with_frog_picture()]);
+
+            // Mark it deleted by the target user as well.
+            $DB->update_record('oublog_posts',
+                ['id' => $postid[1], 'deletedby' => $users[1]->id, 'timedeleted' => 12345]);
+        }
+
+        $approveduserids = [$users[1]->id, $users[2]->id];
+        $modinfo = get_fast_modinfo($course);
+        $cm = $modinfo->get_cm($oublog[1]->cmid);
+        $context = \context_module::instance($cm->id);
+        $approvedlist = new \core_privacy\local\request\approved_userlist($context, 'mod_oublog', $approveduserids);
+        provider::delete_data_for_users($approvedlist);
+
+        $posts = array_values($DB->get_records('oublog_posts'));
+        $this->assertCount(2, $posts);
+        $this->assertEquals($users[2]->id, $posts[0]->lasteditedby);
+        $this->assertEquals($users[1]->id, $posts[1]->deletedby);
+        $this->assertEquals($users[2]->id, $posts[1]->lasteditedby);
+    }
+
+    /**
+     * Unit test for provider::delete_data_for_users() for oublog_links
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function test_delete_data_for_users_oublog_links() {
+        global $DB;
+
+        list ($course, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        foreach ($oublog as $item) {
+            $this->setUser($users[1]);
+            $postid[1] = $bloggenerator->create_post($item,
+                ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+            // Create a blog link (note: you can't really do this except on the global one, but
+            // just to make it a (fairly) complete test).
+            $oubloginstance = $DB->get_field('oublog_instances', 'id',
+                ['oublogid' => $item->id, 'userid' => $users[1]->id]);
+            oublog_add_link((object)['oubloginstancesid' => $oubloginstance,
+                'title' => 'First link', 'url' => 'http://1.example.com/']);
+
+            $this->setUser($users[2]);
+            $postid[2] = $bloggenerator->create_post($item,
+                ['title' => 'Post2Title', 'message' => 'Post2Message',
+                    'attachments' => self::create_file_area_with_frog_picture()]);
+        }
+
+        $approveduserids = [$users[1]->id, $users[2]->id];
+        $modinfo = get_fast_modinfo($course);
+        $cm = $modinfo->get_cm($oublog[1]->cmid);
+        $context = \context_module::instance($cm->id);
+        $approvedlist = new \core_privacy\local\request\approved_userlist($context, 'mod_oublog', $approveduserids);
+        provider::delete_data_for_users($approvedlist);
+
+        $links = array_values($DB->get_records('oublog_links'));
+        $this->assertCount(1, $links);
+        $this->assertEquals($oubloginstance, $links[0]->oubloginstancesid);
+    }
+
+    /**
+     * Unit test for provider::delete_data_for_users() for oublog_comments
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function test_delete_data_for_users_oublog_comments() {
+        global $DB;
+
+        list ($course, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        foreach ($oublog as $item) {
+            $this->setUser($users[1]);
+            $postid[1] = $bloggenerator->create_post($item,
+                ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+            $this->setUser($users[2]);
+            $postid[2] = $bloggenerator->create_post($item,
+                ['title' => 'Post2Title', 'message' => 'Post2Message',
+                    'attachments' => self::create_file_area_with_frog_picture()]);
+
+            // Comment on a post (with file).
+            $bloggenerator->create_comment($item,
+                ['postid' => $postid[1], 'title' => 'Comment',
+                    'messagecomment' => ['text' => 'CommentMessage',
+                        'itemid' => self::create_file_area_with_frog_picture()]]);
+        }
+
+        $approveduserids = [$users[1]->id, $users[2]->id];
+        $modinfo = get_fast_modinfo($course);
+        $cm = $modinfo->get_cm($oublog[1]->cmid);
+        $context = \context_module::instance($cm->id);
+        $approvedlist = new \core_privacy\local\request\approved_userlist($context, 'mod_oublog', $approveduserids);
+        provider::delete_data_for_users($approvedlist);
+
+        $comments = array_values($DB->get_records('oublog_comments'));
+        $this->assertCount(1, $comments);
+        $this->assertEquals($postid[1], $comments[0]->postid);
+        $this->assertEquals($users[2]->id, $comments[0]->userid);
+    }
+
+    /**
+     * Unit test for provider::delete_data_for_users() for ratings
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function test_delete_data_for_users_oublog_ratings() {
+        global $DB;
+        self::allow_student_to_rate();
+
+        list ($course, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        $rm = new \rating_manager();
+        $modinfo = get_fast_modinfo($course);
+        foreach ($oublog as $item) {
+            $cm = $modinfo->get_cm($item->cmid);
+            $context = \context_module::instance($cm->id);
+
+            $this->setUser($users[1]);
+            $postid[1] = $bloggenerator->create_post($item,
+                ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+
+            $this->setUser($users[2]);
+            $postid[2] = $bloggenerator->create_post($item,
+                ['title' => 'Post2Title', 'message' => 'Post2Message',
+                    'attachments' => self::create_file_area_with_frog_picture()]);
+
+            $rm->add_rating($cm, $context, 'mod_oublog', 'post', $postid[1],
+                100, 50, $users[1]->id, RATING_AGGREGATE_AVERAGE);
+        }
+
+        $approveduserids = [$users[1]->id, $users[2]->id];
+        $modinfo = get_fast_modinfo($course);
+        $cm = $modinfo->get_cm($oublog[1]->cmid);
+        $context = \context_module::instance($cm->id);
+        $approvedlist = new \core_privacy\local\request\approved_userlist($context, 'mod_oublog', $approveduserids);
+        provider::delete_data_for_users($approvedlist);
+
+        $ratings = array_values($DB->get_records('rating'));
+        $this->assertCount(1, $ratings);
+        $this->assertEquals($postid[1], $ratings[0]->itemid);
+        $this->assertEquals($users[2]->id, $ratings[0]->userid);
+    }
+
+    /**
+     * Unit test for provider::delete_data_for_users() for oublog_edits
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function test_delete_data_for_users_oublog_edits() {
+        global $DB;
+
+        list ($course, , $oublog, $users, $bloggenerator) = $this->create_basic_test_data();
+
+        foreach ($oublog as $item) {
+            $this->setUser($users[1]);
+            $postid[1] = $bloggenerator->create_post($item,
+                ['title' => 'OtherTitle', 'message' => 'OtherMessage']);
+            $this->setUser($users[2]);
+            $postid[2] = $bloggenerator->create_post($item,
+                ['title' => 'Post2Title', 'message' => 'Post2Message',
+                    'attachments' => self::create_file_area_with_frog_picture()]);
+
+            // Edit both posts - one has a message picture and tags, the other an attachment.
+            $bloggenerator->create_post($item,
+                ['id' => $postid[1], 'title' => 'Change', 'message' => ['text' => 'Different',
+                    'itemid' => self::create_file_area_with_frog_picture()],
+                    'tags' => 'frogs,amphibians']);
+            $bloggenerator->create_post($item,
+                ['id' => $postid[2], 'title' => 'Change2', 'message' => 'Different2',
+                    'attachments' => self::create_file_area_with_frog_picture()]);
+        }
+
+        $approveduserids = [$users[1]->id, $users[2]->id];
+        $modinfo = get_fast_modinfo($course);
+        $cm = $modinfo->get_cm($oublog[1]->cmid);
+        $context = \context_module::instance($cm->id);
+        $approvedlist = new \core_privacy\local\request\approved_userlist($context, 'mod_oublog', $approveduserids);
+        provider::delete_data_for_users($approvedlist);
+
+        $postedits = array_values($DB->get_records('oublog_edits'));
+        $this->assertCount(2, $postedits);
+        $this->assertEquals($users[1]->id, $postedits[0]->userid);
+        $this->assertEquals($postid[1], $postedits[0]->postid);
+        $this->assertEquals($users[2]->id, $postedits[1]->userid);
+        $this->assertEquals($postid[2], $postedits[1]->postid);
+    }
+
 }
