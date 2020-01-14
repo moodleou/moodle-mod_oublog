@@ -392,7 +392,7 @@ Feature: Test Post and Comment on OUBlog entry
     Then I should see "P0" in the ".oublog-post.oublog-even .oublog-post-content" "css_element"
     And I should see "P1" in the ".oublog-post.oublog-odd .oublog-post-content" "css_element"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Check tag sorting and filter by tag as student
     Given I log in as "teacher1"
     And I am on homepage
