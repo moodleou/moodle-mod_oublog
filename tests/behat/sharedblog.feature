@@ -38,7 +38,7 @@ Feature: Test shared data from Master blog on OUBlog
       | Attachment | lib/tests/fixtures/upload_users.csv |
     And I press "Add post"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Child blog only show data relating to master blog
     When I am on homepage
     And I am on "Course 1" course homepage
@@ -116,7 +116,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I click on "Most posts" "text" in the ".oublog-accordion-view" "css_element"
     And I should see "1 posts" in the ".oublog_statsinfo_bar" "css_element"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Child blog show links from master blog
     When I am on homepage
     And I am on "Course 1" course homepage
@@ -130,7 +130,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I follow "Child Blog"
     And I should see "Teachers Personal blog test" in the "#oublog-links" "css_element"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Fail to create child blog because wrong ID number.
     When I am on "Course 1" course homepage
     And I add a "OU blog" to section "0" and I fill the form with:
@@ -141,7 +141,7 @@ Feature: Test shared data from Master blog on OUBlog
     Then I press "Save and display"
     And I should see "No matching ID number"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Fail to create child blog because that blog is child of the other.
     When I am on "Course 1" course homepage
     And I add a "OU blog" to section "0" and I fill the form with:
@@ -152,7 +152,7 @@ Feature: Test shared data from Master blog on OUBlog
     Then I press "Save and display"
     And I should see "This is an ID number of a child blog"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Checking posts action in shared blog
     Given the following "activities" exist:
       | activity | name         | intro                                              | course | individual | idsharedblog | idnumber   |
@@ -300,7 +300,7 @@ Feature: Test shared data from Master blog on OUBlog
     Then I should see "P1 of student in different course"
     Then following "upload_users.csv" should download between "100" and "100000" bytes
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Activity settings should be independent.
     Given the following "activities" exist:
       | activity | name       | intro                          | course | individual | idsharedblog | idnumber  |
@@ -333,7 +333,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I should not see "Participation" in the ".oublog-accordion " "css_element"
     And I should not see "Most commented posts" in the ".oublog-accordion " "css_element"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Import from shared blog to master blog.
     Given the following "activities" exist:
       | activity | name                     | intro                            | course | individual | idsharedblog | idnumber  | allowimport |
@@ -421,7 +421,7 @@ Feature: Test shared data from Master blog on OUBlog
     And I should see "Post 0 title 2"
     And I should see "Post 0 title"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Searching in shared blog.
     Given the following "activities" exist:
       | activity | name       | intro                          | course | individual | idsharedblog | idnumber  |
