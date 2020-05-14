@@ -88,6 +88,7 @@ define('OUBLOG_POSTS_PER_PAGE_EXPORT', 50);
  * Constant defining the max length of tags
  */
 define('OUBLOG_EXPORT_TAGS_LENGTH', 40);
+define('OUBLOG_TAGS_SHOW', 500);
 
 /**
  * Get a blog from a user id
@@ -1046,7 +1047,7 @@ function oublog_get_tags_csv($postid) {
  * @return array Tag data
  */
 function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder = 'alpha',
-        $masterblog = null) {
+        $masterblog = null, $limit = null) {
     global $CFG, $DB, $USER;
     $tags = array();
     $params = array();
@@ -1100,9 +1101,16 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
                 INNER JOIN {oublog_posts} p ON ti.postid = p.id
                 INNER JOIN {user} u ON u.id = bi.userid
             WHERE $sqlwhere
-            GROUP BY t.id, t.tag
-            ORDER BY count DESC";
-
+            GROUP BY t.id, t.tag";
+    if ($tagorder == 'alpha') {
+        $sort = ' ORDER BY t.tag ASC';
+    } else {
+        $sort = ' ORDER BY count DESC';
+    }
+    $sql = $sql . $sort;
+    if ($limit > -1) {
+        $sql = $sql . ' LIMIT ' . $limit;
+    }
     if ($tags = $DB->get_records_sql($sql, $params)) {
         $first = array_shift($tags);
         $max = $first->count;
@@ -1116,11 +1124,6 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
 
         foreach ($tags as $idx => $tag) {
             $tags[$idx]->weight = round(($tag->count-$min)/$delta*4);
-        }
-        if ($tagorder == 'alpha') {
-            uasort($tags, function($a, $b) {
-                return strcmp ($a->tag,  $b->tag);
-            });
         }
     }
     return($tags);
@@ -1140,7 +1143,7 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
  * @return array Tag cloud HTML, current filter tag
  */
 function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder,
-        $masterblog = null) {
+        $masterblog = null, $limit = null) {
     global $PAGE;
     $cloud = '';
     $currenttag = $PAGE->url->get_param('tag');
@@ -1148,18 +1151,36 @@ function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstancei
     $urlparts= array();
 
     $baseurl = oublog_replace_url_param($baseurl, 'tag');
-    if (!$tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, $tagorder, $masterblog)) {
+    $baseurl = oublog_replace_url_param($baseurl, 'taglimit');
+
+    if (!$tags = oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid, $individualid, $tagorder, $masterblog, $limit)) {
         return [$cloud, $currentfiltertag];
     }
 
     $cloud .= html_writer::start_tag('div', array('class' => 'oublog-tag-items'));
     foreach ($tags as $tag) {
-        $cloud .= '<a href="'.$baseurl.'&amp;tag='.urlencode($tag->tag).'" class="oublog-tag-cloud-'.
-            $tag->weight.'"><span class="oublog-tagname">'.strtr(($tag->tag), array(' '=>'&nbsp;')).
-            '</span><span class="oublog-tagcount">('.$tag->count.')</span></a> ';
+        if ($limit == -1) {
+            $cloud .= '<a href="'.$baseurl.'&amp;tag='.urlencode($tag->tag).
+                    '&amp;taglimit='. urlencode($limit) . '" class="oublog-tag-cloud-'.
+                    $tag->weight.'"><span class="oublog-tagname">'.strtr(($tag->tag), array(' '=>'&nbsp;')).
+                    '</span><span class="oublog-tagcount">('.$tag->count.')</span></a> ';
+        } else {
+            $cloud .= '<a href="'.$baseurl.'&amp;tag='.urlencode($tag->tag).'" class="oublog-tag-cloud-'.
+                    $tag->weight.'"><span class="oublog-tagname">'.strtr(($tag->tag), array(' '=>'&nbsp;')).
+                    '</span><span class="oublog-tagcount">('.$tag->count.')</span></a> ';
+        }
+
         if (!is_null($currenttag) && $tag->tag == $currenttag) {
             $currentfiltertag = $tag;
         }
+    }
+    if (count($tags) >= OUBLOG_TAGS_SHOW && $limit != -1) {
+        $showmore = get_string('tagshowmore', 'oublog');
+        $cloud .= '<a href="'. $baseurl . '&amp;taglimit=-1" class="mod-oublog-tags-show-more">' . $showmore . '</a>';
+    }
+    if ($limit == -1) {
+        $showless = get_string('tagshowless', 'oublog');
+        $cloud .= '<a href="'. $baseurl . '&amp;taglimit=' . OUBLOG_TAGS_SHOW . '" class="mod-oublog-tags-show-less">' . $showless . '</a>';
     }
     $cloud .= html_writer::end_tag('div');
 

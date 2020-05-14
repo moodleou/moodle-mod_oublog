@@ -761,3 +761,7 @@ oublog-filter-tagcount {
     height: 18px;
     float: right;
 }
+.mod-oublog-tags-show-more,
+.mod-oublog-tags-show-less {
+    display: inline-block;
+}

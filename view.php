@@ -31,6 +31,7 @@ $username = optional_param('u', '', PARAM_USERNAME);// User login name.
 $tag    = optional_param('tag', null, PARAM_TAG);   // Tag to display.
 $page = optional_param('page', 0, PARAM_INT);
 $tagorder = optional_param('tagorder', '', PARAM_ALPHA);// Tag display order.
+$taglimit = optional_param('taglimit', OUBLOG_TAGS_SHOW, PARAM_INT);// Tag display order.
 
 // Set user value if u (username) set.
 if ($username != '') {
@@ -53,7 +54,7 @@ if (isloggedin()) {
 }
 
 $url = new moodle_url('/mod/oublog/view.php', array('id' => $id, 'user' => $user,
-        'page' => $page, 'tag' => $tag, 'tagorder' => $tagorder));
+        'page' => $page, 'tag' => $tag, 'tagorder' => $tagorder, 'taglimit' => $taglimit));
 
 $PAGE->set_url($url);
 
@@ -179,6 +180,9 @@ if ($oublog->global) {
 
 if ($tag) {
     $returnurl .= '&amp;tag='.urlencode($tag);
+}
+if ($taglimit) {
+    $returnurl .= '&amp;taglimit='.urlencode($taglimit);
 }
 
 // Set-up individual.
@@ -332,7 +336,7 @@ if (!$hideunusedblog) {
 
     // Tag Cloud.
     list ($tags, $currentfiltertag) = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm,
-            $oubloginstanceid, $currentindividual, $tagorder, $masterblog);
+            $oubloginstanceid, $currentindividual, $tagorder, $masterblog, $taglimit);
     if ($tags) {
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-tags';
