@@ -765,3 +765,7 @@ oublog-filter-tagcount {
 .mod-oublog-tags-show-less {
     display: inline-block;
 }
+
+.gecko #oublog-tags {
+    display: block;
+}
