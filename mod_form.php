@@ -245,12 +245,14 @@ class mod_oublog_mod_form extends moodleform_mod {
             return false;
         }
         // Turn off completion settings if the checkboxes aren't ticked
-        $autocompletion=!empty($data->completion) && $data->completion==COMPLETION_TRACKING_AUTOMATIC;
-        if (empty($data->completionpostsenabled) || !$autocompletion) {
-            $data->completionposts=0;
-        }
-        if (empty($data->completioncommentsenabled) || !$autocompletion) {
-            $data->completioncomments=0;
+        if (!empty($data->completionunlocked)) {
+            $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
+            if (empty($data->completionpostsenabled) || !$autocompletion) {
+                $data->completionposts = 0;
+            }
+            if (empty($data->completioncommentsenabled) || !$autocompletion) {
+                $data->completioncomments = 0;
+            }
         }
         // If maxvisibility is disabled by individual mode, ensure it's limited to course.
         if (isset($data->individual) && ($data->individual == OUBLOG_SEPARATE_INDIVIDUAL_BLOGS
