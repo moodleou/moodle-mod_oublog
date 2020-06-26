@@ -156,4 +156,58 @@ class cron_task_test extends oublog_test_lib {
 
         return $draftid;
     }
+
+
+    public function test_cron_with_many_data() {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $bloggenerator = $generator->get_plugin_generator('mod_oublog');
+
+        // Personal blog.
+        if (!$oublog = $DB->get_record('oublog', ['global' => 1])) {
+            $oublog = $this->get_new_oublog($course->id, ['global' => 1, 'maxvisibility' => OUBLOG_VISIBILITY_PUBLIC]);
+        }
+        for ($i = 0; $i <= 500; $i++) {
+            $user = $generator->create_user();
+            $generator->enrol_user($user->id, $course->id, 'student');
+            $this->setUser($user);
+
+            $postid = $bloggenerator->create_post($oublog,
+                    ['title' => 'OtherTitle', 'message' => 'OtherMessage', 'tags' => 'frogs',
+                            'attachments' => self::create_file_area_with_frog_picture()]);
+            $DB->update_record('oublog_posts',
+                    ['id' => $postid, 'deletedby' => $user->id, 'timedeleted' => strtotime('-100 days')]);
+        }
+        $posts = array_values($DB->get_records('oublog_posts'));
+        $binstances = array_values($DB->get_records('oublog_instances'));
+
+        $this->assertCount(501, $posts);
+        $this->assertCount(501, $binstances);
+        $task = new \mod_oublog\task\cron_task();
+        $task->execute();
+        $posts = array_values($DB->get_records('oublog_posts'));
+        $binstances = array_values($DB->get_records('oublog_instances'));
+        $this->assertCount(0, $posts);
+        $this->assertCount(501, $binstances);
+    }
+
+    public function test_cron_with_zero_data() {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $posts = array_values($DB->get_records('oublog_posts'));
+        $binstances = array_values($DB->get_records('oublog_instances'));
+
+        $this->assertCount(0, $posts);
+        $this->assertCount(0, $binstances);
+        $task = new \mod_oublog\task\cron_task();
+        $task->execute();
+        $posts = array_values($DB->get_records('oublog_posts'));
+        $binstances = array_values($DB->get_records('oublog_instances'));
+        $this->assertCount(0, $posts);
+        $this->assertCount(0, $binstances);
+    }
 }
