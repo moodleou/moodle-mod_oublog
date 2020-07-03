@@ -24,10 +24,67 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once("$CFG->libdir/externallib.php");
 require_once("$CFG->dirroot/mod/oublog/locallib.php");
 
 class mod_oublog_external extends external_api {
+    /**
+     * Some of these functions work differently in the Open University install.
+     *
+     * @return bool True if OU
+     */
+    public static function is_ou(): bool {
+        return class_exists('local_oudataload\users');
+    }
+
+    /**
+     * Gets the identifier parameter - we have a standard definition at the OU, otherwise it's
+     * just a username.
+     *
+     * @return external_single_structure Identifier structure
+     */
+    protected static function get_identifier_parameter(): external_single_structure {
+        if (self::is_ou()) {
+            return \local_oudataload\users::get_webservice_identifier_parameter();
+        } else {
+            return new external_single_structure([
+                'username' => new \external_value(PARAM_ALPHANUM, 'Moodle username'),
+            ]);
+        }
+    }
+
+    /**
+     * Gets a user based on the webservice identifier parameter.
+     *
+     * @param array|\stdClass $identifier Identifier param
+     * @return \stdClass|null User object or null if not found
+     */
+    protected static function get_user_for_webservice($identifier) {
+        global $DB;
+        if (self::is_ou()) {
+            return \local_oudataload\users::get_user_for_webservice($identifier, true);
+        } else {
+            $identifier = (array)$identifier;
+            $user = $DB->get_record('user', ['username' => $identifier['username']]);
+            return $user ? $user : null;
+        }
+    }
+
+    /**
+     * Converts from a username (legacy service call) to identifier array.
+     *
+     * @param string $username Username
+     * @return string[] Identifier array
+     */
+    protected static function convert_username(string $username): array {
+        if (self::is_ou()) {
+            return ['oucu' => $username];
+        } else {
+            return ['username' => $username];
+        }
+    }
 
     public static function get_user_blogs_parameters() {
         return new external_function_parameters(array(
@@ -36,17 +93,40 @@ class mod_oublog_external extends external_api {
     }
 
     /**
+     * Gets parameters for webservice call.
+     *
+     * @return external_function_parameters Parameters
+     */
+    public static function get_user_blogs2_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'identifier' => self::get_identifier_parameter()
+        ]);
+    }
+
+    /**
      * Return all blogs on the system for the user
+     *
      * @param string $username
      */
-    public static function get_user_blogs($username) {
-        global $DB, $remoteuserid;
-        $username = self::validate_parameters(self::get_user_blogs_parameters(),
-                array('username' => $username));
-        $user = $DB->get_field('user', 'id', array('username' => $username['username']), IGNORE_MISSING);
-        if (!$user) {
+    public static function get_user_blogs(string $username) {
+        return self::get_user_blogs2(self::convert_username($username));
+    }
+
+    /**
+     * Return all blogs on the system for the user
+     *
+     * @param array|\stdClass $identifier Standard identifier
+     */
+    public static function get_user_blogs2($identifier) {
+        global $remoteuserid;
+        ['identifier' => $identifier] = self::validate_parameters(self::get_user_blogs2_parameters(),
+                ['identifier' => $identifier]);
+        $userobj = self::get_user_for_webservice($identifier);
+        if (!$userobj) {
             return array();
         }
+        $user = $userobj->id;
+
         $remoteuserid = $user;
         $result = oublog_import_getblogs($user);
         // Add remote property to each blog to identify that it came from web service.
@@ -70,6 +150,15 @@ class mod_oublog_external extends external_api {
                 );
     }
 
+    /**
+     * Webservice return type.
+     *
+     * @return external_multiple_structure Return type
+     */
+    public static function get_user_blogs2_returns(): external_multiple_structure {
+        return self::get_user_blogs_returns();
+    }
+
     public static function get_blog_info_parameters() {
         return new external_function_parameters(
                 array(
@@ -80,16 +169,44 @@ class mod_oublog_external extends external_api {
         );
     }
 
+    /**
+     * Gets parameters for webservice.
+     *
+     * @return external_function_parameters Parameters
+     */
+    public static function get_blog_info2_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'cmid' => new external_value(PARAM_INT, 'Blog cm id'),
+            'identifier' => self::get_identifier_parameter(),
+            'sharedblogcmid' => new external_value(PARAM_INT, 'Shared Blog cm id'),
+        ]);
+    }
+
     public static function get_blog_info($cmid, $username, $sharedblogcmid = null) {
-        global $DB, $remoteuserid;
-        $params = self::validate_parameters(self::get_blog_info_parameters(),
-                array('cmid' => $cmid, 'username' => $username, 'sharedblogcmid' => $sharedblogcmid));
-        $user = $DB->get_field('user', 'id', array('username' => $params['username']), IGNORE_MISSING);
-        if (!$user) {
+        return self::get_blog_info2($cmid, self::convert_username($username), $sharedblogcmid);
+    }
+
+    /**
+     * Gets info about a blog.
+     *
+     * @param int $cmid Course-module id
+     * @param array|\stdClass $identifier Standard array of user identifiers
+     * @param null|cmid $sharedblogcmid Shared blog cmid
+     * @return array Blog info
+     */
+    public static function get_blog_info2($cmid, $identifier, $sharedblogcmid = null) {
+        global $remoteuserid;
+        ['cmid' => $cmid, 'identifier' => $identifier, 'sharedblogcmid' => $sharedblogcmid] =
+                self::validate_parameters(self::get_blog_info2_parameters(),
+                    ['cmid' => $cmid, 'identifier' => $identifier, 'sharedblogcmid' => $sharedblogcmid]);
+        $userobj = self::get_user_for_webservice($identifier);
+        if (!$userobj) {
             return array();
         }
+        $user = $userobj->id;
+
         $remoteuserid = $user;
-        $result = oublog_import_getbloginfo($params['cmid'], $user, $sharedblogcmid);
+        $result = oublog_import_getbloginfo($cmid, $user, $sharedblogcmid);
         return array(
                 'bcmid' => $result[0],
                 'boublogid' => $result[1],
@@ -110,6 +227,15 @@ class mod_oublog_external extends external_api {
                         ));
     }
 
+    /**
+     * Gets return type for webservice.
+     *
+     * @return external_single_structure Return type
+     */
+    public static function get_blog_info2_returns() {
+        return self::get_blog_info_returns();
+    }
+
     public static function get_blog_allposts_parameters() {
         return new external_function_parameters(
                 array(
@@ -123,6 +249,21 @@ class mod_oublog_external extends external_api {
     }
 
     /**
+     * Gets parameters for webservice.
+     *
+     * @return external_function_parameters Parameters
+     */
+    public static function get_blog_allposts2_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'blogid' => new external_value(PARAM_INT, 'Blog id'),
+            'sort' => new external_value(PARAM_TEXT, 'sort sql'),
+            'identifier' => self::get_identifier_parameter(),
+            'page' => new external_value(PARAM_INT, 'results page', VALUE_DEFAULT, 0),
+            'tags' => new external_value(PARAM_SEQUENCE, 'tags to filter by', VALUE_DEFAULT, null),
+        ]);
+    }
+
+    /**
      * Gets all user posts from blog, filtered by page and tags
      * @param int $blogid
      * @param string $sort
@@ -132,16 +273,29 @@ class mod_oublog_external extends external_api {
      * @return array
      */
     public static function get_blog_allposts($blogid, $sort, $username, $page = 0, $tags = null) {
-        global $DB;
-        $params = self::validate_parameters(self::get_blog_allposts_parameters(),
-                array('blogid' => $blogid, 'sort' => $sort, 'username' => $username,
-                        'page' => $page, 'tags' => $tags));
-        $user = $DB->get_field('user', 'id', array('username' => $params['username']), IGNORE_MISSING);
-        if (!$user) {
+        return self::get_blog_allposts2($blogid, $sort, self::convert_username($username), $page, $tags);
+    }
+
+    /**
+     * Gets all user posts from blog, filtered by page and tags
+     *
+     * @param int $blogid Blog id
+     * @param string $sort Sort method
+     * @param \stdClass|array $identifier User identifier
+     * @param int $page Page (0 = first)
+     * @param string $tags comma separated sequence of selected tag ids to filter by
+     * @return array Webservice results
+     */
+    public static function get_blog_allposts2($blogid, $sort, $identifier, $page = 0, $tags = null) {
+        ['blogid' => $blogid, 'sort' => $sort, 'identifier' => $identifier, 'page' => $page, 'tags' => $tags] =
+                self::validate_parameters(self::get_blog_allposts2_parameters(),
+                    ['blogid' => $blogid, 'sort' => $sort, 'identifier' => $identifier, 'page' => $page, 'tags' => $tags]);
+        $userobj = self::get_user_for_webservice($identifier);
+        if (!$userobj) {
             return array();
         }
-        $result = oublog_import_getallposts($params['blogid'], $params['sort'], $user,
-                $params['page'], $params['tags']);
+        $user = $userobj->id;
+        $result = oublog_import_getallposts($blogid, $sort, $user, $page, $tags);
         if (!is_array($result[2])) {
             $result[2] = array();
         }
@@ -178,6 +332,15 @@ class mod_oublog_external extends external_api {
                 ));
     }
 
+    /**
+     * Gets webservice return type.
+     *
+     * @return external_single_structure Return type
+     */
+    public static function get_blog_allposts2_returns() {
+        return self::get_blog_allposts_returns();
+    }
+
     public static function get_blog_posts_parameters() {
         return new external_function_parameters(
                 array(
@@ -192,7 +355,24 @@ class mod_oublog_external extends external_api {
     }
 
     /**
+     * Gets webservice parameters.
+     *
+     * @return external_function_parameters Parameters
+     */
+    public static function get_blog_posts2_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'blogid' => new external_value(PARAM_INT, 'Blog id'),
+            'bcontextid' => new external_value(PARAM_INT, 'Blog module context id'),
+            'selected' => new external_value(PARAM_SEQUENCE, 'post ids'),
+            'inccomments' => new external_value(PARAM_BOOL, 'include comments',
+                    VALUE_DEFAULT, false),
+            'identifier' => self::get_identifier_parameter(),
+        ]);
+    }
+
+    /**
      * Get selected blog posts from blog
+     *
      * @param int $blogid
      * @param string $selected comma separated sequence of selected post ids to filter by
      * @param bool $inccomments - blog uses comments or not
@@ -200,21 +380,32 @@ class mod_oublog_external extends external_api {
      * @return array of posts
      */
     public static function get_blog_posts($blogid, $bcontextid, $selected, $inccomments = false, $username) {
-        global $DB;
-        $params = self::validate_parameters(self::get_blog_posts_parameters(),
-                array('blogid' => $blogid, 'bcontextid' => $bcontextid, 'selected' => $selected,
-                        'inccomments' => $inccomments, 'username' => $username));
-        $user = $DB->get_field('user', 'id', array('username' => $username), IGNORE_MISSING);
-        if (!$user) {
+        return self::get_blog_posts2($blogid, $bcontextid, $selected, $inccomments, self::convert_username($username));
+    }
+
+    /**
+     * Get selected blog posts from blog
+     * @param int $blogid
+     * @param string $selected comma separated sequence of selected post ids to filter by
+     * @param bool $inccomments - blog uses comments or not
+     * @param stdClass|array $identifier User identifier
+     * @return array of posts
+     */
+    public static function get_blog_posts2($blogid, $bcontextid, $selected, $inccomments, $identifier) {
+        ['blogid' => $blogid, 'bcontextid' => $bcontextid, 'selected' => $selected,
+                'inccomments' => $inccomments, 'identifier' => $identifier] = self::validate_parameters(
+                self::get_blog_posts2_parameters(), ['blogid' => $blogid, 'bcontextid' => $bcontextid,
+                'selected' => $selected, 'inccomments' => $inccomments, 'identifier' => $identifier]);
+        $userobj = self::get_user_for_webservice($identifier);
+        if (!$userobj) {
             return array();
         }
-        $selected = explode(',', $params['selected']);
+        $user = $userobj->id;
+        $selected = explode(',', $selected);
         if ($selected[0] == 0) {
-            $return = oublog_import_getposts($params['blogid'], $params['bcontextid'],
-                $selected, $params['inccomments'], $user, true);
+            $return = oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments, $user, true);
         } else {
-            $return = oublog_import_getposts($params['blogid'], $params['bcontextid'],
-                $selected, $params['inccomments'], $user);
+            $return = oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments, $user);
         }
         // Convert file objects into a custom known object to send.
         foreach ($return as &$post) {
@@ -306,5 +497,14 @@ class mod_oublog_external extends external_api {
                                 )), 'images', VALUE_OPTIONAL),
                                 )), 'comments', VALUE_OPTIONAL)
                 )));
+    }
+
+    /**
+     * Gets return type for webservice.
+     *
+     * @return external_multiple_structure Return type
+     */
+    public static function get_blog_posts2_returns(): external_multiple_structure {
+        return self::get_blog_posts_returns();
     }
 }

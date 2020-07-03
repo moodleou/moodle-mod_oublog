@@ -24,46 +24,75 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$functions = array(
-        'mod_oublog_get_user_blogs' => array(
-                'classname' => 'mod_oublog_external',
-                'methodname' => 'get_user_blogs',
-                'classpath' => 'mod/oublog/externallib.php',
-                'description' => 'Get all user\'s blogs on system',
-                'type' => 'read',
-        ),
-        'mod_oublog_get_blog_info' => array(
-                'classname' => 'mod_oublog_external',
-                'methodname' => 'get_blog_info',
-                'classpath' => 'mod/oublog/externallib.php',
-                'description' => 'Get info on blog, inc access check',
-                'type' => 'read',
-        ),
-        'mod_oublog_get_blog_allposts' => array(
-                'classname' => 'mod_oublog_external',
-                'methodname' => 'get_blog_allposts',
-                'classpath' => 'mod/oublog/externallib.php',
-                'description' => 'Get importable user posts from blog',
-                'type' => 'read',
-        ),
-        'mod_oublog_get_blog_posts' => array(
-                'classname' => 'mod_oublog_external',
-                'methodname' => 'get_blog_posts',
-                'classpath' => 'mod/oublog/externallib.php',
-                'description' => 'Get selected user posts from blog',
-                'type' => 'read',
-        ),
+$functions = [
+    'mod_oublog_get_user_blogs' => [
+        'classname' => 'mod_oublog_external',
+        'methodname' => 'get_user_blogs',
+        'classpath' => 'mod/oublog/externallib.php',
+        'description' => 'Get all user\'s blogs on system',
+        'type' => 'read',
+    ],
+    'mod_oublog_get_blog_info' => [
+        'classname' => 'mod_oublog_external',
+        'methodname' => 'get_blog_info',
+        'classpath' => 'mod/oublog/externallib.php',
+        'description' => 'Get info on blog, inc access check',
+        'type' => 'read',
+    ],
+    'mod_oublog_get_blog_allposts' => [
+        'classname' => 'mod_oublog_external',
+        'methodname' => 'get_blog_allposts',
+        'classpath' => 'mod/oublog/externallib.php',
+        'description' => 'Get importable user posts from blog',
+        'type' => 'read',
+    ],
+    'mod_oublog_get_blog_posts' => [
+        'classname' => 'mod_oublog_external',
+        'methodname' => 'get_blog_posts',
+        'classpath' => 'mod/oublog/externallib.php',
+        'description' => 'Get selected user posts from blog',
+        'type' => 'read',
+    ],
+    'mod_oublog_get_user_blogs2' => [
+        'classname' => 'mod_oublog_external',
+        'methodname' => 'get_user_blogs',
+        'classpath' => 'mod/oublog/externallib.php',
+        'description' => 'Get all user\'s blogs on system',
+        'type' => 'read',
+    ],
+    'mod_oublog_get_blog_info2' => [
+        'classname' => 'mod_oublog_external',
+        'methodname' => 'get_blog_info',
+        'classpath' => 'mod/oublog/externallib.php',
+        'description' => 'Get info on blog, inc access check',
+        'type' => 'read',
+    ],
+    'mod_oublog_get_blog_allposts2' => [
+        'classname' => 'mod_oublog_external',
+        'methodname' => 'get_blog_allposts',
+        'classpath' => 'mod/oublog/externallib.php',
+        'description' => 'Get importable user posts from blog',
+        'type' => 'read',
+    ],
+    'mod_oublog_get_blog_posts2' => [
+        'classname' => 'mod_oublog_external',
+        'methodname' => 'get_blog_posts',
+        'classpath' => 'mod/oublog/externallib.php',
+        'description' => 'Get selected user posts from blog',
+        'type' => 'read',
+    ],
+];
 
-);
-
-$services = array(
-        'OUBlog import' => array(
+$services = [
+        'OUBlog import' => [
                 'shortname' => 'oublogimport',
-                'functions' => array ('mod_oublog_get_user_blogs', 'mod_oublog_get_blog_info',
-                        'mod_oublog_get_blog_allposts', 'mod_oublog_get_blog_posts'),
+                'functions' => ['mod_oublog_get_user_blogs', 'mod_oublog_get_blog_info',
+                        'mod_oublog_get_blog_allposts', 'mod_oublog_get_blog_posts',
+                        'mod_oublog_get_user_blogs2', 'mod_oublog_get_blog_info2',
+                        'mod_oublog_get_blog_allposts2', 'mod_oublog_get_blog_posts2'],
                 'requiredcapability' => '',
                 'restrictedusers' => 1,
                 'enabled' => 1,
                 'downloadfiles' => 1
-        )
-);
+        ]
+];
