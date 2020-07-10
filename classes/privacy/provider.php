@@ -607,12 +607,13 @@ class provider implements
 
             // Query for all posts owned by the user in this blog.
             $postsql = "
-                    SELECT bp.id AS postid
-                      FROM {course_modules} cm
-                      JOIN {oublog} b ON b.id = cm.instance
-                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
-                     WHERE cm.id = :blogcmid AND bi.userid = :userid";
+                    SELECT c.postid postid from (
+                        SELECT bp.id AS postid
+                          FROM {course_modules} cm
+                          JOIN {oublog} b ON b.id = cm.instance
+                          JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                          JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                         WHERE cm.id = :blogcmid AND bi.userid = :userid) c";
             $params = [
                 'blogcmid' => $context->instanceid,
                 'userid' => $contextlist->get_user()->id
@@ -630,18 +631,18 @@ class provider implements
 
             // Delete all comments (including files) on posts owned by the user.
             $commentsql = "
-                    SELECT bc.id AS commentid
-                      FROM {oublog_comments} bc
-                     WHERE bc.postid IN ($postsql)";
+                    SELECT bc1.id AS commentid
+                      FROM (SELECT bc.id FROM {oublog_comments} bc
+                     WHERE bc.postid IN ($postsql)) bc1";
             $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
                     "IN ($commentsql)", $params);
             $DB->delete_records_select('oublog_comments', "id IN ($commentsql)", $params);
 
             // Delete all edits (including files) on posts owned by the user.
             $editsql = "
-                    SELECT be.id AS editid
-                      FROM {oublog_edits} be
-                     WHERE be.postid IN ($postsql)";
+                    SELECT be1.id AS editid
+                      FROM (SELECT be.id FROM {oublog_edits} be
+                     WHERE be.postid IN ($postsql)) be1";
             $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
                     "IN ($editsql)", $params);
             $DB->delete_records_select('oublog_edits', "id IN ($editsql)", $params);
@@ -653,11 +654,12 @@ class provider implements
             $DB->delete_records_select('oublog_posts', "id IN ($postsql)", $params);
 
             $instancesql = "
-                    SELECT bi.id AS instanceid
-                      FROM {course_modules} cm
-                      JOIN {oublog} b ON b.id = cm.instance
-                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                     WHERE cm.id = :blogcmid AND bi.userid = :userid";
+                    SELECT a.instanceid instanceid FROM (
+                        SELECT bi.id AS instanceid
+                          FROM {course_modules} cm
+                          JOIN {oublog} b ON b.id = cm.instance
+                          JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                         WHERE cm.id = :blogcmid AND bi.userid = :userid) a";
 
             // Delete all links added by the user.
             $DB->delete_records_select('oublog_links', "oubloginstancesid IN ($instancesql)", $params);
@@ -667,13 +669,14 @@ class provider implements
 
             // Delete edits (including files) on other people's posts by this user.
             $editsql = "
-                    SELECT be.id AS editid
-                      FROM {course_modules} cm
-                      JOIN {oublog} b ON b.id = cm.instance
-                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
-                      JOIN {oublog_edits} be ON be.postid = bp.id
-                     WHERE cm.id = :blogcmid AND be.userid = :userid";
+                    SELECT a.editid editid FROM (
+                        SELECT be.id AS editid
+                          FROM {course_modules} cm
+                          JOIN {oublog} b ON b.id = cm.instance
+                          JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                          JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                          JOIN {oublog_edits} be ON be.postid = bp.id
+                         WHERE cm.id = :blogcmid AND be.userid = :userid) a";
             $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
                     "IN ($editsql)", $params);
             $DB->delete_records_select('oublog_edits', "id IN ($editsql)", $params);
@@ -681,26 +684,28 @@ class provider implements
             // Fix up the editedby, deletedby on posts where it's this user.
             $admin = get_admin();
             $allpostsql = "
-                    SELECT bp.id AS postid
-                      FROM {course_modules} cm
-                      JOIN {oublog} b ON b.id = cm.instance
-                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
-                     WHERE cm.id = :blogcmid";
+                    SELECT a.postid postid from (
+                        SELECT bp.id AS postid
+                          FROM {course_modules} cm
+                          JOIN {oublog} b ON b.id = cm.instance
+                          JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                          JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                         WHERE cm.id = :blogcmid";
             $DB->set_field_select('oublog_posts', 'lasteditedby', $admin->id,
-                    "id IN ($allpostsql AND bp.lasteditedby = :userid)", $params);
+                    "id IN ($allpostsql AND bp.lasteditedby = :userid) a)", $params);
             $DB->set_field_select('oublog_posts', 'deletedby', $admin->id,
-                    "id IN ($allpostsql AND bp.deletedby = :userid)", $params);
+                    "id IN ($allpostsql AND bp.deletedby = :userid) a)", $params);
 
             // Find comments for other people's posts.
             $commentsql = "
+                    SELECT a.commentid commentid FROM (
                     SELECT bc.id AS commentid
                       FROM {course_modules} cm
                       JOIN {oublog} b ON b.id = cm.instance
                       JOIN {oublog_instances} bi ON bi.oublogid = b.id
                       JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
                       JOIN {oublog_comments} bc ON bc.postid = bp.id
-                     WHERE cm.id = :blogcmid AND bc.userid = :userid";
+                     WHERE cm.id = :blogcmid AND bc.userid = :userid) a";
 
             // Delete the files.
             $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
@@ -887,12 +892,13 @@ class provider implements
         $params['blogcmid'] = $context->instanceid;
         // Query for all posts owned by the users given
         $postsql = "
-                SELECT bp.id AS postid
-                  FROM {course_modules} cm
-                  JOIN {oublog} b ON b.id = cm.instance
-                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                  JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
-                 WHERE cm.id = :blogcmid AND bi.userid {$useridsql}";
+                SELECT a.postid postid FROM (
+                    SELECT bp.id AS postid
+                      FROM {course_modules} cm
+                      JOIN {oublog} b ON b.id = cm.instance
+                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                     WHERE cm.id = :blogcmid AND bi.userid {$useridsql}) a";
 
         // Delete files from these posts.
         $fs->delete_area_files_select($context->id, 'mod_oublog', 'message',
@@ -900,25 +906,25 @@ class provider implements
         $fs->delete_area_files_select($context->id, 'mod_oublog', 'attachment',
                 "IN ($postsql)", $params);
 
-        $ratingsql = "SELECT itemid FROM {rating} WHERE userid {$useridsql}";
+        $ratingsql = "SELECT it.itemid FROM (SELECT itemid FROM {rating} WHERE userid {$useridsql}) it";
         // Delete ratings from these posts.
         \core_rating\privacy\provider::delete_ratings_select($context, 'mod_oublog', 'post',
                 "IN ($ratingsql)", $params);
 
         // Delete all comments (including files) on posts owned by these users
         $commentsql = "
-                SELECT bc.id AS commentid
-                  FROM {oublog_comments} bc
-                 WHERE bc.postid IN ($postsql)";
+                SELECT bc1.id AS commentid
+                  FROM (SELECT bc.id FROM {oublog_comments} bc
+                 WHERE bc.postid IN ($postsql)) bc1";
         $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
                 "IN ($commentsql)", $params);
         $DB->delete_records_select('oublog_comments', "id IN ($commentsql)", $params);
 
         // Delete all edits (including files) on posts owned by these users
         $editsql = "
-                SELECT be.id AS editid
-                  FROM {oublog_edits} be
-                 WHERE be.postid IN ($postsql)";
+                SELECT be1.id AS editid
+                  FROM (SELECT be.id FROM {oublog_edits} be
+                 WHERE be.postid IN ($postsql)) be1";
         $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
                 "IN ($editsql)", $params);
         $DB->delete_records_select('oublog_edits', "id IN ($editsql)", $params);
@@ -930,11 +936,12 @@ class provider implements
         $DB->delete_records_select('oublog_posts', "id IN ($postsql)", $params);
 
         $instancesql = "
-                SELECT bi.id AS instanceid
-                  FROM {course_modules} cm
-                  JOIN {oublog} b ON b.id = cm.instance
-                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                 WHERE cm.id = :blogcmid AND bi.userid {$useridsql}";
+                SELECT a.instanceid instanceid FROM (
+                    SELECT bi.id AS instanceid
+                      FROM {course_modules} cm
+                      JOIN {oublog} b ON b.id = cm.instance
+                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                     WHERE cm.id = :blogcmid AND bi.userid {$useridsql}) a";
 
         // Delete all links added by the user.
         $DB->delete_records_select('oublog_links', "oubloginstancesid IN ($instancesql)", $params);
@@ -944,13 +951,14 @@ class provider implements
 
         // Delete edits (including files) on other people's posts by these users
         $editsql = "
-                SELECT be.id AS editid
-                  FROM {course_modules} cm
-                  JOIN {oublog} b ON b.id = cm.instance
-                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                  JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
-                  JOIN {oublog_edits} be ON be.postid = bp.id
-                 WHERE cm.id = :blogcmid AND be.userid {$useridsql}";
+                SELECT a.editid editid FROM (
+                    SELECT be.id AS editid
+                      FROM {course_modules} cm
+                      JOIN {oublog} b ON b.id = cm.instance
+                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                      JOIN {oublog_edits} be ON be.postid = bp.id
+                     WHERE cm.id = :blogcmid AND be.userid {$useridsql}) a";
         $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
                 "IN ($editsql)", $params);
         $DB->delete_records_select('oublog_edits', "id IN ($editsql)", $params);
@@ -958,26 +966,28 @@ class provider implements
         // Fix up the editedby, deletedby on posts where it's these users
         $admin = get_admin();
         $allpostsql = "
-                SELECT bp.id AS postid
-                  FROM {course_modules} cm
-                  JOIN {oublog} b ON b.id = cm.instance
-                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                  JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
-                 WHERE cm.id = :blogcmid";
+                SELECT a.postid postid FROM (
+                    SELECT bp.id AS postid
+                      FROM {course_modules} cm
+                      JOIN {oublog} b ON b.id = cm.instance
+                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                     WHERE cm.id = :blogcmid";
         $DB->set_field_select('oublog_posts', 'lasteditedby', $admin->id,
-                "id IN ($allpostsql AND bp.lasteditedby {$useridsql})", $params);
+                "id IN ($allpostsql AND bp.lasteditedby {$useridsql}) a)", $params);
         $DB->set_field_select('oublog_posts', 'deletedby', $admin->id,
-                "id IN ($allpostsql AND bp.deletedby {$useridsql})", $params);
+                "id IN ($allpostsql AND bp.deletedby {$useridsql}) a)", $params);
 
         // Find comments for other people's posts.
         $commentsql = "
-                SELECT bc.id AS commentid
-                  FROM {course_modules} cm
-                  JOIN {oublog} b ON b.id = cm.instance
-                  JOIN {oublog_instances} bi ON bi.oublogid = b.id
-                  JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
-                  JOIN {oublog_comments} bc ON bc.postid = bp.id
-                 WHERE cm.id = :blogcmid AND bc.userid {$useridsql}";
+                SELECT a.commentid commentid FROM (
+                    SELECT bc.id AS commentid
+                      FROM {course_modules} cm
+                      JOIN {oublog} b ON b.id = cm.instance
+                      JOIN {oublog_instances} bi ON bi.oublogid = b.id
+                      JOIN {oublog_posts} bp ON bp.oubloginstancesid = bi.id
+                      JOIN {oublog_comments} bc ON bc.postid = bp.id
+                     WHERE cm.id = :blogcmid AND bc.userid {$useridsql}) a";
 
         // Delete the files.
         $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',

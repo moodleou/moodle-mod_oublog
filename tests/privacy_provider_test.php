@@ -1065,7 +1065,7 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $approvedlist = new \core_privacy\local\request\approved_userlist($context, 'mod_oublog', $approveduserids);
         provider::delete_data_for_users($approvedlist);
 
-        $posts = array_values($DB->get_records('oublog_posts'));
+        $posts = array_values($DB->get_records('oublog_posts', null, 'id DESC'));
         $this->assertCount(2, $posts);
         $this->assertEquals($users[2]->id, $posts[0]->lasteditedby);
         $this->assertEquals($users[1]->id, $posts[1]->deletedby);
