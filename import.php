@@ -199,7 +199,7 @@ if ($step == 0) {
         $stepinfo['remote'] = true;
         // Blog on remote server, use WS to get info.
         if (!$result = oublog_import_remote_call('mod_oublog_get_blog_info',
-                array('username' => $USER->username, 'cmid' => $bid, 'sharedblogcmid' => $sharedblogcmid))) {
+                array('username' => $USER->username, 'cmid' => $bid, 'sharedblogcmid' => (int)$sharedblogcmid))) {
             throw new moodle_exception('invalidcoursemodule', 'error');
         }
         $boublogid = $result->boublogid;
@@ -336,7 +336,7 @@ if ($step == 0) {
     if ($remote = optional_param('remote', false, PARAM_BOOL)) {
         // Blog on remote server, use WS to get info.
         if (!$result = oublog_import_remote_call('mod_oublog_get_blog_info',
-                array('username' => $USER->username, 'cmid' => $bid, $sharedblogcmid))) {
+                array('username' => $USER->username, 'cmid' => $bid, 'sharedblogcmid' => (int)$sharedblogcmid))) {
             throw new moodle_exception('invalidcoursemodule', 'error');
         }
         $boublogid = $result->boublogid;
