@@ -15,13 +15,6 @@
     text-decoration:underline;
 }
 
-#oublog-feeds a {
-    text-decoration:none;
-}
-#oublog-feeds a:hover .oublog-tagname{
-    text-decoration:underline;
-}
-
 .oublog-post-date a, .oublog-post-tags a, .oublog-post-links a, .oublog-post-editsummary a, .oublog-post-attachments a {
     text-decoration: none;
 }

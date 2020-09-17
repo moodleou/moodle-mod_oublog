@@ -1897,61 +1897,6 @@ function oublog_get_feedurl($format, $oublog, $bloginstance, $groupid, $comments
 
 
 /**
- * Get a block containing links to the Atom and RSS feeds
- *
- * @param object $oublog
- * @param object $bloginstance
- * @param int $groupid
- * @param int $postid
- * @param object $context
- * @param object $masterblog
- * @return string HTML of block
- * @uses $CFG
- */
-function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $individualid=-1, $masterblog = null) {
-    global $CFG, $OUTPUT;
-
-    if (!$CFG->enablerssfeeds) {
-        return(false);
-    }
-    // Check master blog.
-    $feedoublog = !empty($masterblog) ? $masterblog : $oublog;
-    $childoublog = !empty($masterblog) ? $oublog : null;
-
-    $blogurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid, $childoublog);
-    $blogurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid, $childoublog);
-
-    if (!is_string($bloginstance)) {
-        $commentsurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid, $childoublog);
-        $commentsurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid, $childoublog);
-    }
-
-    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog', oublog_get_displayname($oublog));
-    $html .= $OUTPUT->help_icon('feedhelp', 'oublog');
-    $html .= '</div>';
-    $html .= '<div class="oublog-feedlinks">';
-    $html .= '<span class="oublog-feedlinks-feedtitle">' . get_string('blogfeed', 'oublog', oublog_get_displayname($oublog, true)) . ': </span>';
-    $html .= '<span class="oublog-feedlinks-feedtype">';
-    $html .= '<br/><a href="'.$blogurlatom.'">'.get_string('atom', 'oublog').'</a> ';
-    $html .= '<br/><a href="'.$blogurlrss.'">'.get_string('rss', 'oublog').'</a>';
-    $html .= '</span>';
-
-    if ($oublog->allowcomments) {
-        if (!is_string($bloginstance)) {
-            $html .= '<div class="oublog-links">';
-            $html .= '<span class="oublog-feedcommentlinks-feedtitle">'.get_string('commentsfeed', 'oublog') . ': </span>';
-            $html .= '<br/><a href="'.$commentsurlatom.'">'.get_string('comments', 'oublog').' '.get_string('atom', 'oublog').'</a> ';
-            $html .= '<br/><a href="'.$commentsurlrss.'">'.get_string('comments', 'oublog').' '.get_string('rss', 'oublog').'</a>';
-            $html .= '</div>';
-        }
-    }
-    $html .= '</div>';
-    return ($html);
-}
-
-
-
-/**
  * Get extra meta tags that need to go into the page header
  *
  * @param object $oublog

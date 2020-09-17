@@ -389,19 +389,6 @@ if (!$hideunusedblog) {
         $bc->content = $stats;
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
-
-    // Feeds.
-    if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false, $cm, $currentindividual,
-                $masterblog)) {
-        $feedicon = ' <img src="'.$OUTPUT->image_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
-        $bc = new block_contents();
-        $bc->attributes['id'] = 'oublog-feeds';
-        $bc->attributes['class'] = 'oublog-sideblock block';
-        $bc->attributes['data-osepid'] = $id . '_oublog_blockfeeds';
-        $bc->title = $strfeeds;
-        $bc->content = $feeds;
-        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
-    }
 }
 
 // Show portfolio export link.

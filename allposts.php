@@ -155,14 +155,6 @@ if ($oublog->statblockon) {
     }
 }
 
-if ($feeds = oublog_get_feedblock($oublog, 'all', '', false, $cm)) {
-    $bc = new block_contents();
-    $bc->attributes['id'] = 'oublog-feeds';
-    $bc->attributes['class'] = 'oublog-sideblock block';
-    $bc->title = $strfeeds;
-    $bc->content = $feeds;
-    $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
-}
 // Must be called after add_fake_blocks.
 echo $OUTPUT->header();
 // Start main column.
