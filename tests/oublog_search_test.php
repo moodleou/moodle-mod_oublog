@@ -268,7 +268,7 @@ class oublog_search_test extends oublog_test_lib {
 
         // Test posts using standard course blog.
         $oublog = $this->get_new_oublog($course->id,
-                array('individual' => OUBLOG_VISIBILITY_PUBLIC, 'groupmode' => SEPARATEGROUPS));
+                array('individual' => OUBLOG_NO_INDIVIDUAL_BLOGS, 'groupmode' => SEPARATEGROUPS));
         $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
 
         // First make sure we have some posts to use.

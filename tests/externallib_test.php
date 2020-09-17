@@ -14,12 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->dirroot . '/mod/oublog/tests/oublog_test_lib.php');
 require_once($CFG->dirroot . '/mod/oublog/externallib.php');
 
 class externallib_test extends oublog_test_lib
 {
+    /** @var string Example username in CDC format. */
+    const TEST_CDC_ID = '0123456789abcdef0123456789abcdef';
+
     protected $course1;
     protected $blog;
 
@@ -64,7 +69,11 @@ class externallib_test extends oublog_test_lib
             'shortname' => 'C1'
         ));
 
-        $user = $this->getDataGenerator()->create_user(array('email' => 'user@example.com', 'username' => 'user'));
+        $userdetails = ['email' => 'user@example.com', 'username' => 'abc123'];
+        if (mod_oublog_external::is_ou()) {
+            $userdetails['auth'] = 'sams';
+        }
+        $user = $this->getDataGenerator()->create_user($userdetails);
         $this->setUser($user);
     }
 
@@ -145,6 +154,40 @@ class externallib_test extends oublog_test_lib
         $this->assertEquals($result[1]->cmid, $blog2->cm->id);
         $this->assertEquals($result[1]->remote, 1);
         $this->assertEquals($result[1]->numposts, 0);
+    }
+
+    /**
+     * Tests get_user_blogs(2) using OU identifiers.
+     */
+    public function test_get_user_blogs_ou_identifiers() {
+        global $USER;
+        $this->skip_outside_ou();
+
+        // Create two blogs for user's course.
+        $this->get_new_oublog($this->course1->id,
+                ['name' => 'Blog1', 'individual' => OUBLOG_SEPARATE_INDIVIDUAL_BLOGS]);
+        $this->get_new_oublog($this->course1->id,
+                ['name' => 'Blog2', 'individual' => OUBLOG_SEPARATE_INDIVIDUAL_BLOGS]);
+        $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
+
+        // Check both functions work with OUCU before changeover.
+        $result = mod_oublog_external::get_user_blogs('abc123');
+        $this->assertCount(2, $result);
+        $result = mod_oublog_external::get_user_blogs2(['oucu' => 'abc123']);
+        $this->assertCount(2, $result);
+
+        // Do user changeover.
+        $this->change_user_to_cdc();
+
+        // Check both functions work with OUCU.
+        $result = mod_oublog_external::get_user_blogs('abc123');
+        $this->assertCount(2, $result);
+        $result = mod_oublog_external::get_user_blogs2(['oucu' => 'abc123']);
+        $this->assertCount(2, $result);
+
+        // Check the second function works with CDC id too.
+        $result = mod_oublog_external::get_user_blogs2(['cdcid' => self::TEST_CDC_ID]);
+        $this->assertCount(2, $result);
     }
 
     // Test get_blog_posts.
@@ -338,7 +381,7 @@ class externallib_test extends oublog_test_lib
         $post1id = $this->get_new_post($blog);
         $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
 
-        $result = mod_oublog_external::get_blog_posts($blog->id, $blog->cm->id, $post1id, true, null);
+        $result = mod_oublog_external::get_blog_posts($blog->id, $blog->cm->id, $post1id, true, '');
 
         // Expect return nothing.
         $this->assertNotNull($result);
@@ -374,6 +417,43 @@ class externallib_test extends oublog_test_lib
         $this->expectException('invalid_parameter_exception');
 
         mod_oublog_external::get_blog_posts($blog->id, $blog->cm->id, $post1id, true, 'username1&');
+    }
+
+    /**
+     * Tests get_blog_posts(2) using OU identifiers.
+     */
+    public function test_get_blog_posts_ou_identifiers() {
+        global $USER;
+        $this->skip_outside_ou();
+
+        // Create blog with one post.
+        $blog = $this->get_new_oublog($this->course1->id);
+        $post1id = $this->get_new_post($blog);
+        $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
+
+        // Check both functions work with OUCU before changeover.
+        $result = mod_oublog_external::get_blog_posts($blog->id, null, $post1id, true,
+                'abc123');
+        $this->assertCount(1, $result);
+        $result = mod_oublog_external::get_blog_posts2($blog->id, null, $post1id, true,
+                ['oucu' => 'abc123']);
+        $this->assertCount(1, $result);
+
+        // Do user changeover.
+        $this->change_user_to_cdc();
+
+        // Check both functions work with OUCU.
+        $result = mod_oublog_external::get_blog_posts($blog->id, null, $post1id, true,
+                'abc123');
+        $this->assertCount(1, $result);
+        $result = mod_oublog_external::get_blog_posts2($blog->id, null, $post1id, true,
+                ['oucu' => 'abc123']);
+        $this->assertCount(1, $result);
+
+        // Check the second function works with CDC id too.
+        $result = mod_oublog_external::get_blog_posts2($blog->id, null, $post1id, true,
+                ['cdcid' => self::TEST_CDC_ID]);
+        $this->assertCount(1, $result);
     }
 
     // Test get_blog_allposts.
@@ -549,6 +629,43 @@ class externallib_test extends oublog_test_lib
         $this->assertEquals($result['total'], 1);
     }
 
+    /**
+     * Tests get_blog_allposts(2) using OU identifiers.
+     */
+    public function test_get_blog_allposts_ou_identifiers() {
+        global $USER;
+        $this->skip_outside_ou();
+
+        // Create blog with one post.
+        $blog = $this->get_new_oublog($this->course1->id);
+        $this->get_new_post($blog);
+        $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
+
+        // Check both functions work with OUCU before changeover.
+        $result = mod_oublog_external::get_blog_allposts($blog->id, 'timeposted DESC',
+                'abc123');
+        $this->assertCount(1, $result['posts']);
+        $result = mod_oublog_external::get_blog_allposts2($blog->id, 'timeposted DESC',
+                ['oucu' => 'abc123']);
+        $this->assertCount(1, $result['posts']);
+
+        // Do user changeover.
+        $this->change_user_to_cdc();
+
+        // Check both functions work with OUCU.
+        $result = mod_oublog_external::get_blog_allposts($blog->id, 'timeposted DESC',
+                'abc123');
+        $this->assertCount(1, $result['posts']);
+        $result = mod_oublog_external::get_blog_allposts2($blog->id, 'timeposted DESC',
+                ['oucu' => 'abc123']);
+        $this->assertCount(1, $result['posts']);
+
+        // Check the second function works with CDC id too.
+        $result = mod_oublog_external::get_blog_allposts2($blog->id, 'timeposted DESC',
+                ['cdcid' => self::TEST_CDC_ID]);
+        $this->assertCount(1, $result['posts']);
+    }
+
     // Test get_blog_info.
 
     /**
@@ -669,5 +786,62 @@ class externallib_test extends oublog_test_lib
         $this->assertEquals($result['boublogname'],
         $this->course1->shortname . ' ' . $this->course1->fullname . ' : ' . $blog->name);
         $this->assertEquals($result['bcoursename'], $this->course1->shortname);
+    }
+
+    /**
+     * Tests get_blog_info(2) using OU identifiers.
+     */
+    public function test_get_blog_info_ou_identifiers() {
+        global $USER;
+        $this->skip_outside_ou();
+
+        // Create blog with one post.
+        $blog = $this->get_new_oublog($this->course1->id,
+                array('name' => 'Blog2', 'individual' => OUBLOG_SEPARATE_INDIVIDUAL_BLOGS));
+        $this->get_new_post($blog);
+        $this->getDataGenerator()->enrol_user($USER->id, $this->course1->id);
+
+        // Check both functions work with OUCU before changeover.
+        $result = mod_oublog_external::get_blog_info($blog->cm->id, 'abc123');
+        $this->assertEquals($blog->id, $result['boublogid']);
+        $result = mod_oublog_external::get_blog_info2($blog->cm->id, ['oucu' => 'abc123']);
+        $this->assertEquals($blog->id, $result['boublogid']);
+
+        // Do user changeover.
+        $this->change_user_to_cdc();
+
+        // Check both functions work with OUCU.
+        $result = mod_oublog_external::get_blog_info($blog->cm->id, 'abc123');
+        $this->assertEquals($blog->id, $result['boublogid']);
+        $result = mod_oublog_external::get_blog_info2($blog->cm->id, ['oucu' => 'abc123']);
+        $this->assertEquals($blog->id, $result['boublogid']);
+
+        // Check the second function works with CDC id too.
+        $result = mod_oublog_external::get_blog_info2($blog->cm->id, ['cdcid' => self::TEST_CDC_ID]);
+        $this->assertEquals($blog->id, $result['boublogid']);
+    }
+
+    /**
+     * Some of these tests are only relevant in the OU installation, because we have a very weird
+     * system of user identifiers.
+     */
+    protected function skip_outside_ou() {
+        if (!mod_oublog_external::is_ou()) {
+            $this->markTestSkipped('Test only relevant in Open University installation');
+        }
+    }
+
+    /**
+     * Changes the user account to a CDC format in the way that will happen after a CDC login.
+     */
+    protected function change_user_to_cdc() {
+        global $DB, $USER;
+
+        // Change main user table.
+        $update = ['id' => $USER->id, 'username' => self::TEST_CDC_ID, 'auth' => 'saml2'];
+        $DB->update_record('user', $update);
+
+        // Set custom field for OUCU.
+        \local_oudataload\users::set_custom_field($USER, \local_ousaml\attributes::USER_FIELD_OUCU, 'abc123');
     }
 }

@@ -53,19 +53,14 @@ class cron_task extends \core\task\scheduled_task {
             $cm = get_coursemodule_from_instance('oublog', $personalblog->id);
             $context = \context_module::instance($cm->id);
             $instancesql = "
-                            SELECT bi.id
+                            SELECT op.id
                               FROM {oublog_instances} bi
-                             WHERE bi.oublogid = :blogid";
-            $bloginstances = $DB->get_recordset_sql($instancesql, ['blogid' => $personalblog->id]);
-            $instances = [];
-            foreach ($bloginstances as $record) {
-                $instances[] = $record->id;
-            }
-            $bloginstances->close();
-            list($bloginstancesid, $params) = $DB->get_in_or_equal($instances, SQL_PARAMS_NAMED);
-            $where = "timedeleted < :timeframe AND oubloginstancesid $bloginstancesid";
-            $posts = $DB->get_recordset_select('oublog_posts', $where, ['timeframe' => $timeframe] + $params, '', 'id');
+                        INNER JOIN {oublog_posts} op ON bi.id = op.oubloginstancesid
+                             WHERE bi.oublogid = :blogid AND op.timedeleted < :timeframe ";
+            $posts = $DB->get_recordset_sql($instancesql, ['blogid' => $personalblog->id,
+                    'timeframe' => $timeframe]);
             foreach ($posts as $post) {
+                $transaction = $DB->start_delegated_transaction();
                 // Delete files from this post.
                 $params = ['postid' => $post->id];
                 $fs->delete_area_files_select($context->id, 'mod_oublog', 'message',
@@ -96,6 +91,7 @@ class cron_task extends \core\task\scheduled_task {
 
                 // Delete the actual posts.
                 $DB->delete_records_select('oublog_posts', 'id IN (:postid)', $params);
+                $transaction->allow_commit();
             }
             $posts->close();
         }

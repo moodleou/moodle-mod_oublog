@@ -28,7 +28,7 @@ define('NO_OUTPUT_BUFFERING', true);
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/mod/oublog/locallib.php');
-require_once ($CFG->dirroot . '/lib/tablelib.php');
+require_once($CFG->dirroot . '/lib/tablelib.php');
 
 $id = required_param('id', PARAM_INT);// Blog cm ID.
 $cmid = optional_param('cmid', null, PARAM_INT); // Shared blog cmid.
@@ -95,6 +95,23 @@ if (optional_param('cancel', '', PARAM_ALPHA) == get_string('cancel')) {
 }
 $oublogoutput = $PAGE->get_renderer('mod_oublog');
 
+// Special behaviour for Open University install, where we identify users differently.
+$isou = class_exists('local_oudataload\users');
+
+/**
+ * Function for converting a user object into an identifier array.
+ *
+ * @param stdClass $user User object
+ * @return array Identifier array
+ */
+function mod_oublog_import_get_identifier($user): array {
+    if (class_exists('local_oudataload\users')) {
+        return \local_oudataload\users::get_oucu_and_cdcid_as_array($user);
+    } else {
+        return ['username' => $user->username];
+    }
+}
+
 // Page header.
 $params = $childoublog ? ['id' => $id, 'cmid' => $cmid] : ['id' => $id];
 $additionalparam = $sharedblogcmid ? $params + ['sharedblogcmid' => $sharedblogcmid] : $params;
@@ -122,8 +139,14 @@ if ($step == 0) {
     }
     $blogs = oublog_import_getblogs($USER->id, $cm->id, $excludedlist);
     try {
-        if ($remoteblogs = oublog_import_remote_call('mod_oublog_get_user_blogs',
-                array('username' => $USER->username))) {
+        if ($isou && \local_oudataload\util::is_september_2020_release_complete()) {
+            $remoteblogs = oublog_import_remote_call('mod_oublog_get_user_blogs2',
+                    ['identifier' => mod_oublog_import_get_identifier($USER)]);
+        } else {
+            $remoteblogs = oublog_import_remote_call('mod_oublog_get_user_blogs',
+                    ['username' => $USER->username]);
+        }
+        if ($remoteblogs) {
             $blogs = array_merge($remoteblogs, $blogs);
         }
     } catch (moodle_exception $e) {
@@ -198,8 +221,16 @@ if ($step == 0) {
     if ($remote = optional_param('remote', false, PARAM_BOOL)) {
         $stepinfo['remote'] = true;
         // Blog on remote server, use WS to get info.
-        if (!$result = oublog_import_remote_call('mod_oublog_get_blog_info',
-                array('username' => $USER->username, 'cmid' => $bid, 'sharedblogcmid' => $sharedblogcmid))) {
+        if ($isou && \local_oudataload\util::is_september_2020_release_complete()) {
+            $result = oublog_import_remote_call('mod_oublog_get_blog_info2',
+                    ['identifier' => mod_oublog_import_get_identifier($USER),
+                    'cmid' => $bid, 'sharedblogcmid' => (int)$sharedblogcmid]);
+        } else {
+            $result = oublog_import_remote_call('mod_oublog_get_blog_info',
+                    ['username' => $USER->username,
+                    'cmid' => $bid, 'sharedblogcmid' => (int)$sharedblogcmid]);
+        }
+        if (!$result) {
             throw new moodle_exception('invalidcoursemodule', 'error');
         }
         $boublogid = $result->boublogid;
@@ -238,9 +269,16 @@ if ($step == 0) {
     $stepinfo['preselected'] = $preselected;
     $preselected = array_filter(array_unique(explode(',', $preselected)));
     if ($remote) {
-        $result = oublog_import_remote_call('mod_oublog_get_blog_allposts', array(
-                'blogid' => $boublogid, 'username' => $USER->username, 'sort' => $sort,
-                'page' => $page, 'tags' => $tags));
+        if ($isou && \local_oudataload\util::is_september_2020_release_complete()) {
+            $result = oublog_import_remote_call('mod_oublog_get_blog_allposts2', [
+                    'blogid' => $boublogid,
+                    'identifier' => mod_oublog_import_get_identifier($USER),
+                    'sort' => $sort, 'page' => $page, 'tags' => $tags]);
+        } else {
+            $result = oublog_import_remote_call('mod_oublog_get_blog_allposts', [
+                    'blogid' => $boublogid, 'username' => $USER->username, 'sort' => $sort,
+                    'page' => $page, 'tags' => $tags]);
+        }
         $posts = $result->posts;
         $total = $result->total;
         $tagnames = $result->tagnames;
@@ -335,8 +373,16 @@ if ($step == 0) {
     $importall = optional_param('importall', false, PARAM_BOOL);
     if ($remote = optional_param('remote', false, PARAM_BOOL)) {
         // Blog on remote server, use WS to get info.
-        if (!$result = oublog_import_remote_call('mod_oublog_get_blog_info',
-                array('username' => $USER->username, 'cmid' => $bid, $sharedblogcmid))) {
+        if ($isou && \local_oudataload\util::is_september_2020_release_complete()) {
+            $result = oublog_import_remote_call('mod_oublog_get_blog_info2',
+                    ['identifier' => mod_oublog_import_get_identifier($USER),
+                    'cmid' => $bid, 'sharedblogcmid' => (int)$sharedblogcmid]);
+        } else {
+            $result = oublog_import_remote_call('mod_oublog_get_blog_info',
+                    ['username' => $USER->username, 'cmid' => $bid,
+                    'sharedblogcmid' => (int)$sharedblogcmid]);
+        }
+        if (!$result) {
             throw new moodle_exception('invalidcoursemodule', 'error');
         }
         $boublogid = $result->boublogid;
@@ -370,13 +416,32 @@ if ($step == 0) {
     }
     if ($remote) {
         if ($importall) {
-            $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
-                array('username' => $USER->username, 'blogid' => $boublogid, 'selected' => '0',
-                    'inccomments' => $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
+            if ($isou && \local_oudataload\util::is_september_2020_release_complete()) {
+                $posts = oublog_import_remote_call('mod_oublog_get_blog_posts2',
+                        ['identifier' => mod_oublog_import_get_identifier($USER),
+                        'blogid' => $boublogid, 'selected' => '0',
+                        'inccomments' => $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT,
+                        'bcontextid' => $bcontextid]);
+            } else {
+                $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
+                        ['username' => $USER->username, 'blogid' => $boublogid, 'selected' => '0',
+                        'inccomments' => $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT,
+                        'bcontextid' => $bcontextid]);
+            }
         } else {
-            $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
-                array('username' => $USER->username, 'blogid' => $boublogid, 'selected' => implode(',', $selected),
-                    'inccomments' => $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT, 'bcontextid' => $bcontextid));
+            if ($isou && \local_oudataload\util::is_september_2020_release_complete()) {
+                $posts = oublog_import_remote_call('mod_oublog_get_blog_posts2',
+                        ['identifier' => mod_oublog_import_get_identifier($USER),
+                        'blogid' => $boublogid, 'selected' => implode(',', $selected),
+                        'inccomments' => $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT,
+                        'bcontextid' => $bcontextid]);
+            } else {
+                $posts = oublog_import_remote_call('mod_oublog_get_blog_posts',
+                        ['username' => $USER->username, 'blogid' => $boublogid,
+                        'selected' => implode(',', $selected),
+                        'inccomments' => $currentblog->allowcomments != OUBLOG_COMMENTS_PREVENT,
+                        'bcontextid' => $bcontextid]);
+            }
         }
 
     } else {
