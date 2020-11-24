@@ -68,23 +68,24 @@ class cron_task extends \core\task\scheduled_task {
                 $fs->delete_area_files_select($context->id, 'mod_oublog', 'attachment',
                     'IN (:postid)', $params);
 
-                $commentsql = '
-                                SELECT bc.id AS commentid
-                                  FROM {oublog_comments} bc
-                                 WHERE bc.postid IN (:postid)';
-                $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
-                    "IN ($commentsql)", $params);
-                $DB->delete_records_select('oublog_comments', "id IN ($commentsql)", $params);
+                $commentids = $DB->get_records('oublog_comments', $params, '', 'id');
+                if ($commentids) {
+                    list($insql, $paramsinsql) = $DB->get_in_or_equal(array_keys($commentids), SQL_PARAMS_NAMED);
+                    $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
+                                                  $insql, $paramsinsql);
+                    $DB->delete_records_select('oublog_comments', "id $insql", $paramsinsql);
+                }
+
                 $DB->delete_records_select('oublog_comments_moderated', 'postid IN (:postid)', $params);
 
                 // Delete all edits (including files) on posts owned by these users
-                $editsql = '
-                            SELECT be.id AS editid
-                              FROM {oublog_edits} be
-                             WHERE be.postid IN (:postid)';
-                $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
-                    "IN ($editsql)", $params);
-                $DB->delete_records_select('oublog_edits', "id IN ($editsql)", $params);
+                $editids = $DB->get_records('oublog_edits', $params, '', 'id');
+                if ($editids) {
+                    list($insql, $paramsinsql) = $DB->get_in_or_equal(array_keys($editids), SQL_PARAMS_NAMED);
+                    $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
+                                                  $insql, $paramsinsql);
+                    $DB->delete_records_select('oublog_edits', "id $insql", $paramsinsql);
+                }
 
                 // Delete tag instances from all these posts.
                 $DB->delete_records_select('oublog_taginstances', 'postid IN (:postid)', $params);
