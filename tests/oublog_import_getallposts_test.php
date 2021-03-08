@@ -38,7 +38,7 @@ class oublog_import_getallposts_test extends oublog_test_lib {
     protected $course2;
     protected $course3;
 
-    protected function setUp() {
+    protected function setUp(): void {
 
         $this->resetAfterTest(true);
 

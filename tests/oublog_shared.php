@@ -22,7 +22,7 @@ class oublog_shared extends oublog_test_lib
 {
     protected $course1;
 
-    protected function setUp() {
+    protected function setUp(): void {
         $this->resetAfterTest(true);
 
         $this->course1 = $this->getDataGenerator()->create_course([

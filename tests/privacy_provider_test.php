@@ -47,7 +47,7 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
     /**
      * All tests make database changes.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest(true);
     }
 

@@ -24,7 +24,7 @@ class oublog_import_getbloginfo_test extends oublog_test_lib
     protected $course2;
     protected $course3;
 
-    protected function setUp() {
+    protected function setUp(): void {
         $this->resetAfterTest(true);
 
         $this->course1 = $this->getDataGenerator()->create_course(array(
