@@ -68,7 +68,7 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $writer = \core_privacy\local\request\writer::with_context($context);
         $data = $writer->get_data([]);
         $this->assertEquals('MyBlog', $data->name);
-        $this->assertContains('My intro', $data->intro);
+        $this->assertStringContainsString('My intro', $data->intro);
         $this->assertObjectNotHasAttribute('posts', $data);
         $this->assertObjectNotHasAttribute('edits', $data);
         $this->assertObjectNotHasAttribute('comments', $data);

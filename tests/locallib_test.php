@@ -1496,7 +1496,7 @@ class oublog_locallib_test extends oublog_test_lib {
             $fulltaglist[] = $tag->tag;
             if (isset($tag->label)) {
                 // It should be an 'Official' ie. 'Set' predefined blog tag.
-                $this->assertContains($tag->tag, $oublog->tagslist);
+                $this->assertStringContainsString($tag->tag, $oublog->tagslist);
                 $this->assertNotEmpty($tag->label);
                 $this->assertGreaterThanOrEqual(0, $tag->count);
             }
@@ -1509,7 +1509,7 @@ class oublog_locallib_test extends oublog_test_lib {
         }
         $this->assertContains('antelope', $fulltaglist);
         $this->assertContains('blogtag01', $fulltaglist);
-        $this->assertContains('blogtag02', end($fulltaglist));// Last in full list.
+        $this->assertStringContainsString('blogtag02', end($fulltaglist));// Last in full list.
 
         // Restriction applied, get restricted list of blog 'Set' tags.
         $oublog->restricttags = 1;
@@ -1519,7 +1519,7 @@ class oublog_locallib_test extends oublog_test_lib {
             $restrictedtaglist[] = $tag->tag;
             if (isset($tag->label)) {
                 // It should be an 'Official' ie. 'Set' predefined blog tag.
-                $this->assertContains($tag->tag, $oublog->tagslist);
+                $this->assertStringContainsString($tag->tag, $oublog->tagslist);
                 $this->assertNotEmpty($tag->label);
                 $this->assertGreaterThanOrEqual(0, $tag->count);
             }
@@ -1531,7 +1531,7 @@ class oublog_locallib_test extends oublog_test_lib {
         }
         $this->assertNotContains('antelope', $restrictedtaglist);
         $this->assertContains('blogtag01', $restrictedtaglist);
-        $this->assertContains('blogtag02', end($restrictedtaglist));// Last in restricted list.
+        $this->assertStringContainsString('blogtag02', end($restrictedtaglist));// Last in restricted list.
     }
 
     public function test_oublog_time_limits() {
