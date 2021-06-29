@@ -35,7 +35,13 @@ $taglimit = optional_param('taglimit', OUBLOG_TAGS_SHOW, PARAM_INT);// Tag displ
 
 // Set user value if u (username) set.
 if ($username != '') {
-    if (!$oubloguser = $DB->get_record('user', array('username' => $username))) {
+    if (file_exists($CFG->dirroot . '/local/oudataload/classes/users.php')) {
+        // Special code to support different username in request.
+        $oubloguser = \local_oudataload\users::get_user_by_oucu_or_cdcid($username, true);
+    } else {
+        $oubloguser = $DB->get_record('user', array('username' => $username));
+    }
+    if (!$oubloguser) {
         print_error('invaliduser');
     }
     $user = $oubloguser->id;
