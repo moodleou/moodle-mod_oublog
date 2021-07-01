@@ -119,8 +119,8 @@ class tool_datamasking_test extends \advanced_testcase {
         \tool_datamasking\testing_utils::check_file($this, $fileids[3], 'd.txt', 4);
         \tool_datamasking\testing_utils::check_file($this, $fileids[4], 'e.txt', 5);
 
-        // Run the full masking plan including this plugin.
-        \tool_datamasking\api::get_plan()->execute();
+        // Run the full masking plan including this plugin, but without requiring mapping tables.
+        \tool_datamasking\api::get_plan()->execute([], [\tool_datamasking\tool_datamasking::TAG_SKIP_ID_MAPPING]);
 
         // After checks.
         $this->assertEquals(['email' . $oublogid1 . '@open.ac.uk.invalid', null], $DB->get_fieldset_sql($oublogsql));
