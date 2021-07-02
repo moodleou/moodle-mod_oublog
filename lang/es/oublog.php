@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 $string['oublog'] = 'OU blog';
 $string['modulename'] = 'OU blog';
