@@ -1059,7 +1059,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             if ($comment->userid && !$forexport) {
                 $output .= html_writer::start_tag('div', array('class' => 'oublog-userpic'));
                 $commentuser = new stdClass();
-                $fields = explode(',', user_picture::fields());
+                $fields = oublog_get_user_picture_fields();
                 foreach ($fields as $field) {
                     if ($field != 'id') {
                         $commentuser->$field = $comment->$field;
@@ -1210,6 +1210,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         require_once($CFG->dirroot.'/mod/oublog/participation_table.php');
         $groupmode = oublog_get_activity_groupmode($cm, $course);
         $thepagingbar = "";
+        $picturefields = oublog_get_user_picture_fields();
         if (!empty($participation->posts) && $participation->postscount > $limitnum) {
             $thepagingbar = $OUTPUT->paging_bar($participation->postscount, $page, $limitnum, $pagingurl);
         } else if (!empty($participation->comments) && $participation->commentscount > $limitnum) {
@@ -1235,8 +1236,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 // Post user object required for user_picture.
                 $postuser = new stdClass();
                 $postuser->id = $post->userid;
-                $fields = explode(',', user_picture::fields('', null, '', 'poster'));
-                foreach ($fields as $field) {
+                foreach ($picturefields as $field) {
                     if ($field != 'id') {
                         $postuser->$field = $post->$field;
                     }
@@ -1318,8 +1318,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     // Comment author object required for user_picture.
                     $commentauthor = new stdClass();
                     $commentauthor->id = $comment->commenterid;
-                    $fields = explode(',', user_picture::fields('', null, '', 'commenter'));
-                    foreach ($fields as $field) {
+                    foreach ($picturefields as $field) {
                         if ($field != 'id') {
                             $cfield = "commenter" . $field;
                             $commentauthor->$field = $comment->$cfield;
@@ -1350,8 +1349,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $postauthor = new stdClass();
                     $postauthor->id = $comment->posterid;
                     $postauthor->groupid = $comment->groupid;
-                    $fields = explode(',', user_picture::fields('', null, '', 'poster'));
-                    foreach ($fields as $field) {
+                    foreach ($picturefields as $field) {
                         if ($field != 'id') {
                             $pfield = "poster" . $field;
                             $postauthor->$field = $comment->$pfield;
