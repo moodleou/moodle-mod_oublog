@@ -79,7 +79,7 @@ if ($correctglobal) {
     // extra query); this is only used to display their name anyhow
     $oubloguser = new stdClass();
     $oubloguser->id = $post->userid;
-    foreach (get_all_user_name_fields() as $field) {
+    foreach (\core_user\fields::get_name_fields() as $field) {
         $oubloguser->$field = $post->$field;
     }
 } else {

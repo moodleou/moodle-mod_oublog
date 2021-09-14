@@ -174,7 +174,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
         if ($post->deletedby) {
             $deluser = new stdClass();
             // Get user name fields.
-            $delusernamefields = get_all_user_name_fields(false, null, 'del');
+
+            $delusernamefields = \core_user\fields::get_name_fields();
+            foreach ($delusernamefields as &$field) {
+                $field = 'del' . $field;
+            }
             foreach ($delusernamefields as $namefield => $retnamefield) {
                 $deluser->$namefield = $post->$retnamefield;
             }
@@ -240,7 +244,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
         } else if ($post->lasteditedby) {
             $edit = new StdClass;
             // Get user name fields.
-            $editusernamefields = get_all_user_name_fields(false, null, 'ed');
+            $editusernamefields = \core_user\fields::get_name_fields();
+            foreach ($editusernamefields as &$field) {
+                $field = 'ed' . $field;
+             }
             foreach ($editusernamefields as $namefield => $retnamefield) {
                 $edit->$namefield = $post->$retnamefield;
             }
@@ -803,7 +810,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
                     $author = new stdClass();
                     $author->id = $comment->authorid;
-                    $userfields = get_all_user_name_fields(false, '', 'poster');
+                    $userfields = \core_user\fields::get_name_fields();
+                    foreach ($userfields as &$field) {
+                        $field = 'poster' . $field;
+                     }
                     foreach ($userfields as $field => $retfield) {
                         $author->$field = $comment->$retfield;
                     }
@@ -905,7 +915,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 foreach ($participation->comments as $comment) {
                     $author = new stdClass();
                     $author->id = $comment->authorid;
-                    $userfields = get_all_user_name_fields();
+                    $userfields = \core_user\fields::get_name_fields();
                     foreach ($userfields as $field) {
                         $author->$field = $comment->$field;
                     }
@@ -1029,7 +1039,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
             }
             if ($comment->deletedby) {
                 $deluser = new stdClass();
-                $fields = get_all_user_name_fields(false, null, 'del');
+                $fields = \core_user\fields::get_name_fields();
+                foreach ($fields as &$field) {
+                    $field = 'del' . $field;
+                }
                 foreach ($fields as $field => $dfield) {
                     $deluser->$field = $comment->$dfield;
                 }
