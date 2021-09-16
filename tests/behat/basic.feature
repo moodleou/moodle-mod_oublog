@@ -36,37 +36,19 @@ Feature: Test Post and Comment on OUBlog entry
 
   Scenario: Multiple blog type tests - basic access etc
     Given I log in as "teacher1"
+    And the following "activities" exist:
+      | activity | name   | course | section | groupmode | individual |
+      | oublog   | B.SG   | C1     | 1       | 1         |            |
+      | oublog   | B.VG   | C1     | 1       | 2         |            |
+      | oublog   | B.SI   | C1     | 1       |           | 1          |
+      | oublog   | B.VI   | C1     | 1       |           | 2          |
+      | oublog   | B.SISG | C1     | 1       | 1         | 1          |
+      | oublog   | B.SIVG | C1     | 1       | 2         | 1          |
+      | oublog   | B.VISG | C1     | 1       | 1         | 2          |
+      | oublog   | B.VIVG | C1     | 1       | 2         | 2          |
     And I am on homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SG |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VG |
-      | Group mode | Visible groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SI |
-      | Individual blogs | Separate individual blogs |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VI |
-      | Individual blogs | Visible individual blogs |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SISG |
-      | Individual blogs | Separate individual blogs |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SIVG |
-      | Individual blogs | Separate individual blogs |
-      | Group mode | Visible groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VISG |
-      | Individual blogs | Visible individual blogs |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VIVG |
-      | Individual blogs | Visible individual blogs |
-      | Group mode | Visible groups |
     Then I should see "Test oublog basics"
     # Editing teacher adds posts to all the blogs.
     Given I follow "Test oublog basics"
@@ -694,15 +676,12 @@ Feature: Test Post and Comment on OUBlog entry
 
   Scenario: Check group level access when no groups
     Given I log in as "teacher1"
+    And the following "activities" exist:
+      | activity | name   | course | section | groupmode |
+      | oublog   | B.SG   | C1     | 1       | 1         |
+      | oublog   | B.VG   | C1     | 1       | 2         |
     And I am on homepage
     And I am on "Course 1" course homepage
-    And I turn editing mode on
-    When I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SG |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VG |
-      | Group mode | Visible groups |
     # Editing teacher adds posts to all the blogs.
     Given I am on "Course 1" course homepage
     And I follow "B.SG"

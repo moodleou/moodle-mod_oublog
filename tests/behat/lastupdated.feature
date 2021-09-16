@@ -27,11 +27,14 @@ Feature: Show last updated information on OU blog activity link
 
   Scenario: Test course blog
     Given I log in as "admin"
+    And the following "activity" exists:
+      | activity | oublog             |
+      | course   | C1                 |
+      | name     | Test course oublog |
+      | section  | 1                  |
     And I am on site homepage
     When I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | Test course oublog |
     Then I should see "Test course oublog"
     And ".lastmodtext.oubloglmt" "css_element" should not exist
     Given I follow "Test course oublog"
@@ -45,14 +48,20 @@ Feature: Show last updated information on OU blog activity link
 
   Scenario: Group blog
     Given I log in as "admin"
+    And the following "activity" exists:
+      | activity  | oublog |
+      | course    | C1     |
+      | name      | B.SG   |
+      | section   | 1      |
+      | groupmode | 1      |
+    And the following "activity" exists:
+      | activity  | oublog |
+      | course    | C1     |
+      | name      | B.VG   |
+      | section   | 1      |
+      | groupmode | 2      |
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SG |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VG |
-      | Group mode | Visible groups |
     Given I follow "B.SG"
     And I set the field "Separate groups" to "G1"
     And I press "Go"
@@ -85,14 +94,20 @@ Feature: Show last updated information on OU blog activity link
 
   Scenario: Indivdual blogs
     Given I log in as "admin"
+    And the following "activity" exists:
+      | activity   | oublog |
+      | course     | C1     |
+      | name       | B.SI   |
+      | section    | 1      |
+      | individual | 1      |
+    And the following "activity" exists:
+      | activity   | oublog |
+      | course     | C1     |
+      | name       | B.VI   |
+      | section    | 1      |
+      | individual | 2      |
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SI |
-      | Individual blogs | Separate individual blogs |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VI |
-      | Individual blogs | Visible individual blogs |
     And I follow "B.SI"
     And I press "New blog post"
     And I set the following fields to these values:
@@ -115,24 +130,36 @@ Feature: Show last updated information on OU blog activity link
 
   Scenario: Mixed blogs
     Given I log in as "admin"
+    And the following "activity" exists:
+      | activity   | oublog |
+      | course     | C1     |
+      | name       | B.SISG |
+      | section    | 1      |
+      | individual | 1      |
+      | groupmode  | 1      |
+    And the following "activity" exists:
+      | activity   | oublog |
+      | course     | C1     |
+      | name       | B.SIVG |
+      | section    | 1      |
+      | individual | 1      |
+      | groupmode  | 2      |
+    And the following "activity" exists:
+      | activity   | oublog |
+      | course     | C1     |
+      | name       | B.VISG |
+      | section    | 1      |
+      | individual | 2      |
+      | groupmode  | 1      |
+    And the following "activity" exists:
+      | activity   | oublog |
+      | course     | C1     |
+      | name       | B.VIVG |
+      | section    | 1      |
+      | individual | 2      |
+      | groupmode  | 2      |
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SISG |
-      | Individual blogs | Separate individual blogs |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SIVG |
-      | Individual blogs | Separate individual blogs |
-      | Group mode | Visible groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VISG |
-      | Individual blogs | Visible individual blogs |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VIVG |
-      | Individual blogs | Visible individual blogs |
-      | Group mode | Visible groups |
     # Admin adds post to every blog.
     And I follow "B.SISG"
     And I press "New blog post"
