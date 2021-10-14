@@ -704,10 +704,9 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
             }
         }
     }
-    $userfieldsapi = \core_user\fields::for_name();
-    $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
-    $delusernamefields = $userfieldsapi->get_sql('ud', false, 'del', '', false)->selects;
-    $editusernamefields = $userfieldsapi->get_sql('ue', false, 'ed', '', false)->selects;
+    $usernamefields = get_all_user_name_fields(true, 'u');
+    $delusernamefields = get_all_user_name_fields(true, 'ud', null, 'del');
+    $editusernamefields = get_all_user_name_fields(true, 'ue', null, 'ed');
 
     // Get posts. The post has the field timeposted not timecreated,
     // which is tested in rating::user_can_rate().
@@ -843,11 +842,9 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
  */
 function oublog_get_post($postid, $canaudit=false) {
     global $DB;
-    $userfieldsapi = \core_user\fields::for_name();
-    $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
-    $delusernamefields = $userfieldsapi->get_sql('ud', false, 'del', '', false)->selects;
-    $editusernamefields = $userfieldsapi->get_sql('ue', false, 'ed', '', false)->selects;
-
+    $usernamefields = get_all_user_name_fields(true, 'u');
+    $delusernamefields = get_all_user_name_fields(true, 'ud', null, 'del');
+    $editusernamefields = get_all_user_name_fields(true, 'ue', null, 'ed');
 
     // Get post
     $sql = "SELECT p.*, bi.oublogid, $usernamefields, u.picture, u.imagealt, bi.userid, u.idnumber, u.email, u.username, u.mailformat,
@@ -1673,8 +1670,7 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
             }
         }
     }
-    $userfieldsapi = \core_user\fields::for_name();
-    $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+    $usernamefields = get_all_user_name_fields(true, 'u');
 
     $sql = "SELECT p.title AS posttitle, p.message AS postmessage, c.id, c.postid, c.title,
                     c.message AS description, c.timeposted AS pubdate, c.authorname, c.authorip,
@@ -1785,8 +1781,7 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
         }
         $scheme .= '&tag=';
     }
-    $userfieldsapi = \core_user\fields::for_name();
-    $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+    $usernamefields = get_all_user_name_fields(true, 'u');
 
     // Get posts
     $sql = "SELECT p.id, p.title, p.message AS description, p.timeposted AS pubdate, i.userid, $usernamefields, u.email, u.picture, u.imagealt, u.idnumber
@@ -3566,10 +3561,8 @@ function oublog_get_user_participation($oublog, $context,
     if ($end) {
         $cperiod .= 'AND c.timeposted < :timeend ';
     }
-
-    $userfieldsapi = \core_user\fields::for_name();
-    $authornamefields = $userfieldsapi->get_sql('a', false, '', '', false)->selects;
-    $postauthornamefields = $userfieldsapi->get_sql('pa', false, '', 'poster', false)->selects;
+    $authornamefields = get_all_user_name_fields(true, 'a');
+    $postauthornamefields = get_all_user_name_fields(true, 'pa', '', 'poster');
     $commentssql = 'SELECT c.id, c.postid, c.title, c.message, c.timeposted,
         a.id AS authorid, ' . $authornamefields . ',' . $postauthornamefields . ',
         p.title AS posttitle, p.timeposted AS postdate
