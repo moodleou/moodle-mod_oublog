@@ -977,7 +977,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $mform = new MoodleQuickForm('savegrade', 'post', $formaction,
             '', array('class' => 'savegrade'));
         $mform->addElement('header', 'usergrade', get_string('usergrade', 'oublog'));
-        $mform->addElement('select', 'grade', get_string('grade'), $grademenu);
+        $mform->addElement('select', 'grade', get_string('gradenoun'), $grademenu);
         $mform->setDefault('grade', $user->gradeobj->grade);
         $mform->addElement('submit', 'savechanges', get_string('savechanges'));
 

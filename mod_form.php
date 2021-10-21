@@ -177,7 +177,7 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->disabledIf('commentfrom', 'allowcomments', 'eq', 0);
             $mform->disabledIf('commentuntil', 'allowcomments', 'eq', 0);
 
-            $mform->addElement('header', 'modstandardgrade', get_string('grade'));
+            $mform->addElement('header', 'modstandardgrade', get_string('gradenoun'));
             // Adding the "grading" field.
             $options = array(OUBLOG_NO_GRADING => get_string('nograde', 'oublog'),
                     OUBLOG_TEACHER_GRADING => get_string('teachergrading', 'oublog'),
@@ -186,7 +186,7 @@ class mod_oublog_mod_form extends moodleform_mod {
             $mform->setType('grading', PARAM_INT);
             $mform->addHelpButton('grading', 'grading', 'oublog');
 
-            $mform->addElement('modgrade', 'grade', get_string('grade'));
+            $mform->addElement('modgrade', 'grade', get_string('gradenoun'));
             $mform->addHelpButton('grade', 'modgrade', 'grades');
             $mform->setDefault('grade', $CFG->gradepointdefault);
             $mform->disabledIf('grade', 'grading', 'ne', OUBLOG_TEACHER_GRADING);
