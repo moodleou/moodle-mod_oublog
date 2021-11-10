@@ -857,8 +857,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
 
         $this->assertCount(1, $userlist1);
         $this->assertCount(1, $userlist2);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users2);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users2);
     }
 
     /**
@@ -897,8 +897,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
 
         $this->assertCount(1, $userlist1);
         $this->assertCount(1, $userlist2);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users2);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users2);
     }
 
     /**
@@ -945,8 +945,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
 
         $this->assertCount(1, $userlist1);
         $this->assertCount(1, $userlist2);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users2);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users2);
     }
 
     /**
@@ -977,8 +977,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $users1 = $userlist1->get_userids();
 
         $this->assertCount(2, $userlist1);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users1);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users1);
     }
 
     /**
@@ -1020,8 +1020,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
 
         $this->assertCount(1, $userlist1);
         $this->assertCount(1, $userlist2);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users2);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users2);
     }
 
     /**
