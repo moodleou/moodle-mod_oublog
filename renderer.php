@@ -176,11 +176,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
             // Get user name fields.
 
             $delusernamefields = \core_user\fields::get_name_fields();
-            foreach ($delusernamefields as &$field) {
-                $field = 'del' . $field;
-            }
-            foreach ($delusernamefields as $namefield => $retnamefield) {
-                $deluser->$namefield = $post->$retnamefield;
+            foreach ($delusernamefields as $namefield) {
+                $dfield = 'del' . $namefield;
+                $deluser->$namefield = $post->$dfield;
             }
 
             $a = new stdClass();
@@ -245,13 +243,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
             $edit = new StdClass;
             // Get user name fields.
             $editusernamefields = \core_user\fields::get_name_fields();
-            foreach ($editusernamefields as &$field) {
-                $field = 'ed' . $field;
-             }
-            foreach ($editusernamefields as $namefield => $retnamefield) {
-                $edit->$namefield = $post->$retnamefield;
+            foreach ($editusernamefields as $namefield) {
+                $edfield = 'ed' . $namefield;
+                $edit->$namefield = $post->$edfield;
             }
-
             $a = new stdClass();
             $a->editby = fullname($edit);
             $a->editdate = oublog_date($post->timeupdated);
@@ -811,12 +806,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $author = new stdClass();
                     $author->id = $comment->authorid;
                     $userfields = \core_user\fields::get_name_fields();
-                    foreach ($userfields as &$field) {
-                        $field = 'poster' . $field;
+                    foreach ($userfields as $field) {
+                        $afield = 'poster' . $field;
+                        $author->$field = $comment->$afield;
                      }
-                    foreach ($userfields as $field => $retfield) {
-                        $author->$field = $comment->$retfield;
-                    }
                     $authorurl = new moodle_url('/user/view.php', array('id' => $author->id));
                     $authorlink = html_writer::link($authorurl, fullname($author, $viewfullnames));
                     if (isset($comment->posttitle) && !empty($comment->posttitle)) {
@@ -1040,11 +1033,9 @@ class mod_oublog_renderer extends plugin_renderer_base {
             if ($comment->deletedby) {
                 $deluser = new stdClass();
                 $fields = \core_user\fields::get_name_fields();
-                foreach ($fields as &$field) {
+                foreach ($fields as $field) {
                     $field = 'del' . $field;
-                }
-                foreach ($fields as $field => $dfield) {
-                    $deluser->$field = $comment->$dfield;
+                    $deluser->$field = $comment->$field;
                 }
 
                 $a = new stdClass();
