@@ -807,8 +807,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $author->id = $comment->authorid;
                     $userfields = \core_user\fields::get_name_fields();
                     foreach ($userfields as $field) {
-                        $afield = 'poster' . $field;
-                        $author->$field = $comment->$afield;
+                        $author->$field = $comment->$field;
                      }
                     $authorurl = new moodle_url('/user/view.php', array('id' => $author->id));
                     $authorlink = html_writer::link($authorurl, fullname($author, $viewfullnames));
