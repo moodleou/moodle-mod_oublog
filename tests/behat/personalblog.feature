@@ -78,7 +78,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I set the following fields to these values:
       | Title | Personal OUBlog post01 WorldVis |
       | Message | Admin Persblog post01 content WorldVis |
-      | Tags | edap01 |
+      | Tags | edap01, Money, money |
       | Who can read this | Visible to anyone in the world |
       | Allow comments | Yes, from everybody (even if not logged in) |
     And I press "Save changes"
@@ -86,6 +86,8 @@ Feature: Test Post and Comment on Personal OUBlog
     Then I should see "Personal OUBlog post01 WorldVis"
     And I should see "Admin Persblog post01 content WorldVis"
     And I should see "edap01"
+    And I should see "Money"
+    And I should see "money"
     And I should see "Total visits to this blog: 3"
     And I log out (in the OU theme)
 
@@ -100,6 +102,8 @@ Feature: Test Post and Comment on Personal OUBlog
     Then I should see "Personal OUBlog post01 WorldVis"
     And I should see "Admin Persblog post01 content WorldVis"
     And I should see "edap01"
+    And I should see "Money"
+    And I should see "money"
     And I should see "Comments" in the ".oublog-commentstitle" "css_element"
     And I should see "$My own >nasty< \"string\"!"
     And I should see "Another $Nasty"
@@ -335,7 +339,7 @@ Feature: Test Post and Comment on Personal OUBlog
     Then I should not see "Personal OUBlog post01 WorldVis"
     And I should see "Next" in the ".oublog-paging" "css_element"
     And I should not see "Previous" in the ".oublog-paging" "css_element"
-    Given I follow "taggy1"
+    Given I follow "Taggy1"
     Then I should see "Personal OUBlog post27"
     And I should not see "Personal OUBlog post26"
     And I should not see "Next" in the ".oublog-paging" "css_element"
@@ -377,7 +381,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I press "Add post"
     Then I should see "SC02 Personal OUBlog post01"
     And I should see "SC02 Admin Persblog post01 content Private"
-    And I should see "sc02edap01"
+    And I should see "SC02edap01"
     And I should not see "Share this post"
     And I should not see "Tweet"
     And I should not see "Share"
@@ -393,7 +397,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I press "Add post"
     Then I should see "SC02 Personal OUBlog post02"
     And I should see "SC02 Admin Persblog post02 content WorldVis"
-    And I should see "sc02edap02"
+    And I should see "SC02edap02"
     # Changed below to make more specific.
     And I should see "Share post" in the "div.oublog-post-share-title" "css_element"
     And I should see "Tweet" in the "div.share-button:nth-child(1)" "css_element"
@@ -404,7 +408,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I wait to be redirected
     Then I should see "SC02 Personal OUBlog post02"
     And I should see "SC02 Admin Persblog post02 content WorldVis"
-    And I should see "sc02edap02"
+    And I should see "SC02edap02"
     And I should see "Share post" in the "div.oublog-post-share-title" "css_element"
     And I should see "Tweet" in the "div.share-button:nth-child(1)" "css_element"
     And "div.share-button:nth-child(2) div.fb-share-button" "css_element" should exist

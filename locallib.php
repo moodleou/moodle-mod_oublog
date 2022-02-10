@@ -953,7 +953,7 @@ function oublog_clarify_tags($tags) {
     }
 
     foreach ($tags as $idx => $tag) {
-        $tag = core_text::strtolower(trim($tag));
+        $tag = trim($tag);
         if (empty($tag)) {
             unset($tags[$idx]);
             continue;
