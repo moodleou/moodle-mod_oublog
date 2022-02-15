@@ -614,7 +614,7 @@ function oublog_supports($feature) {
  * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
  * @return bool True if completed, false if not, $type if conditions not set.
  */
-function oublog_get_completion_state($course, $cm, $userid, $type) {
+function oublog_get_completion_state_lib($cm, $userid, $type) {
     global $DB;
 
     // Get oublog details
@@ -1522,4 +1522,30 @@ function oublog_get_user_grades($oublog, $userid = 0) {
         }
     }
     return $results;
+}
+
+/**
+ * Given a course_module object, this function returns any
+ * "extra" information that may be needed when printing
+ * this activity in a course listing.
+ * See get_array_of_activities() in course/lib.php
+ */
+function oublog_get_coursemodule_info($coursemodule) {
+    global $DB;
+    $oublog = $DB->get_record('oublog',
+            ['id' => $coursemodule->instance], 'id, name, completionposts, completioncomments');
+    if (!$oublog) {
+        return null;
+    }
+
+    $info = new cached_cm_info();
+    $info->customdata = (object)[];
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $info->customdata->customcompletionrules['completionposts'] = $oublog->completionposts;
+        $info->customdata->customcompletionrules['completioncomments'] = $oublog->completioncomments;
+    }
+
+    return $info;
 }

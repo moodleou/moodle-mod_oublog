@@ -3568,7 +3568,7 @@ function oublog_get_user_participation($oublog, $context,
 
     $userfieldsapi = \core_user\fields::for_name();
     $authornamefields = $userfieldsapi->get_sql('a', false, '', '', false)->selects;
-    $postauthornamefields = $userfieldsapi->get_sql('pa', false, '', 'poster', false)->selects;
+    $postauthornamefields = $userfieldsapi->get_sql('pa', false, 'poster', '', false)->selects;
     $commentssql = 'SELECT c.id, c.postid, c.title, c.message, c.timeposted,
         a.id AS authorid, ' . $authornamefields . ',' . $postauthornamefields . ',
         p.title AS posttitle, p.timeposted AS postdate

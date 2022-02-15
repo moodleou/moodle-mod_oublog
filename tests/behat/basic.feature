@@ -757,3 +757,34 @@ Feature: Test Post and Comment on OUBlog entry
       | Blog name | Test oublog basics - duplicate |
     And I follow "Test oublog basics - duplicate"
     Then I should see "Total visits to this blog: 1"
+
+
+  @javascript
+  Scenario: Check oublog completion feature in web.
+    Given the following "courses" exist:
+      | fullname | shortname | format      | enablecompletion |
+      | Course 2 | C2        | oustudyplan | 1                |
+    And the following "course enrolments" exist:
+      | user     | course | role    |
+      | student1 | C2     | student |
+    And the following "activities" exist:
+      | activity | name                   | introduction            | course | idnumber | completion | completionview | completionpostsenabled | completionposts |
+      | oublog   | Test oublog completion | Test oublog description | C2     | oublog2  | 2          | 1              | 1                      | 1               |
+    And I log in as "student1"
+    And I am on "Course 2" course homepage
+    Then I should see "0%"
+    And I should not see "100%"
+    And I follow "Test oublog completion"
+    And I am on "Course 2" course homepage
+    # Check activity is not completed because we haven't see the second session.
+    Then I should see "0%"
+    And I should not see "100%"
+    And I follow "Test oublog completion"
+    And I press "New blog post"
+    And I set the following fields to these values:
+      | Title   | Student1 blog  |
+      | Message | Student1 post  |
+      | Tags    | tag1           |
+    And I press "Add post"
+    When I am on "Course 2" course homepage
+    Then I should see "100%"
