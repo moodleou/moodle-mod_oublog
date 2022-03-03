@@ -3398,11 +3398,12 @@ function oublog_can_grade($course, $oublog, $cm, $groupid=0) {
  * @param object $masterblog master oublog object.
  * @param object $cmmaster course-module object of master blog.
  * @param object $coursemaster course object of master blog.
+ * @param bool $showuseridentityfields show user identity fields.
  * @return array user participation
  */
 function oublog_get_participation($oublog, $context, $groupid = 0, $cm,
     $course, $start = null, $end = null, $sort = 'u.firstname,u.lastname', $masterblog = null, $cmmaster = null,
-    $coursemaster = null) {
+    $coursemaster = null, $showuseridentityfields = false) {
     global $DB;
 
     // get user objects
@@ -3417,6 +3418,11 @@ function oublog_get_participation($oublog, $context, $groupid = 0, $cm,
     if (empty($users)) {
         return array();
     }
+
+    if ($showuseridentityfields) {
+        oublog_load_user_identity_data($context, $users);
+    }
+
     if ($oublog->individual > 0) {
         $groupid = 0;
     }
@@ -3506,6 +3512,59 @@ function oublog_get_participation($oublog, $context, $groupid = 0, $cm,
     }
 
     return $users;
+}
+
+/**
+ * Loads the identity fields data for each user.
+ *
+ * @param object $context current context
+ * @param array $users
+ * @throws coding_exception
+ * @throws dml_exception
+ */
+function oublog_load_user_identity_data($context, $users) {
+    global $DB;
+
+    if (empty($users)) {
+        return;
+    }
+
+    // Get user identity fields.
+    $extrafields = \core_user\fields::get_identity_fields($context);
+    if (empty($extrafields)) {
+        return;
+    }
+
+    $api = \core_user\fields::for_identity($context);
+    [
+            'selects' => $selects,
+            'joins' => $joins,
+            'params' => $params
+    ] = (array) $api->get_sql('u', true);
+
+    $userids = array_map(function($user) {
+        return $user->id;
+    }, $users);
+
+    list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+    $params = array_merge($params, $inparams);
+
+    // Get fields data for users.
+    $sql = "SELECT u.id $selects
+            FROM {user} u $joins
+            WHERE u.id $insql ";
+    $rows = $DB->get_records_sql($sql, $params);
+
+    // Set fields data for users.
+    foreach ($rows as $row) {
+        foreach ($users as $user) {
+            if ($user->id == $row->id) {
+                foreach ($extrafields as $field) {
+                    $user->$field = $row->$field;
+                }
+            }
+        }
+    }
 }
 
 /**

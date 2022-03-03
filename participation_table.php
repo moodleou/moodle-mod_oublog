@@ -63,8 +63,8 @@ class oublog_participation_table extends flexible_table {
         // extra headers for export only
         if (!empty($download)) {
             $this->extraheaders = array(
-                format_string($this->course->shortname, true),
-                format_string($this->oublog->name, true),
+                    format_string($this->course->shortname, true),
+                    format_string($this->oublog->name, true),
             );
             if (!empty($this->groupname)) {
                 $this->extraheaders[] = $this->groupname;
@@ -73,17 +73,25 @@ class oublog_participation_table extends flexible_table {
 
         // Define table columns
         $columns = array(
-            'picture',
-            'fullname',
-            'posts',
-            'comments'
+                'picture',
+                'fullname',
+                'posts',
+                'comments'
         );
         $headers = array(
-            '',
-            get_string('user'),
-            get_string('posts', 'oublog'),
-            get_string('comments', 'oublog'),
+                '',
+                get_string('user'),
+                get_string('posts', 'oublog'),
+                get_string('comments', 'oublog'),
         );
+
+        // Add user identity fields.
+        $context = context_module::instance($this->cm->id);
+        $extrafields = \core_user\fields::get_identity_fields($context);
+        foreach ($extrafields as $field) {
+            $columns[] = $field;
+            $headers[] = \core_user\fields::get_display_name($field);
+        }
 
         // unset picture column + headers if download
         if (!empty($download)) {
@@ -99,11 +107,15 @@ class oublog_participation_table extends flexible_table {
         $this->define_columns($columns);
         $this->define_headers($headers);
         $this->define_baseurl($CFG->wwwroot . '/mod/oublog/participation.php?id=' .
-            $this->cm->id . '&amp;group=' . $this->groupid);
+                $this->cm->id . '&amp;group=' . $this->groupid);
 
         $this->column_class('fullname', 'fullname');
         $this->column_class('posts', 'posts');
         $this->column_class('comments', 'comments');
+        // Add user identity fields.
+        foreach ($extrafields as $field) {
+            $this->column_class($field, $field);
+        }
 
         $this->set_attribute('cellspacing', '0');
         $this->set_attribute('id', 'participation');
@@ -129,13 +141,17 @@ class oublog_participation_table extends flexible_table {
      * This function is not part of the public api.
      * You don't normally need to call this. It is called automatically when
      * needed when you start adding data to the table.
-     *
      */
     public function start_output() {
         $this->started_output = true;
         if ($this->exportclass !== null) {
             $this->exportclass->start_table($this->sheettitle);
-            $this->exportclass->output_headers($this->extraheaders);
+            if (!empty($this->download) && in_array($this->download, ['ods', 'excel'])) {
+                // Using add_data to avoid a duplicate sheet.
+                $this->exportclass->add_data($this->extraheaders);
+            } else {
+                $this->exportclass->output_headers($this->extraheaders);
+            }
             $this->exportclass->output_headers($this->headers);
         } else {
             $this->start_html();
