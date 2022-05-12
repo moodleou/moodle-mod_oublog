@@ -379,7 +379,7 @@ class mod_oublog_external extends external_api {
      * @param string $username - used to ensure user posts only
      * @return array of posts
      */
-    public static function get_blog_posts($blogid, $bcontextid, $selected, $inccomments = false, $username) {
+    public static function get_blog_posts($blogid, $bcontextid, $selected, $inccomments, $username) {
         return self::get_blog_posts2($blogid, $bcontextid, $selected, $inccomments, self::convert_username($username));
     }
 
