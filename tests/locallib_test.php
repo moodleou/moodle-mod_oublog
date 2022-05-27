@@ -1336,13 +1336,13 @@ class oublog_locallib_test extends oublog_test_lib {
         $cm = get_coursemodule_from_id('oublog', $oublog->cmid);
 
         $post = $this->get_post_stub($oublog->id);
-        $post->tags = array('1', 'new', 'new', 'new2', 'a space');
+        $post->tags = array('1', 'new', 'new', 'new2', 'a space', 'Money', 'money');
         $postid = oublog_add_post($post, $cm, $oublog, $course);
 
-        $this->assertEquals(21, strlen(oublog_get_tags_csv($postid)));
+        $this->assertEquals(35, strlen(oublog_get_tags_csv($postid)));
 
         $tags = oublog_get_tags($oublog, 0, $cm, null, -1);
-        $this->assertCount(4, $tags);
+        $this->assertCount(6, $tags);
 
         foreach ($tags as $tag) {
             $this->assertEquals(1, $tag->count);

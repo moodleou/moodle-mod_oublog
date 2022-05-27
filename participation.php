@@ -128,7 +128,7 @@ if ($submitted = $timefilter->get_data()) {
 }
 
 $participation = oublog_get_participation($oublog, $context, $groupid, $cm, $course, $start, $end,
-        'u.firstname,u.lastname', $masterblog, $cmmaster, $coursemaster);
+        'u.firstname,u.lastname', $masterblog, $cmmaster, $coursemaster, true);
 $PAGE->navbar->add(get_string('userparticipation', 'oublog'));
 $PAGE->set_title(format_string($oublog->name));
 $PAGE->set_heading(format_string($oublog->name));

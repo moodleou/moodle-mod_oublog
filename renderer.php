@@ -590,6 +590,8 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $endposition = count($participation);
                 $offset = 0;
             }
+
+            $extrafields = \core_user\fields::get_identity_fields($context);
             $currentposition = 0;
             foreach ($participation as $user) {
                 if ($currentposition == $offset && $offset < $endposition) {
@@ -662,6 +664,13 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     } else {
                         $row = array($fullname, $posts, $comments);
                     }
+
+                    // Add identity fields data for user.
+                    $col = count($row);
+                    foreach ($extrafields as $field) {
+                        $row[$col++] = isset($user->$field) ? $user->$field : '';
+                    }
+
                     if (isset($gradeitem)) {
                         $row[] = $gradeitem;
                     }

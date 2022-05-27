@@ -277,7 +277,7 @@ class mod_oublog_mod_form extends moodleform_mod {
             $data->introonpost = 0;
         }
         if (!empty($data->tagslist)) {
-            $data->tagslist = core_text::strtolower(trim($data->tagslist));
+            $data->tagslist = trim($data->tagslist);
         }
         if (empty($data->restricttags)) {
             $data->restricttags = 0;
