@@ -22,15 +22,17 @@
 if (defined('OUBLOG_EDIT_INSTANCE')) {
 
     require_once($CFG->libdir.'/formslib.php');
-    abstract class moodleform_mod extends moodleform {
+    abstract class mod_oublog_mod_form_base extends moodleform {
     } // Fake that we are using the moodleform_mod base class.
 
 } else {
     require_once('moodleform_mod.php');
+    abstract class mod_oublog_mod_form_base extends moodleform_mod {
+    }
 }
 require_once('locallib.php');
 
-class mod_oublog_mod_form extends moodleform_mod {
+class mod_oublog_mod_form extends mod_oublog_mod_form_base {
 
     public function definition() {
 
