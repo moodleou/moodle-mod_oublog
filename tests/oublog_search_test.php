@@ -149,7 +149,7 @@ class oublog_search_test extends oublog_test_lib {
         $this->assertCount(0, $out->get_files());
         $searcharea->attach_files($out);
         $files = $out->get_files();
-        $this->assertCount(4, $files);
+        $this->assertCount(2, $files);
         foreach ($files as $file) {
             if ($file->is_directory()) {
                 continue;
