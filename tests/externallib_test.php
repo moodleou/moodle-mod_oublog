@@ -14,13 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_oublog;
+
+use \mod_oublog_external;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/oublog/tests/oublog_test_lib.php');
 require_once($CFG->dirroot . '/mod/oublog/externallib.php');
 
-class externallib_test extends oublog_test_lib
+class externallib_test extends \oublog_test_lib
 {
     /** @var string Example username in CDC format. */
     const TEST_CDC_ID = '0123456789abcdef0123456789abcdef';
@@ -33,12 +37,12 @@ class externallib_test extends oublog_test_lib
         require_once($CFG->dirroot . '/mod/oublog/locallib.php');
 
         $cm = get_coursemodule_from_instance('oublog', $instance->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
         $course = get_course($instance->course);
 
         if (isset($record['comment'])) {
             if (empty($record['comment']->postid)) {
-                throw new coding_exception('Must pass postid when creating comment');
+                throw new \coding_exception('Must pass postid when creating comment');
             }
             if (empty($record['comment']->userid)) {
                 $record['comment']->userid = $USER->id;
