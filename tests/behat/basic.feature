@@ -468,7 +468,7 @@ Feature: Test Post and Comment on OUBlog entry
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     # Add the 'Set' tags restriction
     When I set the following fields to these values:
       | Tags        | ctag4sc02, btag5sc02, dogtag |
@@ -503,7 +503,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I am on homepage
     And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     When I set the following fields to these values:
       | Allow comments | Comments not allowed |
     And I press "Save and display"
@@ -553,7 +553,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I am on homepage
     And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     When I set the following fields to these values:
       | Allow comments | Yes, from logged-in users |
     And I press "Save and display"

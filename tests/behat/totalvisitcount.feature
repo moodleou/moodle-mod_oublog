@@ -81,7 +81,7 @@ Feature: Test total visit count
     And I follow "Test oublog"
     # Total visit of Test oublog's blog is four.
     And I should see "Total visits to this blog: 4"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Individual blogs | Visible individual blogs |
     And I press "Save and display"
@@ -118,7 +118,7 @@ Feature: Test total visit count
     And I follow "Test oublog"
     # Total visit of Test oublog's blog is four.
     And I should see "Total visits to this blog: 4"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Individual blogs | Visible individual blogs |
       | Group mode | Visible groups |

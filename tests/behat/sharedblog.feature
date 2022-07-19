@@ -95,7 +95,7 @@ Feature: Test shared data from Master blog on OUBlog
     Then I should see "Admin User" in the ".cell.c0" "css_element"
     And I should see "Comment post 1" in the ".cell.c1" "css_element"
     When I click on ".arrow_link" "css_element"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I expand all fieldsets
     And I set the following fields to these values:
       | Show blog usage extra statistics | 1 |
@@ -104,7 +104,7 @@ Feature: Test shared data from Master blog on OUBlog
     # Set setting of masterblog that allow to show Most posts on Blog usage.
     Then I am on "Course 1" course homepage
     And I follow "Master Blog"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I expand all fieldsets
     And I set the following fields to these values:
       | Show blog usage extra statistics | 1 |
