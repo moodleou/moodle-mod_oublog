@@ -61,7 +61,24 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_custom_rule_descriptions(): array {
-        return [];
+        global $DB;
+        $completionposts = $this->cm->customdata->customcompletionrules['completionposts'] ?? 0;
+        $completioncomments = $this->cm->customdata->customcompletionrules['completioncomments'] ?? 0;
+
+        // Get oublog details
+        if (!($oublog = $DB->get_record('oublog', array('id' => $this->cm->instance)))) {
+            throw new \moodle_exception("Can't find oublog {$this->cm->instance}");
+        }
+
+        $a = (object) [
+            'number' => $completionposts,
+            'name' => oublog_get_displayname($oublog)
+        ];
+
+        return [
+            'completionposts' => get_string('completiondetail:posts', 'oublog', $a),
+            'completioncomments' => get_string('completiondetail:comments', 'oublog', $completioncomments),
+        ];
     }
 
     /**

@@ -233,6 +233,8 @@ $string['completionposts'] = 'User must make blog posts:';
 $string['completioncommentsgroup'] = 'Require comments';
 $string['completioncommentsgroup_help'] = 'If you enable this option, the blog will be marked as complete for a student once they have left the specified number of comments.';
 $string['completioncomments'] = 'User must make comments on blog posts:';
+$string['completiondetail:posts'] = 'Make {$a->name} posts: {$a->number}';
+$string['completiondetail:comments'] = 'Make comments: {$a}';
 
 $string['computingguide'] = 'Guide to OU blogs';
 $string['computingguideurl'] = 'Computing guide URL';
