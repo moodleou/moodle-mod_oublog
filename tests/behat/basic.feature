@@ -705,7 +705,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I am on "Course 1" course homepage
     When I follow "Test oublog basics"
     And "#oublog_info_block" "css_element" should exist
-    And I follow "Edit settings"
+    And I follow "Settings"
     When I set the following fields to these values:
       | Intro |  |
     And I press "Save and display"

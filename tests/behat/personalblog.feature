@@ -357,7 +357,7 @@ Feature: Test Post and Comment on Personal OUBlog
     # Test paging when post per page is 50.
     And I am on site homepage
     And I follow "Personal Blogs"
-    And I click on "Edit settings" "link"
+    And I click on "Settings" "link"
     When I set the following fields to these values:
       | postperpage | 50 |
     And I press "Save and display"

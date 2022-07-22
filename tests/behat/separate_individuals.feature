@@ -26,7 +26,7 @@ Feature: Test Post and Comment on Seperate Individual Blogs
     And I log in as "admin"
     And I am on "Course 1" course homepage
     And I follow "Testing separate individuals oublogs"
-    And I follow "Edit settings"
+    And I follow "Settings"
     And I set the following fields to these values:
       | Individual blogs | Separate individual blogs |
     And I press "Save and display"

@@ -24,7 +24,7 @@ Feature: Test rate individual posts
     And I log in as "admin"
     And I am on "Course 1" course homepage
     And I follow "Testing rate individuals posts"
-    And I follow "Edit settings"
+    And I follow "Settings"
     # Maximum points of more than 10 gets very slow
     And I set the following fields to these values:
       | Grading | Use ratings |
