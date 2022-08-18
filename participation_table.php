@@ -41,7 +41,7 @@ class oublog_participation_table extends flexible_table {
     public $extraheaders;
     private $hasgrades;
 
-    public function __construct($cm, $course, $oublog, $groupid = 0,
+    public function __construct($cm, $course, $oublog, $groupid,
         $groupname, $hasgrades) {
 
         $this->cm = $cm;

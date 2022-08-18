@@ -163,7 +163,7 @@ function atom_end_tag($tag, $level = 0, $endline = true) {
 
 
 // Return the start tag, the contents and the end tag.
-function atom_full_tag($tag, $level = 0, $endline = true, $content, $attributes = null) {
+function atom_full_tag($tag, $level, $endline, $content, $attributes = null) {
     global $CFG;
     $st = atom_start_tag($tag, $level, $endline, $attributes);
     if ($content === false) {

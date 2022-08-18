@@ -635,7 +635,7 @@ function oublog_edit_post($post, $cm) {
  * @param string $sqlorder port sorting
  * @return mixed all data to print a list of blog posts
  */
-function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $individualid = -1,
+function oublog_get_posts($oublog, $context, $offset, $cm, $groupid, $individualid = -1,
         $userid = null, $tag = '', $canaudit = false, $ignoreprivate = null, $masterblog = null, $paginglimit = null, $sqlorder = '') {
     global $CFG, $USER, $DB;
     $params = array();
@@ -1144,7 +1144,7 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
  * @param object $masterblog
  * @return array Tag cloud HTML, current filter tag
  */
-function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstanceid=null, $individualid=-1, $tagorder,
+function oublog_get_tag_cloud($baseurl, $oublog, $groupid, $cm, $oubloginstanceid, $individualid, $tagorder,
         $masterblog = null, $limit = null) {
     global $PAGE;
     $cloud = '';
@@ -3401,7 +3401,7 @@ function oublog_can_grade($course, $oublog, $cm, $groupid=0) {
  * @param bool $showuseridentityfields show user identity fields.
  * @return array user participation
  */
-function oublog_get_participation($oublog, $context, $groupid = 0, $cm,
+function oublog_get_participation($oublog, $context, $groupid, $cm,
     $course, $start = null, $end = null, $sort = 'u.firstname,u.lastname', $masterblog = null, $cmmaster = null,
     $coursemaster = null, $showuseridentityfields = false) {
     global $DB;
@@ -3589,7 +3589,7 @@ function oublog_load_user_identity_data($context, $users) {
  * @return array user participation
  */
 function oublog_get_user_participation($oublog, $context,
-        $userid, $groupid = 0, $cm, $course, $start = null, $end = null,
+        $userid, $groupid, $cm, $course, $start = null, $end = null,
         $getposts = true, $getcomments = true, $limitfrom = null, $limitnum = null, $getgrades = false,
         $masterblog = null, $cmmaster = null, $coursemaster = null) {
     global $DB;
@@ -4504,7 +4504,7 @@ function oublog_stats_output_commentpoststats($oublog, $cm, $renderer = null, $a
  * @param object $coursemaster
  * @param bool $ajax true to return data object rather than html
  */
-function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $course, $currentindividual, $globalindividual = null,
+function oublog_stats_output_myparticipation($oublog, $cm, $renderer, $course, $currentindividual, $globalindividual = null,
         $masterblog = null, $cmmaster = null, $coursemaster = null) {
     global $PAGE, $DB, $USER, $OUTPUT;
     if (!isloggedin()) {// My participation is only visible to actual users.
@@ -4620,7 +4620,7 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer = null, $co
  * @param object $masterblog
  * @param bool $ return data object rather than html
  */
-function oublog_stats_output_participation($oublog, $cm, $renderer = null, $course, $allposts = false, $curindividual = -1, $globalindividual = null,
+function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $allposts = false, $curindividual = -1, $globalindividual = null,
         $masterblog = null) {
     global $PAGE, $DB, $USER, $OUTPUT;
     if (!$renderer) {

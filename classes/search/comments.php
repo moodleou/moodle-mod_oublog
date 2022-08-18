@@ -211,7 +211,7 @@ class comments extends \core_search\base_mod {
         $files = array();
         foreach (self::FILEAREA as $area) {
             $files = array_merge($files, $fs->get_area_files($document->get('contextid'), $this->componentname, $area,
-                    $document->get('itemid'), 'sortorder DESC, id ASC'));
+                    $document->get('itemid'), 'sortorder DESC, id ASC', false));
         }
 
         foreach ($files as $file) {

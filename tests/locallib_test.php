@@ -31,6 +31,7 @@ if (!defined('MOODLE_INTERNAL')) {
 global $CFG;
 require_once($CFG->dirroot . '/mod/oublog/tests/oublog_test_lib.php');
 require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+require_once($CFG->dirroot . '/mod/oublog/lib.php');
 
 class oublog_locallib_test extends oublog_test_lib {
 
@@ -62,6 +63,15 @@ class oublog_locallib_test extends oublog_test_lib {
      * Deleting a Post (inc email) - there is no back end function for this, the code is inline
      * Deleting blog (and checking no data left behind)
     */
+
+    /**
+     * Create temporary test tables and entries in the database for these tests.
+     * These tests have to work on a brand new site.
+     */
+    public function setUp(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+    }
 
     public function test_oublog_add_post() {
         global $SITE, $USER;
@@ -1465,6 +1475,7 @@ class oublog_locallib_test extends oublog_test_lib {
         // Change the predefined tags on the blog.
         $oublog->tagslist = 'blogtag01, blogtag02';
         $oublog->instance = $oublog->id;
+        $oublog->coursemodule = $cm->id;
         oublog_update_instance($oublog);
         // Check that the changed tags are inserted to the oublog_tags table.
         $blogtags = oublog_clarify_tags($oublog->tagslist);
@@ -1724,5 +1735,213 @@ class oublog_locallib_test extends oublog_test_lib {
                 $results[$staffaagvi->id]);
         $this->assertEquals('normal:tttt,vi:tttt,si:tttt,visg:tftf,visgg:tfff,sisg:tftf,sisgg:tfff,vg:tttt,sg:tftf,sgg:tff,',
                 $results[$staffvigroups->id]);
+    }
+
+    /**
+     * Test core_calendar provides the event for oublog.
+     */
+    public function test_oublog_core_calendar_provide_event_action() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $oublog = $this->getDataGenerator()->create_module('oublog', ['course' => $course->id]);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $oublog->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_oublog_core_calendar_provide_event_action($event, $factory);
+
+        // Confirm the event was decorated.
+        $this->assertInstanceOf('\core_calendar\local\event\value_objects\action', $actionevent);
+        $this->assertEquals(get_string('view'), $actionevent->get_name());
+        $this->assertInstanceOf('moodle_url', $actionevent->get_url());
+        $this->assertEquals(1, $actionevent->get_item_count());
+        $this->assertTrue($actionevent->is_actionable());
+    }
+
+    /**
+     * Test core_calendar hidden when oublog hides.
+     */
+    public function test_oublog_core_calendar_provide_event_action_in_hidden_section() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $oublog = $this->getDataGenerator()->create_module('oublog', ['course' => $course->id]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $oublog->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Set sections 0 as hidden.
+        set_section_visible($course->id, 0, 0);
+
+        // Now, log out.
+        $this->setUser();
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_oublog_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Confirm the event is not shown at all.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the events for user.
+     */
+    public function test_oublog_core_calendar_provide_event_action_for_user() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $oublog = $this->getDataGenerator()->create_module('oublog', ['course' => $course->id]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $oublog->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Now, log out.
+        $this->setUser($student);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_oublog_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Confirm the event was decorated.
+        $this->assertInstanceOf('\core_calendar\local\event\value_objects\action', $actionevent);
+        $this->assertEquals(get_string('view'), $actionevent->get_name());
+        $this->assertInstanceOf('moodle_url', $actionevent->get_url());
+        $this->assertEquals(1, $actionevent->get_item_count());
+        $this->assertTrue($actionevent->is_actionable());
+    }
+
+    /**
+     * Test core_calendar provides the events for non-user.
+     */
+    public function test_oublog_core_calendar_provide_event_action_as_non_user() {
+        global $CFG;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $oublog = $this->getDataGenerator()->create_module('oublog', ['course' => $course->id]);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $oublog->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Log out the user and set force login to true.
+        \core\session\manager::init_empty_session();
+        $CFG->forcelogin = true;
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_oublog_core_calendar_provide_event_action($event, $factory);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the action events completed.
+     */
+    public function test_oublog_core_calendar_provide_event_action_already_completed() {
+        global $CFG;
+        $CFG->enablecompletion = 1;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $oublog = $this->getDataGenerator()->create_module('oublog', ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS]);
+
+        // Get some additional data.
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $oublog->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Mark the activity as completed.
+        $completion = new \completion_info($course);
+        $completion->set_module_viewed($cm);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_oublog_core_calendar_provide_event_action($event, $factory);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the action events completed for user.
+     */
+    public function test_oublog_core_calendar_provide_event_action_already_completed_for_user() {
+        global $CFG;
+
+        $CFG->enablecompletion = 1;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $oublog = $this->getDataGenerator()->create_module('oublog', ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Get some additional data.
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $oublog->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Mark the activity as completed for the student.
+        $completion = new \completion_info($course);
+        $completion->set_module_viewed($cm, $student->id);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_oublog_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Creates an action event.
+     *
+     * @param int $courseid The course id.
+     * @param int $instanceid The instance id.
+     * @param string $eventtype The event type.
+     * @return bool|calendar_event
+     */
+    private function create_action_event($courseid, $instanceid, $eventtype) {
+        $event = new \stdClass();
+        $event->name = 'Calendar event';
+        $event->modulename  = 'oublog';
+        $event->courseid = $courseid;
+        $event->instance = $instanceid;
+        $event->type = CALENDAR_EVENT_TYPE_ACTION;
+        $event->eventtype = $eventtype;
+        $event->timestart = time();
+
+        return \calendar_event::create($event);
     }
 }
