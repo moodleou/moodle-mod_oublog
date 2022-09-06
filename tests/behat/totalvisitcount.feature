@@ -90,7 +90,7 @@ Feature: Test total visit count
     Then I log in as "student1"
     And I am on homepage
     And I am on "Course 1" course homepage
-    And I follow "Test oublog"
+    And I am on the "Test oublog" "oublog activity" page
     And the field "jump" matches value "View all users"
     And I should see "Total visits to this blog: 5"
     And I set the field "jump" to "Student 1"
@@ -115,7 +115,7 @@ Feature: Test total visit count
     Given I log in as "teacher1"
     And I am on homepage
     And I am on "Course 1" course homepage
-    And I follow "Test oublog"
+    And I am on the "Test oublog" "oublog activity" page
     # Total visit of Test oublog's blog is four.
     And I should see "Total visits to this blog: 4"
     And I navigate to "Settings" in current page administration
@@ -128,7 +128,7 @@ Feature: Test total visit count
     Then I log in as "student1"
     And I am on homepage
     And I am on "Course 1" course homepage
-    And I follow "Test oublog"
+    And I am on the "Test oublog" "oublog activity" page
     # Blog of group 1.
     And the field "Visible groups" matches value "G1"
     And I should see "Student 1" in the ".oublog-individualselector" "css_element"

@@ -393,7 +393,7 @@ Feature: Test Post and Comment on OUBlog entry
     # Student tests without Set tags restrictions.
     Given I log in as "student1"
     And I am on "Course 1" course homepage
-    And I follow "Test oublog basics"
+    And I am on the "Test oublog basics" "oublog activity" page
     And I press "New blog post"
     # Before the 'Set' tags restriction
     And I should not see "You may only enter the 'Set' tags:"
@@ -440,7 +440,7 @@ Feature: Test Post and Comment on OUBlog entry
     Then I should not see "SC02 Student OUBlog post02 content filtered by tag edited post body"
 
     # Delete student post01 the second post made.
-    Given I follow "Test oublog basics"
+    And I am on the "Test oublog basics" "oublog activity" page
     When I click on "Delete" "link" in the ".oublog-post:nth-child(2) .oublog-post-links" "css_element"
     And I wait to be redirected
     Then I should see "Are you sure you want to delete this post?"
@@ -467,7 +467,7 @@ Feature: Test Post and Comment on OUBlog entry
     # Check post with restrictions enabled as Teacher.
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    When I follow "Test oublog basics"
+    And I am on the "Test oublog basics" "oublog activity" page
     And I navigate to "Settings" in current page administration
     # Add the 'Set' tags restriction
     When I set the following fields to these values:
@@ -777,9 +777,9 @@ Feature: Test Post and Comment on OUBlog entry
     And I follow "Test oublog basics"
     And I press "New blog post"
     And I set the following fields to these values:
-      | Title   | Teacher1 blog |
-      | Message | Teacher1 post |
-      | Tags    | tag1          |
+      | Title   | Teacher1 blog 1|
+      | Message | Teacher1 post  |
+      | Tags    | tag1           |
     And I press "Add post"
     And I press "New blog post"
     And I set the following fields to these values:
@@ -787,19 +787,19 @@ Feature: Test Post and Comment on OUBlog entry
       | Message | Teacher1 post 2 |
       | Tags    | tag2            |
     When I press "Add post"
-    Then I should see "Teacher1 blog" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
-    And I should see "Teacher1 blog 2" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    Then I should see "Teacher1 blog 1" in the "div#oublog-posts" "css_element"
+    And I should see "Teacher1 blog 2" in the "div#oublog-posts" "css_element"
     When I follow "tag1"
     Then I should see "tag1" in the ".oublog-filter-tagname" "css_element"
     And I should not see "tag2" in the ".oublog-filter-tagname" "css_element"
-    And I should see "Teacher1 blog" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    And I should see "Teacher1 blog 1" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
     And I should not see "Teacher1 blog 2" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
     When I follow "tag2"
     Then I should see "tag2" in the ".oublog-filter-tagname" "css_element"
     And I should see "Teacher1 blog 2" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
     When I click on "#close-filter-icon" "css_element"
-    Then I should see "Teacher1 blog" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
-    And I should see "Teacher1 blog 2" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+    Then I should see "Teacher1 blog 1" in the "div#oublog-posts" "css_element"
+    And I should see "Teacher1 blog 2" in the "div#oublog-posts" "css_element"
 
   Scenario: Check view count is reset on restore
     Given I log in as "student1"

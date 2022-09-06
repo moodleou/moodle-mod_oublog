@@ -124,7 +124,7 @@ Feature: Test multiple export feature on OUBlog with Share feature
     And I log in as "teacher1"
     And I am on homepage
     And I am on "Course 1" course homepage
-    And I follow "OU Blog Child"
+    And I am on the "OU Blog Child" "oublog activity" page
     When I set the field "Visible individuals" to "Student 1"
     Then I should see "Post 1"
     And I should not see "Post 2"
@@ -134,7 +134,7 @@ Feature: Test multiple export feature on OUBlog with Share feature
     And I should not see "Post 2"
 
     # Test individual mode to Student 2.
-    Given I follow "OU Blog Child"
+    And I am on the "OU Blog Child" "oublog activity" page
     When I set the field "Visible individuals" to "Student 2"
     Then I should see "Post 2"
     And I should not see "Post 1"
@@ -144,7 +144,7 @@ Feature: Test multiple export feature on OUBlog with Share feature
     And I should not see "Post 1"
 
     # Test individual mode for all.
-    And I follow "OU Blog Child"
+    And I am on the "OU Blog Child" "oublog activity" page
     When I set the field "Visible individuals" to "View all users"
     Then I should see "Post 1"
     And I should see "Post 2"
@@ -219,7 +219,7 @@ Feature: Test multiple export feature on OUBlog with Share feature
     And I should see "Post 2 content" in the ".oublog-post" "css_element"
     And I should not see "Post 1" in the ".oublog-post" "css_element"
     # View the post page when click post title under 'Title' column.
-    And I follow "OU Blog Child"
+    And I am on the "OU Blog Child" "oublog activity" page
     And I set the field "Visible individuals" to "View all users"
     And I follow "Export"
     When I click on "Post 1" "link" in the "Post 1" "table_row"
@@ -242,7 +242,7 @@ Feature: Test multiple export feature on OUBlog with Share feature
     When I follow "Export"
     Then I should see "You can export individual blog posts from your online module content using the links below"
     And ".oublog-paging" "css_element" should not exist
-    And I follow "OU Blog Child"
+    And I am on the "OU Blog Child" "oublog activity" page
     And I create "50" sample posts for blog with id "OUBLOG_MASTER"
     And I wait "2" seconds
     And I reload the page
