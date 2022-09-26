@@ -243,7 +243,7 @@ function oublog_do_delete($course, $cm, $oublog, $post) {
             array(), $post->visibility)) {
         print_error('tagupdatefailed', 'oublog');
     }
-    if (oublog_search_installed()) {
+    if (oublog_search_installed() && !local_ousearch_indexingdisabled()) {
         $doc = oublog_get_search_document($updatepost, $cm);
         $doc->delete();
     }
