@@ -93,6 +93,7 @@ M.mod_oublog.init_deleteandemail = function(Y, cmid, postid) {
         delbtns.set('disabled', false);
         var content = M.util.get_string('deleteemailpostdescription', 'oublog');
         var panel = new M.core.dialogue({
+            headerContent: M.util.get_string('confirm', 'moodle'),
             bodyContent: content,
             width: 400,
             centered: true,

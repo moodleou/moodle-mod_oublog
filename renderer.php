@@ -1042,13 +1042,13 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $deluser = new stdClass();
                 $fields = \core_user\fields::get_name_fields();
                 foreach ($fields as $field) {
-                    $field = 'del' . $field;
-                    $deluser->$field = $comment->$field;
+                    $dfield = 'del' . $field;
+                    $deluser->$field = $comment->$dfield;
                 }
 
                 $a = new stdClass();
-                $a->fullname = '<a href="../../user/view.php?id=' . $comment->deletedby . '">' .
-                        fullname($deluser) . '</a>';
+                $a->fullname = html_writer::tag('a', fullname($deluser),
+                        array('href' => $CFG->wwwroot . '/user/view.php?id=' . $comment->deletedby));
                 $a->timedeleted = oublog_date($comment->timedeleted);
 
                 $output .= html_writer::tag('div', get_string('deletedby', 'oublog', $a),

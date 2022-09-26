@@ -3031,6 +3031,24 @@ function oublog_get_posts_by_id($oublog, $ids) {
     return $rs;
 }
 
+/**
+ * Gets post ids.
+ *
+ * @param int $oublogid.
+ * @return array
+ * @throws coding_exception
+ * @throws dml_exception
+ */
+function oublog_get_post_ids($oublogid) {
+    global $DB;
+    $sql = "SELECT p.id
+            FROM {oublog_posts} p
+            INNER JOIN {oublog_instances} bi ON bi.id = p.oubloginstancesid
+            INNER JOIN {oublog} b ON b.id = bi.oublogid
+            WHERE b.id = ?";
+    return $DB->get_fieldset_sql($sql, [$oublogid]);
+}
+
 class oublog_portfolio_caller extends portfolio_module_caller_base {
 
     protected $postid;

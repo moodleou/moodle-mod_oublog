@@ -377,9 +377,7 @@ Feature: Test Post and Comment on OUBlog entry
   @javascript @_file_upload
   Scenario: Check tag sorting and filter by tag as student
     Given I log in as "teacher1"
-    And I am on homepage
-    And I am on "Course 1" course homepage
-    When I follow "Test oublog basics"
+    When I am on the "Test oublog basics" "oublog activity" page
     And I press "New blog post"
     # Before the 'Set' tags restriction
     And I should not see "You may only enter the 'Set' tags:"
@@ -392,7 +390,6 @@ Feature: Test Post and Comment on OUBlog entry
 
     # Student tests without Set tags restrictions.
     Given I log in as "student1"
-    And I am on "Course 1" course homepage
     And I am on the "Test oublog basics" "oublog activity" page
     And I press "New blog post"
     # Before the 'Set' tags restriction
@@ -439,21 +436,8 @@ Feature: Test Post and Comment on OUBlog entry
     And I click on ".oublog-post-editsummary a" "css_element"
     Then I should not see "SC02 Student OUBlog post02 content filtered by tag edited post body"
 
-    # Delete student post01 the second post made.
-    And I am on the "Test oublog basics" "oublog activity" page
-    When I click on "Delete" "link" in the ".oublog-post:nth-child(2) .oublog-post-links" "css_element"
-    And I wait to be redirected
-    Then I should see "Are you sure you want to delete this post?"
-    And I press "Delete"
-    And I wait to be redirected
-    Then I should see "SC02 OUBlog post02 from student edited post subject"
-    And ".oublog-deleted" "css_element" should exist
-    And ".oublog-post-deletedby" "css_element" should exist
-    And I should see "Deleted by"
-    And "Delete" "link" should not exist in the ".oublog-deleted" "css_element"
-    And "Add your comment" "link" should not exist in the ".oublog-deleted" "css_element"
-
     # Check post comments with comments enabled.
+    Given I am on the "Test oublog basics" "oublog activity" page
     Then I should see "SC02 OUBlog post02 from student edited post subject"
     And I should see "SC02 Student OUBlog post02 content filtered by tag edited post body"
     Given I follow "Add your comment"
@@ -466,7 +450,6 @@ Feature: Test Post and Comment on OUBlog entry
 
     # Check post with restrictions enabled as Teacher.
     Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
     And I am on the "Test oublog basics" "oublog activity" page
     And I navigate to "Settings" in current page administration
     # Add the 'Set' tags restriction
@@ -493,9 +476,102 @@ Feature: Test Post and Comment on OUBlog entry
     And I should see "SC02 OUBlog post02 teacher content"
 
     # Should see tags in default Alphabetical order.
-    Then I should see "ctag3sc02(2) dogtag(1) dtag3sc02(1)"
+    Then I should see "ctag3sc02(3) dogtag(1) dtag3sc02(1)"
+
+  @javascript
+  Scenario: Check deleting posts
+    Given I create "2" sample posts for blog with id "oublog1"
+    And I log in as "teacher1"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I should see "Test post 0"
+    And I should see "Test post 1"
+
+    # Delete a post as teacher1.
+    When I click on "Delete" "link" in the ".oublog-post:nth-child(1) .oublog-post-links" "css_element"
+    And I wait to be redirected
+    Then I should see "Select to delete the post"
+    And I click on "Delete" "button" in the "Confirm" "dialogue"
+    And I wait to be redirected
+    # Check deleted post details.
+    Then I should see "Test post 0"
+    And I should see "Test post 1"
+    And ".oublog-deleted" "css_element" should exist
+    And ".oublog-post-deletedby" "css_element" should exist
+    And I should see "Deleted by Teacher 1"
+    And "Delete" "link" should not exist in the ".oublog-deleted" "css_element"
+    And "Add your comment" "link" should not exist in the ".oublog-deleted" "css_element"
     And I log out
 
+    # Check posts as student1.
+    Given I log in as "student1"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I should see "Test post 0"
+    And I should not see "Test post 1"
+    And I log out
+
+    # Check posts as admin.
+    Given I log in as "admin"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I should see "Test post 0"
+    And I should see "Test post 1"
+    And I should see "Deleted by Teacher 1"
+
+    # Delete a post as admin.
+    When I click on "Delete" "link" in the ".oublog-post:nth-child(2) .oublog-post-links" "css_element"
+    And I wait to be redirected
+    Then I should see "Are you sure you want to delete this post?"
+    And I press "Delete"
+    And I wait to be redirected
+    And I should see "Deleted by Admin User"
+
+  @javascript
+  Scenario: Check deleting comments
+    Given I create "1" sample posts for blog with id "oublog1"
+    And I create "2" sample comments for blog with id "oublog1"
+    And I log in as "teacher1"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I follow "2 comments"
+    And I should see "Post 0 - Test comment 0"
+    And I should see "Post 0 - Test comment 1"
+
+    # Delete a comment.
+    When I click on "Delete" "link" in the ".oublog-comment:nth-child(1) .oublog-post-links" "css_element"
+    And I wait to be redirected
+    Then I should see "Are you sure you want to delete this comment?"
+    And I click on "Continue" "button" in the "Confirm" "dialogue"
+    And I wait to be redirected
+    # Check deleted comment details.
+    Then I should see "Post 0 - Test comment 0"
+    And I should see "Post 0 - Test comment 1"
+    And ".oublog-deleted" "css_element" should exist
+    And ".oublog-comment-deletedby" "css_element" should exist
+    And I should see "Deleted by Teacher 1"
+    And "Delete" "link" should not exist in the ".oublog-deleted" "css_element"
+    And I log out
+
+    # Check comments as student1.
+    Given I log in as "student1"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I follow "1 comment"
+    And I should not see "Post 0 - Test comment 0"
+    And I should see "Post 0 - Test comment 1"
+    And I log out
+
+    # Check comments as admin.
+    And I log in as "admin"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I follow "1 comment"
+    And I should see "Post 0 - Test comment 0"
+    And I should see "Post 0 - Test comment 1"
+    And I should see "Deleted by Teacher 1"
+
+    # Delete a comment as admin.
+    When I click on "Delete" "link" in the ".oublog-comment:nth-child(2) .oublog-post-links" "css_element"
+    And I wait to be redirected
+    Then I should see "Are you sure you want to delete this comment?"
+    And I click on "Continue" "button" in the "Confirm" "dialogue"
+    And I wait to be redirected
+    And I should see "Deleted by Admin User"
 
   Scenario: Further standard regression/basic tests - non-js.
     # Check post with comments disabled as Teacher.
@@ -777,9 +853,9 @@ Feature: Test Post and Comment on OUBlog entry
     And I follow "Test oublog basics"
     And I press "New blog post"
     And I set the following fields to these values:
-      | Title   | Teacher1 blog 1|
-      | Message | Teacher1 post  |
-      | Tags    | tag1           |
+      | Title   | Teacher1 blog 1 |
+      | Message | Teacher1 post   |
+      | Tags    | tag1            |
     And I press "Add post"
     And I press "New blog post"
     And I set the following fields to these values:

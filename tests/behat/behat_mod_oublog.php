@@ -64,6 +64,7 @@ class behat_mod_oublog extends behat_base {
         $course = get_course($oublog->course);
         for ($i = 0; $i < $number; $i++) {
             $post = new stdClass();
+            $post->timeposted = time() + $i * 2;
             $post->oublogid = $oublog->id;
             $post->userid = $USER->id;
             $post->groupid = 0;
@@ -75,6 +76,37 @@ class behat_mod_oublog extends behat_base {
             $post->visibility = 100;
             $post->attachments = '';
             oublog_add_post($post, $cm, $oublog, $course);
+        }
+    }
+
+    /**
+     * Create sample comments.
+     *
+     * @Given /^I create "(?P<number>[^"]+)" sample comments for blog with id "(?P<idnumber_string>(?:[^"]|\\")*)"$/
+     *
+     * @param int number
+     * @param string idnumber
+     */
+    public function i_create_n_comments_with_form_data($number, $idnumber) {
+        global $CFG, $USER;
+        require_once($CFG->dirroot . '/mod/oublog/locallib.php');
+        $oublog = $this->get_oublog_by_idnumber($idnumber);
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+        $course = get_course($oublog->course);
+        $postids = oublog_get_post_ids($oublog->id);
+        $p = 0;
+        foreach ($postids as $postid) {
+            for ($i = 0; $i < $number; $i++) {
+                $comment = new stdClass();
+                $comment->timeposted = time() + $i * 2;
+                $comment->title = "Post $p - Test comment $i";
+                $comment->messagecomment = array();
+                $comment->messagecomment['text'] = "Post $p - Test comment $i content";
+                $comment->postid = $postid;
+                $comment->userid = $USER->id;
+                oublog_add_comment($course, $cm, $oublog, $comment);
+            }
+            $p++;
         }
     }
 
