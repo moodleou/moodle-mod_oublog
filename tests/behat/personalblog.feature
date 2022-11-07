@@ -5,7 +5,6 @@ Feature: Test Post and Comment on Personal OUBlog
   I need to be able to see OUBblog personal post entries
   # Note this test will only pass on OU systems as using an OU custom step.
 
-  @javascript
   Scenario: Admin edits the blog options
     Given I log in as "admin"
     And I am using the OU theme
