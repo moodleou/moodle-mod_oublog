@@ -384,6 +384,7 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should not see "Share this post"
     And I should not see "Tweet"
     And I should not see "Share"
+    And I wait "1" seconds
 
     # Admin adds a WorldVis post and Socialmedia widgets are available
     Given I press "New blog post"
