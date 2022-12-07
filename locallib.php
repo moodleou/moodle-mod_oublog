@@ -1114,13 +1114,13 @@ function oublog_get_tags($oublog, $groupid, $cm, $oubloginstanceid=null, $indivi
         $sql = $sql . ' LIMIT ' . $limit;
     }
     if ($tags = $DB->get_records_sql($sql, $params)) {
-        $first = array_shift($tags);
-        $max = $first->count;
-        array_unshift($tags, $first);
+        $max = max(array_map(function($tag) {
+            return $tag->count;
+        }, $tags));
 
-        $last = array_pop($tags);
-        $min = $last->count;
-        array_push($tags, $last);
+        $min = min(array_map(function($tag) {
+            return $tag->count;
+        }, $tags));
 
         $delta = $max-$min+0.00000001;
 
