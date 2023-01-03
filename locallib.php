@@ -2704,8 +2704,10 @@ function oublog_add_comment_moderated($oublog, $oubloginstance, $post, $comment)
     global $CFG, $USER, $SESSION, $SITE, $DB;
 
     // Extra security on moderated comment
-    $dom = @DOMDocument::loadHTML('<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body><div>' .
+    $string = sprintf('<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body><div>' .
             $comment->messagecomment . '</div></body></html>');
+    $dom = new DOMDocument();
+    $dom->loadHTML($string);
     oublog_apply_high_security($dom->documentElement);
     $html = $dom->saveHTML();
     $start = strpos($html, '<body><div>') + 11;
