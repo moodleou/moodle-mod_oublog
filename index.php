@@ -1,4 +1,4 @@
-<?php
+ <?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ require_once("locallib.php");
 $id = required_param('id', PARAM_INT);   // course
 
 if (! $course = $DB->get_record('course', array('id'=>$id))) {
-    print_error('coursemisconf');
+    throw new moodle_exception('coursemisconf');
 }
 
 // Support for OU shared activities system, if installed

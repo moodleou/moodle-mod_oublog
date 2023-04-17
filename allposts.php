@@ -28,15 +28,15 @@ $tag    = optional_param('tag', null, PARAM_TAG);   // Tag to display.
 $page = optional_param('page', 0, PARAM_INT);
 
 if (!$oublog = $DB->get_record("oublog", array("global"=>1))) { // The personal blogs module.
-    print_error('personalblognotsetup', 'oublog');
+    throw new moodle_exception('personalblognotsetup', 'oublog');
 }
 
 if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
-    print_error('coursemisconf');
+    throw new moodle_exception('coursemisconf');
 }
 
 $postperpage = $oublog->postperpage;

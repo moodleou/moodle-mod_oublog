@@ -33,19 +33,19 @@ $cmid = optional_param('cmid', null, PARAM_INT);
 $referurl = optional_param('referurl', 0, PARAM_LOCALURL);
 
 if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
-    print_error('invalidblog', 'oublog');
+    throw new moodle_exception('invalidblog', 'oublog');
 }
 if (!$cm = get_coursemodule_from_instance('oublog', $blog)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
-    print_error('coursemisconf');
+    throw new moodle_exception('coursemisconf');
 }
 if (!$post = oublog_get_post($postid)) {
-    print_error('invalidpost', 'oublog');
+    throw new moodle_exception('invalidpost', 'oublog');
 }
 if (!$oubloginstance = $DB->get_record('oublog_instances', array('id'=>$post->oubloginstancesid))) {
-    print_error('invalidblog', 'oublog');
+   throw new moodle_exception('invalidblog', 'oublog');
 }
 $url = new moodle_url('/mod/oublog/editcomment.php', array('blog'=>$blog, 'post'=>$postid, 'comment'=>$commentid));
 $PAGE->set_url($url);

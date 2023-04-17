@@ -27,19 +27,19 @@ $confirm = optional_param('confirm', 0, PARAM_INT);    // Confirm that it is ok 
 $cmid = optional_param('cmid', null, PARAM_INT);
 
 if (!$link = $DB->get_record('oublog_links', array('id'=> $linkid))) {
-    print_error('invalidlink', 'oublog');
+    throw new moodle_exception('invalidlink', 'oublog');
 }
 
 if (!$cm = get_coursemodule_from_instance('oublog', $link->oublogid)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 if (!$course = $DB->get_record("course", array("id"=> $cm->course))) {
-    print_error('coursemisconf');
+    throw new moodle_exception('coursemisconf');
 }
 
 if (!$oublog = $DB->get_record("oublog", array("id"=> $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 $url = new moodle_url('/mod/oublog/deletelink.php', array('link'=>$linkid, 'confirm'=>$confirm));

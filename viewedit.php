@@ -29,23 +29,23 @@ $editid = required_param('edit', PARAM_INT); // Blog post edit ID.
 $cmid = optional_param('cmid', null, PARAM_INT);
 
 if (!$edit = $DB->get_record('oublog_edits', array('id' => $editid))) {
-    print_error('invalidedit', 'oublog');
+    throw new moodle_exception('invalidedit', 'oublog');
 }
 
 if (!$post = oublog_get_post($edit->postid)) {
-    print_error('invalidpost', 'oublog');
+    throw new moodle_exception('invalidpost', 'oublog');
 }
 
 if (!$cm = get_coursemodule_from_instance('oublog', $post->oublogid)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 if (!$course = $DB->get_record("course", array('id' => $cm->course))) {
-    print_error('coursemisconf');
+    throw new moodle_exception('coursemisconf');
 }
 
 if (!$oublog = $DB->get_record("oublog", array('id' => $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 $context = context_module::instance($cm->id);
@@ -89,10 +89,10 @@ $groupmode = oublog_get_activity_groupmode($childcm ? $childcm : $cm, $childcour
 // Print the header.
 if ($oublog->global) {
     if (!$oubloginstance = $DB->get_record('oublog_instances', array('id' => $post->oubloginstancesid))) {
-        print_error('invalidblog', 'oublog');
+        throw new moodle_exception('invalidblog', 'oublog');
     }
     if (!$oubloguser = $DB->get_record('user', array('id' => $oubloginstance->userid))) {
-        print_error('invaliduserid');
+        throw new moodle_exception('invaliduserid');
     }
 
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url('/user/view.php', array('id' => $oubloguser->id)));

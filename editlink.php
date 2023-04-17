@@ -31,13 +31,13 @@ $cmid = optional_param('cmid', null, PARAM_INT);
 
 if ($blog) {
     if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
-        print_error('invalidblog', 'oublog');
+        throw new moodle_exception('invalidblog', 'oublog');
     }
     if (!$cm = get_coursemodule_from_instance('oublog', $blog)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
-        print_error('coursemisconf');
+        throw new moodle_exception('coursemisconf');
     }
 }
 // TODO: If statement didn't look right! CC-Inline control structures not allowed.
@@ -129,7 +129,7 @@ if (!$frmlink = $mform->get_data()) {
         $frmlink->oublogid = $oublog->id;
 
         if (!oublog_edit_link($frmlink)) {
-            print_error('couldnotaddlink', 'oublog');
+            throw new moodle_exception('couldnotaddlink', 'oublog');
         }
 
     } else {
@@ -138,7 +138,7 @@ if (!$frmlink = $mform->get_data()) {
         $frmlink->oubloginstancesid = $bloginstancesid;
 
         if (!oublog_add_link($frmlink)) {
-            print_error('couldnotaddlink', 'oublog');
+            throw new moodle_exception('couldnotaddlink', 'oublog');
         }
     }
 

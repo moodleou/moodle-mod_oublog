@@ -31,24 +31,24 @@ $bloginstancesid = required_param('instance', PARAM_INT);        // Bloginstance
 $postid = optional_param('post', 0, PARAM_INT);   // Post ID for editing
 
 if (!$oubloginstance = $DB->get_record('oublog_instances', array('id'=>$bloginstancesid))) {
-    print_error('invalidblog', 'oublog');
+    throw new moodle_exception('invalidblog', 'oublog');
 }
 if (!$oublog = $DB->get_record("oublog", array("id"=>$oubloginstance->oublogid))) {
-    print_error('invalidblog', 'oublog');
+    throw new moodle_exception('invalidblog', 'oublog');
 }
 if (!$oublog->global) {
-    print_error('invalidblog', 'oublog');
+    throw new moodle_exception('invalidblog', 'oublog');
 }
 if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 // Check security.
 if (!$oublog->global) {
-    print_error('onlyworkspersonal', 'oublog');
+    throw new moodle_exception('onlyworkspersonal', 'oublog');
 }
 $url = new moodle_url('/mod/oublog/editinstance.php', array('instance'=>$bloginstancesid, 'post'=>$postid));
 $PAGE->set_url($url);
@@ -59,7 +59,7 @@ $oubloguser = $DB->get_record('user', array('id'=>$oubloginstance->userid));
 $viewurl = 'view.php?user='.$oubloginstance->userid;
 
 if ($USER->id != $oubloginstance->userid && !has_capability('mod/oublog:manageposts', $context)) {
-    print_error('accessdenied', 'oublog');
+    throw new moodle_exception('accessdenied', 'oublog');
 }
 
 // Get strings.

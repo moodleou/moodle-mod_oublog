@@ -49,12 +49,12 @@ require_sesskey();
 // participation capability check
 $canview = oublog_can_view_participation($course, $oublog, $cm, $groupid);
 if ($canview != OUBLOG_USER_PARTICIPATION) {
-    print_error('nopermissiontoshow');
+    throw new moodle_exception('nopermissiontoshow');
 }
 
 // grading capability check
 if (!oublog_can_grade($course, $oublog, $cm, $groupid)) {
-    print_error('nopermissiontoshow');
+    throw new moodle_exception('nopermissiontoshow');
 }
 
 $mode = '';

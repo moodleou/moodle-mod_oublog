@@ -34,15 +34,15 @@ $cmid = optional_param('cmid', null, PARAM_INT);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('oublog', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     if (!$course = $DB->get_record("course", array("id"=>$cm->course))) {
-        print_error('coursemisconf');
+        throw new moodle_exception('coursemisconf');
     }
 
     if (!$oublog = $DB->get_record("oublog", array("id"=>$cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     $oubloguser = (object) array('id' => null);
     $oubloginstance = null;
@@ -50,20 +50,20 @@ if ($id) {
 
 } else if ($user) {
     if (!$oubloguser = $DB->get_record('user', array('id'=>$user))) {
-        print_error('invaliduserid');
+        throw new moodle_exception('invaliduserid');
     }
     if (!list($oublog, $oubloginstance) = oublog_get_personal_blog($oubloguser->id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
-        print_error('coursemisconf');
+        throw new moodle_exception('coursemisconf');
     }
     $oubloginstanceid = $oubloginstance->id;
 } else {
-    print_error('missingrequiredfield');
+    throw new moodle_exception('missingrequiredfield');
 }
 
 $context = context_module::instance($cm->id);

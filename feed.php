@@ -44,19 +44,19 @@ $PAGE->set_context(context_system::instance());
 $format = strtolower($format);
 
 if (empty($CFG->enablerssfeeds)) {
-    print_error('feedsnotenabled', 'oublog');
+    throw new moodle_exception('feedsnotenabled', 'oublog');
 }
 if ($format != 'atom' && $format != 'rss') {
-    print_error('invalidformat', 'oublog');
+    throw new moodle_exception('invalidformat', 'oublog');
 }
 if (!$blogid && !$bloginstancesid && !$postid) {
-    print_error('missingrequiredfield');
+    throw new moodle_exception('missingrequiredfield');
 }
 if (($loggedin || $full) && !$viewer) {
-    print_error('missingrequiredfield');
+    throw new moodle_exception('missingrequiredfield');
 }
 if ($groupid && !$viewer) {
-    print_error('missingrequiredfield');
+    throw new moodle_exception('missingrequiredfield');
 }
 
 if (isset($bloginstancesid) && $bloginstancesid!='all') {
@@ -71,14 +71,14 @@ if (isset($bloginstancesid) && $bloginstancesid!='all') {
     $blog         = $DB->get_record('oublog', array('id'=>$bloginstance->oublogid));
 }
 if (!isset($blog->id) || !$cm = get_coursemodule_from_instance('oublog', $blog->id)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 // Get child blog.
 if (!empty($childblogid)) {
     $childblog = $DB->get_record('oublog', array('id' => $childblogid), '*', MUST_EXIST);
     // Get cm of child blog.
     if (!$cmchildblog = get_coursemodule_from_instance('oublog', $childblog->id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 }
 $feedcm = !empty($cmchildblog) ? $cmchildblog : $cm;
@@ -97,7 +97,7 @@ if ($feedblog->global) {
         ($groupid ? '&group=' . $groupid : '') .
         ($individualid ? '&individual=' . $individualid : '');
     if (!($course = $DB->get_record('course', array('id'=>$feedcm->course)))) {
-        print_error('coursemisconf');
+        throw new moodle_exception('coursemisconf');
     }
     $groupmode = oublog_get_activity_groupmode($feedcm, $course);
 }
@@ -110,7 +110,7 @@ if (core_useragent::check_browser_version('MSIE', 0) || core_useragent::check_br
         } else {
             $url='view.php?id='.$cm->id.($groupid ? '&group='.$groupid : '');
         }
-        print_error('unsupportedbrowser', 'oublog', $url);
+        throw new moodle_exception('unsupportedbrowser', 'oublog', $url);
     }
 }
 // Determine if feed has changed since the if-modified-since HTTP header and exit if it hasn't.
@@ -155,14 +155,14 @@ if ($full) {
             $allowedvisibility = OUBLOG_VISIBILITY_COURSEUSER;
         }
     } else {
-        print_error('nopermissiontoshow');
+       throw new moodle_exception('nopermissiontoshow');
     }
 } else if ($loggedin) {
     if ($loggedin == md5($accesstoken.$viewer.OUBLOG_VISIBILITY_LOGGEDINUSER) && $user =
             $DB->get_record('user', array('id'=>$viewer))) {
         $allowedvisibility = OUBLOG_VISIBILITY_LOGGEDINUSER;
     } else {
-        print_error('nopermissiontoshow');
+        throw new moodle_exception('nopermissiontoshow');
     }
 } else {
     $allowedvisibility = OUBLOG_VISIBILITY_PUBLIC;
@@ -172,7 +172,7 @@ if ($full) {
 // Check individual
 if ($feedblog->individual) {
     if (!oublog_individual_has_permissions($feedcm, $feedblog, $groupid, $individualid, $user->id)) {
-         print_error('nopermissiontoshow');
+         throw new moodle_exception('nopermissiontoshow');
     }
 }
 // Check separate groups

@@ -63,7 +63,7 @@ if ($data = $form->get_data()) {
     $files = $fp->list_files($file);
     output('', true);
     if (!isset($files[0]->pathname) || strpos($files[0]->pathname, 'pb') !== 0) {
-        print_error('Invalid migration zip file.');
+        throw new moodle_exception('Invalid migration zip file.');
     }
     $fp->extract_to_pathname($file, $datadir);
     unlink($file);
@@ -82,7 +82,7 @@ if ($action == 'DELETE') {
     $name = required_param('name', PARAM_PATH);
     $dirname = $datadir . '/' . $name;
     if (!file_exists($dirname) || $name == '' || strpos($name, 'pb') === false) {
-        print_error('Directory does not exist.');
+        throw new moodle_exception('Directory does not exist.');
     }
     if (optional_param('confirm', false, PARAM_BOOL)) {
         if (fulldelete($dirname)) {
@@ -98,7 +98,7 @@ if ($action == 'DELETE') {
     $name = required_param('name', PARAM_PATH);
     $dirname = $datadir . '/' . $name;
     if (!file_exists($dirname) || $name == '' || strpos($name, 'pb') === false) {
-        print_error('Directory does not exist.');
+        throw new moodle_exception('Directory does not exist.');
     }
     if (optional_param('confirm', false, PARAM_BOOL)) {
         // Process the folder.
@@ -107,7 +107,7 @@ if ($action == 'DELETE') {
         migrate_backup($dirname);
     } else {
         if (!file_exists($dirname . '/success.txt') || !file_exists($dirname . '/oublog.xml')) {
-            print_error('Data no good. Missing key files.');
+            throw new moodle_exception('Data no good. Missing key files.');
         }
         // File checks/info.
         $doc = new DOMDocument();
@@ -149,7 +149,7 @@ if ($action == 'NONE') {
     // SHOW MAIN INTERFACE.
     // Show number of personal blog instances.
     if (!$blog = $DB->get_record('oublog', array('global' => 1))) {
-        print_error('globalblogmissing', 'oublog');
+        throw new moodle_exception('globalblogmissing', 'oublog');
     }
     $bloginsts = $DB->get_record_sql('SELECT COUNT(id) as count FROM {oublog_instances} WHERE oublogid = ?',
             array($blog->id));
@@ -269,7 +269,7 @@ function migrate_backup($dir) {
     $blog->global = 1;
     output('Got global blog record');
     if (!$cm = get_coursemodule_from_instance('oublog', $blog->id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     $blogcontext = context_module::instance($cm->id);
 

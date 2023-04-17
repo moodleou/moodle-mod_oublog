@@ -100,7 +100,7 @@ function oublog_get_personal_blog($userid) {
     global $CFG, $DB;
 
     if (!$blog = $DB->get_record('oublog', array('global'=>1))) {
-        print_error('globalblogmissing', 'oublog');
+        throw new moodle_exception('globalblogmissing', 'oublog');
     }
 
     if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid'=>$blog->id, 'userid'=>$userid))) {
@@ -108,7 +108,7 @@ function oublog_get_personal_blog($userid) {
         $a = (object) array('name' => fullname($user), 'displayname' => oublog_get_displayname($blog));
         oublog_add_bloginstance($blog->id, $userid, get_string('defaultpersonalblogname', 'oublog', $a));
         if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid'=>$blog->id, 'userid'=>$user->id))) {
-            print_error('invalidblog', 'oublog');
+            throw new moodle_exception('invalidblog', 'oublog');
         }
     }
 
@@ -173,7 +173,7 @@ function oublog_check_view_permissions($oublog, $context, $cm=null) {
             $PAGE->set_pagelayout('incourse');
             // Check oublog:view cap
             if (!has_capability($capability, $context)) {
-                print_error('accessdenied', 'oublog');
+                throw new moodle_exception('accessdenied', 'oublog');
             }
             return;
 
@@ -181,12 +181,12 @@ function oublog_check_view_permissions($oublog, $context, $cm=null) {
             require_course_login($oublog->course, false, $cm);
             // Check oublog:view cap
             if (!has_capability($capability, $context)) {
-                print_error('accessdenied', 'oublog');
+                throw new moodle_exception('accessdenied', 'oublog');
             }
             return;
 
         default:
-            print_error('invalidvisibility', 'oublog');
+            throw new moodle_exception('invalidvisibility', 'oublog');
     }
 }
 
@@ -400,7 +400,7 @@ function oublog_can_view_post($post, $user, $context, $cm, $oublog, $childcm = n
     }
 
     if ($post->visibility!=OUBLOG_VISIBILITY_COURSEUSER) {
-        print_error('invalidvisibilitylevel', 'oublog', '', $post->visibility);
+        throw new moodle_exception('invalidvisibilitylevel', 'oublog', '', $post->visibility);
     }
 
     $correctindividual = isset($childoublog->individual) ? $childoublog->individual : $oublog->individual;
@@ -1260,7 +1260,7 @@ function oublog_get_visibility_string($vislevel, $personal) {
         case OUBLOG_VISIBILITY_PUBLIC:
             return(get_string('visiblepublic', 'oublog'));
         default:
-            print_error('invalidvisibility', 'oublog');
+            throw new moodle_exception('invalidvisibility', 'oublog');
     }
 }
 
@@ -1992,7 +1992,7 @@ FROM
 WHERE
     p.id= ?", array($post->id));
         if (!$results) {
-            print_error('invalidblogdetails', 'oublog');
+            throw new moodle_exception('invalidblogdetails', 'oublog');
         }
         $post->userid=$results->userid;
         $post->groupid=$results->groupid;
@@ -2588,7 +2588,7 @@ bi.userid=?
 AND bc.userid IS NULL
 ORDER BY (bc.timeapproved - bc.timeposted)", array($userid));
     if (empty($rs)) {
-        print_error('invalidblog', 'oublog');
+        throw new moodle_exception('invalidblog', 'oublog');
     }
     $times = array();
     foreach ($rs as $rec) {
@@ -3212,10 +3212,10 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
             $output .= html_writer::start_tag('body') . "\n";
         }
         if (!$oublog = oublog_get_blog_from_postid($post->id)) {
-            print_error('invalidpost', 'oublog');
+            throw new moodle_exception('invalidpost', 'oublog');
         }
         if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-            print_error('invalidcoursemodule');
+           throw new moodle_exception('invalidcoursemodule');
         }
         // We should override cm in case this is sharedblog.
         if (!empty($this->cmid)) {

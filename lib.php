@@ -123,7 +123,7 @@ function oublog_update_instance($oublog) {
  * permanently delete the instance and any data that depends on it.
  *
  * @param int $id The ID of the module instance
- * @return boolena true on success, false on failure.
+ * @return boolean true on success, false on failure.
  */
 function oublog_delete_instance($oublogid) {
     global $DB, $CFG;
@@ -132,7 +132,7 @@ function oublog_delete_instance($oublogid) {
     }
 
     if ($oublog->global) {
-        print_error('deleteglobalblog', 'oublog');
+        throw new moodle_exception('deleteglobalblog', 'oublog');
     }
 
     if ($instances = $DB->get_records('oublog_instances', array('oublogid'=>$oublog->id))) {

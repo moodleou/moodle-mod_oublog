@@ -63,7 +63,7 @@ if ($oublog->global && $USER->id == $userid) {
     $canview = OUBLOG_MY_PARTICIPATION;
 }
 if ($canview == OUBLOG_NO_PARTICIPATION || $viewonlyown) {
-    print_error('nopermissiontoshow');
+    throw new moodle_exception('nopermissiontoshow');
 }
 $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
 

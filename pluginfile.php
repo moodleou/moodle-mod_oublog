@@ -30,16 +30,16 @@ $relativepath = get_file_argument();
 
 // Relative path must start with '/'.
 if (!$relativepath) {
-    print_error('invalidargorconf');
+    throw new moodle_exception('invalidargorconf');
 } else if ($relativepath[0] != '/') {
-    print_error('pathdoesnotstartslash');
+    throw new moodle_exception('pathdoesnotstartslash');
 }
 
 // Extract relative path components.
 $args = explode('/', ltrim($relativepath, '/'));
 
 if (count($args) == 0) { // Always at least user id.
-    print_error('invalidarguments');
+    throw new moodle_exception('invalidarguments');
 }
 $contextid = (int)array_shift($args);
 $component = array_shift($args);

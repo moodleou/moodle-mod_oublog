@@ -36,7 +36,7 @@ if ($postid == 0 && !empty($username) && $time != 0) {
     // Search DB for an existing post (Personal blog only).
     $redirectto = new moodle_url('/mod/oublog/view.php', array('u' => $username));
     if (!$user = $DB->get_record('user', array('username' => $username), 'id')) {
-        print_error('invaliduser');
+        throw new moodle_exception('invaliduser');
     }
     if (!list($oublog, $oubloginstance) = oublog_get_personal_blog($user->id)) {
         // We redirect on error as system can create blog on access.
@@ -54,15 +54,15 @@ if ($postid == 0 && !empty($username) && $time != 0) {
 // This query based on the post id is so that we can get the blog etc to
 // check permissions before calling oublog_get_post.
 if (!$oublog = oublog_get_blog_from_postid($postid)) {
-    print_error('invalidpost', 'oublog');
+    throw new moodle_exception('invalidpost', 'oublog');
 }
 
 if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
-    print_error('coursemisconf');
+    throw new moodle_exception('coursemisconf');
 }
 
 $url = $cmid ? new moodle_url('/mod/oublog/viewpost.php', array('post' => $postid, 'cmid' => $cmid)) :
@@ -92,12 +92,12 @@ $canmanagecomments = has_capability('mod/oublog:managecomments', $context);
 $canaudit          = has_capability('mod/oublog:audit', $context);
 
 if (!$post = oublog_get_post($postid, $canaudit)) {
-    print_error('invalidpost', 'oublog');
+    throw new moodle_exception('invalidpost', 'oublog');
 }
 
 if (!$oubloginstance = $DB->get_record('oublog_instances',
         array('id' => $post->oubloginstancesid))) {
-    print_error('invalidblog', 'oublog');
+    throw new moodle_exception('invalidblog', 'oublog');
 }
 
 if (!isloggedin() && $post->visibility != OUBLOG_VISIBILITY_PUBLIC) {
@@ -106,7 +106,7 @@ if (!isloggedin() && $post->visibility != OUBLOG_VISIBILITY_PUBLIC) {
 }
 
 if (!oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
-    print_error('accessdenied', 'oublog');
+    throw new moodle_exception('accessdenied', 'oublog');
 }
 
 // Get strings.
@@ -143,7 +143,7 @@ if ($oublog->global) {
     $blogname = format_string($oubloginstance->name);
 
     if (!$oubloguser = $DB->get_record('user', array('id' => $oubloginstance->userid))) {
-        print_error('invaliduserid');
+        throw new moodle_exception('invaliduserid');
     }
 
     $PAGE->navbar->add(fullname($oubloguser), new moodle_url("/user/view.php",

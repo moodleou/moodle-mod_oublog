@@ -43,20 +43,20 @@ if ($id) {
     $modinfo = get_fast_modinfo($course);
     $cm = $modinfo->get_cm($id);
     if ($cm->modname !== 'oublog') {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     if (!$oublog = $DB->get_record('oublog', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 } else {
     // Global personal blog.
     if (!$oublog = $DB->get_record('oublog', array('global' => 1))) {
-        print_error('personalblognotsetup', 'oublog');
+        throw new moodle_exception('personalblognotsetup', 'oublog');
     }
 
     if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     $masterblog = null;
     $cmmaster = null;

@@ -47,16 +47,16 @@ $course = $DB->get_record_select('course',
 $modinfo = get_fast_modinfo($course);
 $cm = $modinfo->get_cm($cmid);
 if ($cm->modname !== 'oublog') {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 if (!$oublog = $DB->get_record('oublog', array('id' => $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 $context = context_module::instance($cm->id);
 oublog_check_view_permissions($oublog, $context, $cm);
 if (empty($CFG->enableportfolios) || !has_capability('mod/oublog:exportpost', $context)) {
-    print_error('accessdenied', 'oublog');
+    throw new moodle_exception('accessdenied', 'oublog');
 }
 
 $oublogoutput = $PAGE->get_renderer('mod_oublog');

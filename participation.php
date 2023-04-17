@@ -53,7 +53,7 @@ require_course_login($course, true, $cm);
 // participation capability check
 $canview = oublog_can_view_participation($course, $oublog, $cm, $groupid);
 if ($canview != OUBLOG_USER_PARTICIPATION) {
-    print_error('nopermissiontoshow');
+    throw new moodle_exception('nopermissiontoshow');
 }
 $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
 

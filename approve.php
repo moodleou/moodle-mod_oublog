@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 // Load comment and check it
 if (!($mcomment = $DB->get_record('oublog_comments_moderated', array('id'=> $mcommentid)))) {
-    print_error('invalidrequest', 'error');
+    throw new moodle_exception('invalidrequest', 'error');
 }
 
 // Use post page for continue on error messages
@@ -51,24 +51,24 @@ $backlink = $CFG->wwwroot . '/mod/oublog/viewpost.php?post=' .
 
 // Load post, blog, etc
 if (!$post = oublog_get_post($mcomment->postid, false)) {
-    print_error('error_unspecified', 'oublog', $backlink, 'A1');
+    throw new moodle_exception('error_unspecified', 'oublog', $backlink, 'A1');
 }
 if (!($oublog = oublog_get_blog_from_postid($post->id))) {
-    print_error('error_unspecified', 'oublog', $backlink, 'A2');
+    throw new moodle_exception('error_unspecified', 'oublog', $backlink, 'A2');
 }
 if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-    print_error('invalidcoursemodule', 'error', $backlink);
+    throw new moodle_exception('invalidcoursemodule', 'error', $backlink);
 }
 if (!$course = $DB->get_record("course", array("id"=>$cm->course))) {
-    print_error('coursemisconf', 'error', $backlink);
+    throw new moodle_exception('coursemisconf', 'error', $backlink);
 }
 
 // Check state
 if ($mcomment->approval) {
-    print_error('error_alreadyapproved', 'oublog', $backlink);
+   throw new moodle_exception('error_alreadyapproved', 'oublog', $backlink);
 }
 if ($email && $key !== $mcomment->secretkey) {
-    print_error('error_wrongkey', 'oublog', $backlink);
+    throw new moodle_exception('error_wrongkey', 'oublog', $backlink);
 }
 
 // Require login, it to be your own post, and commenting permission
@@ -78,18 +78,18 @@ oublog_check_view_permissions($oublog, $context, $cm);
 if ($USER->id !== $post->userid ||
         !oublog_can_view_post($post, $USER, $context, $cm, $oublog) ||
         !oublog_can_comment($cm, $oublog, $post)) {
-    print_error('accessdenied', 'oublog', $backlink);
+    throw new moodle_exception('accessdenied', 'oublog', $backlink);
 }
 
 // The post must (still) allow public comments
 if ($post->allowcomments < OUBLOG_COMMENTS_ALLOWPUBLIC ||
     $oublog->allowcomments < OUBLOG_COMMENTS_ALLOWPUBLIC) {
-    print_error('error_moderatednotallowed', 'oublog', $backlink);
+    throw new moodle_exception('error_moderatednotallowed', 'oublog', $backlink);
 }
 
 // OK they are actually allowed to approve / reject this
 if (!$approvedcomment = oublog_approve_comment($mcomment, $approve)) {
-    print_error('error_unspecified', 'oublog', 'A5', $backlink);
+    throw new moodle_exception('error_unspecified', 'oublog', 'A5', $backlink);
 }
 
 // Redirect back to view post

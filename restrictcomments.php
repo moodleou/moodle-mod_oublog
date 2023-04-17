@@ -25,22 +25,22 @@ $postid = optional_param('post', 0, PARAM_INT);
 if ($postid) {
     $isblog = false;
     if (!$oublog = oublog_get_blog_from_postid($postid)) {
-        print_error('invalidrequest');
+        throw new moodle_exception('invalidrequest');
     }
 } else {
     $blogid = required_param('blog', PARAM_INT);
     $isblog = true;
     if (!$oublog = $DB->get_record('oublog', array('id'=>$blogid))) {
-        print_error('invalidrequest');
+        throw new moodle_exception('invalidrequest');
     }
 }
 
 // Get other details and check access
 if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 if (!$course = $DB->get_record("course", array("id"=>$cm->course))) {
-    print_error('coursemisconf');
+    throw new moodle_exception('coursemisconf');
 }
 
 // Require login and access to blog
@@ -50,7 +50,7 @@ oublog_check_view_permissions($oublog, $context, $cm);
 
 // You must be able to post to blog (if blog = site blog, then your one)
 if (!oublog_can_post($oublog, $USER->id, $cm)) {
-    print_error('accessdenied', 'oublog');
+    throw new moodle_exception('accessdenied', 'oublog');
 }
 
 // If there was a specified post, it must be yours
@@ -64,7 +64,7 @@ FROM
 WHERE
     bp.id = ?", array($postid));
     if ($userid !== $USER->id) {
-        print_error('accessdenied', 'oublog');
+        throw new moodle_exception('accessdenied', 'oublog');
     }
 }
 
@@ -92,7 +92,7 @@ WHERE
     bi.userid = ?
     AND bp.allowcomments >= " . OUBLOG_COMMENTS_ALLOWPUBLIC . "
     AND $restriction)", array_merge(array($USER->id), $rparam))) {
-        print_error('error_unspecified', 'oublog', 'RC3');
+        throw new moodle_exception('error_unspecified', 'oublog', 'RC3');
     }
 
     // Redirect

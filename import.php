@@ -40,11 +40,11 @@ $course = $DB->get_record_select('course',
 $modinfo = get_fast_modinfo($course);
 $cm = $modinfo->get_cm($id);
 if ($cm->modname !== 'oublog') {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 if (!$oublog = $DB->get_record('oublog', array('id' => $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 $context = context_module::instance($cm->id);
@@ -75,7 +75,7 @@ $currentblog = $childoublog ? $childoublog : $oublog;
 if (!$currentblog->allowimport ||
         (!$currentblog->global && $currentblog->individual == OUBLOG_NO_INDIVIDUAL_BLOGS)) {
     // Must have import enabled. Individual blog mode only.
-    print_error('import_notallowed', 'oublog', null, $blogname);
+    throw new moodle_exception('import_notallowed', 'oublog', null, $blogname);
 }
 // Check if group mode set - need to check user is in selected group etc.
 $groupmode = oublog_get_activity_groupmode($childcm ? $childcm : $cm, $childcourse ? $childcourse : $course);
@@ -85,7 +85,7 @@ if ($groupmode != NOGROUPS) {
     $ingroup = groups_is_member($currentgroup);
     if ($currentblog->individual != OUBLOG_NO_INDIVIDUAL_BLOGS && ($currentgroup && !$ingroup)) {
         // Must be group memeber for individual blog with group mode on.
-        print_error('import_notallowed', 'oublog', null, $blogname);
+        throw new moodle_exception('import_notallowed', 'oublog', null, $blogname);
     }
 }
 
@@ -417,7 +417,7 @@ if ($step == 0) {
     }
 
     if (empty($posts)) {
-        print_error('import_step2_none', 'oublog');
+        throw new moodle_exception('import_step2_none', 'oublog');
     }
 
     // Get/create user blog instance for this activity.
@@ -426,7 +426,7 @@ if ($step == 0) {
     } else {
         if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid' => $oublog->id, 'userid' => $USER->id))) {
             if (!$oubloginstance = oublog_add_bloginstance($oublog->id, $USER->id)) {
-                print_error('Failed to create blog instance');
+                throw new moodle_exception('Failed to create blog instance');
             }
             $oubloginstance = (object) array('id' => $oubloginstance);
         }

@@ -32,21 +32,21 @@ $cmid = optional_param('cmid', null, PARAM_INT);
 
 if ($blog) {
     if (!$oublog = $DB->get_record("oublog", array('id' => $blog))) {
-        print_error('invalidblog', 'oublog');
+        throw new moodle_exception('invalidblog', 'oublog');
     }
     if (!$cm = get_coursemodule_from_instance('oublog', $blog)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     if (!$course = $DB->get_record("course", array('id' => $oublog->course))) {
-        print_error('coursemisconf');
+        throw new moodle_exception('coursemisconf');
     }
 }
 if ($postid) {
     if (!$post = $DB->get_record('oublog_posts', array('id' => $postid))) {
-        print_error('invalidpost', 'oublog');
+        throw new moodle_exception('invalidpost', 'oublog');
     }
     if (!$oubloginstance = $DB->get_record('oublog_instances', array('id' => $post->oubloginstancesid))) {
-        print_error('invalidblog', 'oublog');
+        throw new moodle_exception('invalidblog', 'oublog');
     }
 }
 $url = new moodle_url('/mod/oublog/editpost.php', array('blog' => $blog, 'post' => $postid));
@@ -82,7 +82,7 @@ if ($correctglobal) {
     if (!isset($oubloginstance)) {
         $oubloguser = $USER;
         if (!$oubloginstance = $DB->get_record('oublog_instances', array('oublogid' => $oublog->id, 'userid' => $USER->id))) {
-            print_error('invalidblog', 'oublog');
+            throw new moodle_exception('invalidblog', 'oublog');
         }
     } else {
         $oubloguser = $DB->get_record('user', array('id' => $oubloginstance->userid));
@@ -101,7 +101,7 @@ if ($correctglobal) {
 // If editing a post, must be your post or you have manageposts.
 $canmanage = has_capability('mod/oublog:manageposts', $context);
 if (isset($post) && $USER->id != $oubloginstance->userid && !$canmanage) {
-    print_error('accessdenied', 'oublog');
+    throw new moodle_exception('accessdenied', 'oublog');
 }
 
 // Must be able to post in order to post OR edit a post. This is so that if
@@ -112,7 +112,7 @@ if (!(
     oublog_can_post($childoublog ? $childoublog : $oublog,
             isset($oubloginstance) ? $oubloginstance->userid : 0, $childcm ? $childcm : $cm) ||
             (isset($post) && $canmanage))) {
-    print_error('accessdenied', 'oublog');
+    throw new moodle_exception('accessdenied', 'oublog');
 }
 
 // Get strings.
@@ -255,13 +255,13 @@ if (!$frmpost = $mform->get_data()) {
             $post->groupid = 0;
         } else {
             if (!$currentgroup && $groupmode) {
-                print_error('notaddpostnogroup', 'oublog');
+                throw new moodle_exception('notaddpostnogroup', 'oublog');
             }
             $post->groupid = $currentgroup;
         }
 
         if (!oublog_add_post($post, $cm, $oublog, $course)) {
-            print_error('notaddpost', 'oublog');
+            throw new moodle_exception('notaddpost', 'oublog');
         }
 
         // Log add post event.

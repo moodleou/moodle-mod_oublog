@@ -28,13 +28,13 @@ $down = required_param('down', PARAM_INT);
 $returnurl = required_param('returnurl', PARAM_RAW);
 
 if (!$link = $DB->get_record('oublog_links', array('id'=>$link))) {
-    print_error('invalidlink', 'oublog');
+    throw new moodle_exception('invalidlink', 'oublog');
 }
 if (!$oublog = $DB->get_record("oublog", array("id"=>$link->oublogid))) {
-    print_error('invalidblog', 'oublog');
+    throw new moodle_exception('invalidblog', 'oublog');
 }
 if (!$cm = get_coursemodule_from_instance('oublog', $link->oublogid)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 require_sesskey();
