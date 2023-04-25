@@ -68,23 +68,23 @@ if (!empty($childdata)) {
 $correctglobal = isset($childoublog->global) ? $childoublog->global : $oublog->global;
 $post->userid=$oubloginstance->userid; // oublog_can_view_post needs this
 if (!oublog_can_view_post($post, $USER, $context, $cm, $oublog, $childcm, $childoublog)) {
-    print_error('accessdenied', 'oublog');
+    throw new moodle_exception('accessdenied', 'oublog');
 }
 
 oublog_get_activity_groupmode($childcm ? $childcm : $cm, $childcourse ? $childcourse : $course);
 if (!oublog_can_comment($childcm ? $childcm : $cm, $childoublog ? $childoublog : $oublog, $post)) {
-    print_error('accessdenied', 'oublog');
+    throw new moodle_exception('accessdenied', 'oublog');
 }
 
 if ($oublog->allowcomments == OUBLOG_COMMENTS_PREVENT || $post->allowcomments == OUBLOG_COMMENTS_PREVENT ||
     (!empty($childoublog->allowcomments) && $childoublog->allowcomments == OUBLOG_COMMENTS_PREVENT)) {
-    print_error('commentsnotallowed', 'oublog');
+    throw new moodle_exception('commentsnotallowed', 'oublog');
 }
 $viewurl = !empty($referurl) ? $referurl : new moodle_url('/mod/oublog/viewpost.php', array('post' => $post->id));
 if ($correctglobal) {
     $blogtype = 'personal';
     if (!$oubloguser = $DB->get_record('user', array('id'=>$oubloginstance->userid))) {
-        print_error('invaliduserid');
+        throw new moodle_exception('invaliduserid');
     }
 } else {
     $blogtype = 'course';
@@ -160,7 +160,7 @@ if (!$comment = $mform->get_data()) {
     if ($moderated) {
         // Check IP address
         if (oublog_too_many_comments_from_ip()) {
-            print_error('error_toomanycomments', 'oublog');
+            throw new moodle_exception('error_toomanycomments', 'oublog');
         }
 
         // Set the confirmed cookie if they haven't got it yet
@@ -170,7 +170,7 @@ if (!$comment = $mform->get_data()) {
         }
 
         if (!oublog_add_comment_moderated($oublog, $oubloginstance, $post, $comment)) {
-            print_error('couldnotaddcomment', 'oublog');
+            throw new moodle_exception('couldnotaddcomment', 'oublog');
         }
         $approvaltime = oublog_get_typical_approval_time($post->userid);
 
@@ -188,7 +188,7 @@ if (!$comment = $mform->get_data()) {
     $comment->userid = $USER->id;
 
     if (!oublog_add_comment($course, $cm, $oublog, $comment)) {
-        print_error('couldnotaddcomment', 'oublog');
+        throw new moodle_exception('couldnotaddcomment', 'oublog');
     }
 
     // Log add comment event.

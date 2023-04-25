@@ -170,7 +170,7 @@ function oublog_delete_instance($oublogid) {
         $moduleid=$DB->get_field('modules', 'id', array('name'=>'oublog'));
         $cm=$DB->get_record('course_modules', array('module'=>$moduleid, 'instance'=>$oublog->id));
         if (!$cm) {
-            print_error('invalidcoursemodule');
+            throw new moodle_exception('invalidcoursemodule');
         }
         local_ousearch_document::delete_module_instance_data($cm);
     }
