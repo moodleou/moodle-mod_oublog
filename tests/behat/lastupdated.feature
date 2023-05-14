@@ -83,14 +83,14 @@ Feature: Show last updated information on OU blog activity link
     And I log in as "student1"
     And I am on "Course 1" course homepage
     # Student should see both indicators.
-    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
     Given I log out
     And I log in as "student2"
     And I am on "Course 1" course homepage
     # Student should see only visible group indicators.
-    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
 
   Scenario: Indivdual blogs
     Given I log in as "admin"
@@ -125,8 +125,8 @@ Feature: Show last updated information on OU blog activity link
     And I log in as "student1"
     And I am on "Course 1" course homepage
     # Student should see visible indicator only.
-    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
 
   Scenario: Mixed blogs
     Given I log in as "admin"
@@ -189,18 +189,18 @@ Feature: Show last updated information on OU blog activity link
       | Message | P1 |
     And I press "Add post"
     When I am on "Course 1" course homepage
-    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][4]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][4]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
     And I log out
     Given I log in as "student1"
     And I am on "Course 1" course homepage
     # Student should see visible indicator only.
-    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][4]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][4]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
     Given I follow "B.VISG"
     And I press "New blog post"
     And I set the following fields to these values:
@@ -208,12 +208,12 @@ Feature: Show last updated information on OU blog activity link
       | Message | P3 |
     And I press "Add post"
     When I am on "Course 1" course homepage
-    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
     And I log out
     Given I log in as "student2"
     And I am on "Course 1" course homepage
     # Student should see visible group+individuals only.
-    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
-    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog  '][4]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist
+    Then "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][1]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][2]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][3]//span[@class='lastmodtext oubloglmt']" "xpath_element" should not exist
+    And "/descendant::li[@class='activity activity-wrapper oublog modtype_oublog   '][4]//span[@class='lastmodtext oubloglmt']" "xpath_element" should exist

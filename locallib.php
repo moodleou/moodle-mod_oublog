@@ -4566,7 +4566,8 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer, $course, $
     if (!$participation->posts) {
         $content .= html_writer::tag('p', get_string('nouserposts', 'oublog'));
     } else {
-        $percent = $stat = null;
+        $percent = 0;
+        $stat = null;
         $content .= html_writer::tag('h3', get_string('numberposts', 'oublog', $participation->numposts));
         foreach ($participation->posts as $post) {
             if ($postedcount >= ($postshow - $commenttotal)) {
@@ -4593,7 +4594,8 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer, $course, $
     if (!$participation->comments) {
         $content .= html_writer::tag('p', get_string('nousercomments', 'oublog'));
     } else {
-        $percent = $stat = null;// Removing all stats div.
+        $percent = 0;
+        $stat = null;// Removing all stats div.
         $content .= html_writer::tag('h3', get_string('numbercomments', 'oublog', $participation->numcomments));
         foreach ($participation->comments as $comment) {
             if (($commentedcount + $postedcount) >= $postshow ) {
@@ -4700,7 +4702,8 @@ function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $al
         }
         // For visible individual blogs show post activity also when no individual selected.
     } else {
-        $percent = $stat = null;
+        $percent = 0;
+        $stat = null;
         $content .= html_writer::tag('p', get_string('recentposts', 'oublog'));
         foreach ($participation->posts as $post) {
             // Post user object required for oublog_statsinfo.
@@ -4781,7 +4784,8 @@ function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $al
     if (!$participation->comments && $getcomments) {
         $content .= html_writer::tag('p', get_string('nousercomments', 'oublog'));
     } else {
-        $percent = $stat = null;// Removing all stats div.
+        $percent = 0;
+        $stat = null;// Removing all stats div.
         if ($blogtype || $getcomments) {
             $content .= html_writer::tag('p', get_string('recentcomments', 'oublog'));
         }
@@ -4876,8 +4880,10 @@ function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $al
                 // We output just post.
                 $label .= html_writer::div(oublog_date($comment->timeposted) , 'oublogstats_commentposts_blogname');
             }
-            $statinfo = new oublog_statsinfo($commentuser, $percent, $stat, $url, $label);
-            $content .= $renderer->render($statinfo);
+            if ($commentuser->id > 0) {
+                $statinfo = new oublog_statsinfo($commentuser, $percent, $stat, $url, $label);
+                $content .= $renderer->render($statinfo);
+            }
             $commentedcount++;
         }
     }
