@@ -401,7 +401,7 @@ class mod_oublog_external extends external_api {
             return array();
         }
         $user = $userobj->id;
-        $selected = explode(',', $selected);
+        $selected = explode(',', $selected ?? '');
         if ($selected[0] == "") {
             $return = oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments, $user, true);
         } else {
