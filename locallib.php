@@ -796,7 +796,7 @@ function oublog_get_posts($oublog, $context, $offset, $cm, $groupid, $individual
             FROM {oublog_comments} c
             LEFT JOIN {user} u ON c.userid = u.id
             WHERE c.postid IN (".implode(",", $postids).") AND c.deletedby IS NULL
-            ORDER BY c.timeposted ASC ";
+            ORDER BY c.timeposted ASC, c.id ASC ";
 
     $rs = $DB->get_recordset_sql($sql);
     foreach ($rs as $comment) {
@@ -890,7 +890,7 @@ function oublog_get_post($postid, $canaudit=false) {
             $sql .= "AND c.deletedby IS NULL ";
         }
 
-        $sql .= "ORDER BY c.timeposted ASC ";
+        $sql .= "ORDER BY c.timeposted ASC, c.id ASC ";
 
         $rs = $DB->get_recordset_sql($sql, array($postid));
         foreach ($rs as $comment) {
