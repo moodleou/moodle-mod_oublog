@@ -87,17 +87,6 @@ class comment_approved extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/oublog/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/oublog/'));
-        return array($this->courseid, 'oublog', 'approve comment', $logurl, $this->other['oublogid'], $this->contextinstanceid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception

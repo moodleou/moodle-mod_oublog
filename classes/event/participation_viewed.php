@@ -76,17 +76,6 @@ class participation_viewed extends \core\event\course_module_viewed {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/oublog/.
-        return array($this->courseid, 'oublog', 'view', $this->other['logurl'],
-                $this->objectid, $this->contextinstanceid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception
