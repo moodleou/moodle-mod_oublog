@@ -55,7 +55,7 @@ class mod_oublog_external extends external_api {
             return \local_oudataload\users::get_webservice_identifier_parameter();
         } else {
             return new external_single_structure([
-                'username' => new \external_value(PARAM_ALPHANUM, 'Moodle username'),
+                'username' => new external_value(PARAM_ALPHANUM, 'Moodle username'),
             ]);
         }
     }
