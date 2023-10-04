@@ -75,7 +75,7 @@ class externallib_test extends \oublog_test_lib
 
         $userdetails = ['email' => 'user@example.com', 'username' => 'abc123'];
         if (mod_oublog_external::is_ou()) {
-            $userdetails['auth'] = 'sams';
+            $userdetails['auth'] = 'nologin';
         }
         $user = $this->getDataGenerator()->create_user($userdetails);
         $this->setUser($user);
