@@ -71,7 +71,11 @@ if (isset($bloginstancesid) && $bloginstancesid!='all') {
     $blog         = $DB->get_record('oublog', array('id'=>$bloginstance->oublogid));
 }
 if (!isset($blog->id) || !$cm = get_coursemodule_from_instance('oublog', $blog->id)) {
-    throw new moodle_exception('invalidcoursemodule');
+    if (file_exists($CFG->dirroot . '/local/error/http-error.php')) {
+        redirect(new moodle_url('/local/error/http-error.php', ['test' => '404']));
+    } else {
+        throw new moodle_exception('invalidcoursemodule');
+    }
 }
 // Get child blog.
 if (!empty($childblogid)) {
