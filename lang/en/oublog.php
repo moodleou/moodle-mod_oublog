@@ -247,6 +247,7 @@ $string['guestblog'] = 'If you have an account on the system, please
 <a href=\'{$a}\'>log in for full access</a>.';
 $string['noposts'] = 'There are no visible posts in this {$a}.';
 $string['nopostsnotags'] = 'There are no visible posts in this {$a->blog}, for this tag {$a->tag}.';
+$string['returntolabel'] = 'Return to ';
 
 // Errors.
 $string['accessdenied'] = 'Sorry: you do not have access to view this page.';
