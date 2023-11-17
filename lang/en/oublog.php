@@ -654,6 +654,7 @@ $string['userrating'] = 'Use ratings';
 $string['share'] = 'Share post';
 $string['tweet'] = 'Tweet';
 $string['oublogcrontask'] = 'OU blog maintenance jobs';
+$string['oublogsettingstask'] = 'OU Blog settings task';
 
 $string['restricttags'] = 'Tag options';
 $string['restricttags_req'] = 'Must enter tags';
