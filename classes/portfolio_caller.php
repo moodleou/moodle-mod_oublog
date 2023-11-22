@@ -33,6 +33,7 @@ class portfolio_caller extends \portfolio_module_caller_base {
     protected $oublogid;
     protected $cmid;
     protected $cmsharedblogid;
+    protected $oubloguserid;
 
     private $posts;
     protected $files = array();
