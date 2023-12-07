@@ -26,7 +26,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once("$CFG->libdir/externallib.php");
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
+
 require_once("$CFG->dirroot/mod/oublog/locallib.php");
 
 class mod_oublog_external extends external_api {
@@ -50,7 +55,7 @@ class mod_oublog_external extends external_api {
             return \local_oudataload\users::get_webservice_identifier_parameter();
         } else {
             return new external_single_structure([
-                'username' => new \external_value(PARAM_ALPHANUM, 'Moodle username'),
+                'username' => new external_value(PARAM_ALPHANUM, 'Moodle username'),
             ]);
         }
     }

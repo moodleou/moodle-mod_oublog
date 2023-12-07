@@ -164,14 +164,13 @@ function oublog_delete_instance($oublogid) {
     // instances
     $DB->delete_records('oublog_instances', array('oublogid'=>$oublog->id));
 
+    if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
+        throw new moodle_exception('invalidcoursemodule');
+    }
+
     // Fulltext search data
     require_once(dirname(__FILE__).'/locallib.php');
     if (oublog_search_installed()) {
-        $moduleid=$DB->get_field('modules', 'id', array('name'=>'oublog'));
-        $cm=$DB->get_record('course_modules', array('module'=>$moduleid, 'instance'=>$oublog->id));
-        if (!$cm) {
-            throw new moodle_exception('invalidcoursemodule');
-        }
         local_ousearch_document::delete_module_instance_data($cm);
     }
 
