@@ -1925,6 +1925,27 @@ class oublog_locallib_test extends oublog_test_lib {
     }
 
     /**
+     * Checks blog view denied on personal blog.
+     * @return void
+     */
+    public function test_oublog_check_view_permissions_personal_restrict() {
+        global $USER;
+        list($oublog, $oubloginstance) = oublog_get_personal_blog($USER->id);
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+        $this->assertNull(oublog_check_view_permissions($oublog, context_module::instance($cm->id), $cm));
+
+        $roleid = $this->getDataGenerator()->create_role(['shortname' => 'restrict']);
+        assign_capability('mod/oublog:viewpersonal', CAP_PROHIBIT, $roleid, \context_system::instance());
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->role_assign($roleid, $user->id);
+        $this->setUser($user);
+        list($oublog, $oubloginstance) = oublog_get_personal_blog($USER->id);
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+        $this->expectErrorMessage('Sorry: you do not have access to view this page.');
+        oublog_check_view_permissions($oublog, context_module::instance($cm->id), $cm);
+}
+
+    /**
      * Creates an action event.
      *
      * @param int $courseid The course id.
