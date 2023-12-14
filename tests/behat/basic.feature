@@ -682,7 +682,7 @@ Feature: Test Post and Comment on OUBlog entry
     And I reload the page
 
     Given I am on "Course 1" course homepage
-    And I follow "Test oublog basics"
+    And I am on the "Test oublog basics" "oublog activity" page
 
     # Go to participation list page.
     And I click on "Participation" "text" in the ".oublog-accordion-view" "css_element"
@@ -703,7 +703,7 @@ Feature: Test Post and Comment on OUBlog entry
     Then I should not see "Selection end date cannot be earlier than the start date"
 
     Given I am on "Course 1" course homepage
-    And I follow "Test oublog basics"
+    And I am on the "Test oublog basics" "oublog activity" page
 
     # Go to participation page.
     Given I press "Participation by user"
