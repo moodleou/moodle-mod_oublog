@@ -3063,6 +3063,7 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
     protected $oubloginstance;
     protected $oublog;
     protected $modcontext;
+    protected $posts = [];
 
     private $post;
     private $keyedfiles = array(); // keyed on entry
