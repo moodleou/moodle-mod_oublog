@@ -690,11 +690,9 @@ Feature: Test Post and Comment on OUBlog entry
     # Start date.
     And I click on "#id_start_enabled" "css_element"
     And I set the field "id_start_day" to "15"
-    And I set the field "id_start_year" to "2023"
     # Set an invalid end date.
     And I click on "#id_end_enabled" "css_element"
     And I set the field "id_end_day" to "10"
-    And I set the field "id_end_year" to "2023"
     When I click on "Update" "button"
     Then I should see "Selection end date cannot be earlier than the start date"
     # Set a valid end date.
@@ -710,11 +708,9 @@ Feature: Test Post and Comment on OUBlog entry
     # Start date.
     And I click on "#id_start_enabled" "css_element"
     And I set the field "id_start_day" to "15"
-    And I set the field "id_start_year" to "2023"
     # Set an invalid end date.
     And I click on "#id_end_enabled" "css_element"
     And I set the field "id_end_day" to "10"
-    And I set the field "id_end_year" to "2023"
     When I click on "Update" "button"
     Then I should see "Selection end date cannot be earlier than the start date"
     # Set a valid end date.
