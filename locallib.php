@@ -158,6 +158,12 @@ function oublog_check_view_permissions($oublog, $context, $cm=null) {
             $PAGE->set_course($oublogcourse);
             $PAGE->set_cm($cm, $oublogcourse);
             $PAGE->set_pagelayout('incourse');
+            if ($oublog->global && isloggedin()) {
+                // Personal blog: Check view permission (if not logged in will see public posts).
+                if (!has_capability($capability, $context)) {
+                    throw new moodle_exception('accessdenied', 'oublog');
+                }
+            }
             return;
 
         case OUBLOG_VISIBILITY_LOGGEDINUSER:
