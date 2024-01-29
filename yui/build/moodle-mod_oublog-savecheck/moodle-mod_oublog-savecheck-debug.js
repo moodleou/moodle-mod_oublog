@@ -31,12 +31,15 @@ M.mod_oublog.savecheck = {
         // Trap edit saving and test that the server connection is available.
         var btns = Y.all('#id_submitbutton');
         btns.on('click', function(e) {
-            function savefail() {
+            function savefail(stringname, info) {
                 // Save failed, alert network or session issue.
+                var content = M.util.get_string('savefailtext', 'oublog',
+                    M.util.get_string(stringname, 'oublog'));
+                content += '[' + info + ']';
                 btns.set('disabled', true);
                 var panel = new M.core.alert({
                     title : M.util.get_string('savefailtitle', 'oublog'),
-                    message : M.util.get_string('savefailnetwork', 'oublog'),
+                    message : content,
                     render : true,
                     plugins : [ Y.Plugin.Drag ],
                     modal : true
@@ -46,7 +49,7 @@ M.mod_oublog.savecheck = {
                 // Trap cancel and make it a GET - so works with login.
                 var cancel = Y.one('#id_cancel');
                 cancel.on('click', function(e) {
-                    var form = Y.one('.region-content #mform1');
+                    var form = Y.one('.region-content .mform');
                     var text = form.one('#fitem_id_message');
                     var attach = form.one('#fitem_id_attachments');
                     text.remove();
@@ -56,20 +59,24 @@ M.mod_oublog.savecheck = {
             }
             function checksave(transactionid, response) {
                 // Check response OK.
-                if (response.responseText !== 'ok') {
+                if (response.responseText.search('ok') === -1) {
                     // Send save failed due to login/session error.
-                    savefail();
+                    savefail('savefailsession', response.responseText);
                 }
+            }
+            function checkfailure(transactionid, response, args) {
+                // Send save failed due to response error/timeout.
+                savefail('savefailnetwork', response.statusText);
             }
             var cfg = {
                 method : 'POST',
                 data : 'sesskey=' + M.cfg.sesskey + '&contextid=' + contextid,
                 on : {
                     success : checksave,
-                    failure : savefail
+                    failure : checkfailure
                 },
                 sync : true,// Wait for result so we can cancel submit.
-                timeout : 10000
+                timeout : 30000
             };
             Y.io('confirmloggedin.php', cfg);
         });
