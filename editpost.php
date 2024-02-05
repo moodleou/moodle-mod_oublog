@@ -214,7 +214,9 @@ if (!$frmpost = $mform->get_data()) {
 
     // Check the network connection on exiting the update page.
     $PAGE->requires->strings_for_js(array('savefailtitle', 'savefailnetwork', 'savefailsession', 'savefailtext'), 'oublog');
-    $PAGE->requires->yui_module('moodle-mod_oublog-savecheck', 'M.mod_oublog.savecheck.init', array($context->id));
+    if (get_config('mod_oublog', 'savecheck')) {
+        $PAGE->requires->yui_module('moodle-mod_oublog-savecheck', 'M.mod_oublog.savecheck.init', array($context->id));
+    }
 
     echo $OUTPUT->footer();
 

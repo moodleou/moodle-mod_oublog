@@ -52,3 +52,7 @@ $settings->add(new admin_setting_configtext('mod_oublog/remoteserver',
 $settings->add(new admin_setting_configtext('mod_oublog/remotetoken',
         get_string('remotetoken', 'oublog'),
         get_string('configremotetoken', 'oublog'), '', PARAM_ALPHANUM));
+
+$settings->add(new admin_setting_configcheckbox('mod_oublog/savecheck',
+        get_string('savecheck', 'oublog'),
+        get_string('savecheck_desc', 'oublog'), 1));

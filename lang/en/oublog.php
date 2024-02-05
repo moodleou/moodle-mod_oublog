@@ -745,3 +745,6 @@ $string['export:header_tags'] = 'Tags';
 $string['export:header_author'] = 'Author';
 $string['tagshowmore'] = 'Show more ...';
 $string['tagshowless'] = 'Show less ...';
+
+$string['savecheck'] = 'Enable save check';
+$string['savecheck_desc'] = 'Enable checking of session etc on submitting the post form.';
