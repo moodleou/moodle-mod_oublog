@@ -1444,14 +1444,14 @@ class mod_oublog_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Include the js file
-     * @param string $name
-     * @param int $default Default tab to open
+     * Include the accordion js file.
+     *
+     * @param string $name Name of the accordion.
+     * @param int $default Default tab to open.
+     * @return void
      */
-    public function include_accordion_js($name, $default = 1) {
-        global $PAGE;
-        $PAGE->requires->yui_module('moodle-mod_oublog-accordion', 'M.mod_oublog.accordion.init',
-                array($name, $default));
+    public function include_accordion_js(string $name, int $default = 1): void {
+        $this->page->requires->js_call_amd('mod_oublog/accordion', 'init', [$name, $default]);
     }
 
     public function render_stats_view($name, $maintitle, $content, $subtitle = '', $info = '', $form = null, $ajax = false) {
