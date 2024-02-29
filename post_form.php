@@ -64,7 +64,7 @@ class mod_oublog_post_form extends moodleform {
         $mform->addElement('editor', 'message', get_string('message', 'oublog'),
                 array('cols' => 50, 'rows' => 30),
                 array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $maxbytes));
-        $mform->addRule('message', get_string('required'), 'required', null, 'client');
+        $mform->addRule('message', null, 'required', null, 'client');
 
         if ($this->restricttags) {
             $mform->addElement('static', 'restricttagswarning', '', get_string('restricttagslist', 'oublog', implode(',', $atags)));
@@ -77,7 +77,7 @@ class mod_oublog_post_form extends moodleform {
             $mform->setDefault('tags', $tagslist);
         }
         if ($this->requiretags) {
-            $mform->addRule('tags', get_string('required'), 'required', null, 'client');
+            $mform->addRule('tags', null, 'required', null, 'client');
         }
 
         $options = array();
