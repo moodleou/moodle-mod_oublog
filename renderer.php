@@ -1438,7 +1438,6 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $out .= html_writer::end_tag('ul');
 
         $default = get_user_preferences("oublog_accordion_{$name}_open", $default);
-        user_preference_allow_ajax_update("oublog_accordion_{$name}_open", PARAM_INT);
         $this->include_accordion_js($name, $default);
 
         return $out;
