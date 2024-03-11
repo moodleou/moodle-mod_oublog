@@ -1687,7 +1687,7 @@ EOF;
             $idstring = 'user';
         }
         $url = new moodle_url('/mod/oublog/view.php', array($idstring => $id));
-        return html_writer::tag('div', link_arrow_left($label, $url), array('id' => 'oublog-arrowback'));
+        return html_writer::tag('div', link_arrow_left(html_writer::span(get_string('returntolabel', 'oublog'), 'sr-only') . $label, $url), array('id' => 'oublog-arrowback'));
     }
 
     /**

@@ -69,6 +69,9 @@ $context = context_module::instance($cm->id);
 $PAGE->set_pagelayout('incourse');
 require_course_login($course, true, $cm);
 
+$start = optional_param('from', null, PARAM_INT);
+$end = optional_param('to', null, PARAM_INT);
+
 // Create time filter options form.
 $customdata = array(
         'cmid' => $cm->id,
@@ -78,6 +81,12 @@ $customdata = array(
         'params' => array( 'tab' => $tab)
 );
 $timefilter = new oublog_participation_timefilter_form(null, $customdata);
+if ($start) {
+    $timefilter->set_data(array('start' => $start));
+}
+if ($end) {
+    $timefilter->set_data(array('end' => $end));
+}
 
 $start = $end = 0;
 // If data has been received from this form.
@@ -88,17 +97,8 @@ if ($submitted = $timefilter->get_data()) {
     if ($submitted->end) {
         $end = strtotime('23:59:59', $submitted->end);
     }
-} else {
-    // Recieved via post back for tab useage.
-    if ($start = optional_param('start', null, PARAM_INT)) {
-        $timefilter->set_data(array('start' => $start));
-        $start = strtotime('00:00:00', $start);
-    }
-    if ($end = optional_param('end', null, PARAM_INT)) {
-        $timefilter->set_data(array('end' => $end));
-        $end = strtotime('23:59:59', $end);
-    }
 }
+
 // Customise data sought based on current tab.
 switch($tab) {
     case 1:
@@ -110,7 +110,7 @@ switch($tab) {
         break;
 }
 
-$url->params(array('individual' => $curindividual, 'start' => $start, 'end' => $end, 'group' => $groupid));
+$url->params(array('individual' => $curindividual, 'from' => $start, 'to' => $end, 'group' => $groupid));
 $PAGE->set_url($url);
 // Add extra navigation link for users who can see all participation.
 $PAGE->navbar->add(get_string('viewallparticipation', 'oublog'));
@@ -129,7 +129,7 @@ if ($oublog->individual) {
         $curindividual = $individualdetails->activeindividual;
         $oublog->individual = $individualdetails->mode;
         echo $individualdetails->display;
-        $url->params(array('individual' => $curindividual, 'start' => $start, 'end' => $end));
+        $url->params(array('individual' => $curindividual, 'from' => $start, 'to' => $end));
         $PAGE->set_url($url);
     }
 }
@@ -157,7 +157,7 @@ if ($start && $end) {
 $participation = oublog_get_participation_details($oublog, $groupid, $curindividual,
         $start, $end, $page, $getposts, $getcomments, $limitfrom, $limitnum, $masterblog);
 
-$url->params(array('individual' => $curindividual, 'start' => $start, 'end' => $end));
+$url->params(array('individual' => $curindividual, 'from' => $start, 'to' => $end));
 echo html_writer::tag('h2', $info, array('class' => 'oublog-post-title'));
 $timefilter->display();
 
@@ -190,7 +190,7 @@ if (!empty($warning)) {
 
 $pagingurl = new moodle_url('/mod/oublog/participationlist.php',
         array('id' => $cm->id, 'individual' => $curindividual,
-        'page' => $page, 'start' => $start, 'end' => $end, 'tab' => $tab, 'group' => $groupid));
+        'page' => $page, 'from' => $start, 'to' => $end, 'tab' => $tab, 'group' => $groupid));
 
 echo $oublogoutput->render_all_users_participation_table($cm, $course, $oublog,
         $page, $limitnum, $participation, $getposts, $getcomments,

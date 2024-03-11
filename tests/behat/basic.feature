@@ -673,6 +673,51 @@ Feature: Test Post and Comment on OUBlog entry
     Then I should see "2 comments"
     And I log out
 
+  @javascript
+  Scenario: Check date validation for user participation
+    Given I log in as "teacher1"
+    And I create "1" sample posts for blog with id "oublog1"
+    And I create "1" sample comments for blog with id "oublog1"
+    And I wait "2" seconds
+    And I reload the page
+
+    Given I am on "Course 1" course homepage
+    And I am on the "Test oublog basics" "oublog activity" page
+
+    # Go to participation list page.
+    And I click on "Participation" "text" in the ".oublog-accordion-view" "css_element"
+    And I click on "View all participation" "link" in the ".oublog_statsview_content_participation" "css_element"
+    # Start date.
+    And I click on "#id_start_enabled" "css_element"
+    And I set the field "id_start_day" to "15"
+    # Set an invalid end date.
+    And I click on "#id_end_enabled" "css_element"
+    And I set the field "id_end_day" to "10"
+    When I click on "Update" "button"
+    Then I should see "Selection end date cannot be earlier than the start date"
+    # Set a valid end date.
+    And I set the field "id_end_day" to "15"
+    When I click on "Update" "button"
+    Then I should not see "Selection end date cannot be earlier than the start date"
+
+    Given I am on "Course 1" course homepage
+    And I am on the "Test oublog basics" "oublog activity" page
+
+    # Go to participation page.
+    Given I press "Participation by user"
+    # Start date.
+    And I click on "#id_start_enabled" "css_element"
+    And I set the field "id_start_day" to "15"
+    # Set an invalid end date.
+    And I click on "#id_end_enabled" "css_element"
+    And I set the field "id_end_day" to "10"
+    When I click on "Update" "button"
+    Then I should see "Selection end date cannot be earlier than the start date"
+    # Set a valid end date.
+    And I set the field "id_end_day" to "15"
+    When I click on "Update" "button"
+    Then I should not see "Selection end date cannot be earlier than the start date"
+
   Scenario: Check user participation
     # Post as student
     Given I log in as "student1"

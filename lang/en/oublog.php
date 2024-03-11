@@ -247,6 +247,7 @@ $string['guestblog'] = 'If you have an account on the system, please
 <a href=\'{$a}\'>log in for full access</a>.';
 $string['noposts'] = 'There are no visible posts in this {$a}.';
 $string['nopostsnotags'] = 'There are no visible posts in this {$a->blog}, for this tag {$a->tag}.';
+$string['returntolabel'] = 'Return to ';
 
 // Errors.
 $string['accessdenied'] = 'Sorry: you do not have access to view this page.';
@@ -653,6 +654,7 @@ $string['userrating'] = 'Use ratings';
 $string['share'] = 'Share post';
 $string['tweet'] = 'Tweet';
 $string['oublogcrontask'] = 'OU blog maintenance jobs';
+$string['oublogsettingstask'] = 'OU Blog settings task';
 
 $string['restricttags'] = 'Tag options';
 $string['restricttags_req'] = 'Must enter tags';
@@ -743,3 +745,6 @@ $string['export:header_tags'] = 'Tags';
 $string['export:header_author'] = 'Author';
 $string['tagshowmore'] = 'Show more ...';
 $string['tagshowless'] = 'Show less ...';
+
+$string['savecheck'] = 'Enable save check';
+$string['savecheck_desc'] = 'Enable checking of session etc on submitting the post form.';

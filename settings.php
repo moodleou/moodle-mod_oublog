@@ -17,10 +17,8 @@
 // Dodgy hack to setup the global blog instance (section not created yet on install).
 if (!isset($CFG->oublogsetup)) {
     if ($pbcm = get_coursemodule_from_instance('oublog', 1 , SITEID, 1)) {
-        $mod = new stdClass();
-        $mod->id= $pbcm->id;
-        $mod->section = course_add_cm_to_section($pbcm->course, $pbcm->id, 1);
-        $DB->update_record('course_modules', $mod);
+        $task = new \mod_oublog\task\settings_task();
+        \core\task\manager::queue_adhoc_task($task, true);
     }
     set_config('oublogsetup', true);
 }
@@ -54,3 +52,7 @@ $settings->add(new admin_setting_configtext('mod_oublog/remoteserver',
 $settings->add(new admin_setting_configtext('mod_oublog/remotetoken',
         get_string('remotetoken', 'oublog'),
         get_string('configremotetoken', 'oublog'), '', PARAM_ALPHANUM));
+
+$settings->add(new admin_setting_configcheckbox('mod_oublog/savecheck',
+        get_string('savecheck', 'oublog'),
+        get_string('savecheck_desc', 'oublog'), 1));
