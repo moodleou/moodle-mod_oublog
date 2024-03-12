@@ -64,7 +64,9 @@ M.mod_oublog.init_showhide = function(Y, name, curpref) {
                         showinfo.addClass('oublog_displaynone');
                         form.removeClass('oublog_displaynone');
                         if (!Y.one('body').hasClass('notloggedin')) {
-                            M.util.set_user_preference('mod_oublog_hidestatsform_' + name, 0);
+                            require(['core_user/repository'], (userRepository) => {
+                                userRepository.setUserPreference('mod_oublog_hidestatsform_' + name, 0);
+                            });
                         }
                         curpref = 0;
                     } else {
@@ -72,7 +74,9 @@ M.mod_oublog.init_showhide = function(Y, name, curpref) {
                         showinfo.removeClass('oublog_displaynone');
                         form.addClass('oublog_displaynone');
                         if (!Y.one('body').hasClass('notloggedin')) {
-                            M.util.set_user_preference('mod_oublog_hidestatsform_' + name, 1);
+                            require(['core_user/repository'], (userRepository) => {
+                                userRepository.setUserPreference('mod_oublog_hidestatsform_' + name, 1);
+                            });
                         }
                         curpref = 1;
                     }

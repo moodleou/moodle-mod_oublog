@@ -1595,3 +1595,28 @@ function mod_oublog_core_calendar_provide_event_action(calendar_event $event, \c
         true
     );
 }
+
+/**
+ * Gets plugin prefs.
+ *
+ * @return array List of prefs that can be set by AJAX
+ */
+function mod_oublog_user_preferences(): array {
+    return [
+        '~^oublog_accordion_.*_open$~' => [
+            'isregex' => true,
+            'type' => PARAM_INT,
+            'null' => NULL_NOT_ALLOWED,
+            'default' => '0',
+            'permissioncallback' => [core_user::class, 'is_current_user'],
+        ],
+        '~^mod_oublog_hidestatsform_.*$~' => [
+            'isregex' => true,
+            'type' => PARAM_INT,
+            'null' => NULL_NOT_ALLOWED,
+            'default' => '0',
+            'choices' => [0, 1],
+            'permissioncallback' => [core_user::class, 'is_current_user'],
+        ],
+    ];
+}

@@ -1485,7 +1485,6 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $plushide = '';
             }
             // Setup Javascript for stats view.
-            user_preference_allow_ajax_update("mod_oublog_hidestatsform_$name", PARAM_BOOL);
             $PAGE->requires->js('/mod/oublog/module.js');
             $module = array ('name' => 'mod_oublog');
             $module['fullpath'] = '/mod/oublog/module.js';

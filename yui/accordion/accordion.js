@@ -22,7 +22,9 @@ YUI.add('moodle-mod_oublog-accordion', function(Y) {
                 tab.content.addClass('oublog-accordion-open');
                 tab.state = 1;
                 if (!Y.one('body').hasClass('notloggedin')) {
-                    M.util.set_user_preference('oublog_accordion_' + tab.container_class + '_open', tab.number);
+                    require(['core_user/repository'], (userRepository) => {
+                        userRepository.setUserPreference('oublog_accordion_' + tab.container_class + '_open', tab.number);
+                    });
                 }
             },
             // Init an 'accordion' style widget - ul with two divs in each li (title,content).
