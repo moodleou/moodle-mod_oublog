@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-import Config from 'core/config';
+import {setUserPreference} from 'core_user/repository';
 
 /*
  * Handle expand/collapse of areas within the blog usage block.
@@ -188,33 +188,4 @@ const openTab = (tab, content) => {
     if (!document.body.classList.contains('notloggedin')) {
         setUserPreference('oublog_accordion_' + tab.dataset.containerClass + '_open', tab.dataset.number);
     }
-};
-
-/**
- * Set the user preference.
- *
- * @param {string} name The name of the preference.
- * @param {string} value The value of the preference.
- * @return {void}
- */
-export const setUserPreference = (name, value) => {
-    const url = new URL(Config.wwwroot + '/lib/ajax/setuserpref.php');
-    url.searchParams.set('sesskey', Config.sesskey);
-    url.searchParams.set('pref', encodeURI(name));
-    url.searchParams.set('value', encodeURI(value));
-    // Set the user preference by making a request.
-    fetch(url)
-        .then(res => {
-            // For debugging purposes.
-            if (Config.developerdebug && !res.ok) {
-                window.console.error(res);
-            }
-        }).catch((error) => {
-            // For debugging purposes.
-            if (Config.developerdebug) {
-                window.console.error(error);
-                // eslint-disable-next-line max-len
-                alert("Error updating user preference '" + name + "' using ajax. Clicking this link will repeat the Ajax call that failed so you can see the error: ");
-            }
-        });
 };
