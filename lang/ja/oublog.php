@@ -74,7 +74,6 @@ $string['postedby'] = 'by {$a}';
 $string['posts'] = '記事';
 $string['rss'] = 'RSS';
 $string['rssfeed'] = 'RSSフィード';
-$string['searchblogs'] = 'ブログを検索する';
 $string['searchthisblog'] = 'このブログを検索する';
 $string['siteentries'] = 'サイトエントリを表示する';
 $string['subscribefeed'] = 'このブログが更新された場合、通知を受け取るには、フィードを購読登録してください (適切なソフトウェアが必要です)。';

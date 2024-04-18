@@ -147,7 +147,6 @@ $strcomment     = get_string('comment', 'oublog');
 $strviews = get_string('views', 'oublog', oublog_get_displayname($oublog));
 $strlinks       = get_string('links', 'oublog');
 $strfeeds       = get_string('feeds', 'oublog');
-$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($oublog));
 
 // Set-up groups.
 $groupmode = oublog_get_activity_groupmode($cm, $course);
@@ -173,15 +172,11 @@ if ($oublog->global) {
     $returnurl = $CFG->wwwroot . '/mod/oublog/view.php?user='.$user;
 
     $name = $oubloginstance->name;
-
-    $buttontext = oublog_get_search_form('user', $oubloguser->id, $strblogsearch);
 } else {
     $blogtype = 'course';
     $returnurl = $CFG->wwwroot . '/mod/oublog/view.php?id='.$id;
 
     $name = $oublog->name;
-
-    $buttontext = oublog_get_search_form('id', $cm->id, $strblogsearch);
 }
 
 if ($tag) {
@@ -258,7 +253,6 @@ if ($oublog->global && !$hideunusedblog) {
 if (!$hideunusedblog) {
     // Generate extra navigation.
     $CFG->additionalhtmlhead .= oublog_get_meta_tags($oublog, $oubloginstance, $currentgroup, $cm);
-    $PAGE->set_button($buttontext);
     if ($offset > 0) {
         $a = new stdClass();
         $a->from = ($offset + 1);
@@ -282,18 +276,6 @@ $hasleft = !empty($CFG->showblocksonmodpages);
 if (!$hideunusedblog) {
     global $USER, $CFG;
     $links = '';
-    // Search block.
-    if ($oublog->global && strtolower($CFG->theme) == 'osep') {
-        $buttontext = oublog_get_search_form('user', $oubloguser->id, $strblogsearch, '', true);
-        $bc = new block_contents();
-        $bc->attributes['class'] = 'oublog-sideblock block';
-        $bc->attributes['id'] = 'oublog_info_block_search';
-        $bc->title = format_string(get_string('searchblogs', 'mod_oublog'));
-        $bc->content = $buttontext;
-        if (!empty($bc->content)) {
-            $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
-        }
-    }
 
     if ($oublog->global) {
         $title = $oubloginstance->name;

@@ -156,7 +156,6 @@ $string['publiccomments_info'] = 'Se alguem adicionar um comentário quando não
 $string['re'] = 'Re: {$a}';
 $string['rss'] = 'RSS';
 $string['rssfeed'] = 'RSS feed';
-$string['searchblogs'] = 'Pesquisar nos Blogs';
 $string['searchthisblog'] = 'Pesquisar este blog';
 $string['separateindividual'] = 'Individual separado';
 $string['separateindividualblogs'] = 'Blogs individuais separados';

@@ -531,10 +531,7 @@ function oublog_add_post($post, $cm, $oublog, $course) {
         oublog_update_item_tags($post->oubloginstancesid, $postid, $post->tags, $post->visibility);
     }
 
-    $post->id=$postid; // Needed by the below
-    if (!oublog_search_update($post, $cm)) {
-        return(false);
-    }
+    $post->id = $postid; // Needed by later code in callers (sometimes).
 
     // Inform completion system, if available
     $completion = new completion_info($course);
@@ -614,10 +611,6 @@ function oublog_edit_post($post, $cm) {
     }
 
     if (!$DB->update_record('oublog_posts', $post)) {
-        return(false);
-    }
-
-    if (!oublog_search_update($post, $cm)) {
         return(false);
     }
 
@@ -1970,47 +1963,6 @@ function oublog_replace_url_param($url, $replacekey, $newvalue=null) {
     return($url);
 }
 
-/** @return True if OU search extension is installed */
-function oublog_search_installed() {
-    return @include_once(dirname(__FILE__).'/../../local/ousearch/searchlib.php');
-}
-
-/**
- * Obtains a search document relating to a particular blog post.
- *
- * @param object $post Post object. Required fields: id (optionally also
- *   groupid, userid save a db query)
- * @param object $cm Course-module object. Required fields: id, course
- * @return ousearch_doument
- */
-function oublog_get_search_document($post, $cm) {
-    global $DB;
-    // Set up 'search document' to refer to this post
-    $doc=new local_ousearch_document();
-    $doc->init_module_instance('oublog', $cm);
-    if (!isset($post->userid) || !isset($post->groupid)) {
-        $results=$DB->get_record_sql("
-SELECT
-    p.groupid,i.userid
-FROM
-{oublog_posts} p
-    INNER JOIN {oublog_instances} i ON p.oubloginstancesid=i.id
-WHERE
-    p.id= ?", array($post->id));
-        if (!$results) {
-            throw new moodle_exception('invalidblogdetails', 'oublog');
-        }
-        $post->userid=$results->userid;
-        $post->groupid=$results->groupid;
-    }
-    if ($post->groupid) {
-        $doc->set_group_id($post->groupid);
-    }
-    $doc->set_user_id($post->userid);
-    $doc->set_int_refs($post->id);
-    return $doc;
-}
-
 /**
  * Obtains tags for a $post object whether or not it currently has them
  * defined in some way. (If they're not defined, uses a database query.)
@@ -2049,34 +2001,6 @@ WHERE
     }
 
     return $taglist;
-}
-
-/**
- * Updates the fulltext search information for a post which is being added or
- * updated.
- * @param object $post Post data, including slashes for database. Must have
- *   fields id,userid,groupid (if applicable), title, message
- * @param object $cm Course-module
- * @return True if search update was successful
- */
-function oublog_search_update($post, $cm) {
-    // Do nothing if OU search is not installed
-    if (!oublog_search_installed()) {
-        return true;
-    }
-
-    // Get search document
-    $doc=oublog_get_search_document($post, $cm);
-
-    // Sort out tags for use as extrastrings
-    $taglist=oublog_get_post_tags($post, true);
-    if (count($taglist)==0) {
-        $taglist=null;
-    }
-
-    // Update information about this post (works ok for add or edit)
-    $doc->update($post->title, $post->message, null, null, $taglist);
-    return true;
 }
 
 function oublog_date($time, $insentence = false) {
@@ -3293,54 +3217,6 @@ class oublog_portfolio_caller extends portfolio_module_caller_base {
     public static function base_supported_formats() {
         return array(PORTFOLIO_FORMAT_FILE, PORTFOLIO_FORMAT_RICHHTML, PORTFOLIO_FORMAT_PLAINHTML);
     }
-}
-
-/**
- * Returns html for a search form for the nav bar
- * @param string $name blog identifier field e.g. id
- * @param string $value blog identifier value e.g. 266
- * @param string $strblogsearch search this blog text
- * @param string $querytext optional search term
- * @param bool $newsearchimage optional param to display a different image..
- * @param int $cmid cmid of shared blog.
- * @returns string html
- */
-function oublog_get_search_form($name, $value, $strblogsearch, $querytext='', $newsearchimage = false, $cmid = null) {
-    if (!oublog_search_installed()) {
-        return '';
-    }
-    global $OUTPUT, $DB;
-
-    // Check if search in shared blog.
-    if ($name == 'id') {
-        $cm = get_coursemodule_from_id('oublog', $value);
-        $oublog = $DB->get_record('oublog', ['id' => $cm->instance]);
-        if ($oublog->individual && $oublog->idsharedblog) {
-            // Get master blog.
-            $masterblog = oublog_get_master($oublog->idsharedblog);
-            // Get cmid of master blog.
-            $cmmaster = get_coursemodule_from_instance('oublog', $masterblog->id);
-            $value = $cmmaster->id;
-            $cmid = $cm->id;
-        }
-    }
-    $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
-    $out .= html_writer::start_tag('div');
-    $out .= html_writer::tag('label', $strblogsearch . ' ', array('for' => 'oublog_searchquery'));
-    $out .= $OUTPUT->help_icon('searchblogs', 'oublog');
-    $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => $name,
-            'value' => $value));
-    $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'cmid',
-            'value' => $cmid));
-    $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
-            'id' => 'oublog_searchquery', 'value' => $querytext));
-    $src = ($newsearchimage) ? $OUTPUT->image_url('search_rgb_32px', 'theme_osep') : $OUTPUT->image_url('i/search');
-    $out .= html_writer::empty_tag('input', array('type' => 'image',
-            'id' => 'ousearch_searchbutton', 'alt' => get_string('search'),
-            'title' => get_string('search'), 'src' => $src));
-    $out .= html_writer::end_tag('div');
-    $out .= html_writer::end_tag('form');
-    return $out;
 }
 
 /**

@@ -529,16 +529,6 @@ if ($step == 0) {
                 $completion->update_state($cm, COMPLETION_COMPLETE);
             }
         }
-        // Update search (add required properties to newpost).
-        $newpost->id = $newid;
-        $newpost->userid = $USER->id;
-        $newpost->tags = array();
-        if (isset($post->tags)) {
-            foreach ($post->tags as $tag) {
-                $newpost->tags[$tag->id] = $tag->tag;
-            }
-        }
-        oublog_search_update($newpost, $cm);
         $trans->allow_commit();
         $bar->update($cur, count($posts), get_string('import_step2_prog', 'oublog'));
     }

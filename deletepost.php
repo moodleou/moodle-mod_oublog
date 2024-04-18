@@ -243,10 +243,6 @@ function oublog_do_delete($course, $cm, $oublog, $post) {
             array(), $post->visibility)) {
         throw new moodle_exception('tagupdatefailed', 'oublog');
     }
-    if (oublog_search_installed() && !local_ousearch_indexingdisabled()) {
-        $doc = oublog_get_search_document($updatepost, $cm);
-        $doc->delete();
-    }
     // Inform completion system, if available.
     $completion = new completion_info($course);
     if ($completion->is_enabled($cm) && ($oublog->completionposts)) {

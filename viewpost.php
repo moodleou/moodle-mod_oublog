@@ -136,7 +136,6 @@ if ($groupmode == VISIBLEGROUPS && !groups_is_member($post->groupid) &&
 }
 
 // Print the header.
-$strblogsearch = get_string('searchthisblog', 'oublog', oublog_get_displayname($childoublog ? $childoublog : $oublog));
 if ($oublog->global) {
     $blogtype = 'personal';
     $returnurl = 'view.php?user=' . $oubloginstance->userid;
@@ -152,13 +151,11 @@ if ($oublog->global) {
             array('user' => $oubloginstance->userid)));
 
     $url = new moodle_url("$CFG->wwwroot/course/mod.php", array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
-    $buttontext = oublog_get_search_form('user', $oubloguser->id, $strblogsearch);
 } else {
     $blogtype = 'course';
     $returnurl = $cmid ? 'view.php?id='.$cmid : 'view.php?id='.$cm->id;
     $blogname = $childoublog ? $childoublog->name : $oublog->name;
     $url = new moodle_url("$CFG->wwwroot/course/mod.php", array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
-    $buttontext = oublog_get_search_form('id', $cm->id, $strblogsearch);
 }
 
 // Log view post event.
@@ -179,7 +176,6 @@ if ($childoublog) {
 }
 $PAGE->set_title(format_string($post->title));
 $PAGE->set_heading(format_string($childcourse ? $childcourse->fullname : $course->fullname));
-$PAGE->set_button($buttontext);
 oublog_get_post_extranav($post, false);
 if ($childdata) {
     $oublogoutput->pre_display($childcm, $childoublog, 'viewpost');

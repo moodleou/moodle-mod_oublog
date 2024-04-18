@@ -110,7 +110,6 @@ $string['deletedby'] = 'Gelöscht von {$a->fullname}, {$a->timedeleted}';
 $string['newcomment'] = 'Neuer Blogkommentar';
 
 $string['searchthisblog'] = 'Dieses Blog suchen';
-$string['searchblogs'] = 'Blogs suchen';
 
 $string['url']='Volle Webadresse';
 

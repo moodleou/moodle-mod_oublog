@@ -88,8 +88,6 @@ $strnewposts    = get_string('newerposts', 'oublog');
 $strolderposts  = get_string('olderposts', 'oublog');
 $strfeeds       = get_string('feeds', 'oublog');
 
-$strblogsearch  = get_string('searchblogs', 'oublog');
-
 // Get Posts.
 list($posts, $recordcount) = oublog_get_posts($oublog, $context, $offset, $cm, null, -1, null,
         $tag, $canaudit, true);
@@ -109,20 +107,8 @@ if ($offset) {
     $PAGE->navbar->add(get_string('extranavtag', 'oublog', $tag));
 }
 
-if (oublog_search_installed()) {
-    $buttontext=<<<EOF
-<form action="search.php" method="get"><div>
-  <input type="text" name="query" value=""/>
-  <input type="hidden" name="id" value="{$cm->id}"/>
-  <input type="submit" value="{$strblogsearch}"/>
-</div></form>
-EOF;
-} else {
-    $buttontext='';
-}
 $url = new moodle_url("$CFG->wwwroot/course/mod.php",
         array('update' => $cm->id, 'return' => true, 'sesskey' => sesskey()));
-$PAGE->set_button($buttontext);
 
 // The right column, BEFORE the middle-column.
 if (isloggedin() and !isguestuser()) {

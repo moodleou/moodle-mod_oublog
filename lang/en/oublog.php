@@ -204,14 +204,6 @@ $string['personalblogtitle'] = 'Personal blog';
 $string['postmessage'] = 'Post';
 
 $string['searchthisblog'] = 'Search this {$a}';
-$string['searchblogs'] = 'Search';
-$string['searchblogs_help'] = 'Type your search term and press Enter or click the button.
-
-To search for exact phrases use quote marks.
-
-To exclude a word insert a hyphen immediately before the word.
-
-Example: the search term <tt>picasso -sculpture &quot;early works&quot;</tt> will return results for &lsquo;picasso&rsquo; or the phrase &lsquo;early works&rsquo; but will exclude items containing &lsquo;sculpture&rsquo;.';
 
 $string['url'] = 'Full Web address';
 
