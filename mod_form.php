@@ -214,31 +214,50 @@ class mod_oublog_mod_form extends mod_oublog_mod_form_base {
     public function add_completion_rules() {
         $mform =& $this->_form;
 
-        $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionpostsenabled', ' ', get_string('completionposts', 'oublog'));
-        $group[] =& $mform->createElement('text', 'completionposts', ' ', array('size'=>3));
-        $mform->setType('completionposts', PARAM_INT);
-        $mform->addGroup($group, 'completionpostsgroup', get_string('completionpostsgroup', 'oublog'), array(' '), false);
-        $mform->addHelpButton('completionpostsgroup', 'completionpostsgroup', 'oublog');
-        $mform->disabledIf('completionposts', 'completionpostsenabled', 'notchecked');
+        $group = [];
 
-        $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completioncommentsenabled', ' ', get_string('completioncomments', 'oublog'));
-        $group[] =& $mform->createElement('text', 'completioncomments', ' ', array('size'=>3));
-        $mform->setType('completioncomments', PARAM_INT);
-        $mform->addGroup($group, 'completioncommentsgroup', get_string('completioncommentsgroup', 'oublog'), array(' '), false);
-        $mform->addHelpButton('completioncommentsgroup', 'completioncommentsgroup', 'oublog');
-        $mform->disabledIf('completioncomments', 'completioncommentsenabled', 'notchecked');
+        $completionpostsenabledel = $this->get_suffixed_name('completionpostsenabled');
+        $group[] =& $mform->createElement('checkbox',
+                $completionpostsenabledel,
+                ' ',
+                get_string('completionposts', 'oublog'));
+        $completionpostsel = $this->get_suffixed_name('completionpostsenabled');
+        $group[] =& $mform->createElement('text', $completionpostsel, ' ', ['size' => 3]);
+        $mform->setType($completionpostsel, PARAM_INT);
+        $completionpostsgroupel = $this->get_suffixed_name('completionpostsenabled');
+        $mform->addGroup($group, $completionpostsgroupel, get_string('completionpostsgroup', 'oublog'), [' '], false);
+        $mform->addHelpButton($completionpostsgroupel, 'completionpostsgroup', 'oublog');
+        $mform->disabledIf($completionpostsel, $completionpostsenabledel, 'notchecked');
+
+        $group = [];
+        $completioncommentsenabled = $this->get_suffixed_name('completionpostsenabled');
+        $group[] =& $mform->createElement('checkbox',
+                $completioncommentsenabled,
+                ' ',
+                get_string('completioncomments', 'oublog'));
+        $completioncommentsel = $this->get_suffixed_name('completionpostsenabled');
+        $group[] =& $mform->createElement('text', $completioncommentsel, ' ', ['size' => 3]);
+        $mform->setType($completioncommentsel, PARAM_INT);
+        $completioncommentsgroupel = $this->get_suffixed_name('completionpostsenabled');
+        $mform->addGroup($group,
+                $completioncommentsgroupel,
+                get_string('completioncommentsgroup', 'oublog'),
+                [' '],
+                false);
+        $mform->addHelpButton($completioncommentsgroupel, 'completioncommentsgroup', 'oublog');
+        $mform->disabledIf($completioncommentsel, $completioncommentsenabled, 'notchecked');
 
         // Restriction for grade completion
         $mform->disabledIf('completionusegrade', 'grade', 'eq', 0);
 
-        return array('completionpostsgroup', 'completioncommentsgroup');
+        return [$completionpostsgroupel, $completioncommentsgroupel];
     }
 
     public function completion_rule_enabled($data) {
-        return ((!empty($data['completionpostsenabled']) && $data['completionposts']!=0)) ||
-            ((!empty($data['completioncommentsenabled']) && $data['completioncomments']!=0));
+        return ((!empty($data[$this->get_suffixed_name('completionpostsenabled')]) &&
+                        $data[$this->get_suffixed_name('completionposts')]!=0)) ||
+            ((!empty($data[$this->get_suffixed_name('completionposts')]) &&
+                    $data[$this->get_suffixed_name('completioncomments')]!=0));
     }
 
     public function get_data() {
@@ -248,12 +267,13 @@ class mod_oublog_mod_form extends mod_oublog_mod_form_base {
         }
         // Turn off completion settings if the checkboxes aren't ticked
         if (!empty($data->completionunlocked)) {
-            $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
-            if (empty($data->completionpostsenabled) || !$autocompletion) {
-                $data->completionposts = 0;
+            $autocompletion = !empty($data->{$this->get_suffixed_name('completion')}) &&
+                    $data->{$this->get_suffixed_name('completion')} == COMPLETION_TRACKING_AUTOMATIC;
+            if (empty($data->{$this->get_suffixed_name('completionpostsenabled')}) || !$autocompletion) {
+                $data->{$this->get_suffixed_name('completionposts')} = 0;
             }
-            if (empty($data->completioncommentsenabled) || !$autocompletion) {
-                $data->completioncomments = 0;
+            if (empty($data->{$this->get_suffixed_name('completionpostsenabled')}) || !$autocompletion) {
+                $data->{$this->get_suffixed_name('completionpostsenabled')} = 0;
             }
         }
         // If maxvisibility is disabled by individual mode, ensure it's limited to course.
@@ -307,15 +327,19 @@ class mod_oublog_mod_form extends mod_oublog_mod_form_base {
         // Set up the completion checkboxes which aren't part of standard data.
         // We also make the default value (if you turn on the checkbox) for those
         // numbers to be 1, this will not apply unless checkbox is ticked.
-        $default_values['completionpostsenabled']=
-            !empty($default_values['completionposts']) ? 1 : 0;
-        if (empty($default_values['completionposts'])) {
-            $default_values['completionposts']=1;
+        $completionpostsenabledel = $this->get_suffixed_name('completionpostsenabled');
+        $completionpostsel = $this->get_suffixed_name('completionpostsenabled');
+        $default_values[$completionpostsenabledel] =
+            !empty($default_values[$completionpostsel]) ? 1 : 0;
+        if (empty($default_values[$completionpostsel])) {
+            $default_values[$completionpostsel] = 1;
         }
-        $default_values['completioncommentsenabled']=
-            !empty($default_values['completioncomments']) ? 1 : 0;
-        if (empty($default_values['completioncomments'])) {
-            $default_values['completioncomments']=1;
+        $completioncommentsenabled = $this->get_suffixed_name('completionpostsenabled');
+        $completioncommentsel = $this->get_suffixed_name('completionpostsenabled');
+        $default_values[$completioncommentsenabled] =
+            !empty($default_values[$completioncommentsel]) ? 1 : 0;
+        if (empty($default_values[$completioncommentsel])) {
+            $default_values[$completioncommentsel] = 1;
         }
     }
 
@@ -381,5 +405,15 @@ class mod_oublog_mod_form extends mod_oublog_mod_form_base {
             }
         }
         return $errors;
+    }
+
+    /**
+     * Get the suffix of name.
+     *
+     * @param string $fieldname The field name of the completion element.
+     * @return string The suffixed name.
+     */
+    protected function get_suffixed_name(string $fieldname): string {
+        return $fieldname . $this->get_suffix();
     }
 }
