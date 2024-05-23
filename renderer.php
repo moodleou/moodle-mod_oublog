@@ -556,10 +556,12 @@ class mod_oublog_renderer extends plugin_renderer_base {
      * @param array $participation mixed array of user participation values
      * @param object $context current context
      * @param bool $viewfullnames flag for global users fullnames capability
-     * @param string groupname group name for display, default ''
+     * @param string $groupname group name for display, default ''
+     * @param int $start participation from
+     * @param int $end participation to
      */
     public function render_participation_list($cm, $course, $oublog, $groupid,
-        $download, $page, $participation, $context, $viewfullnames, $groupname) {
+        $download, $page, $participation, $context, $viewfullnames, $groupname, $start = 0, $end = 0) {
         global $DB, $CFG, $OUTPUT;
 
         require_once($CFG->dirroot.'/mod/oublog/participation_table.php');
@@ -574,7 +576,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $hasgrades = !empty($participation) && isset(reset($participation)->gradeobj);
         $table = new oublog_participation_table($cm, $course, $oublog,
             $groupid, $groupname, $hasgrades);
-        $table->setup($download);
+        $table->setup($download, $start, $end);
         $table->is_downloading($download, $filename, get_string('participation', 'oublog'));
 
         if (!empty($participation)) {

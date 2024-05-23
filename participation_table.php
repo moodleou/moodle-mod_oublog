@@ -56,8 +56,12 @@ class oublog_participation_table extends flexible_table {
     /**
      * Setup the columns and headers and other properties of the table and then
      * call flexible_table::setup() method.
+     *
+     * @param string $download download type (csv only, default '')
+     * @param int $start Participation from
+     * @param int $end participation to
      */
-    public function setup($download = '') {
+    public function setup($download = '', $start = 0, $end = 0) {
         global $CFG;
 
         // extra headers for export only
@@ -106,8 +110,13 @@ class oublog_participation_table extends flexible_table {
 
         $this->define_columns($columns);
         $this->define_headers($headers);
-        $this->define_baseurl($CFG->wwwroot . '/mod/oublog/participation.php?id=' .
-                $this->cm->id . '&amp;group=' . $this->groupid);
+        $baseurl = new moodle_url("/mod/oublog/participation.php", [
+            'id' => $this->cm->id,
+            'group' => $this->groupid,
+            'start' => $start,
+            'end' => $end,
+        ]);
+        $this->define_baseurl($baseurl);
 
         $this->column_class('fullname', 'fullname');
         $this->column_class('posts', 'posts');

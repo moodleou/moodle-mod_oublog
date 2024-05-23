@@ -125,6 +125,16 @@ if ($submitted = $timefilter->get_data()) {
     if ($submitted->end) {
         $end = strtotime('23:59:59', $submitted->end);
     }
+} else if (!$timefilter->is_submitted()) {
+    // Recieved via post back.
+    if ($start = optional_param('start', null, PARAM_INT)) {
+        $timefilter->set_data(['start' => $start]);
+        $start = strtotime('00:00:00', $start);
+    }
+    if ($end = optional_param('end', null, PARAM_INT)) {
+        $timefilter->set_data(['end' => $end]);
+        $end = strtotime('23:59:59', $end);
+    }
 }
 
 $participation = oublog_get_participation($oublog, $context, $groupid, $cm, $course, $start, $end,
@@ -196,7 +206,7 @@ if (empty($download)) {
 
 $oublogoutput->render_participation_list($cm, $course, $oublog, $groupid,
     $download, $page, $participation, $coursecontext, $viewfullnames,
-    $groupname);
+    $groupname, $start, $end);
 
 echo $oublogoutput->get_link_back_to_oublog($cm->name, $cm->id);
 
