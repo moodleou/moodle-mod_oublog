@@ -4590,7 +4590,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $al
     } else {
         $percent = 0;
         $stat = null;
-        $content .= html_writer::tag('p', get_string('recentposts', 'oublog'));
+        $content .= html_writer::tag('h3', get_string('recentposts', 'oublog'));
         foreach ($participation->posts as $post) {
             // Post user object required for oublog_statsinfo.
             $postuser = new stdClass();
@@ -4673,7 +4673,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $al
         $percent = 0;
         $stat = null;// Removing all stats div.
         if ($blogtype || $getcomments) {
-            $content .= html_writer::tag('p', get_string('recentcomments', 'oublog'));
+            $content .= html_writer::tag('h3', get_string('recentcomments', 'oublog'));
         }
         foreach ($participation->comments as $comment) {
             // Comment user object required for oublog_statsinfo.
