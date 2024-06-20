@@ -59,18 +59,13 @@ class tool_datamasking_test extends \advanced_testcase {
 
         $DB->insert_record('oublog_comments', ['postid' => 0, 'title' => 'Q', 'message' => 'Q.',
                 'timeposted' => 0, 'authorname' => 'Sally Secret']);
-        $DB->insert_record('oublog_comments', ['postid' => 0, 'title' => '', 'message' => '',
-                'timeposted' => 0]);
+        $commentid = $DB->insert_record('oublog_comments', ['postid' => 0, 'title' => '', 'message' => '<a src="d.txt"/>',
+                'timeposted' => 0], true);
 
         $DB->insert_record('oublog_comments_moderated', ['postid' => 0, 'title' => 'Q', 'message' => 'Q.',
                 'timeposted' => 0, 'authorname' => 'Sally Secret']);
         $DB->insert_record('oublog_comments_moderated', ['postid' => 0, 'title' => '', 'message' => '',
                 'timeposted' => 0]);
-
-        $DB->insert_record('oublog_edits', ['postid' => 0, 'userid' => 0, 'oldtitle' => 'Q',
-                'oldmessage' => 'Q.', 'timeupdated' => 0]);
-        $DB->insert_record('oublog_edits', ['postid' => 0, 'userid' => 0, 'oldtitle' => '',
-                'oldmessage' => '', 'timeupdated' => 0]);
 
         $DB->insert_record('oublog_instances', ['oublogid' => 0, 'userid' => $user->id,
                 'name' => 'Steve\'s blog', 'accesstoken' => '', 'summary' => 'Q.']);
@@ -81,8 +76,13 @@ class tool_datamasking_test extends \advanced_testcase {
 
         $DB->insert_record('oublog_posts', ['oubloginstancesid' => 0, 'title' => 'Q', 'message' => 'Q.',
                 'timeposted' => 0]);
-        $DB->insert_record('oublog_posts', ['oubloginstancesid' => 0, 'title' => '', 'message' => '',
-                'timeposted' => 0]);
+        $postid = $DB->insert_record('oublog_posts', ['oubloginstancesid' => 0, 'title' => '', 'message' => '<a src="c.txt"/>',
+                'timeposted' => 0], true);
+
+        $DB->insert_record('oublog_edits', ['postid' => 0, 'userid' => 0, 'oldtitle' => 'Q',
+                'oldmessage' => 'Q.', 'timeupdated' => 0]);
+        $DB->insert_record('oublog_edits', ['postid' => $postid, 'userid' => 0, 'oldtitle' => '',
+                'oldmessage' => '<a src="c.txt"/>', 'timeupdated' => 0]);
 
         // Add some files.
         $fileids = [];
@@ -91,9 +91,9 @@ class tool_datamasking_test extends \advanced_testcase {
         $fileids[] = \tool_datamasking\testing_utils::add_file('mod_oublog', 'edit',
                 'b.txt', 'bb');
         $fileids[] = \tool_datamasking\testing_utils::add_file('mod_oublog', 'message',
-                'c.txt', 'ccc');
+                'c.txt', 'ccc', $postid);
         $fileids[] = \tool_datamasking\testing_utils::add_file('mod_oublog', 'messagecomment',
-                'd.txt', 'dddd');
+                'd.txt', 'dddd', $commentid);
         $fileids[] = \tool_datamasking\testing_utils::add_file('mod_oublog', 'intro',
                 'e.txt', 'eeeee');
 
@@ -103,7 +103,7 @@ class tool_datamasking_test extends \advanced_testcase {
         $oublogcommentsauthornamesql = 'SELECT authorname FROM {oublog_comments} ORDER BY id';
         $this->assertEquals(['Sally Secret', null], $DB->get_fieldset_sql($oublogcommentsauthornamesql));
         $oublogcommentsmessagesql = 'SELECT message FROM {oublog_comments} ORDER BY id';
-        $this->assertEquals(['Q.', ''], $DB->get_fieldset_sql($oublogcommentsmessagesql));
+        $this->assertEquals(['Q.', '<a src="d.txt"/>'], $DB->get_fieldset_sql($oublogcommentsmessagesql));
         $oublogcommentstitlesql = 'SELECT title FROM {oublog_comments} ORDER BY id';
         $this->assertEquals(['Q', ''], $DB->get_fieldset_sql($oublogcommentstitlesql));
         $oublogcommentsmoderatedauthornamesql = 'SELECT authorname FROM {oublog_comments_moderated} ORDER BY id';
@@ -113,7 +113,7 @@ class tool_datamasking_test extends \advanced_testcase {
         $oublogcommentsmoderatedtitlesql = 'SELECT title FROM {oublog_comments_moderated} ORDER BY id';
         $this->assertEquals(['Q', ''], $DB->get_fieldset_sql($oublogcommentsmoderatedtitlesql));
         $oublogeditsoldmessagesql = 'SELECT oldmessage FROM {oublog_edits} ORDER BY id';
-        $this->assertEquals(['Q.', ''], $DB->get_fieldset_sql($oublogeditsoldmessagesql));
+        $this->assertEquals(['Q.', '<a src="c.txt"/>'], $DB->get_fieldset_sql($oublogeditsoldmessagesql));
         $oublogeditsoldtitlesql = 'SELECT oldtitle FROM {oublog_edits} ORDER BY id';
         $this->assertEquals(['Q', ''], $DB->get_fieldset_sql($oublogeditsoldtitlesql));
         $oubloginstancesnamesql = 'SELECT name FROM {oublog_instances} ORDER BY id';
@@ -122,7 +122,7 @@ class tool_datamasking_test extends \advanced_testcase {
         $oubloginstancessummarysql = 'SELECT summary FROM {oublog_instances} ORDER BY id';
         $this->assertEquals(['Q.', '', ''], $DB->get_fieldset_sql($oubloginstancessummarysql));
         $oublogpostsmessagesql = 'SELECT message FROM {oublog_posts} ORDER BY id';
-        $this->assertEquals(['Q.', ''], $DB->get_fieldset_sql($oublogpostsmessagesql));
+        $this->assertEquals(['Q.', '<a src="c.txt"/>'], $DB->get_fieldset_sql($oublogpostsmessagesql));
         $oublogpoststitlesql = 'SELECT title FROM {oublog_posts} ORDER BY id';
         $this->assertEquals(['Q', ''], $DB->get_fieldset_sql($oublogpoststitlesql));
 
@@ -138,12 +138,12 @@ class tool_datamasking_test extends \advanced_testcase {
         // After checks.
         $this->assertEquals(['email' . $oublogid1 . '@open.ac.uk.invalid', null], $DB->get_fieldset_sql($oublogsql));
         $this->assertEquals(['Masked User', null], $DB->get_fieldset_sql($oublogcommentsauthornamesql));
-        $this->assertEquals(['X.', ''], $DB->get_fieldset_sql($oublogcommentsmessagesql));
+        $this->assertEquals(['X.', '<a src="masked.txt"/>'], $DB->get_fieldset_sql($oublogcommentsmessagesql));
         $this->assertEquals(['X', ''], $DB->get_fieldset_sql($oublogcommentstitlesql));
         $this->assertEquals(['Masked User', null], $DB->get_fieldset_sql($oublogcommentsmoderatedauthornamesql));
         $this->assertEquals(['X.', ''], $DB->get_fieldset_sql($oublogcommentsmoderatedmessagesql));
         $this->assertEquals(['X', ''], $DB->get_fieldset_sql($oublogcommentsmoderatedtitlesql));
-        $this->assertEquals(['X.', ''], $DB->get_fieldset_sql($oublogeditsoldmessagesql));
+        $this->assertEquals(['X.', '<a src="masked.txt"/>'], $DB->get_fieldset_sql($oublogeditsoldmessagesql));
         $this->assertEquals(['X', ''], $DB->get_fieldset_sql($oublogeditsoldtitlesql));
         // Get the user's new name (it got masked).
         $user = $DB->get_record('user', ['id' => $user->id]);
@@ -151,7 +151,7 @@ class tool_datamasking_test extends \advanced_testcase {
                 'Masked User\'s blog', 'Masked blog name'],
                 $DB->get_fieldset_sql($oubloginstancesnamesql));
         $this->assertEquals(['X.', '', ''], $DB->get_fieldset_sql($oubloginstancessummarysql));
-        $this->assertEquals(['X.', ''], $DB->get_fieldset_sql($oublogpostsmessagesql));
+        $this->assertEquals(['X.', '<a src="masked.txt"/>'], $DB->get_fieldset_sql($oublogpostsmessagesql));
         $this->assertEquals(['X', ''], $DB->get_fieldset_sql($oublogpoststitlesql));
 
         \tool_datamasking\testing_utils::check_file($this, $fileids[0], 'masked.txt', 224);
