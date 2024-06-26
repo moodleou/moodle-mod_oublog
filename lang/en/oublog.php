@@ -417,7 +417,8 @@ if you give them the blog\'s address.</p>
 option is set on the whole blog, that becomes a maximum. For example, if
 the whole blog is set to the first level, you cannot change the
 level of an individual post at all.</p>';
-$string['tags_help'] = 'Tags are labels that help you find and categorise posts.';
+$string['tags_help'] = 'Tags are labels that help you find and categorise posts. When adding tags, they should be comma separated if using two or more. {$a}';
+$string['tags_help_predefined'] = 'You must select available tags from the dropdown tag list.';
 // Used at OU only.
 $string['externaldashboardadd'] = 'Add blog to dashboard';
 $string['externaldashboardremove'] = 'Remove blog from dashboard';
@@ -649,10 +650,11 @@ $string['oublogcrontask'] = 'OU blog maintenance jobs';
 $string['oublogsettingstask'] = 'OU Blog settings task';
 
 $string['restricttags'] = 'Tag options';
-$string['restricttags_req'] = 'Must enter tags';
-$string['restricttags_req_set'] = 'Must enter pre-defined tags only';
-$string['restricttags_set'] = 'Allow pre-defined tags only';
-$string['restricttags_default'] = 'Add tags by default';
+$string['restricttags_none'] = 'Individual tags (separated by commas) can be added to a post if required';
+$string['restricttags_req'] = 'Pre-defined or individual tags (separated by commas) must be chosen to add a post';
+$string['restricttags_req_set'] = 'Pre-defined tags must be chosen to add a post';
+$string['restricttags_set'] = 'Pre-defined tags can be chosen for a post if required';
+$string['restricttags_default'] = 'Predefined tags are added by default a new post';
 $string['restricttags_help'] = 'If you select this option, you can restrict
 tag entry to only those that are pre-defined at activity level and/or require that at least one tag be entered in a post.';
 $string['restricttagslist'] = 'You may only enter the \'Set\' tags: {$a}';

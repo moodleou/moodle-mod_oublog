@@ -155,7 +155,7 @@ class mod_oublog_mod_form extends mod_oublog_mod_form_base {
                             'maxlength', 255, 'client');
 
             $tagopts = array(
-                    '0' => get_string('none'),
+                    '0' => get_string('restricttags_none', 'oublog'),
                     '1' => get_string('restricttags_set', 'oublog'),
                     '2' => get_string('restricttags_req', 'oublog'),
                     '3' => get_string('restricttags_req_set', 'oublog'),
