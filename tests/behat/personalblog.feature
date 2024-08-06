@@ -7,7 +7,7 @@ Feature: Test Post and Comment on Personal OUBlog
 
   Scenario: Admin edits the blog options
     Given I log in as "admin"
-    And I am using the OU theme
+    And I am using the OSEP theme
     And I am on site homepage
     And I follow "Personal Blogs"
     And I click on "Settings" "link"
@@ -53,11 +53,11 @@ Feature: Test Post and Comment on Personal OUBlog
     And I press "Add comment"
     And I follow "Admin User's blog edited"
     Then "2 comments" "link" should exist
-    And I log out (in the OU theme)
+    And I log out
 
     # User not logged in tests visibility of Admin Users personal post.
     Given I visit the personal blog for "admin"
-    Then "You are not logged in" "text" should exist
+    Then "log in for full access" "text" should exist
     And I should not see "Personal OUBlog post"
     And I should not see "Admin User's blog"
 
@@ -72,7 +72,7 @@ Feature: Test Post and Comment on Personal OUBlog
     When I click on "Permalink" "link" in the ".oublog-post .oublog-post-links" "css_element"
     Then I should see "Personal OUBlog post02"
     And I should see "Admin User's blog"
-    Given I log out (in the OU theme)
+    Given I log out
 
     # Admin changes post to world visibility.
     Given I log in as "admin"
@@ -93,11 +93,9 @@ Feature: Test Post and Comment on Personal OUBlog
     And I should see "Money"
     And I should see "money"
     And I should see "Total visits to this blog: 3"
-    And I log out (in the OU theme)
+    And I log out
 
     # User not logged in tests Admin Users post and comments.
-    And I wait to be redirected
-    Then "You are not logged in" "text" should exist
     And I visit the personal blog for "admin"
     Then I should see "Admin User's blog edited"
     And I should see "log in for full access"
