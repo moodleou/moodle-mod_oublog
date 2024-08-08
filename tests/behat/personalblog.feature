@@ -10,6 +10,11 @@ Feature: Test Post and Comment on Personal OUBlog
     And I am using the OU theme
     And I am on site homepage
     And I follow "Personal Blogs"
+    And I click on "Settings" "link"
+    And I expand all fieldsets
+    When I set the following fields to these values:
+      | statblockon | 0 |
+    And I press "Save and display"
     And I follow "Blog options"
     Then I should see "Blog name"
     And I should see "Summary"
