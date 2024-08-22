@@ -177,7 +177,10 @@ function oublog_delete_instance($oublogid) {
     oublog_grade_item_delete($oublog);
 
     // Delete event in calendar when deleting activity.
-    \core_completion\api::update_completion_date_event($cm->id, 'oublog', $oublogid, null);
+    if (isset($cm)) {
+        \core_completion\api::update_completion_date_event($cm->id, 'oublog', $oublogid, null);
+    }
+
 
     // oublog
     return($DB->delete_records('oublog', array('id'=>$oublog->id)));

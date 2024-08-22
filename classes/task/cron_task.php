@@ -50,51 +50,52 @@ class cron_task extends \core\task\scheduled_task {
         $fs = get_file_storage();
         $timeframe = strtotime('-90 days');
         if ($personalblog = $DB->get_record('oublog', ['global' => 1], '*', IGNORE_MULTIPLE)) {
-            $cm = get_coursemodule_from_instance('oublog', $personalblog->id);
-            $context = \context_module::instance($cm->id);
-            $instancesql = "
-                            SELECT op.id
-                              FROM {oublog_instances} bi
-                        INNER JOIN {oublog_posts} op ON bi.id = op.oubloginstancesid
-                             WHERE bi.oublogid = :blogid AND op.timedeleted < :timeframe ";
-            $posts = $DB->get_recordset_sql($instancesql, ['blogid' => $personalblog->id,
-                    'timeframe' => $timeframe]);
-            foreach ($posts as $post) {
-                $transaction = $DB->start_delegated_transaction();
-                // Delete files from this post.
-                $params = ['postid' => $post->id];
-                $fs->delete_area_files_select($context->id, 'mod_oublog', 'message',
-                    'IN (:postid)', $params);
-                $fs->delete_area_files_select($context->id, 'mod_oublog', 'attachment',
-                    'IN (:postid)', $params);
-
-                $commentids = $DB->get_records('oublog_comments', $params, '', 'id');
-                if ($commentids) {
-                    list($insql, $paramsinsql) = $DB->get_in_or_equal(array_keys($commentids), SQL_PARAMS_NAMED);
-                    $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
-                                                  $insql, $paramsinsql);
-                    $DB->delete_records_select('oublog_comments', "id $insql", $paramsinsql);
+            if($cm = get_coursemodule_from_instance('oublog', $personalblog->id)){
+                $context = \context_module::instance($cm->id);
+                $instancesql = "
+                                SELECT op.id
+                                  FROM {oublog_instances} bi
+                            INNER JOIN {oublog_posts} op ON bi.id = op.oubloginstancesid
+                                 WHERE bi.oublogid = :blogid AND op.timedeleted < :timeframe ";
+                $posts = $DB->get_recordset_sql($instancesql, ['blogid' => $personalblog->id,
+                        'timeframe' => $timeframe]);
+                foreach ($posts as $post) {
+                    $transaction = $DB->start_delegated_transaction();
+                    // Delete files from this post.
+                    $params = ['postid' => $post->id];
+                    $fs->delete_area_files_select($context->id, 'mod_oublog', 'message',
+                        'IN (:postid)', $params);
+                    $fs->delete_area_files_select($context->id, 'mod_oublog', 'attachment',
+                        'IN (:postid)', $params);
+    
+                    $commentids = $DB->get_records('oublog_comments', $params, '', 'id');
+                    if ($commentids) {
+                        list($insql, $paramsinsql) = $DB->get_in_or_equal(array_keys($commentids), SQL_PARAMS_NAMED);
+                        $fs->delete_area_files_select($context->id, 'mod_oublog', 'messagecomment',
+                                                      $insql, $paramsinsql);
+                        $DB->delete_records_select('oublog_comments', "id $insql", $paramsinsql);
+                    }
+    
+                    $DB->delete_records_select('oublog_comments_moderated', 'postid IN (:postid)', $params);
+    
+                    // Delete all edits (including files) on posts owned by these users
+                    $editids = $DB->get_records('oublog_edits', $params, '', 'id');
+                    if ($editids) {
+                        list($insql, $paramsinsql) = $DB->get_in_or_equal(array_keys($editids), SQL_PARAMS_NAMED);
+                        $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
+                                                      $insql, $paramsinsql);
+                        $DB->delete_records_select('oublog_edits', "id $insql", $paramsinsql);
+                    }
+    
+                    // Delete tag instances from all these posts.
+                    $DB->delete_records_select('oublog_taginstances', 'postid IN (:postid)', $params);
+    
+                    // Delete the actual posts.
+                    $DB->delete_records_select('oublog_posts', 'id IN (:postid)', $params);
+                    $transaction->allow_commit();
                 }
-
-                $DB->delete_records_select('oublog_comments_moderated', 'postid IN (:postid)', $params);
-
-                // Delete all edits (including files) on posts owned by these users
-                $editids = $DB->get_records('oublog_edits', $params, '', 'id');
-                if ($editids) {
-                    list($insql, $paramsinsql) = $DB->get_in_or_equal(array_keys($editids), SQL_PARAMS_NAMED);
-                    $fs->delete_area_files_select($context->id, 'mod_oublog', 'edit',
-                                                  $insql, $paramsinsql);
-                    $DB->delete_records_select('oublog_edits', "id $insql", $paramsinsql);
-                }
-
-                // Delete tag instances from all these posts.
-                $DB->delete_records_select('oublog_taginstances', 'postid IN (:postid)', $params);
-
-                // Delete the actual posts.
-                $DB->delete_records_select('oublog_posts', 'id IN (:postid)', $params);
-                $transaction->allow_commit();
+                $posts->close();
             }
-            $posts->close();
         }
     }
 
