@@ -2694,8 +2694,7 @@ function oublog_add_comment_moderated($oublog, $oubloginstance, $post, $comment)
         'commenter' => $commenterhtml,
         'commenttitle' => $comment->title ? $comment->title : '',
         'comment' =>
-            format_text($comment->message, FORMAT_MOODLE,
-            null, $oublog->course),
+            format_text($comment->message, FORMAT_MOODLE),
         'approvelink' => $approvebase . '&amp;approve=1',
         'approvetext' => get_string('moderated_approve', 'oublog'),
         'rejectlink' => $approvebase . '&amp;approve=0',

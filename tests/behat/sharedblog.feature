@@ -133,18 +133,17 @@ Feature: Test shared data from Master blog on OUBlog
   @javascript @_file_upload
   Scenario: Fail to create child blog because wrong ID number.
     When I am on "Course 1" course homepage
-    And I add a "OU blog" to section "0" and I fill the form with:
+    And I add an oublog activity to course "Course 1" section "0" and I fill the form with:
       | Blog name        | Child Blog 2             |
       | Intro            | Can not create this blog |
       | Individual blogs | Visible individual blogs |
       | Shared blog      | masterblog3              |
-    Then I press "Save and display"
     And I should see "No matching ID number"
 
   @javascript @_file_upload
   Scenario: Fail to create child blog because that blog is child of the other.
     When I am on "Course 1" course homepage
-    And I add a "OU blog" to section "0" and I fill the form with:
+    And I add an oublog activity to course "Course 1" section "0" and I fill the form with:
       | Blog name        | Child Blog 3             |
       | Intro            | Can not create this blog |
       | Individual blogs | Visible individual blogs |
@@ -306,7 +305,7 @@ Feature: Test shared data from Master blog on OUBlog
       | activity | name       | intro                          | course | individual | idsharedblog | idnumber  |
       | oublog   | Child Blog | A blog get content from master | C1     | 2          | masterblog   | childblog |
     When I am on "Course 1" course homepage
-    And I add a "OU blog" to section "0" and I fill the form with:
+    And I add an oublog activity to course "Course 1" section "0" and I fill the form with:
       | Blog name                           | Child Blog 3             |
       | Intro                               | Can not create this blog |
       | Individual blogs                    | Visible individual blogs |
