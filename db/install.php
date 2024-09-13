@@ -56,6 +56,10 @@ function xmldb_oublog_install() {
     if (!$cm = add_course_module($mod)) {
         return true;
     }
+
+    $task = new \mod_oublog\task\adhoc_task();
+        \core\task\manager::queue_adhoc_task($task, true);
+
     set_config('oublogsetup', null);
 
     // For unit tests to work, it's necessary to create context now.
