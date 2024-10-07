@@ -69,10 +69,10 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $data = $writer->get_data([]);
         $this->assertEquals('MyBlog', $data->name);
         $this->assertStringContainsString('My intro', $data->intro);
-        $this->assertObjectNotHasAttribute('posts', $data);
-        $this->assertObjectNotHasAttribute('edits', $data);
-        $this->assertObjectNotHasAttribute('comments', $data);
-        $this->assertObjectNotHasAttribute('links', $data);
+        $this->assertObjectNotHasProperty('posts', $data);
+        $this->assertObjectNotHasProperty('edits', $data);
+        $this->assertObjectNotHasProperty('comments', $data);
+        $this->assertObjectNotHasProperty('links', $data);
         $this->assertEmpty($writer->get_all_metadata([]));
         $this->assertEmpty($writer->get_files([]));
     }
@@ -132,9 +132,9 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $this->assertEquals('amphibians, frogs', $data->posts[0]->tags);
         $this->assertEquals('You', $data->posts[0]->author);
 
-        $this->assertObjectNotHasAttribute('edits', $data);
-        $this->assertObjectNotHasAttribute('comments', $data);
-        $this->assertObjectNotHasAttribute('links', $data);
+        $this->assertObjectNotHasProperty('edits', $data);
+        $this->assertObjectNotHasProperty('comments', $data);
+        $this->assertObjectNotHasProperty('links', $data);
         $this->assertEmpty($writer->get_all_metadata([]));
         $this->assertEmpty($writer->get_files([]));
     }
@@ -169,9 +169,9 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $this->assertLessThan(120, $timelag);
         $this->assertGreaterThanOrEqual(0, $timelag);
 
-        $this->assertObjectNotHasAttribute('posts', $data);
-        $this->assertObjectNotHasAttribute('edits', $data);
-        $this->assertObjectNotHasAttribute('links', $data);
+        $this->assertObjectNotHasProperty('posts', $data);
+        $this->assertObjectNotHasProperty('edits', $data);
+        $this->assertObjectNotHasProperty('links', $data);
         $this->assertEmpty($writer->get_all_metadata([]));
         $this->assertEmpty($writer->get_files([]));
     }
@@ -212,9 +212,9 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $this->assertEquals('Second link', $data->links[1]->title);
         $this->assertEquals('http://2.example.com/', $data->links[1]->url);
 
-        $this->assertObjectNotHasAttribute('posts', $data);
-        $this->assertObjectNotHasAttribute('comments', $data);
-        $this->assertObjectNotHasAttribute('edits', $data);
+        $this->assertObjectNotHasProperty('posts', $data);
+        $this->assertObjectNotHasProperty('comments', $data);
+        $this->assertObjectNotHasProperty('edits', $data);
         $this->assertEmpty($writer->get_all_metadata([]));
         $this->assertEmpty($writer->get_files([]));
     }
@@ -249,9 +249,9 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $this->assertLessThan(120, $timelag);
         $this->assertGreaterThanOrEqual(0, $timelag);
 
-        $this->assertObjectNotHasAttribute('comments', $data);
-        $this->assertObjectNotHasAttribute('edits', $data);
-        $this->assertObjectNotHasAttribute('links', $data);
+        $this->assertObjectNotHasProperty('comments', $data);
+        $this->assertObjectNotHasProperty('edits', $data);
+        $this->assertObjectNotHasProperty('links', $data);
         $this->assertEmpty($writer->get_all_metadata([]));
         $this->assertEmpty($writer->get_files([]));
     }
@@ -290,9 +290,9 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $this->assertLessThan(120, $timelag);
         $this->assertGreaterThanOrEqual(0, $timelag);
 
-        $this->assertObjectNotHasAttribute('comments', $data);
-        $this->assertObjectNotHasAttribute('posts', $data);
-        $this->assertObjectNotHasAttribute('links', $data);
+        $this->assertObjectNotHasProperty('comments', $data);
+        $this->assertObjectNotHasProperty('posts', $data);
+        $this->assertObjectNotHasProperty('links', $data);
         $this->assertEmpty($writer->get_all_metadata([]));
         $this->assertEmpty($writer->get_files([]));
     }
