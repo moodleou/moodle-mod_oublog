@@ -969,3 +969,28 @@ Feature: Test Post and Comment on OUBlog entry
     And I press "Add post"
     When I am on "Course 2" course homepage
     Then I should see "100%"
+
+  @javascript
+  Scenario: Check tag selectors.
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I am on "Course 1" course homepage
+    When I follow "Test oublog with default tags"
+    And I press "New blog post"
+    And I set the following fields to these values:
+      | Title                      | Teacher1 blog                     |
+      | Message                    | Teacher1 post with default tags 1 |
+      | Tags (separated by commas) |                                   |
+    Then ".autocomplete-dropdown-wrapper .autocomplete-dropdown" "css_element" should be visible
+    And I should see "tag1" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(1)" "css_element"
+    And I should see "0 posts" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(1)" "css_element"
+    And I should see "tag2" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(2)" "css_element"
+    And I should see "0 posts" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(2)" "css_element"
+    And I should see "tag3" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(3)" "css_element"
+    And I should see "0 posts" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(3)" "css_element"
+    And I click on "tag1" "text" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(1)" "css_element"
+    And I should not see "tag1" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(1)" "css_element"
+    And I should see "tag2" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(1)" "css_element"
+    And I should see "tag3" in the ".autocomplete-dropdown-wrapper ul.autocomplete-dropdown li:nth-child(2)" "css_element"
+    And I press "Add post"
+    Then I should see "tag1(1)"

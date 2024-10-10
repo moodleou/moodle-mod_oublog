@@ -207,9 +207,8 @@ if (!$frmpost = $mform->get_data()) {
     echo $renderer->render_header($childcm ? $childcm : $cm, $childoublog ? $childoublog : $oublog, 'editpost');
     echo $renderer->render_pre_postform($childoublog ? $childoublog : $oublog, $childcm ? $childcm : $cm);
     $mform->display();
-    // Add tagselector yui mod - autocomplete of tags.
-    $PAGE->requires->yui_module('moodle-mod_oublog-tagselector', 'M.mod_oublog.tagselector.init',
-            array('id_tags', $tags));
+    // Add tagselector amd mod - autocomplete of tags.
+    $PAGE->requires->js_call_amd('mod_oublog/tagselector', 'init', ['id_tags', $tags]);
     $PAGE->requires->string_for_js('numposts', 'oublog');
 
     // Check the network connection on exiting the update page.
