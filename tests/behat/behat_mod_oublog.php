@@ -110,6 +110,15 @@ class behat_mod_oublog extends behat_base {
         }
     }
 
+    /**
+     * Ends the user session by clearing the Moodle session.
+     *
+     * @Given /^I clear the session cookie in oublog$/
+     */
+    public function i_clear_the_session_cookie_in_oublog() {
+        $this->getSession()->setCookie('MoodleSession', null);
+    }
+
     private function get_oublog_by_idnumber($idnumber) {
         global $DB;
         $query = "SELECT blog.*, cm.id as cmid

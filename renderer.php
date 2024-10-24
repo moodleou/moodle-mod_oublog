@@ -1487,12 +1487,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 $plushide = '';
             }
             // Setup Javascript for stats view.
-            $PAGE->requires->js('/mod/oublog/module.js');
-            $module = array ('name' => 'mod_oublog');
-            $module['fullpath'] = '/mod/oublog/module.js';
-            $module['requires'] = array('node', 'node-event-delegate');
-            $module['strings'] = array();
-            $PAGE->requires->js_init_call('M.mod_oublog.init_showhide', array($name, $userpref), false, $module);
+            $PAGE->requires->js_call_amd('mod_oublog/main','initShowHide', [$name, $userpref]);
 
             $out .= $this->output->pix_icon('t/switch_minus', get_string('timefilter_close', 'oublog'), 'moodle',
                     array('class' => 'oublog_stats_minus' . $minushide));
@@ -1546,17 +1541,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
     public function render_oublog_print_delete_dialog($cmid, $postid) {
         global $PAGE;
-        $PAGE->requires->js('/mod/oublog/module.js');
-        $stringlist[] = array('deleteemailpostdescription', 'oublog');
-        $stringlist[] = array('delete', 'oublog');
-        $stringlist[] = array('deleteandemail', 'oublog');
-        $stringlist[] = array('cancel', 'oublog');
-        $jsmodule = array(
-                'name' => 'mod_oublog.init_deleteandemail',
-                'fullpath' => '/mod/oublog/module.js',
-                'requires' => array('base', 'event', 'node', 'panel', 'anim', 'moodle-core-notification-dialogue', 'button'),
-                'strings' => $stringlist);
-        $PAGE->requires->js_init_call('M.mod_oublog.init_deleteandemail', array($cmid, $postid), true, $jsmodule);
+        $PAGE->requires->js_call_amd('mod_oublog/main', 'initDeleteAndEmail', [$cmid, $postid]);
     }
 
     /**
