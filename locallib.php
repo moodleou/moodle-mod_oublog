@@ -4966,8 +4966,7 @@ class oublog_stats_timefilter_form extends moodleform {
         // Override render so we can output js to page.
         global $PAGE;
         if (isset($this->type)) {
-            $PAGE->requires->yui_module('moodle-mod_oublog-statsupdate', 'M.mod_oublog.statsupdate.init',
-                    array($this->type));
+            $PAGE->requires->js_call_amd('mod_oublog/statsupdate', 'init',  [$this->type]);
         }
         return parent::render();
     }

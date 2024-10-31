@@ -16,7 +16,6 @@
 /**
  * JavaScript to manage export feature.
  *
- * @package mod_oublog
  * @copyright 2018 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -107,6 +106,7 @@ define([
         /**
          * Select a post
          * @method selectPost
+         * @param {Event} event
          */
         selectPost: function(event) {
             if (event.target.checked == true) {
@@ -149,6 +149,7 @@ define([
         /**
          * Remove post from sessionStorage and contentIds
          * @method removePost
+         * @param {Number} postId
          */
         removePost: function(postId) {
             var index = t.contentIds.indexOf(postId);
@@ -161,6 +162,7 @@ define([
         /**
          * Add post from sessionStorage and contentIds
          * @method addPost
+         * @param {Number} postId
          */
         addPost: function(postId) {
             var index = t.contentIds.indexOf(postId);

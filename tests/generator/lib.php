@@ -92,6 +92,16 @@ class mod_oublog_generator extends testing_module_generator {
     }
 
     /**
+     * Creates or edits a post.
+     *
+     * @param array|stdClass $record Information about post
+     * @return int|bool Post id if adding one, or true/false if editing an existing one
+     */
+    public function create_behat_post($record) {
+        return $this->create_content((object)['id' => $record['blog']], ['post' => (object)$record]);
+    }
+
+    /**
      * Creates a comment.
      *
      * @param stdClass $oublog Blog instance
@@ -102,6 +112,16 @@ class mod_oublog_generator extends testing_module_generator {
         return $this->create_content($oublog, ['comment' => (object)$record]);
     }
 
+    /**
+     * Creates a comment.
+     *
+     * @param array|stdClass $record Information about comment
+     * @return int Post id
+     */
+    public function create_behat_comment($record) {
+        return $this->create_content((object)['id' => $record['blog']], ['comment' => (object)$record]);
+    }
+
     public function create_content($instance, $record = array()) {
         global $USER, $DB, $CFG;
         require_once($CFG->dirroot . '/mod/oublog/locallib.php');
@@ -110,7 +130,7 @@ class mod_oublog_generator extends testing_module_generator {
 
         $cm = get_coursemodule_from_instance('oublog', $instance->id);
         $context = context_module::instance($cm->id);
-        $course = get_course($instance->course);
+        $course = get_course($instance->course ?? $cm->course);
 
         // Default add a default post if nothing sent.
         if (!isset($record['post']) && !isset($record['comment'])) {

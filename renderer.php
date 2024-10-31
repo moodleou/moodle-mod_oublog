@@ -1495,9 +1495,6 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     array('class' => 'oublog_stats_plus' . $plushide));
             $out .= html_writer::end_tag('a');
 
-            // Stats bar - call once per 'view'.
-            $PAGE->requires->yui_module('moodle-mod_oublog-statsbar', 'M.mod_oublog.statsbar.init',
-                    array("oublog_statsview_content_$name"));
             $out .= html_writer::tag('p', $info, array('class' => "oublog_{$name}_info"));
         }
         if (!empty($form)) {
@@ -1530,7 +1527,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $infodiv = html_writer::start_div('oublog_statsinfo_infocol');
         if ($info->stat) {
             $infodiv .= html_writer::start_div('oublog_statsinfo_bar');
-            $infodiv .= html_writer::tag('span', $info->stat, array('class' => 'percent_' . $info->percent));
+            $infodiv .= html_writer::tag('span', $info->stat);
             $infodiv .= html_writer::end_div();
         }
         $infodiv .= html_writer::div($info->label, 'oublog_statsinfo_label');

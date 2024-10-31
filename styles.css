@@ -458,7 +458,7 @@ div.oublog-individualselector {
     width: 20px;
     height: 20px;
     background: url([[pix:i/ajaxloader]]) no-repeat;
-    top: 4px;
+    top: 25px;
     left: 2px;
 }
 #oublog-discover .oublogstats_commentposts_blogname {
@@ -485,10 +485,6 @@ div.oublog-accordion-closed {
 }
 .oublog_statsinfo_bar {
     font-size: .85em;
-}
-.oublog_statsinfo_bar span.oublogbar {
-    background: #0070a8;
-    color: #ffffff;
 }
 .oublog_statsview_content form {
     margin-left: 10px;
