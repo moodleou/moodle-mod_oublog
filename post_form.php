@@ -72,7 +72,11 @@ class mod_oublog_post_form extends moodleform {
 
         $mform->addElement('textarea', 'tags', get_string('tagsfield', 'oublog'), array('cols'=>48, 'rows'=>2));
         $mform->setType('tags', PARAM_TAGLIST);
-        $mform->addHelpButton('tags', 'tags', 'oublog');
+        $extra = '';
+        if ($this->_customdata['restricttags'] == 2  ||  $this->_customdata['restricttags'] == 4) {
+            $extra = get_string('tags_help_predefined','oublog');
+        }
+        $mform->addHelpButton('tags', 'tags', 'oublog', '', false, $extra);
         if ($this->_customdata['restricttags'] == 4) {
             $mform->setDefault('tags', $tagslist);
         }

@@ -10,6 +10,11 @@ Feature: Test Post and Comment on Personal OUBlog
     And I am using the OU theme
     And I am on site homepage
     And I follow "Personal Blogs"
+    And I click on "Settings" "link"
+    And I expand all fieldsets
+    When I set the following fields to these values:
+      | statblockon | 0 |
+    And I press "Save and display"
     And I follow "Blog options"
     Then I should see "Blog name"
     And I should see "Summary"
@@ -135,138 +140,161 @@ Feature: Test Post and Comment on Personal OUBlog
       | Message | Admin Persblog post02 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post03 |
       | Message | Admin Persblog post03 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post04 |
       | Message | Admin Persblog post04 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post05 |
       | Message | Admin Persblog post05 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post06 |
       | Message | Admin Persblog post06 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post07 |
       | Message | Admin Persblog post07 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post08 |
       | Message | Admin Persblog post08 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post09 |
       | Message | Admin Persblog post09 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post10 |
       | Message | Admin Persblog post10 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post11 |
       | Message | Admin Persblog post11 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post12 |
       | Message | Admin Persblog post12 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post13 |
       | Message | Admin Persblog post13 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post14 |
       | Message | Admin Persblog post14 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post15 |
       | Message | Admin Persblog post15 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post16 |
       | Message | Admin Persblog post16 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post17 |
       | Message | Admin Persblog post17 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post18 |
       | Message | Admin Persblog post18 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post19 |
       | Message | Admin Persblog post19 content |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     Then ".oublog-paging" "css_element" should not exist
     Given I press "New blog post"
     And I set the following fields to these values:
       | Title | Personal OUBlog post20 |
       | Message | Admin Persblog post20 content |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title             | Personal OUBlog post21         |
       | Message           | Admin Persblog post21 content  |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title             | Personal OUBlog post22         |
       | Message           | Admin Persblog post22 content  |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title             | Personal OUBlog post23         |
       | Message           | Admin Persblog post23 content  |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title             | Personal OUBlog post24         |
       | Message           | Admin Persblog post24 content  |
       | Who can read this | Visible to anyone in the world |
     And I press "Add post"
+    And I wait "1" seconds
     When I press "New blog post"
     And I set the following fields to these values:
       | Title             | Personal OUBlog post25         |

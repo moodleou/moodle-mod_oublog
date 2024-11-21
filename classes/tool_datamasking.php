@@ -58,7 +58,7 @@ class tool_datamasking implements \tool_datamasking\plugin {
 
         $plan->table('files')->add(new \tool_datamasking\files_mask('mod_oublog', 'attachment'));
         $plan->table('files')->add(new \tool_datamasking\files_mask('mod_oublog', 'edit'));
-        $plan->table('files')->add(new \tool_datamasking\files_mask('mod_oublog', 'message'));
-        $plan->table('files')->add(new \tool_datamasking\files_mask('mod_oublog', 'messagecomment'));
+        $plan->table('files')->add(new files_mask('mod_oublog', 'message'));
+        $plan->table('files')->add(new \tool_datamasking\files_mask('mod_oublog', 'messagecomment', 'oublog_comments', 'message'));
     }
 }

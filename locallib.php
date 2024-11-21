@@ -886,10 +886,10 @@ function oublog_get_post($postid, $canaudit=false) {
                 WHERE c.postid = ? ";
 
         if (!$canaudit) {
-            $sql .= "AND c.deletedby IS NULL ";
+            $sql .= " AND c.deletedby IS NULL ";
         }
 
-        $sql .= "ORDER BY c.timeposted ASC ";
+        $sql .= " ORDER BY c.timeposted ASC ";
 
         $rs = $DB->get_recordset_sql($sql, array($postid));
         foreach ($rs as $comment) {
@@ -3701,7 +3701,7 @@ function oublog_stats_output_visitstats($oublog, $cm, $renderer = null, $ajax = 
         $params = array($oublog->id, $filtertime);
         if ($oublog->global || ($oublog->maxvisibility == OUBLOG_VISIBILITY_PUBLIC && !isloggedin())) {
             // Only include visible posts on global blogs and public blogs when not logged in.
-            $sql .= 'AND p.visibility >= ? ';
+            $sql .= ' AND p.visibility >= ? ';
             if (!isloggedin()) {
                 $params[] = OUBLOG_VISIBILITY_PUBLIC;
             } else {
@@ -4590,7 +4590,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $al
     } else {
         $percent = 0;
         $stat = null;
-        $content .= html_writer::tag('p', get_string('recentposts', 'oublog'));
+        $content .= html_writer::tag('h3', get_string('recentposts', 'oublog'));
         foreach ($participation->posts as $post) {
             // Post user object required for oublog_statsinfo.
             $postuser = new stdClass();
@@ -4673,7 +4673,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $al
         $percent = 0;
         $stat = null;// Removing all stats div.
         if ($blogtype || $getcomments) {
-            $content .= html_writer::tag('p', get_string('recentcomments', 'oublog'));
+            $content .= html_writer::tag('h3', get_string('recentcomments', 'oublog'));
         }
         foreach ($participation->comments as $comment) {
             // Comment user object required for oublog_statsinfo.
