@@ -476,6 +476,8 @@ function oublog_supports($feature) {
         case FEATURE_GROUPS: return true;
         case FEATURE_GRADE_HAS_GRADE: return true;
         case FEATURE_RATE: return true;
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_COLLABORATION;
         default: return null;
     }
 }
