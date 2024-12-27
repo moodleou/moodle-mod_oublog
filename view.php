@@ -594,5 +594,11 @@ $views = oublog_update_views($postsoublog, $oubloginstance, $currentindividual, 
 // Finish the page.
 echo "<div class=\"clearer\"></div><div class=\"oublog-views\">$strviews $views</div></div>";
 
+// Display sharing info.
+if ($id) {
+    $modinfo = get_fast_modinfo($course);
+    $cm = $modinfo->get_cm($id);
+    print oublog_display_sharing_info($cm);
+}
 
 echo $OUTPUT->footer();

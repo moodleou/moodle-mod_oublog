@@ -16,8 +16,9 @@ Feature: Test shared data from Master blog on OUBlog
       | oublog   | Master Blog 2 | A blog can share content to other blog | C1     | masterblog2 |
     # Create child blog.
     And the following "activities" exist:
-      | activity | name       | intro                          | course | individual | idsharedblog | idnumber  |
-      | oublog   | Child Blog | A blog get content from master | C1     | 2          | masterblog   | childblog |
+      | activity | name        | intro                                | course | individual | idsharedblog | idnumber  |
+      | oublog   | Child Blog  | A blog get content from master       | C1     | 2          | masterblog   | childblog |
+      | oublog   | Normal Blog | his is not a master nor a child blog | C1     | 2          |              |           |
     And the following "users" exist:
       | username | firstname | lastname | email            |
       | student1 | Student   | 1        | student@asd.com  |
@@ -376,7 +377,7 @@ Feature: Test shared data from Master blog on OUBlog
     Then I should not see "Master Blog 2" in the ".oublog_import_step0" "css_element"
     Then I should not see "Child Blog test import 3" in the ".oublog_import_step0" "css_element"
     Then I should see "Child Blog test import (1 posts)"
-    And I click on "Import blog" "link" in the "//*[@class='oublog_import_step oublog_import_step0']//li[2]" "xpath_element"
+    And I click on "Import blog" "link" in the "//*[@class='oublog_import_step oublog_import_step0']//li[3]" "xpath_element"
     Then I should see "1 post(s) imported successfully"
     And I click on "Continue" "button"
     Then I should see "Child Blog test import 3"
@@ -419,3 +420,27 @@ Feature: Test shared data from Master blog on OUBlog
     And I follow "Master Blog"
     And I should see "Post 0 title 2"
     And I should see "Post 0 title"
+
+  @javascript @_file_upload
+  Scenario: Test indication on a shared blog where it is shared.
+    Given I am on homepage
+    And I am on "Course 1" course homepage
+    When I follow "Master Blog"
+    # Master blog with child.
+    Then ".oublog-shareinfo" "css_element" should exist
+    And I should see "This blog is shared" in the ".oublog-shareinfo" "css_element"
+    And I click on "C1" "link" in the ".oublog-shareinfo" "css_element"
+    # Child blog.
+    And I should see "Child Blog"
+    And I should see "This is a shared blog" in the ".oublog-shareinfo" "css_element"
+    And "original blog" "link" should exist
+    And I click on "original blog" "link" in the ".oublog-shareinfo" "css_element"
+    And I should see "Master Blog"
+    And I am on "Course 1" course homepage
+    # Master blog without any child.
+    And I follow "Master Blog 2"
+    And "original blog" "link" should not exist
+    And I am on "Course 1" course homepage
+    # Normal blog will not show the share info.
+    And I follow "Normal Blog"
+    And "original blog" "link" should not exist

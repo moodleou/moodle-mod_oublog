@@ -120,6 +120,11 @@ $string['sharedblog_error'] = 'Error – no blog with that ID is available';
 $string['sharedblog_help'] = '<p><strong>Shared blog</strong></p>
 <p>This option allows the blog instance to act as a ‘child’ blog and display the content of a ‘parent’ blog.</p>
 <p>Please input the IDNumber field value of \'parent\' blog whose content you wish this blog to display</p>';
+$string['sharedviewinfooriginal'] = '<strong>This blog is shared</strong> under the name
+<strong>{$a}</strong> for use in other courses.';
+$string['sharedviewinfolist'] = 'It is included in the following: {$a}.';
+$string['sharedviewinfoclone'] = '<strong>This is a shared blog</strong>. The
+<a href=\'{$a->url}\'>original blog</a> is in {$a->shortname}.';
 $string['displayname_default'] = 'blog';
 $string['displayname'] = 'Alternate activity name (blank uses default)';
 $string['displayname_help'] = 'Set an alternate activity type name within the interface.

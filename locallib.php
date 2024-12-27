@@ -2827,9 +2827,10 @@ function oublog_get_post_extranav($post, $link = true, $cmid = null) {
 function oublog_get_master($idshared, $printerror = true) {
     global $DB;
 
-    $sql = 'SELECT b.*
+    $sql = 'SELECT b.*,c.shortname, cm.id as cmid
               FROM {course_modules} cm
               JOIN {oublog} b on cm.instance = b.id
+              JOIN {course} c ON cm.course = c.id
              WHERE cm.idnumber = ?';
 
     // Get masterblog from idshared.
@@ -2859,10 +2860,11 @@ function oublog_get_master($idshared, $printerror = true) {
  */
 function oublog_get_children($idnumber) {
     global $DB;
-    $sql = 'SELECT b.*
+    $sql = 'SELECT b.*, c.shortname, cm.id as cmid
               FROM {course_modules} cm
               JOIN {oublog} b on cm.instance = b.id
               JOIN {modules} m ON cm.module = m.id
+              JOIN {course} c ON cm.course = c.id
              WHERE b.idsharedblog = ?
                AND m.name = ?';
 
@@ -5244,6 +5246,113 @@ function oublog_get_displayname($oublog, $upperfirst = false) {
     } else {
         return $string;
     }
+}
+
+/**
+ * Determines if the blog is shared (a child of another blog).
+ *
+ * @param cm_info $cm The course module object.
+ * @return bool True if the blog is shared, false otherwise.
+ * @throws dml_exception
+ */
+function oublog_is_shared(cm_info $cm): bool {
+    global $DB;
+    $blogrecord = $DB->get_record('oublog', ['id' => $cm->instance], 'idsharedblog');
+    return !empty($blogrecord->idsharedblog);
+}
+
+/**
+ * Gets the course module ID, handling shared blogs.
+ *
+ * @param cm_info $cm The course module object.
+ * @param bool $forcereal If true, forces retrieval of the actual CM ID, even for shared blogs.
+ * @return int The course module ID.
+ * @throws coding_exception
+ */
+function oublog_get_course_module_id(cm_info $cm, bool $forcereal = false): int {
+    global $DB;
+
+    if (empty($cm)) {
+        throw new coding_exception('Course-module not set for this blog');
+    }
+
+    if (oublog_is_shared($cm) && !$forcereal) {
+        $blogoublog = $DB->get_record('oublog', ['id' => $cm->instance]);
+
+        if (!$blogoublog || !$blogoublog->idsharedblog) {
+            throw new coding_exception('Clone reference not defined');
+        }
+
+        $masterblog = oublog_get_master($blogoublog->idsharedblog);
+        if (!$masterblog) {
+            throw new coding_exception('Master blog not found for shared instance.');
+        }
+        return (int) $masterblog->cmid;
+    }
+    return (int) $cm->id;
+}
+
+/**
+ * Displays sharing information for a blog.
+ *
+ * @param cm_info $cm The course module object.
+ * @return string The HTML to display, or an empty string if nothing to show.
+ */
+function oublog_display_sharing_info(cm_info $cm): string {
+    global $DB;
+    // If it's neither a master blog nor a child blog, nothing to show.
+    if (empty($cm->idnumber) && !oublog_is_shared($cm)) {
+        return '';
+    }
+
+    // Only show this to people who can edit and stuff.
+    if (!has_capability('moodle/course:manageactivities', context_module::instance($cm->id))) {
+        return '';
+    }
+
+    $out = '<div class="oublog-shareinfo">';
+    if (oublog_get_course_module_id($cm) !== oublog_get_course_module_id($cm, true)) {
+        // We are looking at a clone. Show link to original, if user can
+        // see it, otherwise text.
+        $blogcmid = oublog_get_course_module_id($cm);
+        $blogoublog = $DB->get_record('oublog', ['id' => $cm->instance]);
+        $cloneinfo = (object)[
+            'url' => new moodle_url('/mod/oublog/view.php', ['id' => $blogcmid]),
+            'shortname' => s(oublog_get_master($blogoublog->idsharedblog)->shortname),
+        ];
+
+        $out .= get_string('sharedviewinfoclone', 'oublog', $cloneinfo);
+    } else {
+        // We are looking at an original.
+        // I want to display the idnumber here - unfortuantely this requires
+        // an extra query because it is not included in get_fast_modinfo.
+        $idnumber = $cm->idnumber;
+
+        $out .= get_string('sharedviewinfooriginal', 'oublog', $idnumber);
+        $out .= ' ';
+
+        // Show links to each child, if you
+        // can see them.
+        $children = oublog_get_children($idnumber);
+        if (empty($children)) {
+            return '';
+        } else {
+            $list = '';
+            foreach ($children as $child) {
+                if ($list) {
+                    $list .= ', ';
+                }
+                // Make it a link if you have access.
+                $href = new moodle_url('/mod/oublog/view.php', ['id' => $child->cmid]);
+                if (has_capability('mod/oublog:view', context_module::instance($child->cmid))) {
+                    $list .= html_writer::link($href, s($child->shortname));
+                }
+            }
+            $out .= get_string('sharedviewinfolist', 'oublog', $list);
+        }
+    }
+    $out .= '</div>';
+    return $out;
 }
 
 function oublog_get_reportingemail($oublog) {
