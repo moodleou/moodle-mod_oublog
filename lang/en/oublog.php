@@ -74,6 +74,11 @@ $string['newpost'] = 'New {$a} post';
 $string['removeblogs'] = 'Remove all blog entries';
 $string['title'] = 'Title';
 $string['message'] = 'Message';
+$string['messageshortcuts'] = 'Keyboard shortcuts';
+$string['messageshortcuts_help'] = '
+Access buttons in the menu bar using Alt + F9 (Windows) or ⌥ + F9 (Mac). <br />
+Access the toolbar using Alt + F10 (Windows) or ⌥ + F10 (Mac) including the help menu which contains a full list of keyboard shortcuts.
+';
 $string['tags'] = 'Tags';
 $string['tagsfield'] = 'Tags (separated by commas)';
 $string['allowcomments'] = 'Allow comments';

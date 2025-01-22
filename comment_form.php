@@ -66,6 +66,9 @@ class mod_oublog_comment_form extends moodleform {
         $mform->addElement($messagetype, 'messagecomment', get_string('comment', 'oublog'),
                 array('cols' => 50, 'rows' => 30),
                 array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $maxbytes));
+        if (editors_get_preferred_editor() instanceof \editor_tiny\editor) {
+            $mform->addHelpButton('messagecomment', 'messageshortcuts', 'oublog');
+        }
         $mform->setType('messagecomment', PARAM_CLEANHTML);
         $mform->addRule('messagecomment', null, 'required', null, 'server');
 

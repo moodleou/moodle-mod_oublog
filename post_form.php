@@ -64,6 +64,9 @@ class mod_oublog_post_form extends moodleform {
         $mform->addElement('editor', 'message', get_string('message', 'oublog'),
                 array('cols' => 50, 'rows' => 30),
                 array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $maxbytes));
+        if (editors_get_preferred_editor() instanceof \editor_tiny\editor) {
+            $mform->addHelpButton('message', 'messageshortcuts', 'oublog');
+        }
         $mform->addRule('message', null, 'required', null, 'client');
 
         if ($this->restricttags) {

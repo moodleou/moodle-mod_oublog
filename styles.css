@@ -789,3 +789,10 @@ oublog-filter-tagcount {
 .gecko #oublog-tags {
     display: block;
 }
+@media only screen and (max-width: 767px),
+(max-width: 1024px) and (orientation: landscape) and (pointer: coarse) {
+    #page-mod-oublog-editpost div[id^=fitem_id_message] .btn.btn-link[data-content*="help-popover-container"],
+    #page-mod-oublog-editcomment div[id^=fitem_id_messagecomment] .btn.btn-link[data-content*="help-popover-container"] {
+        display: none;
+    }
+}
