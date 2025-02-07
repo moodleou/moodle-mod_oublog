@@ -1941,7 +1941,7 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->setUser($user);
         list($oublog, $oubloginstance) = oublog_get_personal_blog($USER->id);
         $cm = get_coursemodule_from_instance('oublog', $oublog->id);
-        $this->expectErrorMessage('Sorry: you do not have access to view this page.');
+        $this->expectExceptionMessage('Sorry: you do not have access to view this page.');
         oublog_check_view_permissions($oublog, context_module::instance($cm->id), $cm);
 }
 
