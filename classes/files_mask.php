@@ -33,12 +33,18 @@ class files_mask extends \tool_datamasking\files_mask {
             $sql = "UPDATE {oublog_posts}
                        SET message = REPLACE(message, ?, ?)
                      WHERE id = ?";
-            $DB->execute($sql, [rawurlencode($rec->filename), rawurlencode($newfilename), $rec->itemid]);
+            $DB->execute($sql, [$rec->filename, $newfilename, $rec->itemid]);
+            if ($rec->filename != rawurlencode($rec->filename)) {
+                $DB->execute($sql, [rawurlencode($rec->filename), rawurlencode($newfilename), $rec->itemid]);
+            }
             // Update edits.
             $sql = "UPDATE {oublog_edits}
                        SET oldmessage = REPLACE(oldmessage, ?, ?)
                      WHERE postid = ?";
-            $DB->execute($sql, [rawurlencode($rec->filename), rawurlencode($newfilename), $rec->itemid]);
+            $DB->execute($sql, [$rec->filename, $newfilename, $rec->itemid]);
+            if ($rec->filename != rawurlencode($rec->filename)) {
+                $DB->execute($sql, [rawurlencode($rec->filename), rawurlencode($newfilename), $rec->itemid]);
+            }
         }
     }
 }
