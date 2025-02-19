@@ -132,8 +132,10 @@ function oublog_delete_instance($oublogid) {
     }
 
     if ($oublog->global) {
-        throw new moodle_exception('deleteglobalblog', 'oublog');
+        debugging("Skipping deletion of global blog (ID: {$oublogid}). Global blogs cannot be deleted.", DEBUG_DEVELOPER);
+        return false; // Prevent cron failure, but do not delete the blog
     }
+    
 
     if ($instances = $DB->get_records('oublog_instances', array('oublogid'=>$oublog->id))) {
 
