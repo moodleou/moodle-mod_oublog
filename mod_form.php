@@ -26,7 +26,7 @@ if (defined('OUBLOG_EDIT_INSTANCE')) {
     } // Fake that we are using the moodleform_mod base class.
 
 } else {
-    require_once('moodleform_mod.php');
+    require_once($CFG->dirroot . '/course/moodleform_mod.php');
     abstract class mod_oublog_mod_form_base extends moodleform_mod {
     }
 }

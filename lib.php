@@ -753,7 +753,7 @@ function oublog_get_file_info($browser, $areas, $course, $cm, $context, $fileare
         if (!oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
             return null;
         }
-    } catch (mod_oublog_exception $e) {
+    } catch (moodle_exception $e) {
         return null;
     }
 
