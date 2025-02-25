@@ -65,20 +65,6 @@
     background-color: #F2F2F2;
     min-height:0; /* ie7 */
 }
-.ie6 .oublog-post *, .ie6 .oublog-comment *,
-.ie6 .oublog-post, .ie6 .oublog-comment {
-    height:0;
-}
-.ie6 .oublog-post img,
-.ie6 .oublog-comment img,
-.ie6 .oublog-post ul,
-.ie6 .oublog-comment ul,
-.ie6 .oublog-post ol,
-.ie6 .oublog-comment ol,
-.ie6 .oublog-post li,
-.ie6 .oublog-comment li {
-    height:auto;
-}
 .oublog-post .oublog-post-top {
     margin-bottom: 1em;
 }
@@ -189,11 +175,6 @@
     margin-bottom:1.2em;
     min-height:0; /* ie7... */
     clear: both;
-}
-.ie6 .oublog-post-content,
-.ie6 .oublog-comment-content {
-    height:auto !important;
-    width:99%; /* for some reason it actually believes 'height' on this element */
 }
 
 .oublog-deleted {
@@ -520,8 +501,7 @@ div.oublog-accordion-closed {
     width: 5.5em;
     text-align: left;
 }
-.oublog_statsview_content form .fitem .felement,
-.ie .oublog_statsview_content form .fitem .felement {
+.oublog_statsview_content form .fitem .felement {
     margin-left: 5.5em;
 }
 .oublog_statsview_content form .fitem .fsubmit {
