@@ -132,7 +132,8 @@ function oublog_delete_instance($oublogid) {
     }
 
     if ($oublog->global) {
-        throw new moodle_exception('deleteglobalblog', 'oublog');
+        debugging("Skipping deletion of global blog (ID: {$oublogid}). Global blogs cannot be deleted.", DEBUG_DEVELOPER);
+        return false; // Prevent cron failure, but do not delete the blog.
     }
 
     if ($instances = $DB->get_records('oublog_instances', array('oublogid'=>$oublog->id))) {
@@ -173,7 +174,10 @@ function oublog_delete_instance($oublogid) {
     oublog_grade_item_delete($oublog);
 
     // Delete event in calendar when deleting activity.
-    \core_completion\api::update_completion_date_event($cm->id, 'oublog', $oublogid, null);
+    if (isset($cm)) {
+        \core_completion\api::update_completion_date_event($cm->id, 'oublog', $oublogid, null);
+    }
+
 
     // oublog
     return($DB->delete_records('oublog', array('id'=>$oublog->id)));
@@ -476,6 +480,8 @@ function oublog_supports($feature) {
         case FEATURE_GROUPS: return true;
         case FEATURE_GRADE_HAS_GRADE: return true;
         case FEATURE_RATE: return true;
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_COLLABORATION;
         default: return null;
     }
 }
@@ -747,7 +753,7 @@ function oublog_get_file_info($browser, $areas, $course, $cm, $context, $fileare
         if (!oublog_can_view_post($post, $USER, $context, $cm, $oublog)) {
             return null;
         }
-    } catch (mod_oublog_exception $e) {
+    } catch (moodle_exception $e) {
         return null;
     }
 

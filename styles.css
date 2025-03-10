@@ -670,17 +670,17 @@ label[for=oublog_searchquery] {
 	display: inline;
 }
 /** Tag selector **/
-#page-mod-oublog-editpost .yui3-aclist-content {
+#page-mod-oublog-editpost .autocomplete-items {
 	height: 200px;
     overflow-y: auto;
 }
-div.tagselector_result {
+div.autocomplete_result {
 	position: relative;
 }
-div.tagselector_result .tagselector_result_title {
+div.autocomplete_result .autocomplete_result_title {
 	display: inline;
 }
-div.tagselector_result .tagselector_result_info {
+div.autocomplete_result .autocomplete_result_info {
 	position: relative;
 	padding: 1px;
 	padding-left: 4px;
@@ -693,8 +693,35 @@ div.tagselector_result .tagselector_result_info {
     display: inline-block;
     white-space: nowrap;
 }
-.yui3-aclist-item-active div.tagselector_result .tagselector_result_info {
+div.autocomplete_result .autocomplete_result_info {
 	color: black;
+}
+
+.autocomplete-dropdown-wrapper {
+    z-index: 1000;
+    display: none;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+.autocomplete-dropdown {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.autocomplete-item {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.autocomplete-item.active {
+    background: #2647a0;
+    color: #fff;
+    outline: 0;
 }
 
 .oublog-tag-order {
@@ -761,4 +788,11 @@ oublog-filter-tagcount {
 
 .gecko #oublog-tags {
     display: block;
+}
+@media only screen and (max-width: 767px),
+(max-width: 1024px) and (orientation: landscape) and (pointer: coarse) {
+    #page-mod-oublog-editpost div[id^=fitem_id_message] .btn.btn-link[data-content*="help-popover-container"],
+    #page-mod-oublog-editcomment div[id^=fitem_id_messagecomment] .btn.btn-link[data-content*="help-popover-container"] {
+        display: none;
+    }
 }

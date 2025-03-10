@@ -74,6 +74,11 @@ $string['newpost'] = 'New {$a} post';
 $string['removeblogs'] = 'Remove all blog entries';
 $string['title'] = 'Title';
 $string['message'] = 'Message';
+$string['messageshortcuts'] = 'Keyboard shortcuts';
+$string['messageshortcuts_help'] = '
+Access buttons in the menu bar using Alt + F9 (Windows) or ⌥ + F9 (Mac). <br />
+Access the toolbar using Alt + F10 (Windows) or ⌥ + F10 (Mac) including the help menu which contains a full list of keyboard shortcuts.
+';
 $string['tags'] = 'Tags';
 $string['tagsfield'] = 'Tags (separated by commas)';
 $string['allowcomments'] = 'Allow comments';
@@ -120,6 +125,11 @@ $string['sharedblog_error'] = 'Error – no blog with that ID is available';
 $string['sharedblog_help'] = '<p><strong>Shared blog</strong></p>
 <p>This option allows the blog instance to act as a ‘child’ blog and display the content of a ‘parent’ blog.</p>
 <p>Please input the IDNumber field value of \'parent\' blog whose content you wish this blog to display</p>';
+$string['sharedviewinfooriginal'] = '<strong>This blog is shared</strong> under the name
+<strong>{$a}</strong> for use in other courses.';
+$string['sharedviewinfolist'] = 'It is included in the following: {$a}.';
+$string['sharedviewinfoclone'] = '<strong>This is a shared blog</strong>. The
+<a href=\'{$a->url}\'>original blog</a> is in {$a->shortname}.';
 $string['displayname_default'] = 'blog';
 $string['displayname'] = 'Alternate activity name (blank uses default)';
 $string['displayname_help'] = 'Set an alternate activity type name within the interface.

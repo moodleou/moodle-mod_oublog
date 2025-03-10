@@ -64,6 +64,9 @@ class mod_oublog_post_form extends moodleform {
         $mform->addElement('editor', 'message', get_string('message', 'oublog'),
                 array('cols' => 50, 'rows' => 30),
                 array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $maxbytes));
+        if (editors_get_preferred_editor() instanceof \editor_tiny\editor) {
+            $mform->addHelpButton('message', 'messageshortcuts', 'oublog');
+        }
         $mform->addRule('message', null, 'required', null, 'client');
 
         if ($this->restricttags) {
@@ -100,7 +103,8 @@ class mod_oublog_post_form extends moodleform {
 
             if (isset($maybepubliccomments)) {
                 // NOTE - module.js adds a listener to allowcomments that hides/shows this element as mforms doesn't support this.
-                $mform->addElement('static', 'publicwarning', '', '<div id="publicwarningmarker"></div>'. get_string('publiccomments_info', 'oublog'));
+                $mform->addElement('static', 'publicwarning', '', '<div id="publicwarningmarker"></div>' .
+                        html_writer::tag('span', get_string('publiccomments_info', 'oublog')));
             }
         } else {
             $mform->addElement('hidden', 'allowcomments', OUBLOG_COMMENTS_PREVENT);

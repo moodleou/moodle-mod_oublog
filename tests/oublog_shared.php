@@ -197,4 +197,75 @@ class oublog_shared extends oublog_test_lib
         $this->assertEquals($resultparticipationmaster, $resultparticipationchild);
 
     }
+
+    /**
+     * Creates a course and an OUBlog module with default or custom data.
+     *
+     * @param array $oublogdata Optional. Overrides for default blog data (e.g., 'name', 'intro', 'scale', 'assessed').
+     * @return array An array with the created course and blog module objects.
+     */
+    protected function create_oublog_setup( array $oublogdata = []): array {
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+
+        $defaultoublogdata = [
+                'course' => $course->id,
+                'name' => 'Test Blog',
+                'intro' => 'My intro',
+                'scale' => 100,
+                'assessed' => 1,
+        ];
+
+        // Merge default data with provided overrides. Overrides take precedence.
+        $oublogdata = array_merge($defaultoublogdata, $oublogdata);
+
+        $blog = $generator->create_module('oublog', $oublogdata);
+        return [$course, $blog];
+    }
+
+    public function test_indication_on_a_shared_blog_where_it_is_shared() {
+        global $DB;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        list($course1, $masterblog) = $this->create_oublog_setup(['name' => 'This is master Blog', 'idnumber' => 'idmaster']);
+        list($course2, $childblog) = $this->create_oublog_setup([
+                'name' => 'This is child Blog',
+                'individual' => OUBLOG_SEPARATE_INDIVIDUAL_BLOGS,
+                'idsharedblog' => 'idmaster',
+        ]);
+        list($course3, $masterwithoutchildblog) = $this->create_oublog_setup([
+                'name' => 'This is master Blog without any child',
+                'idnumber' => 'idmasterwithoutchild',
+        ]);
+        $modinfo1 = get_fast_modinfo($course1);
+        $modinfo2 = get_fast_modinfo($course2);
+        $modinfo3 = get_fast_modinfo($course3);
+        $cmmaster = $modinfo1->get_cm($masterblog->cmid);
+        $cmchild = $modinfo2->get_cm($childblog->cmid);
+        $cmmasterwithoutchild = $modinfo3->get_cm($masterwithoutchildblog->cmid);
+        $context1 = \context_module::instance($cmmaster->id);
+        $context2 = \context_module::instance($cmchild->id);
+        $context3 = \context_module::instance($cmmasterwithoutchild->id);
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'student']);
+        assign_capability('moodle/course:manageactivities', CAP_ALLOW, $roleid, $context1->id);
+        assign_capability('moodle/course:manageactivities', CAP_ALLOW, $roleid, $context2->id);
+        assign_capability('moodle/course:manageactivities', CAP_ALLOW, $roleid, $context3->id);
+
+        // Expected HTML output.
+        $expectedmasterinfo = '<div class="oublog-shareinfo"><strong>This blog is shared</strong> under the name ' .
+                '<strong>idmaster</strong> for use in other courses. It is included in the following: ' .
+                '<a href="https://www.example.com/moodle/mod/oublog/view.php?id=' . $cmchild->id . '">tc_3</a>.</div>';
+        $expectedchildinfo = '<div class="oublog-shareinfo"><strong>This is a shared blog</strong>.
+                The <a href=\'https://www.example.com/moodle/mod/oublog/view.php?id=' .
+                $cmmaster->id . '\'>original blog</a> is in tc_3.</div>';
+
+        // Display sharing info.
+        $childinfo = oublog_display_sharing_info($cmchild);
+        $masterinfo = oublog_display_sharing_info($cmmaster);
+        $masterwioutchildinfo = oublog_display_sharing_info($cmmasterwithoutchild);
+
+        $this->assertEqualsIgnoringWhitespace($expectedchildinfo, $childinfo);
+        $this->assertEqualsIgnoringWhitespace($expectedmasterinfo, $masterinfo);
+        $this->assertEqualsIgnoringWhitespace('', $masterwioutchildinfo);
+    }
 }

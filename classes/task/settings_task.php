@@ -35,12 +35,14 @@ class settings_task extends \core\task\adhoc_task {
     }
 
     public function execute() {
-        global $DB;
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
 
-        $pbcm = get_coursemodule_from_instance('oublog', 1 , SITEID, 1);
-        $mod = new \stdClass();
-        $mod->id= $pbcm->id;
-        $mod->section = course_add_cm_to_section($pbcm->course, $pbcm->id, 1);
-        $DB->update_record('course_modules', $mod);
+        $pbcm = get_coursemodule_from_instance('oublog', 1 , SITEID, true);
+        if (empty($pbcm->sectionnum)) {
+            $mod = new \stdClass();
+            $mod->id= $pbcm->id;
+            $mod->section = course_add_cm_to_section($pbcm->course, $pbcm->id, 1);
+        }
     }
 }

@@ -51,6 +51,9 @@ class cron_task extends \core\task\scheduled_task {
         $timeframe = strtotime('-90 days');
         if ($personalblog = $DB->get_record('oublog', ['global' => 1], '*', IGNORE_MULTIPLE)) {
             $cm = get_coursemodule_from_instance('oublog', $personalblog->id);
+            if (!$cm) {
+                return;
+            }
             $context = \context_module::instance($cm->id);
             $instancesql = "
                             SELECT op.id

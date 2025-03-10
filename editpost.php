@@ -73,7 +73,7 @@ if (!empty($childdata)) {
 $correctinvidualsetting = isset($childoublog->individual) ? $childoublog->individual : $oublog->individual;
 $correctcontextfiles = $contextmaster ? $contextmaster : $context;
 $correctglobal = isset($childoublog->global) ? $childoublog->global : $oublog->global;
-$PAGE->requires->js_init_call('M.mod_oublog.init', null, true);
+$PAGE->requires->js_call_amd('mod_oublog/main', 'init');
 
 if ($correctglobal) {
     $blogtype = 'personal';
@@ -207,15 +207,14 @@ if (!$frmpost = $mform->get_data()) {
     echo $renderer->render_header($childcm ? $childcm : $cm, $childoublog ? $childoublog : $oublog, 'editpost');
     echo $renderer->render_pre_postform($childoublog ? $childoublog : $oublog, $childcm ? $childcm : $cm);
     $mform->display();
-    // Add tagselector yui mod - autocomplete of tags.
-    $PAGE->requires->yui_module('moodle-mod_oublog-tagselector', 'M.mod_oublog.tagselector.init',
-            array('id_tags', $tags));
+    // Add tagselector amd mod - autocomplete of tags.
+    $PAGE->requires->js_call_amd('mod_oublog/tagselector', 'init', ['id_tags', $tags]);
     $PAGE->requires->string_for_js('numposts', 'oublog');
 
     // Check the network connection on exiting the update page.
     $PAGE->requires->strings_for_js(array('savefailtitle', 'savefailnetwork', 'savefailsession', 'savefailtext'), 'oublog');
     if (get_config('mod_oublog', 'savecheck')) {
-        $PAGE->requires->yui_module('moodle-mod_oublog-savecheck', 'M.mod_oublog.savecheck.init', array($context->id));
+        $PAGE->requires->js_call_amd('mod_oublog/savecheck', 'init', [$context->id]);
     }
 
     echo $OUTPUT->footer();

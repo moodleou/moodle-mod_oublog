@@ -328,11 +328,7 @@ if ($step == 0) {
                     oublog_date($post->timeposted),
                     $tagcol, $importcol));
         }
-        $module = array ('name' => 'mod_oublog');
-        $module['fullpath'] = '/mod/oublog/module.js';
-        $module['requires'] = array('node', 'node-event-delegate', 'querystring');
-        $PAGE->requires->strings_for_js(array('import_step1_all', 'import_step1_none'), 'oublog');
-        $PAGE->requires->js_init_call('M.mod_oublog.init_posttable', null, false, $module);
+        $PAGE->requires->js_call_amd('mod_oublog/main', 'initPostTable');
         $table->finish_output();
         echo html_writer::start_div();
         foreach (array_merge($additionalparam, $stepinfo, array('step' => 2, 'sesskey' => sesskey())) as $param => $value) {
