@@ -1483,10 +1483,10 @@ function oublog_get_links($oublog, $oubloginstance, $context, $cmid = null) {
     if ($canmanagelinks) {
         if ($oublog->global) {
             $html .= '<a href="editlink.php?blog=' . $oublog->id . '&amp;bloginstance=' . $oubloginstance->id .
-                $cmparam .'" class="oublog-links">' . get_string('addlink', 'oublog').'</a>';
+                $cmparam .'" class="oublog-links osep-smallbutton">' . get_string('addlink', 'oublog') . '</a>';
         } else {
             $html .= '<a href="editlink.php?blog=' . $oublog->id .
-                $cmparam . '"  class="oublog-links">' . get_string('addlink', 'oublog').'</a>';
+                $cmparam . '"  class="oublog-links osep-smallbutton">' . get_string('addlink', 'oublog') . '</a>';
         }
     }
 
@@ -4513,7 +4513,8 @@ function oublog_stats_output_myparticipation($oublog, $cm, $renderer, $course, $
         'user' => $participation->user->id
     );
     $url = new moodle_url('/mod/oublog/userparticipation.php', $params);
-    $viewmyparticipation = html_writer::link($url, get_string('viewmyparticipation', 'oublog'));
+    $viewmyparticipation = html_writer::link($url, get_string('viewmyparticipation', 'oublog'),
+        ['class' => 'osep-smallbutton']);
     $content .= html_writer::start_tag('div', array('class' => 'oublog-post-content'));
     $content .= html_writer::tag('h3', $viewmyparticipation, array('class' => 'oublog-post-title'));
     $content .= html_writer::end_tag('div');
@@ -4787,7 +4788,9 @@ function oublog_stats_output_participation($oublog, $cm, $renderer, $course, $al
     if (!$blogtype) {
         if (!$allposts) {
             $url = new moodle_url('/mod/oublog/participationlist.php', $params);
-            $viewparticipation = html_writer::div(html_writer::link($url, get_string('viewallparticipation', 'oublog')));
+            $viewparticipation = html_writer::div(
+                html_writer::link($url, get_string('viewallparticipation', 'oublog'), ['class' => 'osep-smallbutton'])
+            );
             $content .= html_writer::start_tag('div', array('class' => 'oublog-post-content'));
             $content .= html_writer::tag('h3', $viewparticipation, array('class' => 'oublog-post-title'));
             $content .= html_writer::end_tag('div');
