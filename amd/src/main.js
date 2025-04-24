@@ -26,6 +26,7 @@ import DeleteModal from 'mod_oublog/modal';
 import * as ModalEvents from 'core/modal_events';
 import * as FocusLock from 'core/local/aria/focuslock';
 import Pending from 'core/pending';
+import * as TinyRepository from 'tiny_autosave/repository';
 
 /**
  * Hides or shows the warning marker based on the value of the comment selection.
@@ -47,6 +48,7 @@ const hideWarning = () => {
  */
 const init = () => {
     hideWarning();
+    initButtons();
     const comments = document.querySelector('#id_allowcomments');
     if (comments) {
         comments.addEventListener('change', hideWarning);
@@ -270,6 +272,25 @@ const initPostTable = async () => {
             check.addEventListener('click', () => {
                 updatePreselect(check, preSelectInput);
             });
+        });
+    }
+};
+
+/**
+ * Removes the auto-saved draft data for the TinyMCE editor.
+ */
+const initButtons = () => {
+    const submitButton = document.getElementById('id_submitbutton');
+    if (submitButton) {
+        submitButton.addEventListener('click', () => {
+            // Get the TinyMCE editor instance.
+            const editorID = 'id_message';
+            const editor = window.tinyMCE?.get(editorID);
+
+            if (editor) {
+                // Remove the auto-save session for the editor.
+                TinyRepository.removeAutosaveSession(editor);
+            }
         });
     }
 };

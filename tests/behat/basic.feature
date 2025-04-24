@@ -1063,3 +1063,38 @@ Feature: Test Post and Comment on OUBlog entry
     And I should not see "This is necessary in order to prevent spam."
     When I set the field "allowcomments" to "2"
     Then I should see "This is necessary in order to prevent spam."
+
+  @javascript @editor_tiny
+  Scenario: Check TinyMCE does not autosave when creating a blog post.
+    Given I log in as "teacher1"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I press "New blog post"
+    And I set the following fields to these values:
+      | Title                      | Teacher1 blog   |
+      | Message                    | Teacher1 post 1 |
+      | Tags (separated by commas) |                 |
+    And I press "Add post"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I press "New blog post"
+    When I switch to the "Message" TinyMCE editor iframe
+    Then I should not see "Teacher1 post 1"
+    And I switch to the main frame
+    # Content should be autosaved when reload the page.
+    And I set the following fields to these values:
+      | Title                      | Teacher1 blog   |
+      | Message                    | Teacher1 post 2 |
+      | Tags (separated by commas) |                 |
+    And I reload the page
+    And I switch to the "Message" TinyMCE editor iframe
+    And I should see "Teacher1 post 2"
+    And I switch to the main frame
+    # Content should not be autosaved when cancel the page.
+    And I set the following fields to these values:
+      | Title                      | Teacher1 blog   |
+      | Message                    | Teacher1 post 3 |
+      | Tags (separated by commas) |                 |
+    And I press "Cancel"
+    And I am on the "Test oublog basics" "oublog activity" page
+    And I press "New blog post"
+    And I switch to the "Message" TinyMCE editor iframe
+    And I should not see "Teacher1 post 3"
