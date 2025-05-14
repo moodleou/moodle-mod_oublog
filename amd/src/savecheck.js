@@ -129,7 +129,7 @@ class SaveCheck {
                 // Therefore, when calling submit again,
                 // we need to invoke this function to prevent the form from being detected as dirty.
                 FormChangeChecker.disableAllChecks();
-                form.submit();
+                form.requestSubmit(e.target);
             }
         }
     };
