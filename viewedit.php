@@ -21,6 +21,7 @@
  * @author Sam Marshall <s.marshall@open.ac.uk>
  * @package oublog
  */
+use core\url;
 
 require_once("../../config.php");
 require_once("locallib.php");
@@ -137,8 +138,10 @@ echo $renderer->render_header($childcm ? $childcm : $cm, $childoublog ? $childou
                 $mimetype = $file->get_mimetype();
                 $iconimage = '<img src="'.$OUTPUT->image_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.
                         $mimetype.'" />';
-                $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$correctcontext->id .'/mod_oublog/edit/' .
-                        $edit->id.'/'.$filename);
+                $path = new url(
+                        $CFG->wwwroot . '/pluginfile.php' . '/' . $correctcontext->id . '/mod_oublog/edit/' .
+                        $edit->id . '/' . $filename
+                );
                 echo "<a href=\"$path\">$iconimage</a> ";
                 echo "<a href=\"$path" . "$cmparam\">".s($filename)."</a><br />";
             }
