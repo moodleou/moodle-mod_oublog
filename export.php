@@ -133,7 +133,7 @@ if ($recordcount > OUBLOG_POSTS_PER_PAGE_EXPORT) {
     echo html_writer::end_div();
 }
 
-echo $oublogoutput->render_export_select_button();
+echo $oublogoutput->render_export_select_button(true);
 echo $oublogoutput->render_export_type($exporturl);
 echo html_writer::div('', 'clearfix');
 $PAGE->requires->js_call_amd('mod_oublog/export', 'init', [["newsession" => !isset($_GET['page'])]]);

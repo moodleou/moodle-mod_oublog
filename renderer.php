@@ -1688,11 +1688,12 @@ EOF;
     /**
      * Return Select all/Select none button.
      *
+     * @param bool $lower If true, creates a second set of buttons
      * @return string
      */
-    public function render_export_select_button() {
+    public function render_export_select_button($lower = false): string {
         $output = '';
-        $output .= html_writer::start_div('', array('id' => 'oublogbuttons'));
+        $output .= html_writer::start_div('', ['id' => 'oublogbuttons' . ($lower ? '-lower' : '')]);
         $output .= html_writer::tag('button', 'Select all',
             array('name' => 'oublog-export-select-all', 'class' => 'btn btn-secondary'));
         $output .= html_writer::tag('button', 'Select none',
