@@ -141,19 +141,25 @@ if ($correctinvidualsetting) {
 $tags = oublog_get_tag_list($oublog, $curgroup, $childcm ? $childcm : $cm,
     $correctglobal ? $oublog->id : null, $curindividual);
 
-$mform = new mod_oublog_post_form('editpost.php', array(
-    'individual' => $correctinvidualsetting,
-    'maxvisibility' => $childoublog ? $childoublog->maxvisibility : $oublog->maxvisibility,
-    'allowcomments' => $childoublog ? $childoublog->allowcomments : $oublog->allowcomments,
-    'edit' => !empty($postid),
-    'personal' => $correctglobal,
-    'maxbytes' => $childoublog ? $childoublog->maxbytes : $oublog->maxbytes,
-    'maxattachments' => $childoublog ? $childoublog->maxattachments : $oublog->maxattachments,
-    'restricttags' => $childoublog ? $childoublog->restricttags : $oublog->restricttags,
-    'availtags' => $tags,
-    'referurl' => $referurl,
-    'cmid' => $cmid,
-    'tagslist' => $childoublog ? $childoublog->tagslist : $oublog->tagslist));
+$mform = new mod_oublog_post_form(
+    'editpost.php',
+    [
+        'individual' => $correctinvidualsetting,
+        'maxvisibility' => $childoublog ? $childoublog->maxvisibility : $oublog->maxvisibility,
+        'allowcomments' => $childoublog ? $childoublog->allowcomments : $oublog->allowcomments,
+        'edit' => !empty($postid),
+        'personal' => $correctglobal,
+        'maxbytes' => $childoublog ? $childoublog->maxbytes : $oublog->maxbytes,
+        'maxattachments' => $childoublog ? $childoublog->maxattachments : $oublog->maxattachments,
+        'restricttags' => $childoublog ? $childoublog->restricttags : $oublog->restricttags,
+        'availtags' => $tags,
+        'referurl' => $referurl,
+        'cmid' => $cmid,
+        'tagslist' => $childoublog ? $childoublog->tagslist : $oublog->tagslist,
+        'oublog' => $childoublog ? $childoublog : $oublog,
+        'context' => $context,
+    ]
+);
 if ($mform->is_cancelled()) {
     redirect($viewurl);
     exit;
@@ -246,6 +252,12 @@ if (!$frmpost = $mform->get_data()) {
         redirect($viewurl);
 
     } else {
+        // Determine the specific posting period restriction (before open date or after close date)
+        // so that an appropriate error message can be displayed to the user.
+        $error = oublog_get_post_period_error($oublog, $context);
+        if ($error) {
+            throw new moodle_exception($error['error'], 'oublog', '', $error['when']);
+        }
         // Insert the post.
         unset($post->id);
         $post->oublogid = $oublog->id;

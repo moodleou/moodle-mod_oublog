@@ -216,6 +216,36 @@ function oublog_can_post_now($oublog, $context) {
 }
 
 /**
+ * Returns posting restriction error information.
+ *
+ * @param object $oublog
+ * @param context $context
+ * @return array{error:string, when:string}|null
+ */
+function oublog_get_post_period_error(object $oublog, context $context): array|null {
+    if (oublog_can_post_now($oublog, $context)) {
+        return null;
+    }
+    if (!empty($oublog->postuntil) && $oublog->postuntil <= time()) {
+        return [
+            'error' => 'afterendpost',
+            'when' => userdate(
+                $oublog->postuntil,
+                get_string('strftimedatetimeshort', 'langconfig')
+            ),
+        ];
+    }
+
+    return [
+        'error' => 'beforestartpost',
+        'when' => userdate(
+            $oublog->postfrom,
+            get_string('strftimedatetimeshort', 'langconfig')
+        ),
+    ];
+}
+
+/**
  * Determines whether the user can make a post to the given blog.
  * @param $oublog Blog object
  * @param $bloguserid Userid of person who owns blog (only needed for
