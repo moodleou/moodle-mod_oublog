@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace mod_oublog\completion;
 
 require_once($CFG->dirroot . '/mod/oublog/lib.php');
+require_once($CFG->dirroot . '/mod/oublog/locallib.php');
 use core_completion\activity_custom_completion;
 
 /**
