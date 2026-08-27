@@ -1944,6 +1944,7 @@ class oublog_locallib_test extends oublog_test_lib {
      */
     public function test_oublog_check_view_permissions_personal_restrict() {
         global $USER;
+        $this->getDataGenerator()->get_plugin_generator('mod_oublog')->create_global_blog();
         list($oublog, $oubloginstance) = oublog_get_personal_blog($USER->id);
         $cm = get_coursemodule_from_instance('oublog', $oublog->id);
         $this->assertNull(oublog_check_view_permissions($oublog, context_module::instance($cm->id), $cm));

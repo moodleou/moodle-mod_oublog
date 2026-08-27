@@ -81,6 +81,30 @@ class mod_oublog_generator extends testing_module_generator {
     }
 
     /**
+     * Creates the global blog, which holds everybody's personal blog.
+     *
+     * The module installer creates this on a real site, but skips it under unit tests so that the
+     * test site has no activities on it. Call this from any test that needs a personal blog.
+     *
+     * @return stdClass The global blog
+     */
+    public function create_global_blog() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/mod/oublog/lib.php');
+
+        if ($existing = $DB->get_record('oublog', ['global' => 1])) {
+            return $existing;
+        }
+        $oublog = oublog_create_global_blog();
+        // On a real site \mod_oublog\task\settings_task puts the blog in a section after install,
+        // because there are no sections yet at install time. Tests need that too, or the activity
+        // will not show up in modinfo.
+        $cm = get_coursemodule_from_instance('oublog', $oublog->id);
+        course_add_cm_to_section(SITEID, $cm->id, 1);
+        return $oublog;
+    }
+
+    /**
      * Creates or edits a post.
      *
      * @param stdClass $oublog Blog instance

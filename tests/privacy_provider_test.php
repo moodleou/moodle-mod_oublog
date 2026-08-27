@@ -180,7 +180,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
         global $DB;
 
         // User links are in the global blog so let's use that one.
-        $globalblog = $DB->get_record('oublog', []);
+        $globalblog = $this->getDataGenerator()->get_plugin_generator('mod_oublog')->create_global_blog();
 
         // Create user account for test.
         $generator = $this->getDataGenerator();
