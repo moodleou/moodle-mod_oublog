@@ -664,7 +664,7 @@ $string['restricttags_none'] = 'Individual tags (separated by commas) can be add
 $string['restricttags_req'] = 'Pre-defined or individual tags (separated by commas) must be chosen to add a post';
 $string['restricttags_req_set'] = 'Pre-defined tags must be chosen to add a post';
 $string['restricttags_set'] = 'Pre-defined tags can be chosen for a post if required';
-$string['restricttags_default'] = 'Predefined tags are added by default a new post';
+$string['restricttags_default'] = 'Pre-defined tags are added by default to a new post';
 $string['restricttags_help'] = 'If you select this option, you can restrict
 tag entry to only those that are pre-defined at activity level and/or require that at least one tag be entered in a post.';
 $string['restricttagslist'] = 'You may only enter the \'Set\' tags: {$a}';
