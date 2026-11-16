@@ -177,6 +177,14 @@ class mod_oublog_post_form extends moodleform {
         if ($this->restricttags && $testtags > 0) {
             $errors['tags'] = get_string('restricttagsvalidation', 'oublog');
         }
+        // Determine the specific posting period restriction (before open date or after close date)
+        // so that an appropriate error message can be displayed to the user.
+        $oublog = $this->_customdata['oublog'];
+        $context = $this->_customdata['context'];
+        $error = oublog_get_post_period_error($oublog, $context);
+        if ($error) {
+            $errors['message'] = get_string($error['error'], 'oublog', $error['when']);
+        }
         return $errors;
     }
 }

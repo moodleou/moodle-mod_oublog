@@ -342,6 +342,12 @@ if ($step == 0) {
         echo html_writer::end_tag('form');
     }
 } else if ($step == 2) {
+    // Determine the specific posting period restriction (before open date or after close date)
+    // so that an appropriate error message can be displayed to the user.
+    $error = oublog_get_post_period_error($oublog, $context);
+    if ($error) {
+        throw new moodle_exception($error['error'], 'oublog', '', $error['when']);
+    }
     // Div used to hide the 'progress' once the page gets onto 'finished'.
     echo html_writer::start_div('', array('id' => 'oublog_import_progress_container'));
 
