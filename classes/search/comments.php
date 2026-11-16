@@ -63,7 +63,7 @@ class comments extends \core_search\base_mod {
      * @param \context|null $context
      * @return \moodle_recordset|null
      */
-    public function get_document_recordset($modifiedfrom = 0, \context $context = null) {
+    public function get_document_recordset($modifiedfrom = 0, ?\context $context = null) {
         global $DB;
 
         list ($contextjoin, $contextparams) = $this->get_context_restriction_sql(

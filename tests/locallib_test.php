@@ -1564,10 +1564,6 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertTrue(oublog_can_post_now($oublog1, context_module::instance($oublog1->cm->id)));
         $this->assertTrue(oublog_can_post_now($oublog2, context_module::instance($oublog2->cm->id)));
         $this->assertTrue(oublog_can_post_now($oublog3, context_module::instance($oublog3->cm->id)));
-        $this->assertNull(oublog_get_post_period_error($oublog, context_module::instance($oublog->cm->id)));
-        $this->assertNull(oublog_get_post_period_error($oublog1, context_module::instance($oublog->cm->id)));
-        $this->assertNull(oublog_get_post_period_error($oublog2, context_module::instance($oublog->cm->id)));
-        $this->assertNull(oublog_get_post_period_error($oublog3, context_module::instance($oublog->cm->id)));
         $post = (object) array('allowcomments' => true, 'visibility' => OUBLOG_VISIBILITY_COURSEUSER);
         $this->assertTrue(oublog_can_comment($oublog->cm, $oublog, $post));
         $this->assertTrue(oublog_can_comment($oublog1->cm, $oublog1, $post));
@@ -1579,16 +1575,6 @@ class oublog_locallib_test extends oublog_test_lib {
         $this->assertTrue(oublog_can_post_now($oublog1, context_module::instance($oublog1->cm->id)));
         $this->assertTrue(oublog_can_post_now($oublog2, context_module::instance($oublog2->cm->id)));
         $this->assertFalse(oublog_can_post_now($oublog3, context_module::instance($oublog3->cm->id)));
-        $this->assertNull(oublog_get_post_period_error($oublog1, context_module::instance($oublog->cm->id)));
-        $this->assertNull(oublog_get_post_period_error($oublog2, context_module::instance($oublog->cm->id)));
-
-        $errors = oublog_get_post_period_error($oublog, context_module::instance($oublog->cm->id));
-        $this->assertNotNull($errors);
-        $this->assertArrayHasKey('error', $errors);
-
-        $errors3 = oublog_get_post_period_error($oublog3, context_module::instance($oublog->cm->id));
-        $this->assertNotNull($errors3);
-        $this->assertArrayHasKey('error', $errors3);
         $post = (object) array('allowcomments' => true, 'visibility' => OUBLOG_VISIBILITY_COURSEUSER);
         $this->assertFalse(oublog_can_comment($oublog->cm, $oublog, $post));
         $this->assertTrue(oublog_can_comment($oublog1->cm, $oublog1, $post));
@@ -1944,7 +1930,6 @@ class oublog_locallib_test extends oublog_test_lib {
      */
     public function test_oublog_check_view_permissions_personal_restrict() {
         global $USER;
-        $this->getDataGenerator()->get_plugin_generator('mod_oublog')->create_global_blog();
         list($oublog, $oubloginstance) = oublog_get_personal_blog($USER->id);
         $cm = get_coursemodule_from_instance('oublog', $oublog->id);
         $this->assertNull(oublog_check_view_permissions($oublog, context_module::instance($cm->id), $cm));

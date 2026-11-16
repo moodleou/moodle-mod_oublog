@@ -25,22 +25,41 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * Post installation procedure.
- *
- * @return bool True on success
- */
 function xmldb_oublog_install() {
-    global $CFG;
+    global $DB, $CFG;
 
-    require_once($CFG->dirroot . '/mod/oublog/lib.php');
-
-    if (PHPUNIT_TEST) {
-        // Unit tests expect a site with no activities on it, so they create the global blog
-        // themselves when they need one. See mod_oublog_generator::create_global_blog.
-        return true;
-    }
+    require_once($CFG->dirroot . '/course/lib.php');
 
     // Setup the global blog.
-    return oublog_create_global_blog() ? true : false;
+    $oublog = new stdClass;
+    $oublog->course = SITEID;
+    $oublog->name = 'Personal Blogs';
+    $oublog->intro = '';
+    $oublog->introformat = FORMAT_HTML;
+    $oublog->accesstoken = md5(uniqid(rand(), true));
+    $oublog->maxvisibility = 300;// OUBLOG_VISIBILITY_PUBLIC.
+    $oublog->global = 1;
+    $oublog->allowcomments = 2;// OUBLOG_COMMENTS_ALLOWPUBLIC.
+    $oublog->timemodified = time();
+    if (!$oublog->id = $DB->insert_record('oublog', $oublog)) {
+        return false;
+    }
+
+    $mod = new stdClass;
+    $mod->course = SITEID;
+    $mod->module = $DB->get_field('modules', 'id', array('name'=>'oublog'));
+    $mod->instance = $oublog->id;
+    $mod->visible = 1;
+    $mod->visibleold = 0;
+    $mod->section = 1;
+
+    if (!$cm = add_course_module($mod)) {
+        return true;
+    }
+    set_config('oublogsetup', null);
+
+    // For unit tests to work, it's necessary to create context now.
+    context_module::instance($cm);
+
+    return true;
 }
